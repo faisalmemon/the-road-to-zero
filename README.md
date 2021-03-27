@@ -111,15 +111,15 @@ I need to experiment in this area.  Maybe putting my screen in large scale mode 
 
 The book is built for English using `buildBook.sh`.  Use `buildBook.sh -l zh` to build the Chinese edition.
 
-The build outputs are:
+The build outputs are on a per-language basis:
 
 File | Purpose
 --|--
-`foo.html` | Intermediate used for GitHub Pages documentation
-`boo.pdf` | For the Hard Copy Paper Edition
-`foo.docx` | For further conversion into EPUB, and internally for spelling and grammar checking
-`foo.epub` | For E-book readers (Apple and Amazon) directly from pandoc
-`docs/*` | Final destination for GitHub Pages documentation
+`generated/<LANG>.foo.html` | Intermediate used for GitHub Pages documentation
+`generated/<LANG>.boo.pdf` | For the Hard Copy Paper Edition
+`generated/<LANG>.foo.docx` | For further conversion into EPUB, and internally for spelling and grammar checking
+`generated/<LANG>.foo.epub` | For E-book readers (Apple and Amazon) directly from pandoc
+`docs/<LANG>/*` | Final destination for GitHub Pages documentation
 
 The output are `foo.*` and `boo.*` files locally for ease of inspection.  They are ignored by version control.
 
