@@ -34,7 +34,8 @@ To draw an analogy, Google have shown what fish are out there to be catched, Lev
 ## Current Status
 
 As of 27th March 2021, the project status is:
-- just started.  Building the book outline and scripting.
+- just started,
+- building the book outline and scripting.
 
 ## Directory Structure
 
