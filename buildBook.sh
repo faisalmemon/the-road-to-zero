@@ -29,9 +29,11 @@ done
 shift $(($OPTIND - 1))
 remainingArgs=$@
 
-./tools/commatrademark.sh boo.$langName.idx > trademarks.md
+outputDir=generated
 
-rm -f foo.$langName.* boo.$langName.*
+./tools/commatrademark.sh $outputDir/boo.$langName.idx > trademarks.md
+
+rm -f $outputDir/foo.$langName.* $outputDir/boo.$langName.*
 
 filesToProcess=$(./tools/get_markdown_for_lang.sh -l $langName $(cat frontPages.txt mainPages.txt))
 latexFilesToProcess=$(./tools/get_markdown_for_lang.sh -l $langName $(cat frontPages_latex.txt mainPages.txt backPages_latex.txt))
@@ -61,34 +63,34 @@ scriptPath="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 echo
 
 echo Processing foo.$langName.html
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc -c style/gitHubStyle.css -o foo.$langName.html
+pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
 echo Processing boo.$langName.latex
-echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o boo.$langName.latex
-pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o boo.$langName.latex
+echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
 
 echo Cleaning up csl indent remarks
-sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak boo.$langName.latex
+sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
 
 echo Indexing pass 0
-pdflatex boo.$langName.latex > boo.$langName.pass.0.log </dev/null
+pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.0.log </dev/null
 echo Indexing pass 1
-pdflatex boo.$langName.latex > boo.$langName.pass.1.log </dev/null
+pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.1.log </dev/null
 echo Indexing pass 2
-pdflatex boo.$langName.latex > boo.$langName.pass.2.log </dev/null
+pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.2.log </dev/null
 
 echo "Check for errors"
-egrep -n "LaTeX Error:|Error: Unicode character|Fatal error occurred" boo.$langName.pass.*.log
+egrep -n "LaTeX Error:|Error: Unicode character|Fatal error occurred" $outputDir/boo.$langName.pass.*.log
 
 echo Processing foo.$langName.epub
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --css=style/ebook.css -o foo.$langName.epub
+pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --css=style/ebook.css -o $outputDir/foo.$langName.epub
 
 echo Processing foo.$langName.docx
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --reference-doc=style/referenceWordDocumentTemplate.docx -o foo.$langName.docx
+pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --reference-doc=style/referenceWordDocumentTemplate.docx -o $outputDir/foo.$langName.docx
 
 echo Constructing github pages
 
 mkdir -p docs/$langName
-cp foo.$langName.html docs/$langName/index.html
+cp $outputDir/foo.$langName.html docs/$langName/index.html
 git add docs/$langName/index.html
 rm -rf docs/$langName/screenshots docs/$langName/style
 cp -pr screenshots docs/$langName/screenshots
