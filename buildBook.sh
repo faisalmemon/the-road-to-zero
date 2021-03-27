@@ -31,6 +31,11 @@ remainingArgs=$@
 
 outputDir=generated
 
+if [[ ! -d $outputDir ]];
+then
+    mkdir $outputDir
+fi
+
 ./tools/commatrademark.sh $outputDir/boo.$langName.idx > trademarks.md
 
 rm -f $outputDir/foo.$langName.* $outputDir/boo.$langName.*
