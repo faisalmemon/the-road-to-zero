@@ -71,12 +71,12 @@ pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone -
 echo Cleaning up csl indent remarks
 sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
 
-echo Indexing pass 0
-pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.0.log </dev/null
-echo Indexing pass 1
-pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.1.log </dev/null
-echo Indexing pass 2
-pdflatex $outputDir/boo.$langName.latex > $outputDir/boo.$langName.pass.2.log </dev/null
+
+for pass in 0 1 2
+do
+    echo Indexing pass $pass
+    ( cd $outputDir; pdflatex boo.$langName.latex > boo.$langName.pass.$pass.log </dev/null )
+done
 
 echo "Check for errors"
 egrep -n "LaTeX Error:|Error: Unicode character|Fatal error occurred" $outputDir/boo.$langName.pass.*.log
