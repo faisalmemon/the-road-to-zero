@@ -23,7 +23,7 @@ Given that iOS security research is valuable, the assumption is that you are usi
 
 Many things are documented, but the valuable piece is not documented.
 
-I have sincere appreciation for those who have written up the basic ideas behind vulnerabilities, and have provided crack-me challenges.  At the opposite end of things, there are some excellent write ups of past vulnerabilities;  Google project Zero is leading the way here.  There insights amount to digital magic!
+I have sincere appreciation for those who have written up the basic ideas behind vulnerabilities, and have provided crack-me challenges.  At the opposite end of things, there are some excellent write ups of past vulnerabilities;  Google project Zero is leading the way here.  Their insights amount to digital magic!
 
 There is scarce little in the middle.  The OS internals book series by J. Levin are a huge milestone in explaining the Darwin based Operating Systems underpinning our iDevices.
 
