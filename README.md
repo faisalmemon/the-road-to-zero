@@ -1,4 +1,4 @@
-# The Road to Zero Book
+# The Road to Zero
 
 This book explains how to develop your own zero day vulnerabilities for iOS.
 
@@ -17,7 +17,7 @@ When I look at learning paths in other disciplines, there is a low friction path
 
 I am now in a situation where I am studying an adjacent skill but there are significant knowledge and cost barriers.  That is, exploring zero day vulnerabilities in iOS. It seems that there is a gap between simple reverse engineering tutorials and crack-me challenges, and those challenges faced on a secure operating system such as iOS.  
 
-Given that iOS security research is valuable, the assumption is that you are using the IDA Pro decompiler, or you are using the Correllium system to develop your security research.  These companies are entitled to price their services accordingly.  The gap is that there are researchers looking to break into this world, and make a meaningful contribution with a modest outlay.  Its not just the price, but the price together with the risk that is the barrier.  When I purchased a Mac and an iPhone, I was already happy with what I had and wasn't sure if the market would take me on as a hobbyist to undertake commericial work in iOS.
+Given that iOS security research is valuable, the assumption is that you are using the IDA Pro decompiler, or you are using the Correllium system to develop your security research.  These companies are entitled to price their services accordingly.  The gap is that there are researchers looking to break into this world, and make a meaningful contribution with a modest outlay.  It's not just the price, but the price together with the risk that is the barrier.  When I purchased a Mac and an iPhone, I was already happy with what I had and wasn't sure if the market would take me on as a hobbyist to undertake commericial work in iOS.
 
 ## It's already documented right?
 
@@ -56,7 +56,7 @@ The software configuration management plan (SCM plan) is very simple.
 
 ## Authoring Methodology
 
-See [https://github.com/faisalmemon/ios-crash-dump-analysis-book#authoring-methodology]
+See https://github.com/faisalmemon/ios-crash-dump-analysis-book#authoring-methodology
 
 ## Supporting software
 
