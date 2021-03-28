@@ -37,6 +37,10 @@ As of 27th March 2021, the project status is:
 - just started,
 - building the book outline and scripting.
 
+## Timeline
+
+I can't guarantee time, I can't guarantee speed, but this is what I know.  I think I can do 0.1 % of the book each day , with a few stretches of full focus, I think my target is to complete the book is March 2023.
+
 ## Directory Structure
 
 Directory | Purpose
@@ -92,10 +96,10 @@ For analysing binaries I used `class-dump`.  Whilst previously this was availabl
 
 ### Recommended Software
 
-Package | Purpose
---|--
-Atom|Edits and understands markdown and can preview render it
-BibDesk | Eases the definition of Citations for the Biliography
+Package | Purpose | Installation
+--|--|--
+Atom|Edits and understands markdown and can preview render it | `brew install --cask atom`
+BibDesk | Eases the definition of Citations for the Biliography | `brew install --cask bibdesk`
 
 ## Essential Mac Configuration
 
