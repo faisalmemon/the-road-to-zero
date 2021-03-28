@@ -39,7 +39,7 @@ As of 27th March 2021, the project status is:
 
 ## Timeline
 
-I can't guarantee time, I can't guarantee speed, but this is what I know.  I think I can do 0.1 % of the book each day , with a few stretches of full focus, I think my target is to complete the book is March 2023.
+I can't guarantee time, I can't guarantee speed, but this is what I know.  I think I can do 0.1 % of the book each day, with a few stretches of full focus, I think my target is to complete the book is March 2023.
 
 ## Directory Structure
 
