@@ -12,6 +12,6 @@ I take the view that when you are exploring new things, cost barriers are magnif
 
 There is one last element I intend to add to the mix.  The Hacker Mentality.  This is the attitude of mind where an innocent piece of information can be viewed through a hacker's lens.  That offers the foothold for us to commence experimentation and discovery that then later will result in new vulnerabilities.
 
-If I am successful, I hope this book will become the handbook of vulnerability craftsmanship in the same way that Code Complete @codecomplete2 became the handbook of software craftsmanship.
+If I am successful, I hope this book will become the handbook of vulnerability craftsmanship in the same way that Code Complete (@codecomplete2) became the handbook of software craftsmanship.
 
 One thing in particular that attracts me to iOS is that its one of the hardest platforms to circumvent.  It may turn out I don't reach the high bar needed to make progress on this platform.  But if it was going to be easy, what would be the point in trying?
