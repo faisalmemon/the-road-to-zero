@@ -1,0 +1,1786 @@
+00:00
+[Music]
+00:13
+I am looking at this cup aka QWERTY or
+00:15
+uirp and I've actually given this talk
+00:18
+already sort of I've changed some stuff
+00:20
+here but there was some technical issue
+00:23
+the the first time I gave this talk and
+00:25
+so when in the video was recorded my
+00:28
+voice was dubbed in Chinese and it was
+00:31
+kind of a issue because I believe the
+00:35
+talk is it very interesting and many
+00:36
+people were not able to understand it
+00:38
+due to that so life as an iOS attacker
+00:43
+as I mentioned I am a look at a desk oh
+00:46
+ok a QWERTY or UI petesy it's a tricky
+00:49
+nickname I do lose my passport fairly
+00:52
+often I am actually employed
+00:56
+self-employed if that counts
+00:59
+I a security researcher kjc
+01:01
+international research srl I've owned an
+01:06
+iPhone's an iPhone since iOS - I was
+01:10
+very young kid and I was really into
+01:12
+this thing called jailbreaking back then
+01:16
+and come around iOS 10.2 I actually
+01:19
+released my first public jailbreak that
+01:23
+was widely used I have released
+01:26
+previously some minor public jail breaks
+01:28
+and contributed to other jail breaks but
+01:31
+the 10.2 one was my first big one and
+01:35
+probably last one for a while and as I
+01:38
+mentioned I already gave this talk in
+01:40
+Shenzhen at pencak and added a bunch of
+01:43
+things and if you want to get in touch
+01:44
+with me you can get on IRC that cracks
+01:47
+by Doug Kim when the server is not down
+01:52
+so today I'm gonna discuss about the is
+01:56
+security design and these teracle things
+02:00
+that made the iOS security design what
+02:02
+it is today and I'm also gonna discuss
+02:05
+about how an iOS attacker will think and
+02:07
+I'm gonna discuss about one one-click
+02:11
+exploits
+02:14
+which I believe to be the best long-term
+02:18
+scenario for iOS attackers
+02:21
+and I will also discuss about the new
+02:22
+iPhone access and XR access Mac's
+02:26
+which bring a new architecture with a
+02:29
+different API
+02:30
+let me fir which has pointer
+02:34
+authentication which is a fairly new
+02:36
+feature - in first CFI in a different
+02:40
+way than say Microsoft does it as well
+02:44
+as some extra hardening for P map which
+02:46
+I'll tell you what it is later and I
+02:51
+will give my personal like opinion on
+02:53
+what the future of iOS attackers is so
+
+
+02:58
+back then on the very first version of
+03:02
+iOS there was absolutely no security no
+03:04
+SLR no DEP everything ran as root no
+03:08
+sandboxing no code signing no secure
+03:10
+boot well there was some secure boot but
+03:14
+it was fundamentally broken and no
+03:18
+third-party apps this was a big deal
+03:20
+because people realized that native
+03:23
+third party apps were a big deal yeah
+03:28
+and so people try to modify their phones
+03:32
+and these pound a community called job
+03:35
+working and back then things were really
+03:39
+simple however very very very early on
+03:42
+somebody actually came up with something
+03:44
+called jailbreak me which allowed people
+03:47
+to Joburg their phone by just visiting
+03:49
+website and this is sort of the model
+03:54
+that now is called one-click and even a
+03:59
+few Apple employees apparently were
+04:00
+involved with Joe Bergin community at
+
+
+04:02
+first but things change really quickly
+04:06
+as soon as the the threat model for
+04:08
+Apple becomes vrm so the the big issue
+04:14
+is that they actually released their own
+04:16
+app store and they were selling apps and
+04:19
+by being able to modify your phone you
+04:22
+would very easily decrypt those apps and
+04:24
+redistribute them at piracy was very
+04:28
+very very rampant on desktop operating
+04:31
+systems so my personal belief I'm not
+04:34
+entirely sure if that's the case but
+04:35
+code signing was introduced to try to
+04:37
+prevent the the piracy scene from taking
+04:40
+over the the iPhone platform and I
+04:46
+believe it was the only real threat the
+04:48
+Apple consider back then and from there
+04:55
+a cat-and-mouse game started where Apple
+04:57
+kept learning what attackers would do
+04:59
+and posh like new updates that would
+05:03
+harden the iOS security model and over
+05:07
+time
+05:08
+these pretty much ended up with three
+05:11
+big things so first of all the
+05:13
+bootloader
+05:13
+used to have a lot of debug features now
+05:16
+on a release device the bootloader is
+05:18
+fundamentally very small and doesn't
+05:22
+have many degrees of freedom which are
+05:25
+useful in case you're an attacker
+05:27
+additionally a SLR and DP were
+05:30
+introduced very early on I think it was
+05:32
+around iOS 4 and additionally on the
+05:38
+very first models of iPhones you would
+05:40
+be able to downgrade the framework the
+05:42
+vulnerable version if you wanted to
+05:44
+and these allows you to reuse bugs
+05:47
+across one specific generation device
+05:52
+over and over without having to find new
+05:54
+O'Day however initially they used to
+06:01
+rely very heavily on secure on the
+06:02
+security by obscurity and they still do
+06:05
+in some case for instance the secure
+06:08
+anklet processor is still running on an
+06:12
+encrypted image and people have posted
+06:14
+decryption keys online so if you
+06:16
+actually wanted to look into the SCP you
+06:19
+can but Apple still refuses to give you
+06:21
+visibility on the later later versions
+06:24
+that have not been publicly decrypted
+06:26
+however things are changing with the
+06:28
+kernel and a bunch of other things in
+06:30
+the firmware
+06:31
+they are now decrypted since iOS 10 and
+06:34
+the kernel sources were also published
+06:37
+recently and there was a pretty bad leak
+06:41
+of bootloader so a bootloader sources
+06:44
+back then so there's a lot of knowledge
+06:47
+out there by now and downgrade
+06:52
+protection really doesn't actually
+06:54
+provide any security to people that you
+06:58
+know don't want to get their phone
+06:59
+hacked because you can just run the
+07:01
+latest firmware and I believe it's still
+07:05
+an artifact of the historical DRM model
+07:09
+that is probably not so historical and
+07:12
+still matters to apples business and
+07:16
+also they try to make it very hard to
+07:21
+debug your kernel or anything except
+07:24
+your own app which obviously makes the
+07:28
+work of security researchers harder and
+07:30
+so the solution for that is to develop
+07:35
+iOS attacks to bypass those restrictions
+07:38
+and carry out more security and this
+07:41
+starts the iOS attacker model so
+07:45
+initially I believe most of the research
+07:47
+was actually done due to the need of the
+07:52
+jailbreakers so these are actually
+07:55
+attackers that Apple might really
+07:56
+dislike but I believe are fundamentally
+07:58
+positive for end-users as they add more
+08:01
+choice however as the game gets tougher
+08:05
+and more people start looking into these
+08:07
+new mobile platforms attacking at us for
+08:12
+intelligence gathering and law
+08:13
+enforcement became more and more popular
+08:15
+and I believe these attackers do not
+08:19
+actually affect Apple's bottom line that
+08:21
+much but it could be negative to
+08:24
+end-users in some ways and these
+08:30
+attackers actually want multiple things
+08:32
+there's remote and physical capabilities
+08:36
+remote capabilities you have one click
+08:38
+which I believe to be the best
+08:41
+term solution for us attackers and then
+08:43
+you have zero click which will rely
+08:45
+instead of system services messaging
+08:48
+apps Bluetooth and you can even rely on
+08:52
+something like XSS in order to then
+08:54
+chain load a one click and turn it into
+08:58
+a zero click
+08:59
+additionally people are also interested
+09:02
+in physical attacks so you're gonna have
+09:04
+even made attacks and in transit device
+09:07
+tampering where somebody will swap your
+09:10
+device out as it's coming to your
+09:12
+mailbox and data protection attacks for
+09:16
+forensic analysis which every single one
+09:22
+of these will require different kind of
+09:25
+research on iOS so usually if you
+09:27
+specialize on one of these like one
+09:32
+company will only specialize on one of
+09:33
+these very few companies will be
+09:36
+multiple at the same time individual
+09:41
+researchers will actually specialize on
+09:43
+only one aspect and by one aspect I mean
+09:45
+even less than that so you know just one
+09:48
+vulnerability or kernel privilege
+09:50
+escalation and they will then figure out
+09:56
+a framework to find multiple of these
+09:59
+vulnerabilities which will likely end up
+10:01
+in an offensive company which will chain
+10:03
+those vulnerabilities together into an
+10:06
+exploit chain which will be able to load
+10:08
+code that the wished privilege level the
+10:12
+most common privilege level which is
+10:13
+sought after is obviously kernel mode
+10:16
+but it's not all necessary in order to
+10:19
+accomplish those tasks and people will
+10:23
+develop post exploitation toolkits that
+10:25
+will allow for yes data exfiltration
+10:30
+those sort of things but this is kind of
+10:34
+far I believe from the work of
+10:35
+researchers themselves and it's a few
+10:38
+steps down the chain and eventually
+10:41
+Apple will kill some of the bugs and so
+10:43
+you have to go back to the very top and
+10:45
+find new vulnerabilities and integrate
+10:48
+them with your current toolkit or make a
+10:50
+new toolkit in case
+10:52
+when you currently have is not capable
+10:53
+of using your new vulnerabilities and
+10:56
+yeah repeat as the level of difficulty
+11:04
+in compromising our us goes up
+11:06
+persistent attackers that already have
+11:09
+capabilities right now can easily play
+11:12
+catch-up because you will have
+11:13
+incremental security upgrades and new
+11:19
+players might feel all the pain because
+11:22
+they have to like start from zero and
+11:23
+get acquainted with every single
+11:25
+mitigation that Apple had so far and I
+11:29
+think however discuss this in a more
+11:30
+general context it's a nice talk you
+11:33
+should check his sock out and the
+11:38
+typical one-click exploit chain again I
+11:42
+am pretty sure I said it three times
+11:44
+already but I think it's the most likely
+11:46
+to be long-term viable capability web
+11:49
+browsers will always have
+11:51
+vulnerabilities and again you can use
+11:55
+the XSS in order to turn it into a zero
+11:57
+click if you so wish and it usually will
+12:00
+involve the combination of a WebKit
+12:01
+vulnerability and at least one privilege
+12:03
+privilege escalation vulnerability even
+12:06
+if two or more are common as far as
+12:08
+privilege escalation goes and the WebKit
+12:11
+vulnerability must be powerful enough in
+12:13
+order to derive an info leak and on
+12:16
+recent devices you will also need the
+12:17
+arbitrary read primitive if you go
+12:21
+anywhere hips praying is Bible the
+12:26
+randomization on a US is actually pretty
+12:28
+bad I do not believe any serious
+12:31
+attacker is gonna rely on hips praying I
+12:33
+hope not but it's one possibility and DP
+12:40
+can be bypassed by pastor rap or date on
+12:43
+the exploitation data only is the best
+12:47
+alternative because it's actually a lot
+12:50
+easier to maintain over time compared to
+12:52
+rap and it can actually be more powerful
+12:55
+if done correctly rap can be exploited
+13:00
+you know simpler way actually at times
+13:02
+but will require constant iterations on
+13:05
+top of your exploit on every single
+13:07
+binary layout that you want to target
+13:09
+and it will be necessary to use rap on
+13:12
+some vulnerabilities but I actually
+13:15
+recommend to use those for prone to own
+13:17
+and if you're actually trying to be an
+13:19
+advanced I guess attacker will look for
+13:21
+better bugs once you have the ability to
+13:28
+read write and execute the next stage is
+13:30
+obviously to load a shellcode iOS has
+13:34
+mandatory code sign checks so you can't
+13:35
+actually just you know load a library or
+13:38
+something along the lines which might be
+13:41
+done in other context however you do
+13:47
+have an RF memory which is used by the
+13:49
+jet engine and you can just you know
+13:51
+write your payload in there invoke it
+13:53
+and back in iOS 9 that was all you
+13:56
+needed to do until Apple introduced this
+14:01
+one feature called bulletproof jet where
+14:03
+in order to write your payload in jibt
+14:05
+memory you are actually first to do a
+14:09
+function invocation and they do this by
+14:11
+having two different maps where one is
+14:15
+writable and one is executable and the
+14:17
+backing physical memory is actually the
+14:19
+same
+14:20
+however the physical the writable map
+14:24
+does not have any pointer to it stored
+14:27
+anywhere in the address space except in
+14:29
+a very small stub which is at ticket
+14:32
+only so you cannot actually lick that
+14:34
+pointer you can guess it you can invoke
+14:38
+the the small stub in order to write the
+14:42
+executable side but with the a 11 CPU
+14:47
+Apple actually introduced silicon
+14:49
+changes that will turn your
+14:52
+read/write/execute memory into either
+14:55
+read write or read execute based on a
+14:58
+system register which is set only by the
+15:01
+jet engine in specific points in time
+15:03
+and so in if you actually want to touch
+15:07
+memory you are first to
+15:09
+invoke a function which is not really an
+15:13
+issue or wasn't at least until the last
+15:18
+generation of iPhones and these actually
+15:23
+pointed me towards the fact that Apple
+15:25
+might be introducing control for
+15:26
+integrity and I actually discuss about
+15:32
+possible ways to attack control for
+15:34
+integrity in 2017 only because I could
+15:37
+infer that it was about to come thanks
+15:39
+to this feature anyway
+15:46
+let's keep going on on our iOS exploit
+15:49
+chain you'll have your shell code which
+15:52
+some might write as ro shell code but
+15:57
+that does not scale if you're actually
+15:58
+writing an entire kernel exploit it's
+16:00
+not gonna be easy to do it in simple
+16:03
+shell code you're going to want to link
+16:04
+to things you're gonna want to use SDK
+16:07
+which is powerful enough to express what
+16:10
+you want to do and realistically you can
+16:15
+ask the dynamic library the dynamic
+16:17
+linker to load it your payload but iOS
+16:21
+does not actually have any feature to do
+16:22
+that Mac OS does but it was stripped
+16:25
+from iOS
+16:29
+however when you run a binary in iOS the
+16:33
+the kernel will actually map the binary
+16:35
+in and the dynamic linker will be
+16:39
+invoked in user mode in order to load
+16:42
+the main executable once it's already in
+16:45
+memory so what you can actually do is
+16:47
+invoke the dynamic linker as if the
+16:50
+kernel were invoking it and this will
+16:53
+actually load arbitrary libraries as if
+16:56
+it were a normal macro file and it's
+17:03
+pretty powerful in order to do us
+17:06
+jailbreaks over WebKit however you will
+17:08
+not be able to do easy process
+17:10
+continuation so this is not an effective
+17:12
+strategy in case you're trying to do
+17:13
+advanced attacks so I ended up writing
+17:17
+my own dynamic linker in JavaScript the
+17:20
+we'll link in a payload which is
+17:23
+compiled with the normal iOS SDK map
+17:26
+everything over and yeah with enough
+17:29
+memory corruption JavaScript and truly
+17:30
+do everything these days and user mode
+17:36
+privileged escalation can be
+17:37
+accomplished by reusing the SLR leak
+17:40
+from WebKit as every single library in
+17:43
+iOS is loaded at the same address and
+17:45
+it's only randomized once per boot and
+17:47
+this is due to constraints on memory
+17:49
+usage so it's actually really easy once
+17:52
+you have code execution in a non
+17:54
+privileged context to exploit even
+17:57
+through your bugs in other processes in
+17:58
+order to gain more control over the
+18:00
+system kernel privilege escalations will
+18:04
+actually require kernel info leak as any
+18:05
+failure is fatal and your phone will
+18:08
+reboot if you do not have the right
+18:09
+slide and the usual end goal of kernel
+18:15
+code execution is to get rid bright
+18:16
+primitives from user mode and you can
+18:18
+use wrap chopper data in order to derive
+18:21
+those however most of these changed with
+18:26
+the new iPhones as as I mentioned
+18:28
+earlier Apple added the new set of
+18:33
+architectural features which can provide
+18:37
+control flow integrity and they call
+18:39
+this internally armed 64 II they
+18:44
+actually do both backwards edge and
+18:46
+forwards edge CFI building on top of arm
+18:49
+8.3 authenticated pointers and both
+18:52
+kernel mode and user mode actually make
+18:54
+use of CFI which is surprising as the
+18:57
+arm standard for authenticated pointers
+18:58
+is not safe against the kernel mode
+19:01
+attacker on devices without hypervisor
+19:04
+such as iPhones and it's not really
+19:10
+fine-grained it's not really curd
+19:12
+screened either it's somewhere in the
+19:14
+middle depending on what branch site
+19:15
+you're jumping from
+19:20
+and a brief description of point
+19:22
+authentication is that arm add new up
+19:26
+codes that will sign and authenticate
+19:28
+pointers for you using secret keys that
+19:32
+are stored out of address space and you
+19:38
+will check this authentication key every
+19:41
+time you do an indirect branch or every
+19:43
+time you load some memory in a way that
+19:46
+signals that you want to use pointers
+19:49
+indication additionally you can specify
+19:54
+a context on each pointer that you sign
+19:58
+which is a modifier of the key and by
+20:01
+specifying that context you can make it
+20:03
+so a specific pointer can not use in a
+20:05
+different way than its intended to be
+20:07
+used the algorithm that arm suggests is
+20:12
+karma but I do not believe at police
+20:15
+using Karma
+20:16
+maybe they are I I doubt that's the case
+20:22
+the backwards edge GFI will actually
+20:27
+sign the pointer every time you enter a
+20:29
+function the the return pointer and then
+20:31
+it will store it on the stack normally
+20:33
+and when you return from that function
+20:36
+it will validate the pointer before
+20:39
+doing indirect branch in the rat and you
+20:42
+can see that the instruction is called
+20:43
+rat a B which means that they actually
+20:46
+use the B key which is a secondary key
+20:49
+and they will actually use a stack
+20:52
+pointer as well as the context value so
+20:55
+if you have a stack frame and another
+20:57
+stack frame you're not actually able to
+20:59
+swap return addresses between the two
+21:01
+but you need to have two stack frames of
+21:04
+the same depth in order to be able to
+21:05
+pull it off so you might be able to
+21:09
+carry out some pointer substitution
+21:11
+attacks here but I don't think it's a
+21:14
+viable strategy in C++ do chaco indirect
+21:20
+branches they will actually authenticate
+21:22
+your V table pointer first with the a
+21:25
+key and then they will use the pointer
+21:29
+to the
+21:30
+virtual function pointer as the context
+21:33
+for the authentication on the indirect
+21:35
+branch and additionally they will tag
+21:38
+the context the specific value which I
+21:41
+believe is per vehicle specific and
+21:45
+again this all uses the a key and I
+21:48
+believe it's really difficult to pull
+21:50
+off pointer replacement attacks here
+21:51
+because yes every vehicle will have a
+21:54
+different context but you might still
+21:56
+have some leeway to do funny stuff with
+22:00
+additionally the Objective C is present
+22:03
+in on us and when you invoke a method in
+22:06
+Objective C you will go to this function
+22:09
+called Objective C message send and it
+22:11
+will get the class pointer from your
+22:14
+object and from the class pointer there
+22:16
+is a fast method cache
+22:19
+it will iterate the cache and the only
+22:21
+point that which the authentication
+22:23
+happens is when you do the indirect
+22:25
+branch where the method pointer and the
+22:27
+end the pointer to the entry are used in
+22:32
+the branch and the pointer to the entry
+22:33
+is used as the context in this specific
+22:35
+case and you can know that they use the
+22:38
+B key here and I believe there might be
+22:42
+tricks that can be pulled off here as
+22:44
+the the only place where authentication
+22:48
+happens is on the branch itself and this
+22:52
+is a simplest case in a C indirect
+22:54
+branch they do not have any context and
+22:57
+they cannot use any context and they
+22:59
+will use the a key for the branch you
+23:02
+can see we just have a fetch for a
+23:04
+function pointer and then a branch and
+23:07
+with this sort of scenario you can
+23:09
+actually replace your function pointer
+23:11
+with any other valid function that might
+23:14
+be invoked this way and it will work
+23:20
+additionally there are some special
+23:21
+cases and API is in iùs which deal with
+23:24
+pointers in ways that might not be
+23:27
+normal ones for instance you have tried
+23:30
+set context and pthread create which
+23:33
+will always use a
+23:35
+he's so no context and a key so all
+23:40
+these AP is might actually be used as
+23:42
+invocation points for a key sign things
+23:45
+and an kernel-mode will actually have
+23:48
+thread ap is that will also check
+23:52
+against the a key even if the a key in
+23:54
+kernel mode and the a cane user mode are
+23:56
+are different additionally there's some
+24:00
+internal context saving stuff in the OS
+24:03
+kernel which will store thread States
+24:07
+when scheduling things out and they use
+24:10
+the G key in order to sign those and
+24:15
+point authentication actually has a few
+24:18
+weak points the number one strategy is
+24:21
+pointer replacement attacks where you
+24:24
+will lick a sign pointer and then you
+24:26
+will reuse it in a different place as
+24:29
+long as the key and the context is the
+24:31
+same additionally you will want to carry
+24:34
+out a pointer forger attack at some
+24:36
+point in order to be able to perform
+24:38
+wrap and jump and to do that you will
+24:42
+have to find a signing gadget additional
+24:48
+text maybe brute force which I do not
+24:50
+consider Bible in case your advanced
+24:52
+attacker because I mean it might be
+24:55
+doable but it could take several minutes
+24:57
+to do it and I do not believe that's a
+24:59
+realistic time frame
+25:02
+additionally there might be space
+25:03
+attacks but I doubt the Apple didn't
+25:06
+consider those even if it does look like
+25:08
+they only use 64-bit keys I'm pretty
+25:11
+sure they're doing some weird stuff in
+25:13
+there silicon in order to add entropy
+25:17
+but I still do not believe that's
+25:19
+realistic
+25:19
+I mean to 264 operations will cost you a
+25:22
+lot and it will take time but maybe it's
+25:27
+possible I'm not sure and control flow
+25:32
+integrity will actually impact the
+25:34
+attackers in several different ways
+25:37
+the way C++ periodicals are checked will
+25:40
+actually I believe kill a lot of
+25:42
+vulnerability classes web curb bugs it's
+25:46
+like dumb bugs are very commonly used
+25:48
+after free virtual colon vacations I
+25:51
+believe those are very hard to exploit
+25:53
+now except for some special scenarios
+25:56
+and there's also a io kit which is
+25:58
+kernel mode C++ used in iOS that is also
+26:03
+very prone to use after free and again
+26:06
+I'm really doubtful that these
+26:07
+vulnerabilities are now good enough to
+26:10
+be exploited in most of the cases but
+26:12
+you can always find better bugs if you
+26:14
+look hard enough
+26:17
+additionally we mentioned two different
+26:19
+keys key a and key B the main difference
+26:22
+between the two is a key a is actually
+26:24
+shared across different processes so
+26:26
+once you have a key forgery pointer
+26:30
+forgery capability for key a you will be
+26:33
+able to reuse that for every single
+26:34
+thing in the system so this is actually
+26:37
+really useful in case you want to
+26:39
+perform a user mod sandbox bypass in
+26:41
+order to elevate your privileges
+26:43
+additionally javascriptcore makes very
+26:45
+heavy use of pointers indication and
+26:48
+they will actually prevent a lot of
+26:51
+trigger attacks I believe in the latest
+26:55
+few updates they actually improve this
+26:57
+quite a bit
+27:00
+additionally I believe some people might
+27:03
+be thinking it's a good idea to replace
+27:05
+stack cookies with pointers indication
+27:07
+and I do not believe this is a good idea
+27:10
+oh as the return address is usually
+27:13
+stored as the very last thing in a stack
+27:15
+frame while stack cookies can be placed
+27:17
+surgically in order to protect known
+27:21
+instruction pointer registers that might
+27:23
+be skilled on the stack
+27:28
+and the biggest impact I believe that
+27:31
+CFI will have in the world of iOS
+27:33
+attackers is that it's gonna make life a
+27:37
+lot more difficult for the remote code
+27:39
+execution step of it and data only
+27:43
+attacks I do not believe those are Bible
+27:45
+in order to be able to load your payload
+27:47
+in jibt memory and do kernel exploits
+27:49
+and your toolkit however we want to call
+27:53
+it however once you have a single valid
+27:56
+way to jump into an unprotected pointer
+28:01
+you will actually be able to easily
+28:04
+Forge pointers from there and
+28:07
+additionally you have a lot of entry
+28:09
+points that are not recompiled against
+28:11
+new ABI we're point authentication is
+28:13
+disabled such as legacy apps hand
+28:16
+written assembly sometimes might use
+28:19
+indirect branches without being
+28:21
+protected and you do have a JIT that you
+28:24
+might be able to trick somehow into
+28:26
+emitting I don't know that they get it
+28:27
+branch if you actually wanted to go with
+28:34
+a data only way the number one issue
+28:36
+you'd have is the ability to issue
+28:38
+Cisco's from WebKit however iOS is
+28:43
+actually designed around the concept of
+28:45
+message passing so Cisco's are not the
+28:47
+only thing you might want to do and it's
+28:51
+actually really common to be able to
+28:52
+invoke the cisco mac message once you
+28:56
+have like any sort of app or daemon
+28:59
+running on us and once you have
+29:02
+arbitrary read write you're actually
+29:04
+able to rewrite the stack frame of a
+29:06
+loop with matt message in order to send
+29:08
+multiple messages and possibly use this
+29:11
+as a way to obtain pointer forgery
+29:13
+additionally a vast majority of the
+29:15
+attacks were faced on kernel mode ius as
+29:17
+well as user mode sandbox escape is
+29:19
+actually always reached through this
+29:21
+cisco so it's probably a good strategy
+29:25
+although I never try to do data only I
+29:29
+preserve forgery attacks and for a real
+29:34
+life attack that was released very
+29:36
+recently by Brendan added
+29:38
+at Project zebra I will describe the way
+29:41
+the attack will work well had worked yes
+29:46
+Brandon had that releases attack in
+29:48
+January and it's a very first point
+29:50
+authentication attack known to the
+29:53
+public and it was released actually to
+29:56
+get kernel mode code execution in a in a
+30:00
+way that allows you to invoke arbitrary
+30:01
+gadget for his voucher swap exploit and
+30:04
+the trick he used is really cool
+30:07
+it's a really really really cool
+30:09
+technique and he started by looking for
+30:15
+a signing gadget that you could invoke
+30:17
+from a signed branch of course there's
+30:21
+no trivial ones that just lay around and
+30:24
+allow you to sign whatever you want
+30:25
+however there are some cases where the
+30:30
+kernel will actually have to take a
+30:31
+signed address and change the signature
+30:34
+to a different context or key and this
+30:38
+is actually represented by a sequence of
+30:41
+up codes the LT up code and pass the up
+30:44
+code which will the first one will
+30:46
+actually authenticate your pointer and
+30:48
+then strip the authentication code and
+30:51
+the second will overwrite the the top
+30:56
+bits of the pointer and put a new
+30:59
+authentication code in them and it looks
+31:03
+straightforward however what if the
+31:08
+first up code fails the check well it's
+31:12
+not actually branch or any indirect
+31:14
+memory load so it will actually do
+31:18
+nothing it will just set some extra bits
+31:21
+in an invalid way and it's gonna hope
+31:25
+that the next up code the pass see will
+31:27
+take that into consideration and
+31:29
+propagate the error further however it
+31:32
+will do that by flipping a single bit
+31:35
+after applying the valid signature on
+31:37
+top of the pointer so if you specify an
+31:41
+invalid signature to begin with you will
+31:43
+get a signature which is also invalid
+31:48
+just because one of the bits is and so
+31:50
+you can just flip that bit back and now
+31:52
+you have pointer forgery on arm 8.3 he's
+31:59
+attack relied on a function in the
+32:01
+kernel called see CTL unregistered a ID
+32:04
+which will take a pointer and we will
+32:07
+turn into a a key signed 0 context
+32:10
+pointer and you can actually invoke that
+32:13
+as a legitimate part of the LD l2tp the
+32:17
+main module stop which happens to be a
+32:19
+function for which there is a valid
+32:21
+signed pointer present in the address
+32:23
+space so as long as you have a read
+32:25
+primitive you are able to lick the
+32:26
+pointer to the function and just invoke
+32:29
+it with any impact branch that has a key
+32:33
+and zero context and once you invoke
+32:36
+this it will actually store the results
+32:38
+of the path see up code somewhere in
+32:41
+memory you can just read it flip the bit
+32:43
+back and yes you can use this in order
+32:45
+to sign a pointer to a branch which
+32:47
+which is not authenticated and from
+32:50
+there you can just reuse that pointer
+32:52
+over and over in order to branch
+32:55
+anywhere you want into the kernel mode
+32:57
+address space
+33:00
+additionally you can actually use normal
+33:04
+job and from there you can invoke
+33:07
+another signing gadget which might be
+33:10
+more convenient to use for instance just
+33:12
+invoking the path C up code after the
+33:14
+outside and you will be able to sign
+33:18
+founders over and over we no effort the
+33:24
+attack was actually fixed by adding a
+33:25
+filler case after the authentication
+33:28
+instruction however the strategy cannot
+33:31
+still be used today as a pointer validly
+33:34
+Oracle the big issue is that the failure
+33:37
+case is not fatal while in a normal
+33:40
+authentication use such as memory access
+33:42
+or branch once the authentication fails
+33:46
+the pointer that is supplied to the
+33:48
+branch or the load is invalid and so the
+33:50
+the program will crash immediately in
+33:52
+this case it won't so even if the
+33:54
+pointer is invalid all it's gonna happen
+33:56
+is that it's gonna not output
+33:59
+signed address so if you just keep
+34:02
+trying until you see a sign address as
+34:04
+the output you will yeah actually have
+34:07
+pounder forgery all over again and I
+34:09
+think Brenda mentioned that these would
+34:10
+take about fifteen minutes which I mean
+34:13
+it's not realistic for us attacker but
+34:15
+it might be realistic for just personal
+34:17
+use and research but this is not the
+34:21
+only thing that I pull changed in the
+34:23
+new chips there are some kernel mode
+34:27
+changes the P map and P map is the code
+34:32
+that is in charge of keeping page tables
+34:35
+you know in aus and page tables are
+34:39
+actually involved in a bunch of code
+34:41
+sign related tasks and actually the code
+34:45
+sign kernel driver delegated a lot of
+34:48
+trust related things to be map in is 12
+34:53
+and then arbitrary physical right would
+34:55
+actually be able to just alter the page
+34:57
+tables and skip all the code sign issues
+35:00
+however I pulled out of that and now
+35:03
+every single time that you want to touch
+35:06
+the page tables you actually have to
+35:08
+invoke these functions which are in
+35:10
+their own code segment additionally as I
+35:14
+mentioned adding trusted hashes to your
+35:17
+kernel now requires calling into one of
+35:20
+these functions in this p map thing and
+35:23
+in order to enter any of those functions
+35:25
+you actually have to branch into a thing
+35:27
+called ppl dispatch which is a
+35:29
+trampoline that will change a system
+35:31
+register and essentially once you change
+35:34
+the system register in a specific way
+35:36
+you're gonna be able to alter page
+35:38
+tables otherwise every time you try to
+35:40
+alter some of that data the system will
+35:43
+actually just crash and yeah you're not
+35:45
+going to be able to inject code by just
+35:47
+having a read write anymore additionally
+35:51
+all the routines the are expose will
+35:52
+validate input to some extent so you can
+35:54
+just create like a fake structure
+35:56
+containing a fake set of page tables but
+36:00
+you must use real data that it actually
+36:04
+keeps track of the structures that
+36:05
+you're allowed to pass it
+36:10
+and once you enter ppl you're gonna run
+36:13
+the first section of code which sets the
+36:18
+silic system register to specific
+36:19
+pattern which is 4 4 5 5 4 4 5 5 6 4 6 6
+36:26
+you can see that when he exits there is
+36:29
+actually a small difference where the
+36:34
+the firfer 5 5 becomes a 4 4 5 4 and
+36:39
+that bit is in charge of telling the
+36:42
+system whether you're in ppl mode the
+36:44
+ppl mode allows you yeah alter page
+36:47
+tables so I'm not sure why they chose
+36:49
+that specific bit pattern but
+36:53
+additionally once you encounter an
+36:57
+exception you will actually the curtain
+37:00
+will actually check whether you're in
+37:02
+such a special mode and if you're in
+37:04
+that mode it will branch to exception
+37:06
+handlers to cific to that mode so these
+37:11
+would kill a bunch of tricks that you
+37:13
+could use in order to bypass such a
+37:15
+mitigation but it is important to remind
+37:20
+that everything is still in normal l1
+37:22
+which is the equivalent of bring 0 as
+37:24
+far as arm 64 goes and it all relies on
+37:28
+custom silicon logic imply implemented
+37:31
+by Apple it's pretty cool stuff but the
+37:35
+design does have weaknesses however it
+37:39
+is a work in progress and I do believe
+37:41
+that the iOS game will get exponentially
+37:43
+more difficult as time goes on to play
+37:47
+however these specific mitigation is
+37:50
+mostly seeing Americans for job records
+37:52
+because fundamentally if you're trying
+37:56
+to say gather data on somebody once you
+38:00
+get code execution as root out of the
+38:03
+sandbox that's actually all you need
+38:05
+that you don't even need to go kernel
+38:06
+mode however it does make rootkit
+38:10
+attacks a bit trickier to pull off
+38:13
+and realistically once you bypass GFI
+38:17
+you can still invoke the peanut
+38:20
+functions in order to add frosted hashes
+38:23
+your kernel and load your own code
+38:25
+without violating code sign so what does
+38:30
+the future have for iOS attackers at the
+38:34
+end of the day I believe iOS attackers
+38:36
+are fighting a losing battle however the
+38:40
+rate at which the battle is being lost
+38:41
+is very fast in some cases very slow in
+38:45
+others and I always have a thought in
+38:48
+the back of my head that tells me hey
+38:50
+memory corruption is about to die in a
+38:51
+couple of years they're never gonna be
+38:53
+able to hack the new chip next year but
+38:58
+I've actually been thinking these for
+38:59
+the past three years and every single
+39:02
+time you know there was a way to carry
+39:06
+on my research and realistically web
+39:11
+browsers have so much complexity there
+39:13
+is no way in hell web browsers are ever
+39:16
+gonna be secure so I believe yeah life
+39:19
+is gonna be ok for people that do one
+39:20
+click but 0 click scenarios will
+39:23
+probably survive for a while but it's
+39:26
+gonna be more and more difficult as time
+39:28
+goes on and the rate at which zero click
+39:31
+is getting more difficult is a lot more
+39:32
+difficult than one click additionally I
+39:36
+do believe Joe Brooks are likely to fade
+39:37
+away at some point in the future which
+39:40
+makes me really sad because I do
+39:42
+appreciate Joburg Salah and they let me
+39:45
+play with apples you know internal
+39:47
+engineering and I believe that breaking
+39:51
+it is actually an act of respect and
+39:53
+curiosity towards the people that made
+39:55
+these engineering and physical attacks
+39:58
+are still gonna be viable for a bunch of
+40:01
+time I believe because at the end of the
+40:04
+day you can always put first and it
+40:07
+doesn't matter to you if it takes half
+40:09
+an hour to do it because the shipment
+40:11
+will cause well we would take a day at
+40:13
+least
+40:16
+and individual researchers which are
+40:19
+able to go through all this stuff still
+40:21
+exist to this date
+40:23
+however it's getting tougher and tougher
+40:25
+and at some point you have to take into
+40:29
+account the fact that these takes
+40:31
+serious amounts of time and I do believe
+40:36
+the number one concern for Eris
+40:38
+attackers is to strike a good work-life
+40:40
+balance because I mean if you do too
+40:44
+much life you're gonna not be able to
+40:48
+catch up with all these medications
+40:49
+however if you do too much work you're
+40:51
+gonna hate this work so realistically I
+40:55
+do not think this is maintainable and
+40:57
+we'll probably need better jobs but I
+41:01
+would rather wait another few years for
+41:03
+that so thank you for attending the code
+41:13
+and I do want to thank Apple because I
+41:16
+mean I asked exploitation is seriously
+41:17
+fun and I do believe it's one of the
+41:19
+best platforms to research on I really
+41:23
+do believe it's one of the best things
+41:25
+to do with my time so I would like it
+41:30
+and I also respect all the iOS attackers
+41:32
+that are out there because you know I
+41:35
+understand what you're going through
+41:37
+and please don't hack my phone I'm not
+41:39
+actually that interesting and I do want
+41:42
+to shout out to Brandon at that because
+41:44
+his work on pact was actually really
+41:46
+interesting and I especially appreciate
+41:50
+the way he wrote up the process that he
+41:53
+went through in order to analyze how
+41:55
+these features work because it's often
+41:58
+an untold story the the process of
+42:01
+experimentation in order to learn
+42:03
+fundamentally black box security
+42:05
+features as much as it might seem
+42:10
+trivial for people acquainted with this
+42:12
+sort of mentality I believe it's really
+42:14
+difficult to find you know stories of
+42:18
+people that teach you how to do that and
+42:22
+so I really respect him I think yeah his
+42:25
+attack is probably one of the coolest
+42:27
+things I've seen in the past few years
+42:30
+and I I do want to get people involved
+42:36
+into iOS research again I do believe
+42:39
+it's really fun it might seem complex
+42:41
+but things actually make a lot of sense
+42:43
+if you understand the big pictures the
+42:47
+big picture and I do want to thank the
+42:49
+Nano development team because most of my
+42:51
+exploits I've actually written in Hollow
+42:53
+a significant part of them and it is the
+42:56
+best text editor and you have nothing
+42:58
+you can say to disprove me so yeah Nano
+43:04
+theme is evil
+43:06
+[Applause]
+43:10
+[Music]
+English (auto-generated)
+
