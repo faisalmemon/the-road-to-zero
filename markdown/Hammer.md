@@ -51,10 +51,12 @@ This program allows a user program to get the kernel to expose memory values it 
 The following command places a local copy of the exploit write-up in our local directory, known as the mirror `(-m)` command.
 
 ```
-➜  scratch searchsploit -m 45649
-  Exploit: Apple iOS - Kernel Stack Memory Disclosure due to Failure to Check copyin Return Value
+# searchsploit -m 45649
+  Exploit: Apple iOS - Kernel Stack Memory Disclosure due to
+ Failure to Check copyin Return Value
       URL: https://www.exploit-db.com/exploits/45649
-     Path: /Users/faisalm/dev/exploitdb/exploits/ios/dos/45649.txt
+     Path:
+ /Users/faisalm/dev/exploitdb/exploits/ios/dos/45649.txt
 File Type: ASCII text, with CRLF line terminators
 
 Copied to: /Users/faisalm/dev/scratch/45649.txt
