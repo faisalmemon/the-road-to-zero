@@ -40,7 +40,7 @@
 <li><a href="#market-evolution">Market Evolution</a></li>
 <li><a href="#monetary-rewards">Monetary Rewards</a></li>
 <li><a href="#ethics">Ethics</a></li>
-<li><a href="#burn-out-and-mental-health">Burn out and mental health</a>
+<li><a href="#burn-out">Burn Out</a>
 <ul>
 <li><a href="#looking-after-the-body">Looking after the body</a></li>
 <li><a href="#optimizing-the-mind">Optimizing the mind</a></li>
@@ -49,7 +49,11 @@
 </ul></li>
 <li><a href="#resources">Resources</a></li>
 </ul></li>
-<li><a href="#the-hammer">The Hammer</a></li>
+<li><a href="#the-hammer">The Hammer</a>
+<ul>
+<li><a href="#getting-exploits">Getting Exploits</a></li>
+<li><a href="#copyin_leak-exploit-45649"><code>copyin_leak</code> Exploit 45649</a></li>
+</ul></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
 </nav>
@@ -103,7 +107,7 @@
 <p>There are a lot of ethical consideration surrounding Zero Day Vulnerabilities (hereafter we shall say 0-day). The consensus is that you should not openly discuss or explain vulnerabilities until the bug is 90 days since disclosure (i.e. a 90-day). So we don’t place 0-days in this text. But we create software modules of our own, reachable from a non-compromised device. These modules emulate closely the properties of an exposed subsystem so we can discuss, explore and compromise “our own code”. We also discuss past vulnerabilities that have been patched by Apple.</p>
 <p>Will this book lead to a proliferation of 0-days? My opinion is that the malicious actors already have the tools and knowledge they need. It is the wider engineering community that need to up-skill in this area. Most of these people will not be malicious. They will enhance and improve the security of systems.</p>
 <p>In truth, we often tell ourselves stories that make us comfortable with what we are doing, particularly if our pay-cheque aligns with that. The best of intentions can result in adverse outcomes, as well as the converse. For example, a researcher working on their PhD might see a bug class, but just have time to explore one fully, writing up a Proof of Concept (POC), which is duly responsibly disclosed, and patched, before being published as a finding by the researcher. Another engineer might read the write-up, look at the binary diff related to the fix, notice associated vulnerabilities, and produce a variant POC and sell that to a market place for significant money. At that point, the vulnerability could be combined with others and militarized. The question is then who made that weapon, and would it have come to existence anyway? Such a weapon could be used to save lives, lose lives, start conflict or avoid conflict depending on the circumstances politically.</p>
-<h2 id="burn-out-and-mental-health">Burn out and mental health</h2>
+<h2 id="burn-out">Burn Out</h2>
 <p>We haven’t even started yet, and so why are we bringing up the topic of burn out?</p>
 <p>When you start training your mind to think like a machine thinks, or start working through the details of a subsystem in great deal, it can be both engaging and exhausting. After a period of youthful exuberance can be a down hill descent of despair when you can nearly solve something, but cannot quite get it done.</p>
 <p>As ever, there is a way to hack around such problems!</p>
@@ -123,10 +127,59 @@
 <p>This approach is understandable from the writer’s perspective. If you are a researcher you will naturally seek out underlying technologies, documentation and reading materials as part of your research journey. The writer’s audience will be such researchers. So the writer will not dwell on the supporting techniques and technologies.</p>
 <p>Since iOS and macOS use many niche technologies, or use standard techniques with some Apple ecosystem unique twists, it is not so easy to do your background reading.</p>
 <p>In this chapter we shall look at an exploit write-up. Our purpose is not to understand the exploit as such, but to survey the techniques and technologies at play. It will provide us the motivation to explore such items in subsequent chapters knowing that this knowledge will then help us circle back and understand the originally presented exploit.</p>
+<h2 id="getting-exploits">Getting Exploits</h2>
+<p>Exploits can be downloaded from the Exploit Database (<span class="citation" data-cites="exploitdb">(“Exploit Database Git Repository” n.d.)</span>). This is a valuable resource and one we shall often refer to. The exploit database has a search tool, <code>searchsploit</code>. If we install <code>searchsploit</code> from <span class="citation" data-cites="exploitdb">(“Exploit Database Git Repository” n.d.)</span> and configure our <code>~/.searchsploit_rc</code> file then we can easily look up exploits.</p>
+<p>This is a search for items matching <code>ios</code> and <code>dos</code>:</p>
+<pre><code>searchsploit ios dos | less
+------------------------------- ---------------------------------
+ Exploit Title                 |  Path
+------------------------------- ---------------------------------
+Apple iOS - Kernel Stack Memor | ios/dos/45649.txt
+Apple iOS 1.1.2 - Remote Denia | hardware/dos/4978.html
+Apple iOS 1.1.4/2.0 / iPod 1.1 | hardware/dos/32341.html
+Apple iOS 11.2.5 / watchOS 4.2 | multiple/dos/44215.m
+Apple iOS 4.0.3 - DPAP Server  | ios/dos/5151.pl
+Apple iOS 5.1.1 Safari Browser | ios/dos/18931.rb
+Apple iOS &lt; 10.3.2 - Notificat | ios/dos/42014.txt
+Apple iOS Kernel - Use-After-F | ios/dos/45652.c
+Apple iOS Mobile Safari - Memo | ios/dos/31057.html
+Apple iOS Safari - &#39;decodeURI&#39; | hardware/dos/15794.php
+Apple iOS Safari - &#39;decodeURIC | hardware/dos/15796.php
+Apple iOS Safari - &#39;JS .&#39; Remo | hardware/dos/15805.php
+Apple iOS Safari - Bad &#39;VML&#39; R | ios/dos/11890.txt
+Apple iOS Safari - body alink  | hardware/dos/15792.php
+Apple iOS Safari - Remote Deni | ios/dos/11891.txt
+Apple iOS/macOS - Kernel Memor | multiple/dos/45651.c
+Apple iOS/macOS - Sandbox Esca | multiple/dos/45648.txt
+Apple iOS/macOS - Sandbox Esca | multiple/dos/45650.txt
+Apple Mac OSX - IOSCSIPeripher | osx/dos/39376.c</code></pre>
+<p>Exploits can be searched for, downloaded, and then explored. Each exploit has a number associated with it, known as the <code>EDB-ID</code>.</p>
+<h2 id="copyin_leak-exploit-45649"><code>copyin_leak</code> Exploit 45649</h2>
+<p>This program allows a user program to get the kernel to expose memory values it should not be able to see. In that sense it is an information disclosure “leak”. The kernel routine used to do this is <code>copyin</code> hence it has been called a <code>copyin_leak</code>.</p>
+<p>The following command places a local copy of the exploit write-up in our local directory, known as the mirror <code>(-m)</code> command.</p>
+<pre><code>➜  scratch searchsploit -m 45649
+  Exploit: Apple iOS - Kernel Stack Memory Disclosure due to
+ Failure to Check copyin Return Value
+      URL: https://www.exploit-db.com/exploits/45649
+     Path:
+ /Users/faisalm/dev/exploitdb/exploits/ios/dos/45649.txt
+File Type: ASCII text, with CRLF line terminators
+
+Copied to: /Users/faisalm/dev/scratch/45649.txt</code></pre>
+<p>From looking at the text file, we find we can download the actual Proof of Concept (POC) from a Git Hub web address. This provides us an app to run on simulator or on an iDevice.</p>
+<p>This POC has been tested on</p>
+<pre><code>iPod touch (7th generation)
+iOS 13.5 (17F75)</code></pre>
+<p>and</p>
+<pre><code>iPod touch (7th generation) simulator
+iOS 14.4 (18D46)</code></pre>
 <h1 class="unnumbered" id="bibliography">Bibliography</h1>
 <div id="refs" class="references hanging-indent" role="doc-bibliography">
 <div id="ref-offensiveworklovehate">
 <p>Dullien, Thomas. 2021. “OffensiveCon20 - Halvar Flake - Keynote - Why I Love Offensive Work, Why I Don’t Love Offensive Work.” <a href="https://www.youtube.com/watch?v=8QRnOpjmneo">https://www.youtube.com/watch?v=8QRnOpjmneo</a>.</p>
+</div>
+<div id="ref-exploitdb">
+<p>“Exploit Database Git Repository.” n.d. Accessed 2021.</p>
 </div>
 <div id="ref-gpz">
 <p>“Google Project Zero.” 2021. <a href="https://googleprojectzero.blogspot.com/p/about-project-zero.html">https://googleprojectzero.blogspot.com/p/about-project-zero.html</a>.</p>
