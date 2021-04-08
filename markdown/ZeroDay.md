@@ -1,4 +1,5 @@
 # Zero Day
+\pagenumbering{arabic}
 
 ## What is a Zero Day?
 
@@ -43,7 +44,7 @@ Will this book lead to a proliferation of 0-days?  My opinion is that the malici
 
 In truth, we often tell ourselves stories that make us comfortable with what we are doing, particularly if our pay-cheque aligns with that.  The best of intentions can result in adverse outcomes, as well as the converse.  For example, a researcher working on their PhD might see a bug class, but just have time to explore one fully, writing up a Proof of Concept (POC), which is duly responsibly disclosed, and patched, before being published as a finding by the researcher.  Another engineer might read the write-up, look at the binary diff related to the fix, notice associated vulnerabilities, and produce a variant POC and sell that to a market place for significant money.  At that point, the vulnerability could be combined with others and militarized.  The question is then who made that weapon, and would it have come to existence anyway?  Such a weapon could be used to save lives, lose lives, start conflict or avoid conflict depending on the circumstances politically.
 
-## Burn out and mental health
+## Burn Out
 
 We haven't even started yet, and so why are we bringing up the topic of burn out?
 
