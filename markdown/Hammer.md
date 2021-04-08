@@ -15,6 +15,7 @@ This is a valuable resource and one we shall often refer to.
 The exploit database has a search tool, `searchsploit`.
 If we install `searchsploit` from @exploitdb and configure our `~/.searchsploit_rc` file then we can easily look up exploits.
 
+This is a search for items matching `ios` and `dos`:
 ```
 searchsploit ios dos | less
 ------------------------------- ---------------------------------
@@ -60,3 +61,14 @@ Copied to: /Users/faisalm/dev/scratch/45649.txt
 ```
 
 From looking at the text file, we find we can download the actual Proof of Concept (POC) from a Git Hub web address.  This provides us an app to run on simulator or on an iDevice.
+
+This POC has been tested on
+```
+iPod touch (7th generation)
+iOS 13.5 (17F75)
+```
+and
+```
+iPod touch (7th generation) simulator
+iOS 14.4 (18D46)
+```
