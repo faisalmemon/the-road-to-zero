@@ -182,7 +182,9 @@ Now we just need to make sense of it all.
 
 ## The road ahead
 
-Having learnt where we can find Exploits, looking at our first exploit, and then seeing what technologies it relies upon, we can now chart out the road ahead.
+Having learnt where we can find Exploits, looking at our first
+ exploit, and then seeing what technologies it relies upon, we
+ can now chart out the road ahead.
 
 ### The knowledge we require
 
