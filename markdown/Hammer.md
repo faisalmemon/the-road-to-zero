@@ -178,7 +178,11 @@ That's the end of the write-up.  It covers a lot of ground.  In
   - race conditions and brute forcing
   - error handling or its absence
 
-No one book can cover all the above topics in depth.  But with
+Now we just need to make sense of it all.
+
+## Summary
+
+No one book can cover all the required topics in depth.  But with
  the appropriate hacker mindset, a small subset of a large number
  of technologies can be learnt within the confines of one book.
 
@@ -195,21 +199,28 @@ If we are a professional software engineer, and look at Proof of
  chafes at our engineering sensibilities.  Compiler warning are
  ignored, variable names are terse or badly named.  Functions are
  badly formed, with strange names, and dispersed business logic.
- Hardcoded values are rampant.  But the programs do "clever"
+ Hardcoded values are rampant.  
+
+ But the programs do "clever"
  things and use techniques often advanced programmers are unaware
  of.  This is really a reflection of the patchwork of in-depth
  skills a hacker will acquire.  Brilliance in some aspects, and
  beginner in others.  Of course, hackers can also be skilled
- software engineers or system administrators.  Such skills can be
+ software engineers, system administrators, or have another
+ profession.  Such skills can be
  complementary but are not foundational.  Hacker skills are not
  built on top of a layer of great system administration skills,
  nor software engineering skills.
 
 There is a meta skill that underpins security research.  That is,
- reading.  We have a goal to reach but don't know half of the
+ reading.  
+
+We have a goal to reach but don't know half of the
  technologies needed.  So we just do an internet search, pull
  down freely available learning material, and then skim through
- the contents.  The canonical texts are usually the best.  In the
+ the contents.  
+
+The canonical texts are usually the best.  In the
  first iteration it is usually a matter of downloading a manual
  of hundreds of pages.  Then pressing Page-Down repeatedly and
  skimming through.  Maybe 10 seconds per page.  We are building
@@ -218,8 +229,33 @@ There is a meta skill that underpins security research.  That is,
  but enough knowledge to know a good search query to get into
  such a topic in more depth.
 
-Looking at canonical materials (that is, the text that most fully describes the content with a minimal amount of simplification) allows hackers to see systems as they really are, rather than an abstraction of what they are.  Software engineering is really the construction of layers of abstraction to get to a point of understanding of the task most naturally in the problem space we are working with.  Researchers need to think about computers in the way they actually work, with all the abstractions stripped bare.  So for example, when programmers see a virtual function in C++, they know that they need to look at what class is being messaged to understand what function the method will invoke.  When hackers see a virtual function, they see that there must be a Virtual Function Table where the control flow is switched to the function that is desired.  If the strategy in the mind of the researcher is to re-direct program control, then inspecting the code for virtual functions can be a goal.
-Furthermore, reading a C++ manual which tells about how late dispatch works (as explained above with Virtual Function tables) allows those with a hacker mentality to make a mental note of the implied trust relationship in that code at such points.  The Virtual Function Table if subverted will change the operation of the program.
+Looking at canonical materials (that is, the text that most fully
+ describes the content with a minimal amount of simplification)
+ allows hackers to see systems as they really are, rather than an
+ abstraction of what they are.  
+
+Software engineering is really
+ the construction of layers of abstraction to get to a point of
+ understanding of the task most naturally in the problem space we
+ are working with.  Researchers need to think about computers in
+ the way they actually work, with all the abstractions stripped
+ bare.  
+
+ For example, when programmers see a virtual function
+ in C++, they know that they need to look at what class is being
+ messaged to understand what function the method will invoke.
+ When hackers see a virtual function, they see that there must be
+ a Virtual Function Table where the control flow is switched to
+ the function that is desired.  If the strategy in the mind of
+ the researcher is to re-direct program control, then inspecting
+ the code for virtual functions can be a goal.
+ 
+Furthermore, reading a C++ manual which tells about how late
+ binding works (as explained above with Virtual Function tables)
+ allows those with a hacker mentality to make a mental note of
+ the implied trust relationship in that code at such points.  The
+ Virtual Function Table if subverted will change the operation of
+ the program.
 
 Looking at existing exploits teaches what are the kinds of things
  about technologies we have that need to be learnt.  That is so
