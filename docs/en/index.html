@@ -52,7 +52,10 @@
 <li><a href="#the-hammer">The Hammer</a>
 <ul>
 <li><a href="#getting-exploits">Getting Exploits</a></li>
-<li><a href="#copyin_leak-exploit-45649"><code>copyin_leak</code> Exploit 45649</a></li>
+<li><a href="#copyin_leak-exploit-45649"><code>copyin_leak</code> Exploit 45649</a>
+<ul>
+<li><a href="#copyin_leak-write-up"><code>copyin_leak</code> write-up</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
@@ -173,6 +176,69 @@ iOS 13.5 (17F75)</code></pre>
 <p>and</p>
 <pre><code>iPod touch (7th generation) simulator
 iOS 14.4 (18D46)</code></pre>
+<h3 id="copyin_leak-write-up"><code>copyin_leak</code> write-up</h3>
+<p>Here is the verbatim text for the write-up of this leak. The purpose for including it is to show the “level” at which exploit research is aimed at. The main aim of this book is to bring ourselves up to the same level so we can appreciate this piece of research, and then move forwards onto exploring and finding our own vulnerabilities.</p>
+<blockquote>
+<p>Here’s a code snippet from sleh.c with the second level exception handler for undefined instruction exceptions:</p>
+</blockquote>
+<pre><code> static void
+ handle_uncategorized(arm_saved_state_t *state, boolean_t
+ instrLen2)
+ {
+   exception_type_t       exception = EXC_BAD_INSTRUCTION;
+   mach_exception_data_type_t   codes[2] = {EXC_ARM_UNDEFINED};
+   mach_msg_type_number_t     numcodes = 2;
+   uint32_t          instr;   &lt;------ (a)
+
+   if (instrLen2) {
+     uint16_t  instr16;
+     COPYIN(get_saved_state_pc(state), (char *)&amp;instr16,
+ sizeof(instr16));
+
+     instr = instr16;
+   } else {
+     COPYIN(get_saved_state_pc(state), (char *)&amp;instr,
+ sizeof(instr));  &lt;------- (b)
+   }
+
+ ....
+
+  else {
+   codes[1] = instr;   &lt;------ (c)
+  }
+ }
+
+ exception_triage(exception, codes, numcodes);  &lt;-------- (d)</code></pre>
+<blockquote>
+<p>At (a) the uint32_t instr is declared uninitialized on the stack. At (b) the code tries to copyin the bytes of the exception-causing instruction from userspace note that the COPYIN macro doesn’t itself check the return value of copyin, it just calls it. At (c) instr is assigned to codes[1], which at (d) is passed to exception_triage.</p>
+</blockquote>
+<blockquote>
+<p>that codes array will eventually end up being sent in an exception mach message.</p>
+</blockquote>
+<blockquote>
+<p>The bug is that we can force copyin to fail by unmapping the page containing the undefined instruction while it’s being handled. (I tried to do this with XO memory but the kernel seems to be able to copyin that just fine.)</p>
+</blockquote>
+<blockquote>
+<p>This PoC has an undefined instruction (0xdeadbeef) on its own page and spins up a thread to keep switching the protection of that page between VM_PROT_NONE and VM_PROT_READ|VM_PROT_EXECUTE.</p>
+</blockquote>
+<blockquote>
+<p>We then keep spinning up threads which try to execute that undefined instruction.</p>
+</blockquote>
+<blockquote>
+<p>If the race windows align the thread executes the undefined instruction but when the sleh code tries to copyin the page is unmapped, the copying fails and the exception message we get has stale stack memory.</p>
+</blockquote>
+<blockquote>
+<p>This PoC just demonstrates that you do get values which aren’t 0xdeadbeef in there for the EXC_ARM_UNDEFINED type. You’d have to do a bit more fiddling to work out how to get something specific there.</p>
+</blockquote>
+<blockquote>
+<p>Note that there are lots of other unchecked COPYIN’s in sleh.c (eg when userspace tries to access a system register not allowed for EL0) and these seem to have the same issue.</p>
+</blockquote>
+<blockquote>
+<p>tested on iPod Touch 6g running 11.3.1, but looking at the kernelcache it seems to still be there in iOS 12.</p>
+</blockquote>
+<blockquote>
+<p>Proof of Concept: https://github.com/offensive-security/exploitdb-bin-sploits/raw/m aster/bin-sploits/45649.zip</p>
+</blockquote>
 <h1 class="unnumbered" id="bibliography">Bibliography</h1>
 <div id="refs" class="references hanging-indent" role="doc-bibliography">
 <div id="ref-offensiveworklovehate">
