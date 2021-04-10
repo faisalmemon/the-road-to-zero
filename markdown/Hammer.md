@@ -180,7 +180,11 @@ That's the end of the write-up.  It covers a lot of ground.  In
 
 Now we just need to make sense of it all.
 
-## Summary
+## The road ahead
+
+Having learnt where we can find Exploits, looking at our first exploit, and then seeing what technologies it relies upon, we can now chart out the road ahead.
+
+### The knowledge we require
 
 No one book can cover all the required topics in depth.  But with
  the appropriate hacker mindset, a small subset of a large number
@@ -193,6 +197,8 @@ After practice, a hacker mentality can zoom our attention to the
  This is in contrast to a standard engineering T-shaped knowledge
  base where the in-depth knowledge is confined to one or two
  technologies.
+
+### Engineering sensibilities
 
 If we are a professional software engineer, and look at Proof of
  Concept exploits the code structure and organisation often
@@ -212,6 +218,8 @@ If we are a professional software engineer, and look at Proof of
  built on top of a layer of great system administration skills,
  nor software engineering skills.
 
+### The learning pathway
+
 There is a meta skill that underpins security research.  That is,
  reading.  
 
@@ -228,6 +236,8 @@ The canonical texts are usually the best.  In the
  topic.  At that point we have awareness of what we don't know
  but enough knowledge to know a good search query to get into
  such a topic in more depth.
+
+### Deconstructing our world
 
 Looking at canonical materials (that is, the text that most fully
  describes the content with a minimal amount of simplification)
@@ -249,13 +259,15 @@ Software engineering is really
  the function that is desired.  If the strategy in the mind of
  the researcher is to re-direct program control, then inspecting
  the code for virtual functions can be a goal.
- 
+
 Furthermore, reading a C++ manual which tells about how late
  binding works (as explained above with Virtual Function tables)
  allows those with a hacker mentality to make a mental note of
  the implied trust relationship in that code at such points.  The
  Virtual Function Table if subverted will change the operation of
  the program.
+
+### Learning from Exploits
 
 Looking at existing exploits teaches what are the kinds of things
  about technologies we have that need to be learnt.  That is so
@@ -265,13 +277,17 @@ Looking at existing exploits teaches what are the kinds of things
  might be useful versus learning only what is needed for the job
  in hand.
 
+### The hacker mindset
+
 Our path in learning and discovery is aided by a hacker mindset.
  This is closely connected to human psychology.  What do humans
  do, and what opportunities are indirectly afforded through such
  human nature?  There are formal ways of thinking to encourage a
- hacker mindset.
+ hacker mindset.  We shall explore this in later chapters.
 
-Lastly, looking at security exploits, we can ask what was the
+### Research goals
+
+Looking at security exploits, we can ask what was the
  researcher aiming for which resulted in the fruits of the
  researcher.  Research is not effective unless there is a
  strategic path that is being pursued.  We shall explore this
