@@ -44,6 +44,24 @@ Will this book lead to a proliferation of 0-days?  My opinion is that the malici
 
 In truth, we often tell ourselves stories that make us comfortable with what we are doing, particularly if our pay-cheque aligns with that.  The best of intentions can result in adverse outcomes, as well as the converse.  For example, a researcher working on their PhD might see a bug class, but just have time to explore one fully, writing up a Proof of Concept (POC), which is duly responsibly disclosed, and patched, before being published as a finding by the researcher.  Another engineer might read the write-up, look at the binary diff related to the fix, notice associated vulnerabilities, and produce a variant POC and sell that to a market place for significant money.  At that point, the vulnerability could be combined with others and militarized.  The question is then who made that weapon, and would it have come to existence anyway?  Such a weapon could be used to save lives, lose lives, start conflict or avoid conflict depending on the circumstances politically.
 
+## Aren't security bugs just bugs?
+
+To take the opposite tack, we can ask ourselves, "Aren't security bugs just bugs?"  In other words, why dwell on 0-days as something special.  They are just bugs that can turn out to affect users when exploitable.  But lots of things can affect users.
+
+To move forwards with the debate we need to be honest with ourselves.  We need to understand our own perspective and agenda.  If your goal is to learn how to find and discover 0-days, the process of discovery itself is the joy we seek.  If that bug gets an associated vulnerability number, known as a CVE number, then it is a recognition of achievement, much the same as any other professional recognition.
+
+We do have to acknowledge the larger context.  Platform owners know that in a large system, there will be bugs, and a subset of those will affect security. The vendor will know that part of their responsibility is patching the bugs when they have been reported.  Their wider responsibility is to have processes that avoid the same issue appearing in the future, and avoid the same bug classes appearing.  They may change their audit procedure, hire staff to search for bugs, provide training on secure programming practices, perform threat modelling sessions, etc.  One fruitful area is applying mitigation layers.  The platform may have checks against stack overflows, or malicious changes to control flow integrity, etc.  These will be discussed later.  In practice, these are powerful weapons.
+
+The ultimate perspective is that of an end-user.  Users want to go about their business with the minimal amount of cost, and inconvenience, whilst having a rich and enjoyable user experience.  A secure system which is so cumbersome that there are few users does little to help society.
+
+Users need psychological safety, and trust in their systems.  A small drop of poison in a large reservoir wouldn't kill a person, but who would drink water from that reservoir?  Security delivers safety and trust.
+
+So security bugs are important, but not special.  They are important because over time platform vendors will develop mitigation layers to sweep away the exploitability of 0-days.  And the platform vendors that do this in a way that minimises the cost and inconvenience to users will win over the greater number of users.  This means that end users will live in a digital world that provides security and trust.  And trust is essential to our modern day living.  
+
+When we use public transit systems, we trust the safety of the transport system.  When we stop by a coffee shop and order a drink, we assume the water in the drink is safe.  Wealth is created by a division of labor with individuals doing specialist roles.  Such a society can only function when those services are trustworthy.  Computing services, such as mobile phone systems and apps are a key service that technologists contribute to the wider society.
+
+Going back to the example of public transit.  When sitting on a train, we can often see a couple of people drinking coffee.  But we can see plausibly a majority looking at their mobile phone screens.  We need the train to be safe, the coffee to be safe, and the mobile computing experience to be safe!
+
 ## Burn Out
 
 We haven't even started yet, and so why are we bringing up the topic of burn out?
