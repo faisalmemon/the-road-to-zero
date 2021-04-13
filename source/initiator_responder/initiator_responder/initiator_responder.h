@@ -10,4 +10,6 @@
 
 #include <stdio.h>
 
+int initiator_responder_main(void);
+
 #endif /* initiator_responder_h */

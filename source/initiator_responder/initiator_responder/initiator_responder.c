@@ -22,15 +22,17 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int count;              /* number of responders active */
 pthread_mutex_t lock;   /* mutual exclusion for count */
 pthread_cond_t done;    /* signalled each time a responder finishes */
 
-void init() {
+void init_initiator()
+{
     count = 0;
-    pthread_mutex_init(&lock, NULL);
-    pthread_cond_init(&done, NULL);
+    assert(pthread_mutex_init(&lock, NULL) == 0);
+    assert(pthread_cond_init(&done, NULL) == 0);
     unsigned int seed = (unsigned int)time(NULL);
     srandom(seed);  /* initialize random number generator */
 }
@@ -49,11 +51,11 @@ void *_Nullable responder(void *_Nullable param)
     for (int i = 0; i < n; i += 1) {
         pthread_yield_np();
     }
-    pthread_mutex_lock(&lock);
+    assert(pthread_mutex_lock(&lock) == 0);
     count -= 1;
     printf("responder finished %d cycles.\n", n);
-    pthread_cond_signal(&done);
-    pthread_mutex_lock(&lock);
+    assert(pthread_cond_signal(&done) == 0);
+    assert(pthread_mutex_unlock(&lock) == 0);
 responder_exit:
     return NULL;
 }
@@ -72,20 +74,26 @@ void initiator(int nresponders)
          */
         count += 1;
         pthread_t thread_details;
-        pthread_detach(pthread_create(&thread_details,
-                                      NULL,
-                                      &responder,
-                                      random() % 1000)
-        mutex_unlock(lock);
+        int iterations = random() % 1000;
+        pthread_create(&thread_details,
+                       NULL,
+                       &responder,
+                       &iterations);
+        pthread_detach(thread_details);
+        pthread_mutex_unlock(&lock);
     }
-    mutex_lock(lock);
-    while (count != 0)
-        condition_wait(done, lock);
-    mutex_unlock(lock);
+    pthread_mutex_lock(&lock);
+    while (count != 0) {
+        pthread_cond_wait(&done, &lock);
+    }
+    pthread_mutex_unlock(&lock);
     printf("All %d responders have finished.\n", nresponders);
-    cthread_exit(0);
+    pthread_exit(NULL);
 }
-main() {
-init();
+
+int initiator_responder_main()
+{
+    init_initiator();
     initiator((int) random() % 16);  /* create up to 15 responders */
+    exit(EXIT_SUCCESS);
 }

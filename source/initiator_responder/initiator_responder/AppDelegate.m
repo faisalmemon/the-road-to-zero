@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#include "initiator_responder.h"
 
 @interface AppDelegate ()
 
@@ -15,7 +16,9 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    
+    initiator_responder_main();
+    
     return YES;
 }
 
