@@ -19,17 +19,18 @@
  */
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 int count;         /* number of responders active */
 pthread_mutex_t lock;      /* mutual exclusion for count */
 pthread_cond_t done;  /* signalled each time a responder finishes */
-extern long random();
-init() {
-    cthread_init();
+
+void init() {
     count = 0;
-    lock = mutex_alloc();
-    done = condition_alloc();
-    srandom(time((int *) 0));  /* initialize random number generator */
+    pthread_mutex_init(&lock, NULL);
+    pthread_cond_init(&done, NULL);
+    unsigned int seed = (unsigned int)time(NULL);
+    srandom(seed);  /* initialize random number generator */
 }
 /*
  * Each responder just counts up to its argument, yielding the processor on
