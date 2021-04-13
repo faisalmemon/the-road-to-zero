@@ -66,12 +66,8 @@ responder_exit:
  */
 void initiator(int nresponders)
 {
-    for (int i = 1; i <= nresponders; i += 1) {
+    for (int i = 1; i <= nresponders; ++i) {
         pthread_mutex_lock(&lock);
-        /*
-         * Fork a responder and detach it,
-         * since the initiator never joins it individually.
-         */
         count += 1;
         pthread_t thread_details;
         int iterations = random() % 1000;
@@ -94,6 +90,7 @@ void initiator(int nresponders)
 int initiator_responder_main()
 {
     init_initiator();
-    initiator((int) random() % 16);  /* create up to 15 responders */
+    int n_responders = random() % 16;
+    initiator(n_responders);
     exit(EXIT_SUCCESS);
 }
