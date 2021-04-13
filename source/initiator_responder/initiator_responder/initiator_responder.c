@@ -3,6 +3,8 @@
 //  initiator_responder
 //
 //  Created by Faisal Memon on 12/04/2021.
+//  Based upon A Programmer’s Guide to the Mach User Environment
+//  by Linda R. Walmer and Mary R. Thompson
 //
 
 #include "initiator_responder.h"
@@ -21,9 +23,9 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-int count;         /* number of responders active */
-pthread_mutex_t lock;      /* mutual exclusion for count */
-pthread_cond_t done;  /* signalled each time a responder finishes */
+int count;              /* number of responders active */
+pthread_mutex_t lock;   /* mutual exclusion for count */
+pthread_cond_t done;    /* signalled each time a responder finishes */
 
 void init() {
     count = 0;
@@ -32,40 +34,48 @@ void init() {
     unsigned int seed = (unsigned int)time(NULL);
     srandom(seed);  /* initialize random number generator */
 }
+
 /*
  * Each responder just counts up to its argument, yielding the processor on
  * each iteration.  When it is finished, it decrements the global count
  * and signals that it is done.
  */
-responder(n)
-    int n;
+void *_Nullable responder(void *_Nullable param)
 {
-int i;
-    for (i = 0; i < n; i += 1)
-        cthread_yield();
-    mutex_lock(lock);
+    if (!param) {
+        goto responder_exit;
+    }
+    int n = *((int *)param);
+    for (int i = 0; i < n; i += 1) {
+        pthread_yield_np();
+    }
+    pthread_mutex_lock(&lock);
     count -= 1;
     printf("responder finished %d cycles.\n", n);
-    condition_signal(done);
-    mutex_unlock(lock);
+    pthread_cond_signal(&done);
+    pthread_mutex_lock(&lock);
+responder_exit:
+    return NULL;
 }
 
 /*
  * The initiator spawns a given number of responders and then waits for them all to
  * finish.
  */
-initiator(nresponders)
-    int nresponders;
+void initiator(int nresponders)
 {
-int i;
-    for (i = 1; i <= nresponders; i += 1) {
-        mutex_lock(lock);
+    for (int i = 1; i <= nresponders; i += 1) {
+        pthread_mutex_lock(&lock);
         /*
          * Fork a responder and detach it,
          * since the initiator never joins it individually.
          */
         count += 1;
-        cthread_detach(cthread_fork(responder, random() % 1000));
+        pthread_t thread_details;
+        pthread_detach(pthread_create(&thread_details,
+                                      NULL,
+                                      &responder,
+                                      random() % 1000)
         mutex_unlock(lock);
     }
     mutex_lock(lock);
