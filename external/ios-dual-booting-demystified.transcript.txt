@@ -1,0 +1,1930 @@
+00:00
+hi everyone welcome to blackhead my name
+00:04
+is Max Buzzelli and today I'm gonna talk
+00:07
+about the iOS dual booting so I'm
+00:12
+bleeding security research at Nvidia at
+00:14
+enormous pickle group and most of my
+00:17
+time are having fun with Nvidia driver s
+00:19
+tech but previously I was working at a
+00:22
+security researcher at lookout in the
+00:23
+blue box focuses on mobile security so I
+00:27
+was made up barreled jailbreak for iOS
+00:29
+which is toas as well as was after off
+00:33
+Pegasus exploit white pepper a quick
+00:37
+disclaimer I don't speak for my employer
+00:39
+so this research is not related to my
+00:42
+work at Nvidia it was just a fun
+00:45
+personal project for me so all the
+00:47
+opinions called snippets and ideas
+00:49
+they're all mine the old boot like what
+00:53
+is a dual boot why do we need it it's
+00:56
+pretty much a process of having multiple
+00:58
+operating systems on one device and both
+01:02
+operating systems they can share the
+01:04
+same hardware resources but we have some
+01:08
+freedom on which iOS version one to boot
+01:11
+unfortunately Apple did not make our
+01:14
+life any easier so there's no low-level
+01:17
+boot manager for is that we can easily
+01:19
+switch between the version so we need to
+01:22
+figure out by ourself
+01:24
+why do we need the old boot first of all
+01:28
+like quick experiments with a different
+01:30
+operating system levels for example
+01:32
+heaven is eleven point four and eleven
+01:35
+point fun on the same device and easily
+01:37
+switch between them or for example for
+01:42
+system recovery if you're working on a
+01:45
+some persistent exploit for is and
+01:47
+you're really scared that you can boot
+01:49
+loop your device you can boot in a
+01:50
+second system and repair the corrupted
+01:53
+file or for example even boot the second
+01:57
+days with in-app red yellow container
+02:00
+with disabled
+02:02
+guys LR with disabled KTR are we
+02:05
+disabled at all the mitigations which
+02:08
+makes it perfect for different POC test
+02:10
+if you want just to focus on
+02:15
+sharpen your exploit and you have
+02:18
+someone on mitigation I can disable just
+02:20
+a few of them so dead build boot really
+02:22
+works for how does it work
+02:24
+so the bad news we need a create a new
+02:28
+set of Bucheon components pretty much
+02:30
+the bootloader the kernel the modified
+02:33
+file system sometimes the device 3 the
+02:37
+good news that we can bootstrap our
+02:40
+second system from a ram itself or from
+02:43
+an end for this purpose kernel or
+02:46
+another bootloader can be used and of
+02:49
+course when it kernel or bootloader
+02:51
+level code execution like a few words
+02:59
+about Apple secure boot so the secure
+03:01
+boot is our arc enemy on a way to draw
+03:04
+boot and there's a lot of papers how
+03:06
+they pose secure boot work I just want
+03:10
+to make a quick overview so every since
+03:13
+start with Apple routes a public key in
+03:15
+a boot ROM and pretty much each
+03:17
+component get verified before the
+03:19
+execution so for example boot ROM
+03:21
+verified and low I boot stage 1 which
+03:25
+verify and Louis I boot stage 2 which we
+03:27
+refine load the rest of the system like
+03:29
+kernel cash and device 3 and root of s
+03:32
+in some of the operation during boot
+03:35
+step get involved it mostly to provide
+03:38
+secure random number generator so here's
+03:44
+how the Apple boot process looks like
+03:46
+for the Apple support local and remote
+03:48
+boot and the main difference are we
+03:51
+booting from NAND or IV booting from DFU
+03:54
+mode so boot ROM checking are we
+03:57
+currently in DFU mode if we are it
+03:59
+expect IBSS image to be uploaded over
+04:01
+the USB verified furniture if ever since
+04:05
+the key IBSS gonna load the I back and I
+04:08
+beg gonna boot the rest of the system in
+04:10
+the remote mode in a case of local boot
+04:14
+boot rom will try to boot
+04:16
+ll be from and if everything is great I
+04:19
+will be will boot I boot and continue to
+04:22
+boot rest of the system there is this
+04:25
+few changes
+04:27
+- seven so on - seven Apple increase
+04:33
+this the amount of static RAM in a boot
+04:37
+ROM so now it can blow it like much
+04:40
+larger boot loaders which means that now
+04:42
+boot ROM can boot the I ll be and I will
+04:45
+be for example can boot the rest of the
+04:46
+system by passing the high boot the same
+04:49
+for DFU mode
+04:52
+alright so boot ROM and boot ROM
+04:55
+implements IMG for image verifications
+04:58
+I'm g4 is pretty much a container it
+05:00
+contain a payload that contain
+05:02
+decryption keys for a payload and
+05:04
+payload manifest the most interesting
+05:07
+parts the manifest the manifest is
+05:08
+pretty much the set of the different
+05:10
+properties that get verified during the
+05:12
+boot so which property from manifests
+05:14
+compare it with a property from a device
+05:16
+and if all of them match then boot ROM
+05:20
+will pass the execution so for example
+05:23
+one of the properties is payload hash to
+05:26
+make sure that payload is not modified
+05:28
+nonce to make sure that we run this
+05:31
+specific iOS version on this specific
+05:33
+device this pretty much the way how
+05:36
+Apple prevents it downgrade is the ad or
+05:38
+like a board ad to make sure that we run
+05:41
+the fiber on the for this device and so
+05:44
+on so if everything is great all the
+05:47
+chicks are pass it boot ROM will decrypt
+05:49
+the payload and execute it a few more
+05:53
+sins may happen first is if the payload
+05:58
+image and payload manifest contains
+06:01
+specific properties the boot ROM can do
+06:04
+the stopped override for refuses for
+06:06
+like production a production security
+06:07
+fuse and pretty much switch device from
+06:11
+release mode to development mode in
+06:13
+other words it can enable the JTAG
+06:16
+of course it's really secured by Apple
+06:18
+by Apple Senator another thing is our
+06:23
+own manifest hash is this thing for
+06:25
+iPhone 7 and later and the basic idea is
+06:28
+its boot ROM calculate hash of the
+06:32
+payload manifest and save it in one of
+06:33
+the harder' register and lock this
+06:35
+hardware register and during the next
+06:38
+component
+06:40
+this hash will be compared it with
+06:42
+payload manifest hash of the next
+06:44
+components it's to prevent the mix and
+06:48
+match so okay
+06:51
+the bootrom brief ID of the pay load it
+06:53
+load load and execute a payload which is
+06:57
+Stage one load well boot loaders IBSS or
+07:00
+I ll be the only difference between them
+07:02
+is it's just for remote and local boot
+07:07
+in a case of IBSS it's just a weight for
+07:11
+I back image to be uploaded over the USB
+07:13
+if everything is great
+07:15
+verifies when booted in a case if I load
+07:17
+B it just boot I boot image from meant
+07:19
+if something is wrong switch back to the
+07:21
+EFI mode both boot loaders they perform
+07:26
+md4 checks the same as boot rom the same
+07:28
+mix and match preventing checks they
+07:31
+store it in encrypted time before
+07:33
+container so Apple still not ship them
+07:35
+decrypt it but luckily there are some
+07:38
+key is available on public it really
+07:41
+helped us to check how how the
+07:44
+patrollers really work and since I found
+07:47
+10 Apple made some refactoring work so
+07:50
+now all the boot loaders pretty much one
+07:53
+binary that can be run in a different
+07:56
+code path like in local or remote boot
+07:59
+so stage 2
+08:00
+i Baker I boot again for local remote
+08:04
+boot both can lower the kernel cache
+08:06
+both can load the device 3 the RAM disks
+08:09
+and since iOS 12 and now they can lower
+08:12
+the trust cache they perform IMD four
+08:15
+checks the same mix-and-match prevention
+08:17
+checks still encrypted and Apple made
+08:21
+some refactoring and by merging into one
+08:24
+big binary device 3 that's an image
+08:30
+which basically represents the hardware
+08:33
+mappings it's a way for a kernel to
+08:35
+communicate with low-level hardware so
+08:37
+doing a boot I boot or I back the set up
+08:40
+various entries of the device tree and
+08:43
+later on kernel will read this entries
+08:45
+map the addresses if if needed set up
+08:48
+the properties since I Stan it's not
+08:52
+encrypted anymore
+08:53
+it's still sign it's it's still rapid in
+08:55
+IMG for container and there are few
+08:57
+container types for remote and local
+08:59
+boot the next component of a boot chain
+09:03
+is a kernel Mukesh so the kernel cache
+09:05
+premised xnu kernel and all the kernel
+09:10
+extensions which are static link it to a
+09:13
+kernel part the device tree Maps
+09:17
+addresses that some of the properties
+09:19
+and in case of is 12 now I boot map the
+09:26
+static trust cash in the memory and the
+09:28
+kernel now and I'll read it from one of
+09:29
+the device three entries next is gonna
+09:32
+load sep 5 or like sap is Wi-Fi baseband
+09:38
+it still sign it in IMG for container
+09:40
+not encrypted since I stand and there
+09:44
+are few container types for remote and
+09:47
+local boot the next one is ram disk so
+09:51
+drum disk is like a set of like minimum
+09:54
+OS image so it's like minimum set of
+09:57
+frameworks and command-line tools that
+09:59
+use it for restore and update purposes
+10:01
+and that's why we have two types of ram
+10:04
+disk the only difference is that
+10:07
+restoring disk it's by a person from an
+10:09
+end and then a flare the fiber and the
+10:12
+update from disk it's not wipe in an end
+10:14
+it just updating the different bail
+10:18
+deltas during the update for this since
+10:22
+I was 12
+10:23
+Apple moved static thrust cache to a
+10:26
+separate file the RAM disk so now each
+10:30
+from this get its own static trust care
+10:32
+that need to be loaded by I boot yeah
+10:36
+it's not encrypted anymore since I stand
+10:38
+but still sign it
+10:40
+and finally the trust cache that then
+10:43
+you think in is 12 so it's it's a file
+10:47
+that contain code directory hashes for
+10:54
+binaries that I store it on the RAM
+10:55
+disks or the root of s so each from disk
+10:58
+when it's get loaded
+11:01
+it requires the trust cache image to be
+11:04
+uploaded first and there are two
+11:06
+container types and
+11:07
+for local and remote boot during the
+11:09
+restore time I guess we'll look for
+11:13
+/boot /i boot offender in a restore
+11:15
+partition to read the trust cache for
+11:19
+root of s in a case of normal boot it
+11:22
+just look for filesystem ephemeral - fu
+11:25
+d static trust cache image so again
+11:30
+instead of like later on it was Colonel
+11:34
+the the part of the kernel was a static
+11:37
+trust cache though the one of the data
+11:42
+in a consignment now I will move it into
+11:45
+separate image for security purposes so
+11:49
+I boot map it annex a new read chose
+11:53
+chosen memory map trust cache entry and
+11:57
+using one of the P map functions
+12:00
+basically to map into memory so it's
+12:03
+just a theory how the modern secure boot
+12:06
+works on modern Apple devices and now I
+12:10
+want to move more to like reverse
+12:12
+engineer in the Apple fiber so it will
+12:14
+be a little bit more fun okay so I put
+12:18
+an eye bag so that's level two lot of
+12:22
+boot loaders they both support the
+12:24
+different set of commands and this
+12:27
+commentar
+12:27
+they viable use it during the restore
+12:30
+and update process and unfortunately on
+12:34
+recent I boots there is no visible menu
+12:37
+but the common handler still exists so
+12:39
+if we know the common name we can send
+12:42
+send the comment over the USB and with
+12:45
+other should react the trick is that
+12:47
+boot older should be in recovery mode
+12:49
+and we need to use our recovery - C to
+12:52
+send the command so what are the
+12:56
+commands basically all we need to do
+12:59
+just to grab a decryption key decrypt
+13:03
+one of the boot loaders and use any
+13:06
+disassembler and look for boutique
+13:09
+string so as you see each command its
+13:12
+rapid into each instruct and distract
+13:15
+this common name pointer to
+13:17
+c'mon handler and some of the common
+13:20
+description Apple usually wipe out the
+13:23
+common description but even this
+13:25
+information still enough so we can map
+13:27
+each common name to each common handler
+13:31
+and here is an incomplete list of
+13:33
+commands they are supported in Teresa
+13:35
+with others for example like RAM disk
+13:38
+rub these key commands it allow us to
+13:41
+create the RAM disk image just from
+13:43
+memory so we can upload ROM discovered
+13:46
+the USB send the RAM disk command to
+13:49
+boot loader and to try to create a ram
+13:53
+disk object the same for device 3 we can
+13:57
+upload device 3 over the USB and create
+13:59
+it just from Ram finder it's basically
+14:02
+the way how Apple upload the trust cache
+14:05
+and verified the trust cache I'm
+14:07
+uploading the image and send the
+14:09
+Feinberg command and I believe they in a
+14:15
+future version they're going to move
+14:17
+more and more finder to be uploaded by I
+14:19
+boot instead of the kernel I think for
+14:21
+security reasons anyway for now fibre
+14:26
+just slowed the trust cache the next is
+14:28
+boutique's the boutique's
+14:29
+it's a nice comment it allow us to boot
+14:32
+the whole kernel cache just from a
+14:34
+memory so we can upload Ram disk device
+14:36
+3 trust cached and boutiques and here we
+14:39
+go the the system of the Lord a first
+14:42
+boot did the opposite of boutiques it's
+14:46
+say hey with louder please boot the
+14:49
+system from file system from NAND the
+14:52
+same kernel cares device 3 and it is
+14:54
+Rajesh and the last one is gold so it's
+14:58
+interesting command basically did say
+15:01
+how Apple that's a way how Apple upload
+15:07
+different diagnostic images to I boot so
+15:12
+we can upload different images or the
+15:14
+USB then send the go command and if the
+15:18
+image tag is correct it will be executed
+15:20
+by a boot loader okay so let's switch
+15:25
+back to drill boot so the plan is we can
+15:28
+bootstrap our like
+15:31
+fix it bootloader from a kernel that the
+15:33
+one way for this purpose kernel code
+15:35
+execution require it as well is still
+15:37
+called the k-loader or we can execute
+15:41
+our fixed bootloader from another
+15:43
+bootloader in this purpose in this case
+15:46
+like bootloader code execution is
+15:48
+required if if we choose the jail boot
+15:54
+from a kernel like most of the dual boot
+15:57
+that use the kernel they all base it on
+16:00
+a tool called a kill order and the main
+16:03
+idea is as soon as we jailbreak our
+16:05
+device we can get Colonel readwrite
+16:08
+exact primitives we can take a boot
+16:10
+loader that we modified we can write it
+16:14
+back the specific address into physical
+16:16
+memory and change a lower set vector in
+16:20
+a kernel to be bootstrap our new
+16:23
+bootloader so again the ideas the
+16:25
+bootloader will load the kernel we write
+16:29
+to kernel memory and the new bootloader
+16:31
+and jump back to bootloader so it's kind
+16:34
+of like big hack but that works and it
+16:38
+the k-loader is in a base of cool booter
+16:41
+tool by jonathan sills and the computer
+16:44
+will do most of the thing for you
+16:46
+automatically it will download the fiber
+16:48
+or it will decrypt it it will set up the
+16:51
+partitions and so on unfortunately it's
+16:53
+only work for 32-bit devices and OS
+16:56
+versions so the latest device we support
+16:59
+is the iPhone 5c there was a few
+17:04
+attempts to port key loader or 64-bit
+17:08
+devices and the most successful one was
+17:11
+kilo door 64 by economics it supports
+17:17
+some of the 64-bit devices but there is
+17:19
+still a problem that it limited up to
+17:22
+highest point eight point four point one
+17:25
+I will show you why
+17:27
+so since iOS 9 Apple introduced
+17:31
+kernel patch protector or the kpp and
+17:33
+more advanced version of it in 810
+17:36
+devices HRR which walk the kernel memory
+17:41
+and prevent any write attempts to
+17:44
+memory which means we cannot really map
+17:47
+our new bootloader to physical memory
+17:49
+it's yeah it's chicken and egg problem
+17:52
+there are few ways to bypass it the last
+17:55
+successful one was by Luca Tedesco in
+17:57
+yellow 10 jailbreak but still even if we
+18:00
+can disable Katie RR there's still some
+18:03
+atras on map issues there is a trans own
+18:06
+memory overlap so in other words the gel
+18:10
+boot from Colonel not really working on
+18:12
+the newer system yeah one more thing
+18:16
+that I didn't mention the GED key the
+18:19
+GED keys the key that used to decrypt
+18:22
+the fiber and in a time when the
+18:24
+Colonel's law that is already locked so
+18:26
+even if you jump back to bootloader the
+18:29
+keys already locket and we cannot
+18:31
+decrypt the new fiber which mean kernel
+18:36
+way of gel booting it's works but it
+18:39
+gets its own limitation so why not try
+18:41
+to draw wood from another bottle itself
+18:44
+so we're gonna bootstrap our fixed
+18:46
+bootloader from another bootloader which
+18:50
+going to load this fixed head kernel
+18:51
+cash 6 device 3 ram these fiber all the
+18:56
+stuff that I mentioned and finally boot
+18:58
+the carbocation so we boot the system
+19:00
+just just from RAM and we get the SSH it
+19:04
+says I will show show you how we can
+19:08
+write the rest of root filesystem
+19:10
+to an end and boot a second systems did
+19:12
+the plan but on a way to draw boot there
+19:18
+a lot I just require as I say we need to
+19:19
+create our own set of bootloader
+19:21
+components and here is a set of patches
+19:26
+that I found useful during my research
+19:31
+of dual boot so for example for I boot
+19:33
+in I back it's really required to
+19:35
+disable code senator check like MD for I
+19:38
+want to show you how it's nice to have
+19:41
+to exist to disable care is alarm if you
+19:43
+want to put the second system with
+19:45
+disabled mitigations or for example to
+19:49
+inject this custom boot argument because
+19:51
+they release a boost the do not support
+19:53
+any boot arguments from nvram
+19:59
+for xnu for a kernel itself it's
+20:01
+required to disable code sign it's nice
+20:03
+to disable KTR are like kernel text read
+20:06
+on the region I will show it a little
+20:09
+bit later it's nice to export tasks for
+20:12
+p0 or even room up the whole kernel is
+20:15
+readable writable executable as far up
+20:18
+disk all we need to do just to add the
+20:21
+SSH client and some minimal set of
+20:24
+common line tools that we need to play
+20:27
+with device 3 again it's not really
+20:31
+required patch but it's nice to have if
+20:33
+we want to boot the second file system
+20:35
+with the second highest system with UI
+20:39
+we need to disable the physical storage
+20:41
+and finally trust cache is one of the
+20:44
+alternative ways of disabling the called
+20:47
+sign we can just add a new interest rate
+20:49
+R as cache so this is how it looks like
+20:52
+for I back and I boot there is a
+20:56
+function image for validate property
+20:58
+callback which compare each of the
+21:02
+properties from a boot manifest and
+21:04
+compare with the same properties on the
+21:06
+device itself and if all the properties
+21:09
+are good it kind of continue a boot and
+21:11
+it gets it get reference to you from
+21:13
+image for load it's like it's easier way
+21:18
+to find it just look for one of the
+21:20
+properties for example B and C N and
+21:22
+there's will be only one reference to
+21:24
+image for image for validated property
+21:26
+callback so what we need to do is just
+21:30
+scroll down to the end of the function
+21:32
+and we will see a reference stack check
+21:34
+fail and before that it will it will
+21:37
+gonna calculate the return value just
+21:40
+make sure that we always return 0 into X
+21:43
+0 which means like all the checks will
+21:45
+be successful boot arguments so the the
+21:50
+problem is it release I boot they do not
+21:53
+support any custom boot arguments to be
+21:56
+pass it to boot loader which means even
+21:58
+if we can somehow right boot argument in
+22:02
+veeram their role is a boot will just
+22:04
+ignore them and continue to use the
+22:06
+hard-coded one so as we see here there
+22:09
+is like
+22:10
+one of the restore boot argument what we
+22:13
+can do we can just change them right if
+22:15
+we can register the bootloader why not
+22:17
+so what I did I just changed the boot
+22:21
+arguments to add debug to set the
+22:24
+debugger capabilities into a system I
+22:28
+set the zero to enable a serial output
+22:31
+for a kernel boot and our D equal md0
+22:34
+which means a system please boot from
+22:36
+the RAM disk itself the next thing is
+22:40
+guys alarm again it's not really
+22:42
+required for dual boot but it's really
+22:45
+nice that we can boot the system with
+22:48
+not relegated kernel it's easy to spot
+22:53
+just look for kernel - % a string
+22:56
+reference and we will find the code that
+23:00
+asked except to provide like eight bytes
+23:04
+it in our case it's a random get bytes
+23:07
+so after random good bytes will see the
+23:10
+calculation of where is a larger
+23:11
+tailslide and physical slide in my case
+23:14
+it's x8 get pivotal slide and X 19 get a
+23:19
+physical slide unfortunately there is
+23:23
+like in a in a release kernel and
+23:26
+release I boot there's no easy way to
+23:28
+disable KLR this Apple just rip out the
+23:31
+code that respect guys a lot of boot
+23:34
+argument but what we can do we can
+23:36
+relocate it with a zero offset so in my
+23:39
+case I just put 0 in X 8 index 18 and
+23:42
+not out the rest which means that kernel
+23:45
+will be relocated with zero offset and
+23:47
+stay in the same address all right
+23:52
+go so the go command as I said that's a
+23:55
+way how I boot can boot different
+23:59
+diagnostic images and there is a check
+24:04
+there is a check for payload type that
+24:08
+get upload over the USB so for example
+24:10
+if you look for se bi string you'll find
+24:14
+a char array with all the supported tags
+24:18
+in a case of iOS 12.1 is like seven
+24:21
+seven tags are supported
+24:23
+and what this function going to do it's
+24:26
+going to like read the payload tag and
+24:30
+compare with one to support it so this
+24:33
+is it to fix just make sure we pass zero
+24:35
+instead of pointer to array and we buy
+24:38
+zero as a count of different support
+24:42
+attacks which means no tag is supported
+24:44
+which mean like every tag is supported
+24:47
+the next thing since the last one for I
+24:50
+boot is KT RR or like Colonel textured
+24:53
+on the region that the specific
+24:55
+mitigation that Apple introduced in
+24:56
+iPhone 7 and the idea is I will get
+25:00
+their own custom memory controller and
+25:04
+Apple set up the region with the kernel
+25:06
+will map it on and run the kernel it map
+25:09
+it and finish all the initialization
+25:10
+process this region will be locked so
+25:13
+which means there is no way to write to
+25:16
+this region as the log made on a harder
+25:19
+level in addition to this the mm you get
+25:24
+configure it that no code can be
+25:27
+executed outside of the region so that's
+25:29
+pretty nice mitigation to prevent the
+25:32
+jail breaks but again if we if we
+25:34
+control the bootloader we can we can
+25:36
+disable it the good thing Apple for some
+25:41
+reason Apple still respect and safe
+25:43
+Colonel text boot argument I don't know
+25:48
+why because like we we can set any new
+25:53
+boot argument as they are hard-coded
+25:55
+anyway just a nice way for us to define
+25:58
+the code as we see if unsafe cannot text
+26:01
+boot argument is set then we skip the
+26:05
+security set coterra region
+26:07
+otherwise the KTR region begin and lands
+26:11
+will be set up so what we can do we can
+26:15
+jump it out knock it out or even inject
+26:18
+unsafe kernel text again I believe that
+26:21
+this code is part of the some debug it
+26:25
+like it's left for some debug purposes
+26:27
+is it stupid out in Aroldis kernels but
+26:30
+for some reason not stupid in the I boot
+26:34
+the same story for kpp it's like
+26:37
+previous version of kernel patch
+26:39
+protector the secure monitor just looked
+26:42
+for monitor to large string and will
+26:44
+find the code that just loaded
+26:45
+not without and we're good to go
+26:50
+as you can see there's maybe a lot of
+26:52
+fun to reverse engineer the Apple
+26:55
+founders especially with their
+26:59
+obfuscated logs and no symbols so what
+27:03
+I'm gonna do next I'm going to switch to
+27:05
+xnu
+27:05
+it will be like less assembly code and
+27:08
+more C code as likely the source code is
+27:12
+available so 4x in new patches the first
+27:18
+thing is tasks for Pete that's the way
+27:20
+how all the jailbreaks
+27:22
+export the kernel task port and the car
+27:25
+not a sports is the rifle easily read
+27:27
+write and even allocate memory in the
+27:29
+kernel of course there is a explicit
+27:33
+check if we trying to like request ask
+27:37
+for the support for kernel if b ID
+27:39
+equals 0 return Colonel Fowler just if
+27:43
+we can patch the kernel just patch it
+27:44
+out there is more additional mitigation
+27:47
+starting from is ten point three so now
+27:51
+Apple edge tasks conversion evaluation
+27:54
+code which mean if abilities code added
+27:58
+to mitigate iron beer exploit chains the
+28:04
+idea is if we trying to achieve the
+28:06
+cannot ask a port it's gonna return now
+28:09
+or if we're trying to get the task port
+28:12
+of any other process and we are not
+28:14
+running as a platform plication and
+28:16
+gonna return can ability security as
+28:19
+well so make sure you patch it out as
+28:21
+well next one the code sign there's a
+28:26
+ton of ways to disable code sign if we
+28:28
+can patch the kernel and one of the ways
+28:31
+is what which I prefer is be a can has
+28:33
+the bugger the DES function that
+28:35
+basically enable globally enable
+28:40
+debugger capabilities for kernel and for
+28:42
+all the
+28:43
+Karen extensions and it just
+28:47
+refer to debug enable it variable so we
+28:52
+can patch it the back in able to one or
+28:55
+always buy HP I can hiss debugger to
+28:57
+always return one
+28:59
+so KTR are even if we disable KTR are in
+29:05
+i boot their release kernels they still
+29:08
+like there's hard-coded code that's
+29:10
+always set up the kernel text read on
+29:13
+the region so there are few things that
+29:17
+we need to patch just look for MCC so
+29:21
+MCC it's one of the name of the Vice
+29:26
+three entries that gets parsed by by a
+29:28
+kernel and this thing is like all this
+29:31
+code is just part of the device through
+29:34
+entry and setup read on the region begin
+29:36
+and read on the region and variables all
+29:40
+we need to do make sure this code is
+29:41
+never get executed in occur off the
+29:44
+second part for Katie RR is read on the
+29:47
+region lockdown so this is where the
+29:49
+kernel already set it up get initialize
+29:52
+it and this is where the region get
+29:54
+locket so in our case it's log MCC and
+29:57
+lock MMO this code is it a spot for
+30:01
+iPhone 7 just look for 0 x 7 ec magic
+30:06
+and you will find a bunch of MS ours
+30:09
+that we need to patch out so in other
+30:12
+words the region will be not never
+30:14
+locked out and in other words it will
+30:17
+not enable one last thing with the KTR
+30:20
+are so there is a lower set vectorbase
+30:23
+get decoded get executed when device
+30:26
+awake from a sleep mode and this code is
+30:30
+chicken if read on the region begin and
+30:32
+end is like more or equal to 0 if it's
+30:36
+equal to 0 just it's keeping the caterer
+30:38
+if it's not it just set up again the HR
+30:42
+our region lower l1 upper l1 and final
+30:45
+look yell one so our need is just to
+30:51
+like knock it out or make sure that read
+30:53
+on the region begin and end are always 0
+30:57
+even if we disable KTR are the respond
+31:00
+saying in 810 devices so Apple called it
+31:04
+static mappings so there is and now that
+31:07
+page tables itself they are allocated in
+31:10
+to read only region so data cons will be
+31:15
+writable
+31:15
+where the page tables will be allocated
+31:17
+to and when it's done this region will
+31:20
+be set up to be read-only and on top of
+31:23
+it the KTR region will be locked as well
+31:26
+so even if you disable key to our region
+31:28
+you still need to deal with the static
+31:30
+mappings but if you can patch a kernel
+31:34
+we can disable it during like our VM
+31:36
+protein it or our vm prot finalized in
+31:38
+my case I just remember the region to be
+31:43
+readable writable and executable a few
+31:47
+more things that we can patch it's not
+31:48
+really required but it's a nice one like
+31:52
+Mac mount the easily remount file system
+31:55
+to be readable writable or unfit code
+31:57
+directory is an entrust cash so that's a
+32:02
+way how one of the kernel extension
+32:05
+check is the binary we are running is it
+32:08
+trust it or not and if it's trusted it
+32:10
+will be automatically get platform
+32:12
+application capabilities so we can patch
+32:14
+it to one that any binary will be a
+32:16
+platform application for example and set
+32:19
+UID
+32:20
+to easily attack escalate privileges
+32:22
+from from user mode but as I say it's
+32:24
+not really required all right we going
+32:29
+back to our boot chain so we already
+32:31
+made a patches for a bootloader we made
+32:33
+a patches for a kernel now it's time for
+32:35
+the RAM disk patches and the idea is we
+32:38
+just take a restore Ram disk unwrap it
+32:41
+grow its size a little and find the
+32:44
+restored external service and there's
+32:46
+the external service that they want if
+32:48
+you'll be executed when the kernel like
+32:51
+general will start execute the binaries
+32:53
+and the language e will agree cute it in
+32:56
+other words that the one that we need to
+32:58
+replace we need to replace with our
+33:00
+service and that will start USB device
+33:04
+MUX and spawn the drug dealer so we can
+33:07
+connect to the device our de SSH and the
+33:13
+tricky one here
+33:14
+is that we need to sign our fake demon
+33:17
+with the same application IDs because
+33:20
+there's one of the mitigation from is 10
+33:23
+the lines D now get hard-coded list of
+33:27
+the IDS that Kanak execute and if our
+33:30
+IDs one not one of them it will be
+33:32
+prevented as well as we need to provide
+33:35
+the entitlements that get access to to
+33:38
+get a test to USB device smoke service
+33:40
+finally wrap everything back and cyanus
+33:45
+ram this container so this is how the
+33:49
+our store at external demon may look
+33:51
+like parts of this code is already open
+33:54
+source it and the basic idea is to the
+33:57
+22 start USB MOOC service migrating USB
+34:03
+device descriptor with the type USB
+34:06
+moocs only and then set USB device
+34:10
+controller USB device description
+34:13
+several the idea is that to calculate it
+34:16
+you the idea of the device and set it as
+34:18
+a serial or USB device description
+34:23
+finally create use be the best
+34:26
+controller and set the debug level in
+34:28
+one of the services at 7:00 I don't want
+34:30
+to focus on it case there is a source
+34:32
+available and there is a link at the end
+34:34
+of the presentation if you want to know
+34:36
+how it works
+34:37
+the idea is to set the USB and this
+34:39
+bound the drug builds SSH station device
+34:44
+3 that's it's optional patch that it's
+34:47
+required so what we need to do is
+34:50
+disable the feasible storage and the
+34:52
+physical storage is a special place
+34:54
+where the data protection keys are
+34:56
+stored and to prevent the collisions
+35:00
+between this two system we need to
+35:02
+disable the feasible storage as you see
+35:05
+here that's part of Apple ipfs text and
+35:09
+we see if the Noah feasible storage
+35:14
+entry exists the Apple key store will
+35:19
+disable the physical storage and switch
+35:21
+back to fake keys that's what we need to
+35:23
+make sure to not gonna overwrite the
+35:25
+original keys yeah
+35:28
+again just add no visible storage entry
+35:30
+to device three and we're good to go
+35:33
+farmer or the trust cash it's optional
+35:38
+just say nice way to disable the code
+35:42
+sign Apple change a little bit the
+35:45
+format of trust cache entries now the
+35:47
+introduced trust cache entry name with
+35:50
+one the only difference it's now get the
+35:56
+hash type and some of the Flex so the
+35:58
+idea is we just need to add the new
+36:00
+cache entry trust cache entry and make
+36:03
+sure we change the number of entries in
+36:05
+a trust cache model and to be good to go
+36:09
+so like if you made all the patches to
+36:13
+boot chain how to combine it all
+36:15
+together so we bootstrap our modified
+36:18
+tile back from I boot for example from
+36:21
+another bootloader we upload each of the
+36:24
+components over the USB device three
+36:26
+kernel trust cache one of the RAM disks
+36:29
+set the commands to bootloader to like
+36:32
+create these corresponding images and
+36:36
+finally boot the whole system with the
+36:38
+boutique's we will get the restore and
+36:43
+is booted with like minimal OS version
+36:46
+and SSH access so we can use for example
+36:49
+disappear oleh to connect to device over
+36:53
+the USB but as I say some of the key
+36:57
+locks dangers are not started yet so we
+37:00
+need like for them to start but that's
+37:04
+enough that's enough that we can take
+37:07
+the current data partition and separated
+37:10
+to into two new partition one for as a
+37:13
+new system partition and another astiz a
+37:15
+new data partition then upload the root
+37:18
+of s over the USB and I like variety to
+37:23
+an end
+37:23
+finally patch that I boot or I back to
+37:27
+boot from the new partition hello it's
+37:30
+sounds a little like complicated there's
+37:33
+too many things so I just wanted to show
+37:35
+like a demo how how this stuff works
+37:43
+so in this case I want to show the is
+37:46
+eleven point four point one I'm gonna
+37:49
+run it from my Mac and device is already
+37:53
+in a parade jailbroken state so one of
+37:56
+the boot loaders its weights and other
+37:57
+battles to be uploaded so what I'm going
+38:00
+to do I'm going to use the mini column
+38:02
+and to connect to a device over G zero
+38:06
+and start uploading one of my modified
+38:11
+with holders in our recovery - dish chef
+38:14
+and if if the boot loaders in recovery
+38:19
+mode we can send our own stuff so in
+38:23
+this case I send I boot with disabled
+38:26
+KLR and with disabled caterer alright
+38:33
+you get booted so here we get is eleven
+38:37
+point four point one release a boot
+38:40
+let's check that we're really running
+38:42
+the recovery mode okay and now we can
+38:52
+set our modified components back to a
+38:55
+bootloader so I upload the RAM disk and
+38:59
+set i recovery there see ram disk to
+39:02
+force a bootloader to like close
+39:05
+modified rom disk and as we see here
+39:11
+it's already uploaded the same now the
+39:18
+same for device tree we send the device
+39:21
+three force boot loader to load it okay
+39:29
+i recovered to see device three and
+39:34
+finally kernel so I send the colonel
+39:37
+with disabled KLR and with disabled KTR
+39:42
+our kernel text read on the region which
+39:45
+is really enough to play with some herbs
+39:50
+exploits and forget about the
+39:51
+mitigations
+39:53
+finally I boot the system using I
+39:56
+recover juicy boutiques the system get
+40:06
+booted and as we see here that's showing
+40:10
+the running server so it's running to
+40:12
+the drug beer server and now we can
+40:15
+connect to device over the AC stage over
+40:18
+the USB in the shell and yep that's is
+40:27
+hello and point four point one on -
+40:29
+seven let's prove that kernel is not
+40:33
+relocated so I use one of the tools and
+40:36
+it's looking for a kernel in the memory
+40:37
+and we see the kernel address is not
+40:39
+relocated which means the Geisel RS
+40:42
+disabled next time when I showed it does
+40:45
+forbid zero it's really working by
+40:48
+reading some part of the kernel memory
+40:50
+for example header and finally try to
+40:54
+write some like for example for bite
+40:58
+into a kernel memory usually if Castle R
+41:01
+is not disabled it's gonna panic a
+41:04
+device so write the four bytes and now
+41:14
+let's try to read them back so yeah as
+41:17
+we see we cannot write the four bytes of
+41:19
+the kernel and there is no panic for is
+41:25
+12
+41:26
+it's a little bit different story I
+41:29
+played add more mitigation and is 12 and
+41:32
+change the boot a little bit but the
+41:35
+idea is exactly the same we upload our
+41:37
+own bootloader which going to bootstrap
+41:39
+our own kernel our own device tree our
+41:42
+own ram disk and the boot the rest of
+41:44
+the system so I connect to a device
+41:49
+using the serial cable
+41:59
+proof is it we really run it in a
+42:04
+recovery mode in this case I just
+42:14
+disabled KTR are but not disabled the
+42:17
+Chi is LR so Canada will be still
+42:19
+relocated because there is some random
+42:21
+panics that I see on is 12.1 so I
+42:25
+decided to leave it as it is so we are
+42:30
+in recovery mode now it's time to send
+42:35
+our modified food chain the first is
+42:44
+device 3 it's pretty much the same as
+42:48
+iOS 11 device true get loaded now we
+42:59
+send ROM disk it may take some time it's
+43:03
+usually like 300 megabytes
+43:13
+and we send I recovered there see
+43:18
+ramdisk to the force with loader to
+43:21
+execute it and now we see a difference
+43:30
+check that you get executed okay Ramdas
+43:35
+get loaded so now we see a difference
+43:38
+between a boots in iOS 11 is 12 so now
+43:41
+the trust care the trust static trust
+43:43
+cache is required to be uploaded by I
+43:45
+boot so we use the same our recovery the
+43:48
+chef to upload the static thrust cache
+43:50
+and to force boot loader to load it in a
+43:54
+memory using I recovered RC fiber ok and
+44:02
+finally let's boot it colonel
+44:16
+I recovered there see boutiques and we
+44:22
+got our system booted so it's all
+44:26
+similar to is 11.4 we got the drug
+44:30
+dealer running now we can SSH to our
+44:33
+device for example accusing disappeared
+44:36
+early to bind local port to remote port
+44:49
+okay okay we'll get a show so it's is
+44:58
+twelve point one seven so in this case I
+45:05
+say I did not disable the Kaiser Lars or
+45:07
+the kernel still relegated in the memory
+45:10
+but kernel text redundant region is
+45:12
+disabled so we can easily modify and the
+45:16
+kernel memory including the kernel text
+45:18
+region so I'll read the kernel header in
+45:24
+the same as in the previous demo and
+45:27
+I'll right try to write the eight bytes
+45:31
+in a kernel header to prove that HRR is
+45:36
+disabled okay okay so yeah as we see no
+45:49
+panic and we can read the same bites
+45:52
+back so Katie RR is disabled on twelve
+45:57
+point one so this was a damn of the like
+46:04
+dual boot of having like two multiple
+46:07
+layers on the same device using the
+46:09
+bootloader
+46:09
+and of course there are some issues the
+46:13
+main issues is there some and
+46:14
+compatibility on sapphire side so
+46:16
+seppius is like operating systems that
+46:19
+run in as separate physical CPU and we
+46:24
+don't really have a control how we can
+46:27
+update the step bias
+46:28
+mean there's some incompatibility for
+46:30
+example is 11 and is 12 they have a
+46:33
+different protocol how the step is
+46:37
+communicate with a kernel which we can't
+46:40
+really dull boot 11 and 12 but we still
+46:42
+can do 11 and 11 and 12 and 12 so like
+46:45
+the major version still work again we
+46:49
+don't really control the step update
+46:51
+process is we need some code execution
+46:54
+on the step aside and even if we do we
+46:58
+need somehow to dump the SAP and replay
+47:01
+document there is some research made on
+47:03
+it but it's still still not complete but
+47:08
+what we can do is to load the custom
+47:11
+drivers for the custom kernel extensions
+47:14
+on a 10 as we see with disabled kernel
+47:18
+textured on the region we can map our
+47:20
+own memory we can write our own drivers
+47:22
+and that's it and one of the plans that
+47:27
+I got to make some low-level boot a
+47:29
+manager for is for example like as a
+47:31
+wrapper for I boot to easily switch
+47:33
+between two operating systems I think we
+47:37
+still have some time I want to get a
+47:41
+quick overview what the is hikin will be
+47:44
+so the last year Apple introduced a 12
+47:48
+SOC and it definitely rise at some bar
+47:51
+on a security and particularly many of
+47:54
+you hear about pointer and if occasion
+47:56
+code that Apple introduced in the newer
+48:00
+iOS and the newer devices and we know
+48:03
+that it exists in the kernel safe itself
+48:05
+and in a user mode but the bad news it's
+48:09
+not just there it now it's an eye boot
+48:11
+it's in a kernel cache it is in user
+48:13
+mode into step is in a man step user
+48:16
+mode level
+48:17
+additionally they add some software CFI
+48:21
+in critical boot component as well as
+48:25
+add the new secure storage where the SAP
+48:29
+interpolate okay now stored so that's
+48:32
+that's interesting
+48:34
+they made some mitigation on like static
+48:38
+trust caches so the now the start across
+48:40
+cache as I said it's get loaded by
+48:42
+I boot itself it's not a part of caramel
+48:45
+anymore the dynamic trust cache now
+48:47
+moved to IMG for container so they drop
+48:49
+completely mg3 container types they made
+48:54
+some refactoring on a way how kernel
+48:56
+perform the code sanity check by
+48:58
+introducing the core trust and finally
+49:02
+even in a WebKit there is some hardening
+49:05
+including usage of pointer notification
+49:07
+codes so we add it's like a 12
+49:11
+jailbreaking may be a tricky one now
+49:16
+here's the list of references that I use
+49:18
+it during my research I really highly
+49:21
+recommend to read the syrup right up
+49:24
+about I boot exploit for 5s for off
+49:29
+sorry for 32-bit devices which can be
+49:32
+ported to 5s and for example using the
+49:36
+same step that I do do the dual boot and
+49:41
+here's a number of folks who help me do
+49:46
+my research I just want to say thanks
+49:49
+yeah I think we still have time for
+49:52
+questions thank you
+50:02
+no questions
+50:17
+okay even I'll be around if you have a
+50:22
+question you can catch me somewhere in a
+50:25
+coffee area or in a hole so I think yeah
+50:27
+we saved ten minutes Adam
+50:32
+[Applause]
