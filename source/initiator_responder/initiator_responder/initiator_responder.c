@@ -90,7 +90,9 @@ void initiator(int nresponders)
 int initiator_responder_main()
 {
     init_initiator();
-    int n_responders = random() % 2560000;
+    // <30 responders or experiment with larger values
+    // such as <2560000
+    int n_responders = random() % 30;
     initiator(n_responders);
     exit(EXIT_SUCCESS);
 }
