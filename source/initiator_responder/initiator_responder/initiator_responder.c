@@ -13,9 +13,9 @@
  * This program is an example of a initiator thread spawning a number of
  * concurrent responders.  The initiator thread waits until all of the responders have
  * finished to exit.  Once created a responder process doesn’t do much in this
- * simple example except loop.  A count variable is used by the initiator and
+ * simple example except loop.  A n_responders_active variable is used by the initiator and
  * responder processes to keep track of the current number of responders executing.
- * A mutex is associated with this count variable, and a condition variable
+ * A mutex is associated with this n_responders_active variable, and a condition variable
  * with the mutex.  This program is a simple demonstration of the use of
  * mutex and condition variables.
  */
@@ -24,13 +24,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-int count;              /* number of responders active */
-pthread_mutex_t lock;   /* mutual exclusion for count */
-pthread_cond_t done;    /* signalled each time a responder finishes */
+int n_responders_active;    /* number of responders active */
+pthread_mutex_t lock;       /* mutual exclusion for n_responders_active */
+pthread_cond_t done;        /* signalled each time a responder finishes */
 
 void init_initiator()
 {
-    count = 0;
+    n_responders_active = 0;
     assert(pthread_mutex_init(&lock, NULL) == 0);
     assert(pthread_cond_init(&done, NULL) == 0);
     unsigned int seed = (unsigned int)time(NULL);
@@ -38,8 +38,8 @@ void init_initiator()
 }
 
 /*
- * Each responder just counts up to its argument, yielding the processor on
- * each iteration.  When it is finished, it decrements the global count
+ * Each responder just n_responders_actives up to its argument, yielding the processor on
+ * each iteration.  When it is finished, it decrements the global n_responders_active
  * and signals that it is done.
  */
 void *_Nullable responder(void *_Nullable param)
@@ -52,7 +52,7 @@ void *_Nullable responder(void *_Nullable param)
         pthread_yield_np();
     }
     assert(pthread_mutex_lock(&lock) == 0);
-    count -= 1;
+    n_responders_active -= 1;
     printf("responder finished %d cycles.\n", n);
     assert(pthread_cond_signal(&done) == 0);
     assert(pthread_mutex_unlock(&lock) == 0);
@@ -68,7 +68,7 @@ void initiator(int nresponders)
 {
     for (int i = 1; i <= nresponders; ++i) {
         pthread_mutex_lock(&lock);
-        count += 1;
+        n_responders_active += 1;
         pthread_t thread_details;
         int iterations = random() % 1000;
         pthread_create(&thread_details,
@@ -79,7 +79,7 @@ void initiator(int nresponders)
         pthread_mutex_unlock(&lock);
     }
     pthread_mutex_lock(&lock);
-    while (count != 0) {
+    while (n_responders_active != 0) {
         pthread_cond_wait(&done, &lock);
     }
     pthread_mutex_unlock(&lock);
