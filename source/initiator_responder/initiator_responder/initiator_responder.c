@@ -90,7 +90,7 @@ void initiator(int nresponders)
 int initiator_responder_main()
 {
     init_initiator();
-    int n_responders = random() % 16;
+    int n_responders = random() % 2560000;
     initiator(n_responders);
     exit(EXIT_SUCCESS);
 }
