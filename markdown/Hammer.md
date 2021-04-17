@@ -10,10 +10,10 @@ In this chapter we shall look at an exploit write-up.  Our purpose is not to und
 
 ## Getting Exploits
 
-Exploits can be downloaded from the Exploit Database (@exploitdb).
+Exploits can be downloaded from the Exploit Database [@exploitdb].
 This is a valuable resource and one we shall often refer to.
 The exploit database has a search tool, `searchsploit`.
-If we install `searchsploit` from @exploitdb and configure our `~/.searchsploit_rc` file then we can easily look up exploits.
+If we install `searchsploit` from [@exploitdb] and configure our `~/.searchsploit_rc` file then we can easily look up exploits.
 
 This is a search for items matching `ios` and `dos`:
 ```
