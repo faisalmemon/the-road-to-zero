@@ -49,7 +49,7 @@ Rather than duplicate or replace the NeXTstep documentation, we assume the reade
 
 Here we follow along the @machconcepts documentation but with modernized code examples.  These are available at @trtzgithub in the subdirectory `source/mach-vm-alloc`
 
-Here is code which demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.
+Here is code that demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.
 
 ```c
 int vm_example()
