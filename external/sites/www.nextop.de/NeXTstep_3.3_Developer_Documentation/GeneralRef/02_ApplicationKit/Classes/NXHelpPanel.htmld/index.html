@@ -1,0 +1,1009 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXHelpPanel.rtf -->
+<!-- Date: Sun Jun 28 20:00:57 1998 -->
+<head>
+<title>NXHelpPanel</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXHelpPanel"></a><font face="Helvetica" size="+2"><b>NXHelpPanel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Panel : Window : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXHelpPanel.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXHelpPanel class is the central component of the NEXTSTEP help system.&nbsp; It provides the Help panel that displays the text and illustrations that constitute your application's help information, and it stores associations of user-interface objects with specific passages of that text.</font>
+
+<p><font face="Times">Users can display the Help panel by choosing the Help command from an application's Info menu.&nbsp; The panel employs the metaphor of a book:&nbsp; It displays a table of contents, body text, and an index.&nbsp; Users can browse through the text by clicking entries in the table of contents or index.&nbsp; The panel also supports hypertext-like help links, which appear as diamond-shaped images within the text and allow the user to easily follow cross references.&nbsp; By using the help cursor and clicking user-interface objects, the user can query the Help panel for information associated with those objects.</font>
+
+<p><font face="Times">Adding the standard help system facilities to your application is easy.&nbsp; The Add Help Directory command in Project Builder supplies your application with a help directory and populates it with simple table-of-contents and index files.&nbsp; Interface Builder's Menu palette offers a Info submenu containing a preconfigured Help command.&nbsp; With this command and the two files, your application can display the generic help text that's available to all NEXTSTEP applications (for example, &quot;Using the mouse&quot; and &quot;Sending a fax&quot;).&nbsp; You can then add help information (as well as table-of-contents and index entries) that are specific to your application, and override any of the generic information your application inherits.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The Help Text</b></font>
+
+<p><font face="Times">An NXHelpPanel object looks in a language-specific directory within the application's file package for the text that it will display.&nbsp; For example, if the user's language preference is English, the panel searches for a directory named <b>Help</b> within the <b>English.lproj</b> directory of the application's file package.&nbsp; It searches for two files:&nbsp; <b>TableOfContents.rtf</b> and <b>Index.rtfd</b>. There may also be one or more files containing the body text that the Help panel will display.&nbsp; The table-of-contents, index, and body files are interconnected by a system of <i>help links</i> and <i>help markers</i>.</font>
+
+<p><font face="Times">A help marker is a named position holder in the stream of text--in most cases, it's invisible to users.&nbsp; A help link is a diamond-shaped button embedded in the text.&nbsp; Help links store a file name and, optionally, a help marker name.&nbsp; When a user clicks a help link, the Help panel displays the named file.&nbsp; If the help link also stores a marker name, the displayed file is scrolled to the position of the marker, and the text is selected from the marker's position to the end of the line.</font>
+
+<p><font face="Times">The Text class provides the functionality for help links and markers, so this feature is available outside the Help panel.&nbsp; You use Edit to create and modify help documents.&nbsp; Edit's Help menu (accessible through the Format command) lets you insert links and markers and make the normally invisible help markers visible.&nbsp; Also in Edit, you can inspect and modify an existing help link or marker by holding down the Command key while clicking it.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Table-of-Contents and Index Files</b></font>
+
+<p><font face="Times">The table-of-contents and index files are specially designed documents in Rich Text Format (RTF).&nbsp; An NXHelpPanel object identifies these files by name (<b>TableOfContents.rtf</b> and <b>Index.rtfd</b>) and processes them differently than it does other help files.</font>
+
+<p><font face="Times">The table-of-contents file should contain one entry for each help text file in the help directory.&nbsp; Each entry begins with a help link that stores the name of the destination file for that entry.&nbsp; Following the link is the text of the entry, which may wrap and span several lines.&nbsp; Although the table of contents in the Help panel looks like it's displayed by a Matrix, it's actually displayed by a modified Text object.&nbsp; Thus, you can use the full generality of RTF to format your table of contents.</font>
+
+<p><font face="Times">The index file is structured similarly although there is no enforced one-to-one mapping.&nbsp; Generally, the help link that begins an index entry stores both a file name and a marker name, since an index entry usually points to a specific word or phrase within a file.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Generic Help Files</b></font>
+
+<p><font face="Times">The <b>Help</b> directory that Project Builder provides for a new application contains only table-of-contents and index files; no other help files are present.&nbsp; However, if you run the application, you'll find that its Help panel can display numerous help subjects, each of a general nature.&nbsp; This is because NEXTSTEP applications have access to the generic help information contained in <b>/usr/lib/NextStep/Resources/</b><i>language</i><b>.lproj/Help.store</b> (a compressed help directory).</font>
+
+<p><font face="Times">When a help link is being resolved, the NXHelpPanel first looks for the specified file within the appropriate <i>language</i><b>.lproj/Help</b> directory of the application's file package.&nbsp; If the file isn't found, it then searches in <b>/usr/lib/NeXTSTEP/Resources/</b><i>language</i><b>.lproj/ Help.store</b>.&nbsp; This search path is used for all links, whether they are in the table of contents, index, or body text.&nbsp; (Be forewarned:&nbsp; Edit doesn't apply this search path to help links, so if you open the table-of-contents or index files in Edit and click a help link, Edit will complain that the file can't be found, unless it exists within the application's file package.)</font>
+
+<p><font face="Times">If one of these generic help files is inappropriate for your application, you have two remedies:&nbsp; You can remove the table-of-contents and index entries that refer to it, or you can override the file with one that's more appropriate.&nbsp; By placing a file of the same name and relative location within your application's <b>Help</b> directory, NXHelpPanel will display it rather than the generic file.&nbsp; See &quot;Structure of the Generic Help Directory&quot; below for the names and directory locations of the generic help files.</font>
+
+<p><font face="Times">If you want to modify the generic file, use Interface Builder's Help Builder panel to display the file, and then select the entire text and copy and paste it into a new document.&nbsp; Save the document in your application's <b>Help</b> directory using the same name as shown in the Help Builder panel.&nbsp; Be sure to resize the window to the same width as the original so that the text will wrap to the same margins.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Associating Help Text with Objects</b></font>
+
+<p><font face="Times">The NXHelpPanel class stores associations between user-interface objects and help text.&nbsp; When the user presses the Help modifier key (or, on older keyboards, simultaneously presses the Control and Alternate keys), a question mark cursor appears. If the user clicks an object using this cursor, the Help panel displays the associated help text.</font>
+
+<p><font face="Times">The easiest way to create these associations is with Interface Builder's Help Builder panel.&nbsp; If your application has a <b>Help </b>directory containing the files <b>TableOfContents.rtf</b> and <b>Index.rtfd</b>, the Help Builder panel will let you use them to display the application's help files.&nbsp; By selecting an object in your application, displaying the appropriate help file in the Help Builder panel, and clicking the Attach File to Selection button, you establish the association.</font>
+
+<p><font face="Times">You can also attach a help file to a user-interface object programmatically, by sending an <b>attachHelpFile:markerName:to: </b>message to the NXHelpPanel class object.&nbsp; This method takes a file name, a marker name, and an object <b>id</b> as its arguments. The <b>detachHelpFrom:</b> message removes such an association.</font>
+
+<p><font face="Times">Just as with help links, an NXHelpPanel searches both the application's file package and the appropriate file in <b>/usr/lib/NeXTSTEP/Resources/</b><i>language</i><b>.lproj</b> in attempting to find the file associated with a particular user-interface object.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Hidden Files</b></font>
+
+<p><font face="Times">Although in general there's a one-to-one relationship between table-of-contents entries and files in the <b>Help</b> directory, you can force a single table-of-contents entry to represent multiple &quot;hidden&quot; files.&nbsp; This can be useful in reducing the overall length of the table of contents.&nbsp; For example, Mail's Help panel contains a single entry, &quot;Commands, buttons, and panels,&quot; that's highlighted no matter which user-interface object has been queried for its associated help information.</font>
+
+<p><font face="Times">Hidden files can't be accessed from the table of contents; rather, the user must find them by Help-clicking an object in the application's user interface, by using the Help Panel's Find command, by using the Index, or by following a help link from some other file.&nbsp; However, when a hidden file is displayed, the Help panel must select some entry in the table of contents.&nbsp; In Mail, this entry is entitled &quot;Commands, buttons, and panels.&quot;</font>
+
+<p><font face="Times">Conversely, when the user selects such an table-of-contents entry, the Help panel must display one of the files in the directory of hidden files; by convention, this file must be named <b>Prolog.rtfd</b>.&nbsp; The prolog file for the &quot;Commands, buttons, and panels&quot; entry informs users that they can get help on any command, panel, or button by Help-clicking that object.</font>
+
+<p><font face="Times">The table of contents supplied by Project Builder contains the entry &quot;Commands&quot; that corresponds to a directory of hidden files. Conceptually, these files exist in <b>/usr/lib/NeXTSTEP/Resources/</b><i>language</i><b>.lproj/Help/Objects</b> (in fact, they are contained in a compressed file derived from this original directory structure).&nbsp; In your application, you can add to (or override) these hidden files by creating an <b>Objects</b> subdirectory within your application's <b>Help</b> directory and placing the new files there.</font>
+
+<p><font face="Times">The Help panel's Find button searches through all the files that are connected to table-of-contents entries, first looking in the application's <b>Help</b> directory and then in the generic help material.&nbsp; If your table of contents has a link to the <b>Objects </b>subdirectory (in other words, has the &quot;Commands&quot; entry, as provided by Project Builder), the hidden files will be searched too. If you don't want some hidden file in the generic help material to appear in your application's Help panel as the result of a Find operation, override the file with an empty file of the same name.&nbsp; Since the file is empty, no search string will ever be found in it, and it will effectively block the generic file of the same name from being searched.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Context-Sensitive Help</b></font>
+
+<p><font face="Times">Your application can provide context-sensitive help; that is, the particular text displayed when the Help menu command is chosen or when the user Help-clicks an object can depend on the state of the application.&nbsp; Context-sensitive help requires the intervention of the Application object's delegate.</font>
+
+<p><font face="Times">If the Application object's delegate responds to the <b>app:willShowHelpPanel:</b> message, it receives such a message just before the Help panel is displayed.&nbsp; Within the implementation of the <b>app:willShowHelpPanel:</b> method, the delegate can specify which file will appear in the panel:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- app:sender willShowHelpPanel:panel</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char path[MAXPATHLEN + 1];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">sprintf (path, &#34;%s/%s&#34;, [panel helpDirectory],</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">&#34;Tasks/AddressingMail/CreatingAddressBook.rtfd&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[panel showFile:path atMarker:NULL];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The delegate must specify a fully qualified path since the NXHelpPanel object assumes that a partial path is relative to the currently displayed help file.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Indexing Help Text</b></font>
+
+<p><font face="Times">The Help panel's Find button makes use of Indexing Kit facilities to quickly locate files containing the search string.&nbsp; (Note that the index discussed here is a binary file produced by the Indexing Kit, not the <b>Index.rtfd</b> file that contains the textual index).</font>
+
+<p><font face="Times">To create an index for your help files, in a Terminal window switch to the <b>Help</b> directory you want indexed and then enter:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ixbuild -v</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">with no other arguments.&nbsp; The <b>ixbuild</b> program builds an index (named <b>.index.store</b>) for the <b>Help</b> directory and its subdirectories.</font>
+
+<p><font face="Times">If your application contains a directory of &quot;hidden&quot; help files, you must first make an index of that directory before creating an index of the entire <b>Help</b> directory.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Help Supplements</b></font>
+
+<p><font face="Times">Since in NEXTSTEP some applications have the ability to load executable modules dynamically (for example, a drawing program could allow the user to load a new drawing tool), an NXHelpPanel object provides the ability to load supplemental help information.&nbsp; When the application loads the module, it sends the NXHelpPanel object an <b>addSupplement:inPath:</b> message to inform the object of the location of the new help supplement.&nbsp; The NXHelpPanel object appends the contents of the supplement's <b>TableOfContents.rtf</b> to the existing table of contents, so the supplement should have a title that clearly sets it off from the main part of the table of contents, for example:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>--PatternTool Supplement--</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=145></td>
+
+<td><font face="Times">Pattern Options</font>
+
+<p><font face="Times">Brick</font><br>
+<font face="Times">Stucco</font><br>
+<font face="Times">Wood</font><br>
+<font face="Times">Tile</font><br>
+<font face="Times">Custom</font>
+
+<p><font face="Times">Resizing and Rotating</font>
+
+<p><font face="Times">Blending Patterns</font>
+
+<p><font face="Times">Index to Supplement</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The supplement's index is only accessible from the table of contents; the Help panel's Index button displays the main index.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Structure of the Generic Help Directory</b></font>
+
+<p><font face="Times">As mentioned earlier, the generic help text provided in NEXTSTEP is contained in the file <b>/usr/lib/NeXTSTEP/Resources/</b><i>language</i><b>.lproj/Help.store</b>.&nbsp; This compressed file was derived from a directory of help files. To override a generic help file, you'll need its name and location in the original directory structure.&nbsp; The following listing provides that information:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=145></td>
+
+<td><font face="Times">Help</font><br>
+<img src="../../../Images/sp.gif" width=16 height=1><font face="Times">Index.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=16 height=1><font face="Times">Objects</font><br>
+<img src="../../../Images/sp.gif" width=35 height=1><font face="Times">Menus</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Main</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">ServicesMenu.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">WindowsMenu.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Services</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">OtherService.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Windows</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">ArrangeInFront.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">CloseWindow.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">MiniaturizeWindow.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=73 height=1><font face="Times">WindowName.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=35 height=1><font face="Times">Panels</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">ColorsPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">FaxPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">FontPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">LinkInspectorPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">OpenPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">PageLayoutPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">PrintPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">SavePanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">SpellingPanel.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Prolog.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=16 height=1><font face="Times">TableOfContents.rtf</font><br>
+<img src="../../../Images/sp.gif" width=16 height=1><font face="Times">Tasks</font><br>
+<img src="../../../Images/sp.gif" width=35 height=1><font face="Times">GettingStarted</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">AdjustBriteVolume.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">ButtonsSlidersFields.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">ChooseCommands.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">ClickingHelp.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">DetachSubmenu.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">FindingHelp.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">GettingHelpTopic.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Scrolling.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">UsingMouse.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">WorkingWindows.rtfd</font><br>
+<img src="../../../Images/sp.gif" width=35 height=1><font face="Times">Reference</font><br>
+<img src="../../../Images/sp.gif" width=54 height=1><font face="Times">Cursor.rtfd</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><font face="Times">+ new</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ newForDirectory:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addSupplement:inPath:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Attaching Help to objects</font></td>
+
+<td><font face="Times">+ attachHelpFile:markerName:to:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ detachHelpFrom:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting click-for-help</font></td>
+
+<td><font face="Times">+ isClickForHelpEnabled</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ setClickForHelpEnabled:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Printing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">print:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">printPanel:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Querying</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">helpDirectory</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">helpFile</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Showing help</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">showFile:atMarker:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">showHelpAttachedTo:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-attachHelpFile:markerName:to:%5D"></a><font face="Helvetica"><b>attachHelpFile:markerName:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>attachHelpFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>markerName:</b>(const char *)<i>markerName</i></font><br>
+<font face="Times"><b>to:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Associates <i>filename</i> and <i>markerName</i> with <i>anObject</i>.&nbsp; <i>filename</i> should be a path relative to the <b>Help</b> directory.&nbsp; <i>markerName</i> is the name of a marker within the file specified by <i>filename</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">When <i>anObject</i> is Help-clicked, the Help panel displays the specified file, and the text is scrolled so that the point marked by <i>markerName</i> is visible.&nbsp; (If <i>markerName</i> is NULL, the file isn't scrolled.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>detachHelpFrom:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-detachHelpFrom:%5D"></a><font face="Helvetica"><b>detachHelpFrom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>detachHelpFrom:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes any help information associated with <i>anObject</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>attachHelpFile:markerName:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-isClickForHelpEnabled%5D"></a><font face="Helvetica"><b>isClickForHelpEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>isClickForHelpEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns whether Help-clicking is enabled.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setClickForHelpEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-new%5D"></a><font face="Helvetica"><b>new</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>new</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates, if necessary, and returns the NXHelpPanel object.&nbsp; This method invokes the&nbsp; <b>newForDirectory:</b> method, using &quot;Help&quot; as the single argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForDirectory:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-newForDirectory:%5D"></a><font face="Helvetica"><b>newForDirectory:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>newForDirectory:</b>(const char *)<i>helpDirectory</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates, if necessary, and returns the Help panel.&nbsp; If the panel is created, it loads the help directory specified by <i>helpDirectory</i>. The help directory must reside in the main bundle.&nbsp; If a Help panel already exists but has loaded a help directory other than <i>helpDirectory</i>, a second panel will be created.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>new</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-setClickForHelpEnabled:%5D"></a><font face="Helvetica"><b>setClickForHelpEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setClickForHelpEnabled:</b>(BOOL)<i>enabled</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether Help-clicking is enabled.&nbsp; Normally most applications will leave this feature enabled.&nbsp; However on keyboards without a Help key, the user must hold the Control and Alternate modifiers while Help-clicking.&nbsp; Because some applications may depend upon the simultaneous use of these modifiers, they may need a way to disable the click-for-help feature.&nbsp; In this case, it is recommended that the application have a menu command to allow the user to toggle whether click-for-help is enabled or whether these modifiers are passed through for the application's use.&nbsp; The menu title should be &quot;Disable Click for Help&quot; and should toggle with &quot;Enable Click for Help&quot;.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>isClickForHelpEnabled</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-addSupplement:inPath:%5D"></a><font face="Helvetica"><b>addSupplement:inPath:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSupplement:</b>(const char *)<i>helpDirectory</i> <b>inPath:</b>(const char *)<i>supplementPath</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds supplemental help by appending the supplement's <b>TableOfContents.rtf</b> file to the existing table of contents.&nbsp; This method is designed to be used when an application dynamically loads a resource that has its own help information.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the NXHelpPanel and its storage.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-helpDirectory%5D"></a><font face="Helvetica"><b>helpDirectory</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXAtom)<b>helpDirectory</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the absolute path of the currently loaded help directory.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>helpFile</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-helpFile%5D"></a><font face="Helvetica"><b>helpFile</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXAtom)<b>helpFile</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the path of the currently loaded help file relative to the current help directory.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>helpDirectory</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-print:%5D"></a><font face="Helvetica"><b>print:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>print:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Prints the currently displayed help text and returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-printPanel:%5D"></a><font face="Helvetica"><b>printPanel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>printPanel:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This is the same as the <b>print:</b> method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-showFile:atMarker:%5D"></a><font face="Helvetica"><b>showFile:atMarker:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>showFile:</b>(const char *)<i>filename</i> <b>atMarker:</b>(const char *)<i>markerName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the Help panel to display the help contained in <i>filename</i>.&nbsp; If <i>markerName</i> is non-NULL, then the marker is sought in the file.&nbsp; If found, it's scrolled into view and the text from the marker to the end of the line is highlighted.&nbsp; If the file is not a full path, then it's assumed to be relative to the currently displayed help file.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXHelpPanel-showHelpAttachedTo:%5D"></a><font face="Helvetica"><b>showHelpAttachedTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>showHelpAttachedTo:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the Help panel to display the help attached to <i>anObject</i>.&nbsp; Returns YES if the object has help attached to it, NO if not.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

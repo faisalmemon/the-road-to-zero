@@ -1,0 +1,2437 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/Listener.rtf -->
+<!-- Date: Sun Jun 28 20:00:07 1998 -->
+<head>
+<title>Listener</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:Listener"></a><font face="Helvetica" size="+2"><b>Listener</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/Listener.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Listener class, with the Speaker class, supports communication between applications through Mach messaging.&nbsp; Mach messages are the standard way of performing remote procedure calls (RPCs) in the Mach operating system.&nbsp; The Listener class implements the receiving end of a remote message, and the Speaker class implements the sending end.</font>
+
+<p><font face="Times">Remote messages are sent to ports, which act something like mailboxes for the tasks that have the right to receive the messages delivered there.&nbsp; Each Listener corresponds to a single Mach port to which its application has receive rights.&nbsp; Since a port has a fixed size--usually there's room for only five messages in the port queue--when the port is full, a new message must wait for the Listener to take an old message from the queue.</font>
+
+<p><font face="Times">To initiate a remote message, you send an Objective C message to a Speaker instance.&nbsp; The Speaker translates it into the proper Mach message protocol and dispatches it to the port of the receiving task.&nbsp; The Mach message is received by the Listener instance associated with the port.&nbsp; The Listener verifies that it understands the message, that the Speaker has sent the correct parameters for the message, and that all data values are well formed--for example, that character strings are null-terminated. The Listener translates the Mach message back into an Objective C message, which it sends to itself.&nbsp; It's as if an Objective C message sent to a Speaker in one task is received by a Listener in another task.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Delegation</b></font>
+
+<p><font face="Times">The Listener methods that receive remote Objective C messages simply pass those messages on to a delegate.&nbsp; The Listener's job is just to get the message and find another object to respond to it.</font>
+
+<p><font face="Times">The <b>setDelegate:</b> method assigns a delegate to the Listener.&nbsp; There's no default delegate, but before the Application object gets its first event, it registers a Listener for the application and makes itself the Listener's delegate.&nbsp; You can register your own Listener (with Application's <b>setAppListener:</b> method) in start-up code, and when you send the Application object a <b>run </b>message, the Application object will become the Listener's delegate.</font>
+
+<p><font face="Times">If an object has its own delegate when it becomes the Listener's delegate, the Listener looks first to its delegate's delegate and only then to its own delegate when searching for an object to entrust with a remote message.&nbsp; This means that you can implement the methods that respond to remote messages in either the Application object's delegate or in the Application object. (You can also implement the methods directly in a Listener subclass, or in another object you make the Listener's delegate.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Setting Up a Listener</b></font>
+
+<p><font face="Times">Two methods, <b>checkInAs:</b> and <b>usePrivatePort</b>, allocate a port for the Listener:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">With the <b>checkInAs:</b> method, the Listener's port is given a name (usually the name of the application) and is registered with the network name server.&nbsp; This makes the port publicly available so that other applications can find it.&nbsp; Applications get send rights to a public port through the <b>NXPortFromName()</b> function.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Alternatively, the Listener's port can be kept private (with the <b>usePrivatePort</b> method).&nbsp; Send rights to the port can then be doled out only to selected applications.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Once allocated, the port must be added (with the <b>addPort</b> method) to the list of those that the client library monitors.&nbsp; A procedure will automatically be called to read Mach messages from the port queue and begin the Listener's process of transforming the Mach message back into an Objective C message.&nbsp; The procedure is called between events, provided the priority of getting remote messages is at least as high as the priority of getting the next event.</font>
+
+<p><font face="Times">A Listener is typically set up as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myListener = [[Listener alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myListener setDelegate:someOtherObject];</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* Sets the object responsible for handling</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* messages received.</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myListener checkInAs:&#34;portname&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">/* or [myListener usePrivatePort] */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myListener addPort];</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* Now, between events, the client library</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* will check to see if a message has arrived</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* in the port queue.</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myListener free];</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">/* When we no longer need the Listener. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An application may have more than one Listener and Speaker, but it must have at least one of each to communicate with the Workspace Manager and other applications.&nbsp; If your application doesn't create them, a default Listener and Speaker are created for you at start-up before Application's <b>run</b> method gets the first event.</font>
+
+<p><font face="Times">If a Listener is created for you, it will be checked in automatically under the name returned by Application's <b>appListenerPortName</b> method.&nbsp; Normally, this is the name assigned to the application at compile time.&nbsp; The port will also be added to the list of those the client library monitors, so the Listener will be scheduled to receive messages asynchronously.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Remote Methods</b></font>
+
+<p><font face="Times">The Listener and Speaker classes implement a number of methods that can be used to send and receive remote messages.&nbsp; You can add other methods in Listener and Speaker subclasses.&nbsp; The <b>msgwrap</b> program can be used to generate subclass definitions from a list of method declarations.&nbsp; Most programmers will use <b>msgwrap</b> instead of manually subclassing the Listener class. See the man page for <b>msgwrap</b> for details.</font>
+
+<p><font face="Times">Some remote methods, especially those with the prefix &quot;msg&quot;, are designed to allow an application to run under program control rather than user control.&nbsp; By implementing these methods, you'll permit a controlling application to run your application in conjunction with others as part of a script.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Argument Types</b></font>
+
+<p><font face="Times">Remote messages take two kinds of arguments--input arguments, which pass values from the Speaker to the Listener, and output arguments, which are used to pass values back from the Listener to the Speaker.&nbsp; The Listener sends return information back to the Speaker in a separate Mach message to a port provided by the Speaker.&nbsp; The Speaker reformats this information so that it's returned by reference in variables specified in the original Objective C message.</font>
+
+<p><font face="Times">A method can take up to NX_MAXMSGPARAMS arguments.&nbsp; Arguments are constrained to a limited set of permissible types. Internally, the Listener and Speaker identify each permitted type with a unique character code.&nbsp; Input argument types and their identifying codes are listed below.&nbsp; Note that an array of bytes counts as a single argument, even though two Objective C parameters are used to refer to it--a pointer to the array and an integer that counts the number of bytes in the array.&nbsp; A character string must be null-terminated.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Category</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Type</b></font></td>
+
+<td><font face="Helvetica"><b>Character Code</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">integer</font></td>
+
+<td nowrap><font face="Times">(int)</font></td>
+
+<td><font face="Times">i</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">double</font></td>
+
+<td nowrap><font face="Times">(double)</font></td>
+
+<td><font face="Times">d</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">character string</font></td>
+
+<td nowrap><font face="Times">(char *)</font></td>
+
+<td><font face="Times">c</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">byte array</font></td>
+
+<td nowrap><font face="Times">(char *), (int)</font></td>
+
+<td><font face="Times">b</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">receive rights (port)</font></td>
+
+<td nowrap><font face="Times">(port_t)</font></td>
+
+<td><font face="Times">r</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">send rights (port)</font></td>
+
+<td nowrap><font face="Times">(port_t)</font></td>
+
+<td><font face="Times">s</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There's a matching output argument for each of these categories.&nbsp; Since output arguments return information by reference, they're declared as pointers to the respective input types:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Category</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Type</b></font></td>
+
+<td><font face="Helvetica"><b>Character Code</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">integer</font></td>
+
+<td nowrap><font face="Times">(int *)</font></td>
+
+<td><font face="Times">I</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">double</font></td>
+
+<td nowrap><font face="Times">(double *)</font></td>
+
+<td><font face="Times">D</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">character string</font></td>
+
+<td nowrap><font face="Times">(char **)</font></td>
+
+<td><font face="Times">C</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">byte array</font></td>
+
+<td nowrap><font face="Times">(char **), (int *)</font></td>
+
+<td><font face="Times">B</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">receive rights (port)</font></td>
+
+<td nowrap><font face="Times">(port_t *)</font></td>
+
+<td><font face="Times">R</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">send rights (port)</font></td>
+
+<td nowrap><font face="Times">(port_t *)</font></td>
+
+<td><font face="Times">S</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The validity of all input parameters is guaranteed for the duration of the remote message.&nbsp; The memory allocated for a character string or a byte array is freed automatically after the Listener method returns.&nbsp; If you want to save a string or an array, you must copy it.&nbsp; When the amount of input data is large, you can use the <b>NXCopyInputData()</b> function to take advantage of the out-of-line data feature of Mach messaging.&nbsp; This function is passed the index of the argument to be copied (the combination of a pointer and an integer for a byte array counts as a single argument) and returns a pointer to an area obtained through the <b>vm_allocate()</b> function.&nbsp; This pointer must be freed with <b>vm_deallocate()</b>, rather than <b>free()</b>.&nbsp; Note that the size of the area allocated is rounded up to the next page boundary, and so will be at least one page.&nbsp; Consequently, it is more efficient to <b>malloc()</b> and copy amounts up to about half the page size.</font>
+
+<p><font face="Times">The application is responsible for deallocating all port parameters received with the <b>port_deallocate()</b> function when they're no longer needed.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Return Values</b></font>
+
+<p><font face="Times">All remote methods return an <b>int</b> that indicates whether or not the message was successfully transmitted.&nbsp; A return of 0 indicates success.</font>
+
+<p><font face="Times">The Listener methods that receive remote messages use the return value to signal whether they're able to delegate a message to another object.&nbsp; If a method can't entrust its message to the delegate (or the delegate's delegate), it returns a value other than 0. If, on the other hand, it's successful in delegating the message, it passes on the delegate's return value as its own.&nbsp; In general, delegate methods should always return 0.</font>
+
+<p><font face="Times">The Listener doesn't pass the return value back to the Speaker that initiated the remote message.&nbsp; However, if the Speaker is expecting return information from the Listener--that is, if the remote message has output arguments--a nonzero return causes the Listener to send an immediate message back to the Speaker indicating its failure to find a delegate for the remote message. The Speaker method then returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.</font>
+
+<p><font face="Times">Note that the return value indicates only whether the message got through; it doesn't say anything about whether the action requested by the message was successfully carried out.&nbsp; To provide that information, a remote message must include an output argument.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">char *<b>portName</b>;</font>
+
+<p><font face="Times">port_t <b>listenPort</b>;</font>
+
+<p><font face="Times">port_t <b>signaturePort</b>;</font>
+
+<p><font face="Times">id <b>delegate</b>;</font>
+
+<p><font face="Times">int <b>timeout</b>;</font>
+
+<p><font face="Times">int <b>priority</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">portName</font></td>
+
+<td><font face="Times">The name under which the port is registered.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">listenPort</font></td>
+
+<td><font face="Times">The port where the Listener receives remote messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">signaturePort</font></td>
+
+<td><font face="Times">The port used to authenticate registration.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The object responsible for responding to remote messages received by the Listener.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">timeout</font></td>
+
+<td><font face="Times">How long, in milliseconds, that the Listener will wait for its return results to be placed in the port queue of the sending application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">priority</font></td>
+
+<td><font face="Times">The priority level at which the Listener will receive messages.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing the class</font></td>
+
+<td><font face="Times">+ initialize</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing a new Listener instance</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Freeing a Listener</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up a Listener</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addPort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removePort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">checkInAs:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">usePrivatePort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">checkOut</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">listenPort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">signaturePort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">portName</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPriority:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">priority</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">timeout</font><br>
+<font face="Times">+ run</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Providing for program control</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCalc:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCopyAsType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCutAsType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgDirectory:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgFile:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPaste:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPosition:posType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPrint:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgQuit:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgSelection:length:asType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgSetPosition:posType:andSelect:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgVersion:ok:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Receiving remote messages</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">messageReceived:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">performRemoteMethod:paramList:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">remoteMethodFor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setServicesDelegate:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">servicesDelegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-initialize%5D"></a><font face="Helvetica"><b>initialize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>initialize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets up a table that instances of the class use to recognize the remote messages they understand.&nbsp; The table lists the methods that can receive remote messages and specifies the number of parameters for each along with their types.&nbsp; An <b>initialize </b>message is sent to the class the first time it's used; you should never invoke this method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-run%5D"></a><font face="Helvetica"><b>run</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>run</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets up the necessary conditions for Listener objects to receive remote messages if they're used in applications that don't have an Application object and a main event loop.&nbsp; In other words, if an application doesn't send a <b>run</b> message to the Application object,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[NXApp run];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">it will need to send a <b>run</b> message to the Listener class</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Listener run];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">for instances of the class to work.&nbsp; This method never returns, so your application will probably need to be dispatched by messages to its Listener instances.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-addPort%5D"></a><font face="Helvetica"><b>addPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Enables the Listener to receive messages by adding its port to the list of those that the client library monitors.&nbsp; The Listener will then be scheduled to receive messages between events.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removePort</b>, <b>DPSAddPort()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-checkInAs:%5D"></a><font face="Helvetica"><b>checkInAs:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>checkInAs:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Allocates a port for the Listener, and registers that port as <i>name</i> with the Mach network name server.&nbsp; This method also allocates a signature port that's used to protect the right to remove <i>name</i> from the name server.&nbsp; This method returns 0 if it successfully checks in the application with the name server, and a Mach error code if it doesn't.&nbsp; The Mach error code is most likely to be one of those defined in the header files <b>servers/netname_defs.h</b> and <b>mach/kern_return.h</b></font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>usePrivatePort</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkOut</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-checkOut%5D"></a><font face="Helvetica"><b>checkOut</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>checkOut</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the Listener's port from the list of those registered with the network name server.&nbsp; This makes the port private.&nbsp; This method will always be successful and therefore always returns 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-delegate%5D"></a><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Listener's delegate.&nbsp; The default delegate is <b>nil</b>, but just before the first event is received, the Application object is made the delegate of the Listener registered as the Application object's Listener.&nbsp; The delegate is expected to respond to the remote messages received by the Listener, although it may do this by sending messages to another object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAppListener:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the Listener object and deallocates its listen port and its signature port.&nbsp; If the Listener's port is registered with the network name server, it is unregistered.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated Listener instance.&nbsp; The new instance has no port name, its priority is set to NX_BASETHRESHOLD, its timeout is initialized to 30,000 milliseconds, its listen port and signature port are both PORT_NULL, and it has no delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPriority:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTimeout:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-listenPort%5D"></a><font face="Helvetica"><b>listenPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>listenPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port at which the Listener receives remote messages.&nbsp; This port is never set directly, but is allocated by either <b>checkInAs:</b> or <b>usePrivatePort</b>.&nbsp; It's deallocated by the <b>free</b> method.&nbsp; The Listener caches this port as its <b>listenPort</b> instance variable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>usePrivatePort</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-messageReceived:%5D"></a><font face="Helvetica"><b>messageReceived:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>messageReceived:</b>(NXMessage *)<i>msg</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Begins the process of translating a Mach message received at the Listener's port into an Objective C message.&nbsp; This method verifies that the Mach message is well formed, that it corresponds to an Objective C method understood by the Listener, and that the method's arguments agree in number and type with the fields of the Mach message.</font>
+
+<p><font face="Times"><b>messageReceived:</b> messages are initiated whenever a Mach message is to be read from the Listener's port; you shouldn't initiate them in the code you write.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>performRemoteMethod:paramList:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgCalc:%5D"></a><font face="Helvetica"><b>msgCalc:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCalc:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message to perform any calculations that are necessary to bring the current window up to date.&nbsp; The method you implement to respond to this message should set the integer specified by <i>flag</i> to YES if the calculations will be performed, and to NO if they won't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgCopyAsType:ok:%5D"></a><font face="Helvetica"><b>msgCopyAsType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCopyAsType:</b>(const char *)<i>aType</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to copy the current selection to the pasteboard as <i>aType</i> data.&nbsp; <i>aType </i>should be one of the standard pasteboard types defined in <b>appkit/Pasteboard.h</b>.&nbsp; The method you implement to respond to this request should set the integer referred to by <i>flag</i> to YES if the selection is copied, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgCutAsType:ok:%5D"></a><font face="Helvetica"><b>msgCutAsType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCutAsType:</b>(const char *)<i>aType</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to delete the current selection and place it in the pasteboard as <i>aType </i>data.&nbsp; <i>aType</i> should be one of the standard pasteboard types defined in <b>appkit/Pasteboard.h</b>.&nbsp; The method you implement to respond to this request should set the integer referred to by <i>flag</i> to YES if the requested action is carried out, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgDirectory:ok:%5D"></a><font face="Helvetica"><b>msgDirectory:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgDirectory:</b>(char *const *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message asking for the current directory.&nbsp; The method you implement to respond to this message should place a pointer to the full path of its current directory in the variable specified by <i>fullPath</i>.&nbsp; The integer specified by <i>flag</i> should be set to YES if the directory will be provided, and to NO if it won't.</font>
+
+<p><font face="Times">The current directory is application-specific, but is probably best described as the directory the application would show in its Open panel were the user to bring it up.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgFile:ok:%5D"></a><font face="Helvetica"><b>msgFile:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgFile:</b>(char *const *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to provide the full pathname of its current document.&nbsp; The current document is the file displayed in the main window.</font>
+
+<p><font face="Times">The method you implement to respond to this request should set the pointer referred to by <i>fullPath</i> so that it points to a string containing the full pathname of the current document.&nbsp; The integer specified by <i>flag</i> should be set to YES if the pathname is provided, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgPaste:%5D"></a><font face="Helvetica"><b>msgPaste:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPaste:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to replace the current selection with the contents of the pasteboard, just as if the user had chosen the Paste command from the Edit menu.&nbsp; The method you implement to respond to this message should set the integer referred to by <i>flag</i> to YES if the request is carried out, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgPosition:posType:ok:%5D"></a><font face="Helvetica"><b>msgPosition:posType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPosition:</b>(char *const *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>posType:</b>(int *)<i>anInt</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting a description of the current selection.</font>
+
+<p><font face="Times">The method you implement to respond to this request should describe the selection in a character string and set the pointer referred to by <i>aString</i> so that it points the description.&nbsp; The integer referred to by <i>anInt</i> should be set to one of the following constants to indicate how the current selection is described:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TEXTPOSTYPE</font></td>
+
+<td><font face="Times">As a character string to search for</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_REGEXPRPOSTYPE</font></td>
+
+<td><font face="Times">As a regular expression to search for</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_LINENUMPOSTYPE</font></td>
+
+<td><font face="Times">As a colon-separated range of line numbers, for example &quot;10:12&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_CHARNUMPOSTYPE</font></td>
+
+<td><font face="Times">As a colon-separated range of character positions, for example &quot;21:33&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_APPPOSTYPE</font></td>
+
+<td><font face="Times">As an application-specific description</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The integer referred to by <i>flag</i> should be set to YES if the requested information is provided in the other two output arguments, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgPrint:ok:%5D"></a><font face="Helvetica"><b>msgPrint:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPrint:</b>(const char *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to print the document whose path is <i>fullPath</i>.&nbsp; The method you implement to respond to this request should set the integer referred to by <i>flag</i> to YES if the document is printed, and to NO if it isn't.&nbsp; The document file should be closed after it's printed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgQuit:%5D"></a><font face="Helvetica"><b>msgQuit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgQuit:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message for the application to quit.&nbsp; The method you implement to respond to this message should set the integer specified by <i>flag</i> to YES if the application will quit, and to NO if it won't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgSelection:length:asType:ok:%5D"></a><font face="Helvetica"><b>msgSelection:length:asType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgSelection:</b>(char *const *)<i>bytes</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>length:</b>(int *)<i>numBytes</i></font><br>
+<font face="Times"><b>asType:</b>(const char *)<i>aType</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message asking the application for its current selection as <i>aType</i> data.&nbsp; <i>aType</i> will be one of the following standard data types for the pasteboard (or an application-specific type):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NXAsciiPboardType</font><br>
+<font face="Times">NXPostScriptPboardType</font><br>
+<font face="Times">NXTIFFPboardType</font><br>
+<font face="Times">NXRTFPboardType</font><br>
+<font face="Times">NXSoundPboardType</font><br>
+<font face="Times">NXFilenamePboardType</font><br>
+<font face="Times">NXTabularTextPboardType</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The method you implement to respond to this request should set the pointer referred to by <i>bytes</i> so that it points to the selection and also place the number of bytes in the selection in the integer referred to by <i>numBytes</i>.&nbsp; The integer referred to by <i>flag</i> should be set to YES if the selection is provided, and to NO if it's not.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgSetPosition:posType:andSelect:ok:%5D"></a><font face="Helvetica"><b>msgSetPosition:posType:andSelect:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgSetPosition:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>posType:</b>(int)<i>anInt</i></font><br>
+<font face="Times"><b>andSelect:</b>(int)<i>selectFlag</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the application to scroll the current document (the one displayed in the main window) so that the portion described by <i>aString</i> is visible.&nbsp; <i>aString</i> should be interpreted according to the <i>anInt</i> constant, which will be one of the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TEXTPOSTYPE</font></td>
+
+<td><font face="Times"><i>aString</i> is a character string to search for.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_REGEXPRPOSTYPE</font></td>
+
+<td><font face="Times"><i>aString</i> is a regular expression to search for.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_LINENUMPOSTYPE</font></td>
+
+<td><font face="Times"><i>aString</i> is a colon-separated range of line numbers, for example &quot;10:12&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_CHARNUMPOSTYPE</font></td>
+
+<td><font face="Times"><i>aString</i> is a colon-separated range of character positions, for example &quot;21:33&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_APPPOSTYPE</font></td>
+
+<td><font face="Times"><i>aString</i> is an application-specific description of a portion of the document.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>msgSetPosition:posType:andSelect:ok:</b> method you implement should set the integer referred to by <i>flag</i> to YES if the document is scrolled, and to NO if it isn't.&nbsp; If <i>selectFlag</i> is anything other than 0, the portion of the document described by <i>aString</i> should also be selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-msgVersion:ok:%5D"></a><font face="Helvetica"><b>msgVersion:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgVersion:</b>(char *const *)<i>aString</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Receives a remote message requesting the current version of the application.&nbsp; The method you implement to respond to this request should set the pointer referred to by <i>aString</i> so that it points to a string containing current version information for your application.&nbsp; The integer specified by <i>flag</i> should be set to YES if version information is provided, and to NO if it's not.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-performRemoteMethod:paramList:%5D"></a><font face="Helvetica"><b>performRemoteMethod:paramList:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>performRemoteMethod:</b>(NXRemoteMethod *)<i>method</i> <b>paramList:</b>(NXParamValue *)<i>params</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Matches the data received in the Mach message with the corresponding Objective C method and sends the Objective C message to <b>self</b>.&nbsp; The Listener method that receives the message will then try to delegate it to another object.&nbsp; <i>method</i> is a pointer to the method structure returned by <b>remoteMethodFor:</b> and <i>params</i> is a pointer to the list of arguments.</font>
+
+<p><font face="Times">The <b>msgwrap</b> program automatically generates a <b>performRemoteMethod:paramList:</b> method for a Listener subclass.&nbsp; Each Listener subclass must define its own version of the method.</font>
+
+<p><font face="Times"><b>performRemoteMethod:paramList:</b> messages are initiated when the Listener reads a Mach message from its port queue.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>remoteMethodFor:</b>, <b>msgwrap</b>(8) UNIX manual page</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-portName%5D"></a><font face="Helvetica"><b>portName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>portName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name under which the Listener's port (the port returned by the <b>listenPort</b> method) is registered with the network name server.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>listenPort</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>appListenerPortName</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-priority%5D"></a><font face="Helvetica"><b>priority</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>priority</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the priority level for receiving remote messages.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPriority:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-read:%5D"></a><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the Listener from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-remoteMethodFor:%5D"></a><font face="Helvetica"><b>remoteMethodFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRemoteMethod *)<b>remoteMethodFor:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Looks up <i>aSelector</i> in the table of remote messages the Listener understands and returns a pointer to the table entry.&nbsp; A NULL pointer is returned if <i>aSelector</i> isn't in the table.</font>
+
+<p><font face="Times">Each Listener subclass must define its own version of this method and send a message to <b>super</b> to perform the Listener version. The <b>msgwrap</b> program produces subclass method definitions automatically.&nbsp; The version of the method produced by <b>msgwrap </b>uses the <b>NXRemoteMethodFromSel()</b> function to do the look up.</font>
+
+<p><font face="Times"><b>remoteMethodFor:</b> messages are initiated automatically when the Listener reads a Mach message from its port queue.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>performRemoteMethod:paramList:</b>, <b>msgwrap</b>(8) UNIX manual page</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-removePort%5D"></a><font face="Helvetica"><b>removePort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removePort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the Listener's port from the list of those that the client library monitors.&nbsp; Remote messages sent to the port will pile up in the port queue until they are explicitly read; they won't be read automatically between events.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addPort</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-servicesDelegate%5D"></a><font face="Helvetica"><b>servicesDelegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>servicesDelegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Listener's services delegate, the object that will respond to remote messages sent from the Services menus of other applications.&nbsp; The services delegate should contain the methods that a service-providing application uses to provide services to other applications.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setServicesDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-setDelegate:%5D"></a><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Listener's delegate to <i>anObject</i>.&nbsp; The delegate is expected to respond to the remote messages received by the Listener. However, if <i>anObject</i> has a delegate of its own at the time the <b>setDelegate:</b> message is sent, the Listener will first check to see if that object can handle a remote message before checking <i>anObject</i>.&nbsp; In other words, the Listener recognizes a chain of delegation.</font>
+
+<p><font face="Times">The delegate assigned by this method will be overridden if the Listener is registered as the Application object's <b>appListener </b>and the assignment is made before the Application object is sent a <b>run</b> message.&nbsp; Before getting the first event, the <b>run</b> method makes the Application object the <b>appListener</b>'s delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAppListener:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-setPriority:%5D"></a><font face="Helvetica"><b>setPriority:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPriority:</b>(int)<i>level</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the priority for receiving remote messages to <i>level</i>.&nbsp; Whenever the application is ready to get another event, the priority level is compared to the threshold at which the application is asking for the next event.&nbsp; For the Listener to be able to receive remote messages from its port queue, the priority level must be at least equal to the event threshold.</font>
+
+<p><font face="Times">Priority values can range from 0 through 30, but three standard values are generally used:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_BASETHRESHOLD</font></td>
+
+<td><font face="Times">1</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RUNMODALTHRESHOLD</font></td>
+
+<td><font face="Times">5</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_MODALRESPTHRESHOLD</font></td>
+
+<td><font face="Times">10</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These constants are defined in the <b>appkit/Application.h</b> header file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">At a priority equal to NX_BASETHRESHOLD, the Listener will be able to receive messages whenever the application asks for an event in the main event loop, but not during a modal loop associated with an attention panel nor during a modal loop associated with a control such as a button or slider.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">At a priority equal to NX_RUNMODALTHRESHOLD, the Listener will receive remote messages in the main event loop and in the event loop for an attention panel, but not during a control event loop.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">At a priority equal to NX_MODALRESPTHRESHOLD, remote messages are received even during a control event loop.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The default priority level is NX_BASETHRESHOLD.</font>
+
+<p><font face="Times">A new priority takes effect when the Listener receives an <b>addPort</b> message.&nbsp; To change the default, you must either set the Listener's priority before sending it an <b>addPort</b> message, or you must send it a <b>removePort</b> message then another <b>addPort </b>message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>priority</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addPort</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-setServicesDelegate:%5D"></a><font face="Helvetica"><b>setServicesDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setServicesDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Registers <i>anObject</i> as the object within a service provider that will respond to remote messages.&nbsp; This method returns <b>self</b>.&nbsp; As an example, consider an application called <b>Thinker</b> that provides a ThinkAboutIt service that ponders the meaning of ASCII text it receives on the pasteboard.&nbsp; <b>Thinker</b> would need to have something like the following in the _ _services section of its _ _ICON segment in its Mach-O file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Message: thinkMethod</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Port: Thinker</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Send Type: NXAsciiPboardType</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Menu Item: ThinkAboutIt</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To get this information in your Mach-O file you could put the above text in a file called <b>services.txt</b> and then include the following line in your <b>Makefile.preamble</b> file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">LDFLAGS = -segcreate _ _ICON _ _services services.txt</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Alternatively, if the services the application can provide are not known at compile time, the application can build a services file at run time; see <b>NXUpdateDynamicServices()</b>.</font>
+
+<p><font face="Times">Then, in order to provide the ThinkAboutIt service you must implement a <b>thinkMethod:userData:error:</b> method in an object which is the services delegate of a Listener which is listening on the Thinker port.&nbsp; (If the application is named &quot;Thinker&quot;, then by default NXApp's Listener listens on this port.)&nbsp; Here is an example method that could be used to provide the ThinkAboutIt service:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- thinkMethod:(id)pb</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">userData:(const char *)userData</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">error:(char **)msg</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *data;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int length;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *const *s;&nbsp; /* We use s to go through types. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *const *types = [pb types];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (s = types; *s; s++)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (!strcmp(*s, NXAsciiPboardType)) break;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (*s &amp;&amp; [pb readType:NXAsciiPboardType</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">data:&amp;data length:&amp;length])</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* doSomething is your own method... */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self doSomething:data :length];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* free the memory allocated by readType:... */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">vm_deallocate(task_self(), data, length);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* now make msg point to an error string if */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* anything went wrong, and return... */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>servicesDelegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>registerServicesMenuSendTypes:andReturnTypes:</b> (Application),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validRequestorForSendType:andReturnType:</b> (Responder)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-setTimeout:%5D"></a><font face="Helvetica"><b>setTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTimeout:</b>(int)<i>ms</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets, to <i>ms</i> milliseconds, how long the Listener will persist in attempting to send a return message back to the Speaker that initiated the remote message.&nbsp; If <i>ms</i> is 0, there will be no time limit.&nbsp; The default is 30,000 milliseconds.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>timeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-signaturePort%5D"></a><font face="Helvetica"><b>signaturePort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>signaturePort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port that's used to authenticate the Listener's port to the network name server.&nbsp; This port is never set directly, but is allocated by <b>checkInAs:</b> and deallocated by <b>free</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b>, <b>netname_check_in()</b>, <b>netname_check_out()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-timeout%5D"></a><font face="Helvetica"><b>timeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>timeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of milliseconds the Listener will wait for a return message to the Speaker to be successfully placed in the port designated by the Speaker.&nbsp; If it's 0, there's no time limit.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-usePrivatePort%5D"></a><font face="Helvetica"><b>usePrivatePort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>usePrivatePort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Allocates a listening port for the Listener, but doesn't register it publicly.&nbsp; Other tasks can send messages to this Listener only if they are explicitly given the address of the port in a message; the port is not available through the Network Name Server.&nbsp; This method is an alternative to <b>checkInAs:</b>.&nbsp; It returns 0 on success and a Mach error code if it can't allocate the port.&nbsp; The error code will be one of those defined in <b>mach/kern_return.h</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkInAs:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BListener-write:%5D"></a><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the Listener to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

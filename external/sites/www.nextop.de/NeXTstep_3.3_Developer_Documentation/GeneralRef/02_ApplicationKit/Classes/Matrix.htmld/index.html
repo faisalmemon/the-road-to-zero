@@ -1,0 +1,5599 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/Matrix.rtf -->
+<!-- Date: Sun Jun 28 20:00:12 1998 -->
+<head>
+<title>Matrix</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:Matrix"></a><font face="Helvetica" size="+2"><b>Matrix</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Control : View : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/Matrix.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Matrix is a class used for creating groups of Cells that work together in various ways.&nbsp; It includes methods for arranging its Cells in rows and columns, either with or without space between them.&nbsp; The only restriction is that all Cells must be the same size.&nbsp; Cells in the Matrix are numbered by row and columns, each starting with 0; for example, the top left Cell would be at (0, 0), and the Cell that's second down and third across would be at (1, 2).&nbsp; A Matrix can have many Cells of different classes, but usually uses only one type of Cell.&nbsp; A Matrix can be set up to create new Cells by copying a prototype Cell, or by allocating and initializing instances of a specific Cell class.</font>
+
+<p><font face="Times">A Matrix adds to Control's target/action paradigm by allowing a separate target and action for each of its Cells in addition to its own, and also by having an action that gets sent when the user double-clicks a Cell, and which is sent in addition to the single-click action.&nbsp; If a Cell doesn't have an action, the Matrix sends its own action to its own target.&nbsp; If a Cell doesn't have a target, the Matrix sends the Cell's action to its own target.&nbsp; The double-click action of a Matrix is always sent to the target of the Matrix.</font>
+
+<p><font face="Times">Since the user might press the mouse button anywhere in the Matrix, and then drag the mouse around, Matrix offers four &quot;selection modes&quot; which determine how Cells behave when the Matrix is tracking the mouse:</font>
+
+<p><font face="Times">NX_TRACKMODE is the most basic mode of operation.&nbsp; All that happens in this mode is that the Cells are asked to track the mouse with <b>trackMouse:inRect:ofView:</b> whenever the mouse is inside their bounds.&nbsp; No highlighting is performed.&nbsp; An example of this mode might be a &quot;graphic equalizer&quot; Matrix of sliders.&nbsp; Moving the mouse around causes the sliders to move under the mouse.</font>
+
+<p><font face="Times">NX_HIGHLIGHTMODE is a modification of TRACKMODE.&nbsp; In this mode, a Cell is highlighted before it is asked to track the mouse, then unhighlighted when it is done tracking.&nbsp; This is useful for multiple unconnected Cells which use highlighting to inform the user that they are being tracked (like push-buttons and switches).</font>
+
+<p><font face="Times">NX_RADIOMODE is used when you want no more than one Cell to be selected at a time.&nbsp; It can be used to create a set of buttons of which one and only one is selected (there is the option of allowing no button to be selected).&nbsp; Any time a Cell is selected, the previously selected Cell is unselected.&nbsp; The canonical example of this mode is a set of radio buttons.</font>
+
+<p><font face="Times">NX_LISTMODE is the opposite of NX_TRACKMODE.&nbsp; Cells are highlighted, but don't track the mouse.&nbsp; This mode can be used to select a range of text values, for example.&nbsp; Matrix supports the standard multiple-selection paradigms of dragging to select, using the shift key to make disjoint selections, and using the alternate key to extend selections.</font>
+
+<p><font face="Times">The best way to learn about selection modes is to play with a Matrix in Interface Builder, testing the Matrix interface with various options and Cell types.&nbsp; You can also create minimal connections to Buttons that play sounds, setting the action to be <b>performClick:</b>, which will cause the sounds to be played when you use the Matrix in Interface Builder's test mode.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>cellList</b>;</font>
+
+<p><font face="Times">id <b>target</b>;</font>
+
+<p><font face="Times">SEL <b>action</b>;</font>
+
+<p><font face="Times">id <b>selectedCell</b>;</font>
+
+<p><font face="Times">int <b>selectedRow</b>;</font>
+
+<p><font face="Times">int <b>selectedCol</b>;</font>
+
+<p><font face="Times">int <b>numRows</b>;</font>
+
+<p><font face="Times">int <b>numCols</b>;</font>
+
+<p><font face="Times">NXSize <b>cellSize</b>;</font>
+
+<p><font face="Times">NXSize <b>intercell</b>;</font>
+
+<p><font face="Times">float <b>backgroundGray</b>;</font>
+
+<p><font face="Times">float <b>cellBackgroundGray</b>;</font>
+
+<p><font face="Times">id <b>font</b>;</font>
+
+<p><font face="Times">id <b>protoCell</b>;</font>
+
+<p><font face="Times">id <b>cellClass</b>;</font>
+
+<p><font face="Times">id <b>nextText</b>;</font>
+
+<p><font face="Times">id <b>previousText</b>;</font>
+
+<p><font face="Times">SEL <b>doubleAction</b>;</font>
+
+<p><font face="Times">SEL <b>errorAction</b>;</font>
+
+<p><font face="Times">id <b>textDelegate</b>;</font>
+
+<p><font face="Times">struct _mFlags {</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>highlightMode</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>radioMode</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>listMode</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>allowEmptySel</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>autoscroll</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>reaction</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>selectionByRect</b>:1;</font><br>
+<font face="Times">} <b>mFlags</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cellList</font></td>
+
+<td><font face="Times">List of the Cells in the Matrix.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">target</font></td>
+
+<td><font face="Times">The object that is sent an action if a Cell doesn't have its own action or its own target.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">action</font></td>
+
+<td><font face="Times">The message sent to the target of the Matrix if a Cell doesn't have its own.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">selectedCell</font></td>
+
+<td><font face="Times">The selected Cell (if there's only one).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">selectedRow</font></td>
+
+<td><font face="Times">The row number of selected Cell.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">selectedCol</font></td>
+
+<td><font face="Times">The column number of selected Cell.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">numRows</font></td>
+
+<td><font face="Times">Number of rows in the Matrix.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">numCols</font></td>
+
+<td><font face="Times">Number of columns in the Matrix.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cellSize</font></td>
+
+<td><font face="Times">The size of each Cell in the Matrix (they're all the same size).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">intercell</font></td>
+
+<td><font face="Times">Vertical and horizontal spacing between Cells.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">backgroundGray</font></td>
+
+<td><font face="Times">The gray level drawn between Cell in the Matrix.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cellBackgroundGray</font></td>
+
+<td><font face="Times">The gray level drawn as the background of each Cell.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">font</font></td>
+
+<td><font face="Times">The Font of text in the Cells of the Matrix.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">protoCell</font></td>
+
+<td><font face="Times">A Cell instance copied to make new Cells.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cellClass</font></td>
+
+<td><font face="Times">The class of Cell used by the Matrix; not used if a prototype is used.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">nextText</font></td>
+
+<td><font face="Times">The object whose text is selected when Tab is pressed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">previousText</font></td>
+
+<td><font face="Times">The object whose text is selected when Shift-Tab is pressed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">doubleAction</font></td>
+
+<td><font face="Times">Action sent to the target of the Matrix on a double-click in a Cell.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">errorAction</font></td>
+
+<td><font face="Times">Message sent to the target when a bad value is entered in a text field.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">textDelegate</font></td>
+
+<td><font face="Times">Delegate for Text object delegate methods.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.highlightMode</font></td>
+
+<td><font face="Times">True if selection mode is NX_HIGHLIGHTMODE.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.radioMode</font></td>
+
+<td><font face="Times">True if selection mode is NX_RADIOMODE.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.listMode</font></td>
+
+<td><font face="Times">True if selection mode is NX_LISTMODE.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.allowEmptySel</font></td>
+
+<td><font face="Times">True if no selection is allowed in NX_RADIOMODE.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.autoscroll</font></td>
+
+<td><font face="Times">True if the Matrix auto-scrolls when in a ScrollView.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.reaction</font></td>
+
+<td><font face="Times">True if an action message caused the Cell that triggered the action message to change.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mFlags.selectionByRect</font></td>
+
+<td><font face="Times">True if a rectangle of Cells in the Matrix can be selected by dragging the cursor.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing the Matrix class</font></td>
+
+<td><font face="Times">+ initialize</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ setCellClass:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing a Matrix</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:mode:cellClass:numRows:numCols:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:mode:prototype:numRows:numCols:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the selection mode</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMode:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mode</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Configuring the Matrix</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEnabled:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEmptySelectionEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isEmptySelectionEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSelectionByRect:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isSelectionByRect</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the Cell class</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellClass:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPrototype:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">prototype</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Laying out the Matrix</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addCol</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRow</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertColAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertRowAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeColAt:andFree:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeRowAt:andFree:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">makeCellAt::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">putCell:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renewRows:cols:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellSize:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCellSize:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCellFrame:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntercell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntercell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellCount</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getNumRows:numCols:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Finding Matrix coordinates</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getRow:andCol:ofCell:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getRow:andCol:forPoint:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying individual Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIcon:at::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setState:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTitle:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTag:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTag:target:action:at::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Selecting Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectCell:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectCellAt::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectCellWithTag:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSelectionFrom:to:anchor:lit:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectAll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedCell</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getSelectedCells:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedCol</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedRow</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clearSelectedCell</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Finding Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">findCellWithTag:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellAt::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellList</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying graphic attributes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBackgroundColor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">backgroundColor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBackgroundGray:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">backgroundGray</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellBackgroundColor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellBackgroundColor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellBackgroundGray:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellBackgroundGray</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBackgroundTransparent:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isBackgroundTransparent</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellBackgroundTransparent:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isCellBackgroundTransparent</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFont:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">font</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Editing text in Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectText:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectTextAt::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting Tab key behavior</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setNextText:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPreviousText:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a Text delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTextDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textDelegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Text object delegate methods</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textWillChange:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textDidChange:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textDidGetKeys:isEmpty:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textWillEnd:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">textDidEnd:endChar:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Resizing the Matrix and Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAutosizeCells:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAutosizeCells</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">calcSize</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeTo::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeToCells</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeToFit</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">validateSize:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Scrolling</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAutoscroll:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setScrollable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollCellToVisible::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Displaying</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">display</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawSelf::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawCell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawCellAt::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawCellInside:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">highlightCellAt::lit:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Target and action</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">target</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">action</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDoubleAction:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doubleAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setErrorAction:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">errorAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:at::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction:to:forAllCells:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendDoubleAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setReaction:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Handling event and action messages</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptsFirstMouse</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mouseDown:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mouseDownFlags</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">performKeyEquivalent:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the cursor</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resetCursorRects</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-initialize%5D"></a><font face="Helvetica"><b>initialize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>initialize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes data for the Matrix class object.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellClass:%5D"></a><font face="Helvetica"><b>setCellClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setCellClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Configures the Matrix class to use instances of <i>classId</i> for its Cells.&nbsp; <i>classId</i> should be the <b>id</b> of a subclass of Cell (usually ActionCell), obtained by sending the <b>class</b> message to either the Cell subclass object or to an instance of that subclass.&nbsp; The default Cell class is ActionCell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Your code should rarely need to invoke this method, since each instance of Matrix can be configured to use its own Cell class (or a prototype that gets copied).&nbsp; The Cell class set with this method is simply a fallback for Matrices initialized with <b>initFrame:</b>.</font>
+
+<p><font face="Times">&quot;Creating New Controls&quot; in the Control class specification has more information on how to safely set the Cell class used by a subclass of Control.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>...</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-acceptsFirstMouse%5D"></a><font face="Helvetica"><b>acceptsFirstMouse</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>acceptsFirstMouse</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns NO if the selection mode of the Matrix is NX_LISTMODE, YES if the Matrix is in any other selection mode.&nbsp; The Matrix does not accept first mouse in NX_LISTMODE to prevent the loss of multiple selections.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-action%5D"></a><font face="Helvetica"><b>action</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>action</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the default action of the Matrix.&nbsp; The returned method is used when a Cell with no action receives an event which would ordinarily cause its action to be sent--normally a mouse-up in the Cell.&nbsp; In such cases, the Matrix sends its action to its own target.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b> (ActionCell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b> (ActionCell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-addCol%5D"></a><font face="Helvetica"><b>addCol</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCol</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds a new column of Cells to the right of the existing columns, creating new Cells if needed with <b>makeCellAt::</b>.&nbsp; Does not redraw even if autodisplay is on.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If the number of rows or columns in the Matrix has been changed with <b>renewRows:cols:</b>, then <b>makeCellAt:</b> is invoked only if new Cells are needed (since <b>renewRows:cols:</b> doesn't free Cells, it just rearranges them).&nbsp; This allows you to grow and shrink a Matrix without repeatedly creating and freeing the Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertColAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renewRows:cols:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-addRow%5D"></a><font face="Helvetica"><b>addRow</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds a new row of Cells to the bottom of the existing rows, creating new Cells if needed with <b>makeCellAt::</b>.&nbsp; Does not redraw even if autodisplay is on.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If the number of rows or columns in the Matrix has been changed with <b>renewRows:cols:</b>, then <b>makeCellAt:</b> is invoked only if new Cells are needed (since <b>renewRows:cols:</b> doesn't free Cells, it just rearranges them).&nbsp; This allows you to grow and shrink a Matrix without repeatedly creating and freeing the Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertRowAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renewRows:cols:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-backgroundColor%5D"></a><font face="Helvetica"><b>backgroundColor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXColor)<b>backgroundColor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the color used to draw the background (the space between the Cells).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundGray</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundColor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-backgroundGray%5D"></a><font face="Helvetica"><b>backgroundGray</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>backgroundGray</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the gray level used to draw the background (the space between the Cells).&nbsp; If the gray level is less than 0, then the background is transparent.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundGray</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-calcSize%5D"></a><font face="Helvetica"><b>calcSize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method.&nbsp; It is invoked automatically by the system if it has to recompute some size information about the Cells.&nbsp; It invokes <b>calcDrawInfo:</b> on each Cell in the Matrix.&nbsp; Can be overridden to do more if necessary (Form overrides <b>calcSize</b>, for example).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b> (Control, Form),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateSize:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-cellAt::%5D"></a><font face="Helvetica"><b>cellAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellAt:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Cell at row <i>row</i> and column <i>col</i>, or <b>nil</b> if no such Cell exists.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRow:andCol:ofCell:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-cellBackgroundColor%5D"></a><font face="Helvetica"><b>cellBackgroundColor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXColor)<b>cellBackgroundColor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the color used to fill the background of a Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundGray</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-cellBackgroundGray%5D"></a><font face="Helvetica"><b>cellBackgroundGray</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>cellBackgroundGray</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the gray value used to fill the background of a Cell before the Cell is drawn.&nbsp; If&nbsp; the gray level is</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.0, then the Cell is transparent.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundGray</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-cellCount%5D"></a><font face="Helvetica"><b>cellCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>cellCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of Cell positions in the Matrix (that is, the number of rows times the number of columns).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellList</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-cellList%5D"></a><font face="Helvetica"><b>cellList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a List object that contains the Cells of the Matrix.&nbsp; The Cells in the list are row-ordered; that is, the first row of Cells appear first in the List, then the next row, and so on.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-clearSelectedCell%5D"></a><font face="Helvetica"><b>clearSelectedCell</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clearSelectedCell</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deselects the selected Cell or Cells, and returns the previously selected Cell (the last of the selected Cells if there were more than one).&nbsp; If the selection mode is NX_RADIOMODE and empty selection is not allowed, this method won't deselect the selected Cell.&nbsp; Doesn't redisplay the Matrix.&nbsp; It's often more convenient to use <b>selectCellAt::</b> with a row and column of (</font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1, </font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1), since this will clear the selected Cell and redisplay the Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mode</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEmptySelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-display%5D"></a><font face="Helvetica"><b>display</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>display</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Draws the Matrix.&nbsp; This method invokes <b>displayFromOpaqueAncestor:::</b> if any part of the Matrix (either the space between Cells, or any Cell) is transparent, or <b>display:::</b> if the entire Matrix is opaque.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>display:::</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>displayFromOpaqueAncestor:::</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-doesAutosizeCells%5D"></a><font face="Helvetica"><b>doesAutosizeCells</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesAutosizeCells</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if Cells are resized proportionally to the Matrix when its size changes; the inter-Cell spacing is kept constant. Returns NO if the inter-Cell spacing changes when the Matrix is resized; the Cell size remains constant.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutosizeCells:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-doubleAction%5D"></a><font face="Helvetica"><b>doubleAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>doubleAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action sent by the Matrix to its target when the user double-clicks an entry.&nbsp; Unlike NXBrowser, this method returns NULL if there is no double-click action.&nbsp; The double-click action of a Matrix is sent after the appropriate single-click action (for the Cell clicked or for the Matrix if the Cell doesn't have its own action).&nbsp; If there is no double-click action and the Matrix doesn't ignore multiple clicks, the single-click action is sent twice.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendDoubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ignoreMultiClick:</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-drawCell:%5D"></a><font face="Helvetica"><b>drawCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is in the Matrix, then it's drawn.&nbsp; Does nothing otherwise.&nbsp; Returns <b>self</b>.&nbsp; This method is useful for constructs like:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aMatrix drawCell:[[aMatrix cellAt:aRow :aCol] setSomething:anArg]]];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-drawCellAt::%5D"></a><font face="Helvetica"><b>drawCellAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellAt:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Displays the Cell at (<i>row</i>, <i>col</i>) if it's in the Matrix.&nbsp; Does nothing otherwise.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-drawCellInside:%5D"></a><font face="Helvetica"><b>drawCellInside:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is in the Matrix, then its inside (usually all but a bezel or border) is drawn.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawInside:inView:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-drawSelf::%5D"></a><font face="Helvetica"><b>drawSelf::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:</b>(const NXRect *)<i>rects</i> <b>:</b>(int)<i>rectCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Displays the Cells in the Matrix which intersect any of the <i>rects</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-errorAction%5D"></a><font face="Helvetica"><b>errorAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>errorAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action sent to the target of the Matrix when the user enters an illegal value for a Cell's type (as set by Cell's <b>setEntryType:</b> method and checked by Cell's <b>isEntryAcceptable:</b> method).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setErrorAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEntryType:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEntryAccectable:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-findCellWithTag:%5D"></a><font face="Helvetica"><b>findCellWithTag:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>findCellWithTag:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Cell which has a tag matching <i>anInt</i>, or <b>nil</b> if no such Cell exists in the Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b> (ActionCell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:target:action:at::</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellWithTag:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-font%5D"></a><font face="Helvetica"><b>font</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Font used to display text in the Cells of the Matrix, or <b>nil</b> if the Cells don't contain text.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deallocates the storage for the Matrix and all its Cells, and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getCellFrame:at::%5D"></a><font face="Helvetica"><b>getCellFrame:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellFrame:</b>(NXRect&nbsp; *)<i>theRect</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>, and by reference in <i>theRect</i> the frame of the Cell that would be drawn at the specified <i>row</i> and <i>col</i> (whether or not it actually exists).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellSize:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getCellSize:%5D"></a><font face="Helvetica"><b>getCellSize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellSize:</b>(NXSize *)<i>theSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>, and by reference in <i>theSize</i> the width and the height of each Cell in the Matrix (all Cells are the same size).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellFrame:at:</b>:,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntercell:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getIntercell:%5D"></a><font face="Helvetica"><b>getIntercell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntercell:</b>(NXSize *)<i>theSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>, and by reference in <i>theSize</i> the vertical and horizontal spacing between Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellSize:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getNumRows:numCols:%5D"></a><font face="Helvetica"><b>getNumRows:numCols:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getNumRows:</b>(int *)<i>rowCount</i> <b>numCols:</b>(int *)<i>colCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>, and, by reference in <i>rowCount</i> and <i>colCount</i>, the number of rows and columns in the Matrix.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getRow:andCol:forPoint:%5D"></a><font face="Helvetica"><b>getRow:andCol:forPoint:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRow:</b>(int *)<i>row</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andCol:</b>(int *)<i>col</i></font><br>
+<font face="Times"><b>forPoint:</b>(const NXPoint *)<i>aPoint</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Cell at <i>aPoint</i> in the Matrix.&nbsp; <i>aPoint</i> must be in the coordinate system of the Matrix.&nbsp; If <i>aPoint</i> is outside the bounds of the Matrix or in an intercell spacing, <b>getRow:andCol:forPoint:</b> returns <b>nil</b>.&nbsp; Also returns by reference in <i>row</i> and <i>col</i> the row and column position of the Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRow:andCol:ofCell:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getRow:andCol:ofCell:%5D"></a><font face="Helvetica"><b>getRow:andCol:ofCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRow:</b>(int *)<i>row</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andCol:</b>(int *)<i>col</i></font><br>
+<font face="Times"><b>ofCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference in <i>row</i> and <i>col</i> the row and column indices for the position of <i>aCell</i> within the Matrix.&nbsp; Returns <i>aCell</i> if it's in the Matrix, <b>nil</b> otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRow:andCol:forPoint:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-getSelectedCells:%5D"></a><font face="Helvetica"><b>getSelectedCells:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds to <i>aList</i> the Cells of the Matrix that are selected.&nbsp; If <i>aList</i> is <b>nil</b>, a new List object is created and filled with the selected Cells.&nbsp; Your code may free the List object, but not the Cells in the List.&nbsp; Returns the List containing the Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-highlightCellAt::lit:%5D"></a><font face="Helvetica"><b>highlightCellAt::lit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>highlightCellAt:</b>(int)<i>row</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(int)<i>col</i></font><br>
+<font face="Times"><b>lit:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Highlights or unhighlights the Cell at (<i>row</i>, <i>col</i>) in the Matrix by sending <b>highlight:inView:lit:</b> to the Cell.&nbsp; The PostScript focus must be locked on the Matrix when this message is sent.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>highlight:inView:lit:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-initFrame:%5D"></a><font face="Helvetica"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>frameRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the receiver, a new instance of Matrix, with default parameters in the given frame.&nbsp; The default font is the user's chosen system font in 12.0 point, the default Cell size is 100.0 by 17.0 points, the default inter-Cell spacing is 1.0 point by 1.0 point, the default background gray is</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 (transparent), and the default Cell background gray is also</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.&nbsp; The new Matrix contains no rows or columns.&nbsp; The default mode is NX_RADIOMODE.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:</b>...</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-initFrame:mode:cellClass:numRows:numCols:%5D"></a><font face="Helvetica"><b>initFrame:mode:cellClass:numRows:numCols:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>frameRect</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>mode:</b>(int)<i>aMode</i></font><br>
+<font face="Times"><b>cellClass:</b><i>classId</i></font><br>
+<font face="Times"><b>numRows:</b>(int)<i>numRows</i></font><br>
+<font face="Times"><b>numCols:</b>(int)<i>numCols</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the receiver, a new instance of Matrix, in <i>frameRect</i> with <i>numRows</i> rows and <i>numCols</i> columns.&nbsp;&nbsp; <i>aMode </i>is set as the tracking mode for the Matrix, and can be one of four constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TRACKMODE</font></td>
+
+<td><font face="Times">Just track the mouse inside the Cells</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_HIGHLIGHTMODE</font></td>
+
+<td><font face="Times">Highlight the Cell, then track, then unhighlight</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RADIOMODE</font></td>
+
+<td><font face="Times">Allow no more than one selected Cell</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_LISTMODE</font></td>
+
+<td><font face="Times">Allow multiple selected Cells</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The behavior for these constants is more fully described in the class description.&nbsp; The new Matrix creates and uses Cells of class <i>classId</i>, which should be the return value of a <b>class</b> message sent to a subclass of Cell.</font>
+
+<p><font face="Times">This method is the designated initializer for Matrices that add Cells by creating instances of a Cell subclass.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:prototype:numRows:numCols:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-initFrame:mode:prototype:numRows:numCols:%5D"></a><font face="Helvetica"><b>initFrame:mode:prototype:numRows:numCols:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>frameRect</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>mode:</b>(int)<i>aMode</i></font><br>
+<font face="Times"><b>prototype:</b><i>aCell</i></font><br>
+<font face="Times"><b>numRows:</b>(int)<i>numRows</i></font><br>
+<font face="Times"><b>numCols:</b>(int)<i>numCols</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the receiver, a new instance of Matrix, in <i>frameRect</i> with <i>numRows</i> rows and <i>numCols</i> columns.&nbsp;&nbsp; <i>aMode </i>is set as the tracking mode for the Matrix, and can be one of four constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TRACKMODE</font></td>
+
+<td><font face="Times">Just track the mouse inside the Cells</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_HIGHLIGHTMODE</font></td>
+
+<td><font face="Times">Highlight the Cell, then track, then unhighlight</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RADIOMODE</font></td>
+
+<td><font face="Times">Allow no more than one selected Cell</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_LISTMODE</font></td>
+
+<td><font face="Times">Allow multiple selected Cells</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The behavior for these constants is more fully described in the class description.&nbsp; The new Matrix creates Cells by copying <i>aCell</i>, which should be an instance of a subclass of Cell.</font>
+
+<p><font face="Times">This method is the designated initializer for Matrices that add Cells by copying an instance of a Cell subclass.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:cellClass:numRows:numCols:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-insertColAt:%5D"></a><font face="Helvetica"><b>insertColAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertColAt:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new column of Cells before <i>col</i>, creating new Cells with <b>makeCellAt::</b>.&nbsp; If <i>col</i> is greater than the number of columns in the Matrix, enough columns are created to expand Matrix to be <i>col</i> columns wide.&nbsp; This method doesn't redraw even if autodisplay is on.&nbsp; Your code may need to use <b>sizeToCells</b> after sending this method to resize the Matrix to fit the newly added Cells.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If the number of rows or columns in the Matrix has been changed with <b>renewRows:cols:</b>, then <b>makeCellAt:</b> is invoked only if new Cells are needed (since <b>renewRows:cols:</b> doesn't free Cells, it just rearranges them).&nbsp; This allows you to grow and shrink a Matrix without repeatedly creating and freeing the Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCol</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertRowAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-insertRowAt:%5D"></a><font face="Helvetica"><b>insertRowAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertRowAt:</b>(int)<i>row</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new row of Cells before <i>row</i>, creating new Cells with <b>makeCellAt::</b>.&nbsp; If <i>row</i> is greater than the number of rows in the Matrix, enough rows are created to expand Matrix to be <i>row</i> rows high.&nbsp; This method doesn't redraw even if autodisplay is on. Your code may need to use <b>sizeToCells</b> after sending this method to resize the Matrix to fit the newly added Cells.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If the number of rows or columns in the Matrix has been changed with <b>renewRows:cols:</b>, then <b>makeCellAt:</b> is invoked only if new Cells are needed (since <b>renewRows:cols:</b> doesn't free Cells, it just rearranges them).&nbsp; This allows you to grow and shrink a Matrix without repeatedly creating and freeing the Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertColAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-isBackgroundTransparent%5D"></a><font face="Helvetica"><b>isBackgroundTransparent</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isBackgroundTransparent</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the Matrix background is transparent, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundTransparent:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundGray</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-isCellBackgroundTransparent%5D"></a><font face="Helvetica"><b>isCellBackgroundTransparent</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isCellBackgroundTransparent</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if Cells in the Matrix have transparent backgrounds, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundTransparent:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundGray</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-isEmptySelectionEnabled%5D"></a><font face="Helvetica"><b>isEmptySelectionEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEmptySelectionEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if it is possible to have no Cells selected in a radio-mode Matrix, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEmptySelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-isSelectionByRect%5D"></a><font face="Helvetica"><b>isSelectionByRect</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isSelectionByRect</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if a rectangle of Cells in the Matrix can be selected by dragging the cursor, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectionFrom:to:anchor:lit:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-makeCellAt::%5D"></a><font face="Helvetica"><b>makeCellAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates a new Cell at the specified location in the Matrix.&nbsp; If the Matrix has a prototype Cell, it's copied to create the new Cell; if the Matrix has a Cell class set, it allocates and initializes (with <b>init</b>) an instance of that class; if the Matrix has not had a Cell class set, the default class, ActionCell, is used.&nbsp; The new Cell's font is set to the font of the Matrix&nbsp; Returns the newly created Cell.</font>
+
+<p><font face="Times">Your code should never invoke this method directly; it's used by <b>addRow</b> and other methods when a Cell must be created.&nbsp; It may be overridden to provide more specific initialization of Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCol</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertColAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertRowAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-mode%5D"></a><font face="Helvetica"><b>mode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>mode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the selection mode of the Matrix.&nbsp; These modes are explained in the class description.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMode:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:</b>...</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-mouseDown:%5D"></a><font face="Helvetica"><b>mouseDown:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mouseDown:</b>(NXEvent *)<i>theEvent</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method, but you may override it to implement different mouse tracking than Matrix does. The response of the Matrix depends on its selection mode, as explained in the class description.</font>
+
+<p><font face="Times">In any selection mode, a mouse-down in an editable text Cell immediately enters text editing mode.&nbsp; A double-click in any other kind of Cell sends the double-click action of the Matrix (if there is one) in addition to the single-click action.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendDoubleAction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-mouseDownFlags%5D"></a><font face="Helvetica"><b>mouseDownFlags</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>mouseDownFlags</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the flags (for example, NX_SHIFTMASK) that were in effect at the mouse-down event that started the current tracking session.&nbsp; Use this method if you want to access these flags, but don't want the overhead of having to use <b>sendActionOn:</b> to add NX_MOUSEDOWNMASK to every Cell to get them.&nbsp; This method is valid only during tracking; it's not useful if the target of the Matrix initiates another tracking loop as part of its action method (as a Cell that pops up a PopUpList does, for example).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendActionOn:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-performKeyEquivalent:%5D"></a><font face="Helvetica"><b>performKeyEquivalent:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>performKeyEquivalent:</b>(NXEvent *)<i>theEvent</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there is a Cell in the Matrix that has a key equivalent equal to the character in <i>theEvent</i><b>-&gt;data.key.charCode</b>, that Cell is made to react as if the user had clicked it by highlighting, changing its state as appropriate, sending its action if it has one, and then unhighlighting.&nbsp; Returns YES if a Cell in the Matrix responds to the key equivalent in <i>theEvent</i>, NO if no Cell responds.</font>
+
+<p><font face="Times">Your code should never send this message; it is sent when the Matrix or one of its superviews is the first responder and the user presses a key.&nbsp; You may want to override this method to change the way key equivalents are performed or displayed, or to disable them in your subclass.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-prototype%5D"></a><font face="Helvetica"><b>prototype</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>prototype</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the prototype Cell that is copied whenever a new Cell needs to be made, or <b>nil</b> if there is none.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrototype:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:prototype:numRows:numCols:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeCellAt::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-putCell:at::%5D"></a><font face="Helvetica"><b>putCell:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>putCell:</b><i>newCell</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the Cell at (<i>row</i>, <i>col</i>) by <i>newCell</i>, and returns the old Cell at that position.&nbsp; Draws the new Cell if autodisplay is on.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-read:%5D"></a><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the Matrix from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-removeColAt:andFree:%5D"></a><font face="Helvetica"><b>removeColAt:andFree:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeColAt:</b>(int)<i>col</i> <b>andFree:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the column at position <i>col</i>.&nbsp; If <i>flag</i> is YES then the Cells from that column are freed.&nbsp; Doesn't redraw even if autodisplay is on.&nbsp; Your code should normally send <b>sizeToCells</b> after invoking this method to resize the Matrix so it fits the reduced Cell count.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRowAt:andFree:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCol</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertColAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-removeRowAt:andFree:%5D"></a><font face="Helvetica"><b>removeRowAt:andFree:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRowAt:</b>(int)<i>row</i> <b>andFree:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the row at position <i>row</i>.&nbsp; If <i>flag</i> is YES then the Cells from that row are freed.&nbsp; Doesn't redraw even if autodisplay is on.&nbsp; Your code should normally send <b>sizeToCells</b> after invoking this method to resize the Matrix so it fits the reduced Cell count.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeColAt:andFree:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertRowAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-renewRows:cols:%5D"></a><font face="Helvetica"><b>renewRows:cols:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renewRows:</b>(int)<i>newRows</i> <b>cols:</b>(int)<i>newCols</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the number of rows and columns in the Matrix.&nbsp; This method uses the same Cells as before, creating new Cells only if the new size is larger; it never frees Cells.&nbsp; Doesn't display the Matrix even if autodisplay is on.&nbsp; Your code should normally send <b>sizeToCells</b> after invoking this method to resize the Matrix so it fits the changed Cell arrangement.&nbsp; This method deselects all Cells in the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCol</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-resetCursorRects%5D"></a><font face="Helvetica"><b>resetCursorRects</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resetCursorRects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends <b>resetCursorRect:inView:</b> to each Cell in the Matrix.&nbsp; Any Cell that has a cursor rectangle to set up should send the message <b>addCursorRect:cursor:</b> back to the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resetCursorRect:inView:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCursorRect:cursor:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-scrollCellToVisible::%5D"></a><font face="Helvetica"><b>scrollCellToVisible::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollCellToVisible:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the Matrix is in a scrolling View, then the Matrix will scroll to make the Cell at (<i>row</i>, <i>col</i>) visible.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollRectToVisible:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectAll:%5D"></a><font face="Helvetica"><b>selectAll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the mode of the Matrix is not NX_RADIOMODE, then all the Cells in the Matrix are selected and highlighted, and the Matrix is redisplayed.&nbsp; The currently selected Cell is unaffected.&nbsp; Editable text Cells are not affected.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellWithTag:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectCell:%5D"></a><font face="Helvetica"><b>selectCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is in the Matrix, then the Cell is selected, the Matrix is redrawn, and the selected Cell is returned.&nbsp; An editable text Cell's text is selected.&nbsp; Returns <b>nil</b> if the Cell is not in the Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellWithTag:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectCellAt::%5D"></a><font face="Helvetica"><b>selectCellAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects the Cell at the position in the Matrix denoted by (<i>row</i>, <i>col</i>).&nbsp; An editable text Cell's text is selected.&nbsp; If either <i>row</i> or <i>col</i> is </font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1, then the current selection is cleared (unless the Matrix is in NX_RADIOMODE and does not allow empty selection). Redraws the affected Cells and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellWithTag:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectCellWithTag:%5D"></a><font face="Helvetica"><b>selectCellWithTag:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellWithTag:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the Matrix has a Cell whose tag is equal to <i>anInt</i>, that Cell is selected.&nbsp; An editable text Cell's text is selected.&nbsp; Returns <b>self</b>, or <b>nil</b> if there is no such Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectedCell%5D"></a><font face="Helvetica"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the currently selected Cell, or <b>nil</b> if no Cell is selected.&nbsp; If more than one Cell is selected, returns the last selected Cell; that is, the Cell that is lowest and furthest to the right in the Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectedCol%5D"></a><font face="Helvetica"><b>selectedCol</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedCol</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the column number of the selected Cell, or</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no Cells are selected.&nbsp; If Cells in multiple columns are selected, this method returns the number of the last column containing a selected Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedRow</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectedRow%5D"></a><font face="Helvetica"><b>selectedRow</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedRow</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the row number of the selected Cell, or</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no Cells are selected.&nbsp; If Cells in multiple rows are selected, this method returns the number of the last row containing a selected Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCol</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectText:%5D"></a><font face="Helvetica"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>sender</i> is the next Text object of the Matrix (as set with <b>setNextText:</b>), the text in the last selectable text Cell (the one lowest and furthest to the right) is selected; otherwise, the text of the first selectable text Cell is selected.&nbsp; Returns the Cell whose text was selected, the Matrix if such a Cell wasn't found, and <b>nil</b> if the Cell was bound but wasn't enabled or wasn't selectable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectTextAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b> (TextField)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-selectTextAt::%5D"></a><font face="Helvetica"><b>selectTextAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectTextAt:</b>(int)<i>row</i> <b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Select the text of the Cell at (<i>row</i>, <i>col</i>) in the Matrix, if there is such a Cell and its text is selectable.&nbsp; Returns the Cell whose text was selected, the Matrix if such a Cell wasn't found, and <b>nil</b> if the Cell was found but wasn't enabled or wasn't selectable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b> (TextField)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sendAction%5D"></a><font face="Helvetica"><b>sendAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the selected Cell has both an action and a target, its action is sent to its target.&nbsp; If the Cell has an action but no target, its action is sent to the target of the Matrix.&nbsp; If the Cell doesn't have an action, or if there is no selected Cell, the Matrix sends its action to its target.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendDoubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sendAction:to:%5D"></a><font face="Helvetica"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:</b>(SEL)<i>theAction</i> <b>to:</b><i>theTarget</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If both <i>theAction</i> and <i>theTarget</i> are non-null, sends <i>theAction</i> to <i>theTarget</i>.&nbsp; If <i>theAction</i> is null, sends the action of the Matrix to its target.&nbsp; If <i>theAction</i> is <b>nil</b>, sends <i>theAction</i> to the target of the Matrix.&nbsp; Returns <b>nil</b> if no target that responds to <i>theAction </i>could be found; otherwise returns <b>self</b>.</font>
+
+<p><font face="Times">Your code shouldn't normally invoke this method.&nbsp; It is used by event handling methods such as Cell's <b>trackMouse:inRect:ofView:</b> to send an action to a target in response to an event within the Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sendAction:to:forAllCells:%5D"></a><font face="Helvetica"><b>sendAction:to:forAllCells:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>to:</b><i>anObject</i></font><br>
+<font face="Times"><b>forAllCells:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Iterates through the Cells in the Matrix, sending <i>aSelector</i> to <i>anObject</i> for each.&nbsp; <i>aSelector</i> must represent a method that takes a single argument: the <b>id</b> of the current Cell in the iteration.&nbsp; <i>aSelector</i>'s return value must be a BOOL.&nbsp; Iteration begins with the Cell in the upper-left corner of the Matrix, proceeding through all entries in the first row, then on to the next.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If <i>aSelector</i> returns NO for any Cell, this method terminates immediately and return <b>self</b>, without sending the message for other Cells.&nbsp; If it returns YES, this method keeps sending the message.</font>
+
+<p><font face="Times">This method is <i>not</i> invoked to send action messages to target objects in response to mouse-down events in the Matrix.&nbsp; Instead, you can invoke it if you want to have multiple Cells in a Matrix interact with an object.&nbsp; For example you could use it to verify the titles in a list of items, or to enable a series of radio buttons based on their purpose in relation to <i>anObject</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sendDoubleAction%5D"></a><font face="Helvetica"><b>sendDoubleAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendDoubleAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the Matrix has a double-click action, sends that message to the target of the Matrix.&nbsp; If not, then if the selected Cell (as returned by <b>selectedCell</b>) has an action, that message is sent to the selected Cell's target.&nbsp; If the selected Cell also has no action, then the action of the Matrix is sent to the target of the Matrix.&nbsp; This method only sends an action if the selected Cell is enabled.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Your code shouldn't invoke this method; it's sent in response to a double-click event in the Matrix.&nbsp; You may want to override it to change the search order for an action to send.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ignoreMultiClick:</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setAction:%5D"></a><font face="Helvetica"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the default action of the Matrix, the message sent for a Cell which has no action of its own.&nbsp; The action of the Matrix is always sent to its target, never to the Cell's target.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:at::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setAction:at::%5D"></a><font face="Helvetica"><b>setAction:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action of the Cell at (<i>row</i>, <i>col</i>) to <i>aSelector</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b> (ActionCell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setAutoscroll:%5D"></a><font face="Helvetica"><b>setAutoscroll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutoscroll:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES and the Matrix is in a scrolling View, it will be automatically scrolled whenever a the mouse is dragged outside the Matrix after a mouse-down event within its bounds.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setAutosizeCells:%5D"></a><font face="Helvetica"><b>setAutosizeCells:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutosizeCells:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, then whenever the Matrix is resized, the sizes of the Cells changes in proportion, keeping the inter-Cell space constant; further, this method verifies that the Cell sizes and inter-Cell spacing add up to the exact size of the Matrix, adjusting the size of the Cells and updating the Matrix if they don't.&nbsp; If <i>flag</i> is NO, then the inter-Cell space changes when the Matrix is resized, with the Cell size remaining constant.&nbsp;&nbsp;&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAutosizeCells</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setBackgroundColor:%5D"></a><font face="Helvetica"><b>setBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>(NXColor)<i>aColor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the background color for the Matrix to <i>aColor</i>.&nbsp; This color is used to fill the space between Cells or the space behind any non-opaque Cells.&nbsp; Doesn't redraw the Matrix even if autodisplay is on.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setBackgroundGray:%5D"></a><font face="Helvetica"><b>setBackgroundGray:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundGray:</b>(float)<i>value</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the background gray level for the Matrix to <i>value</i>.&nbsp; This gray level is used to draw the inter-Cell space, or the space behind any non-opaque Cells.&nbsp; If the gray level is</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1, the background is transparent (that is, doesn't get drawn).&nbsp; Updates the Matrix if the background gray level changes.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundGray</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setBackgroundTransparent:%5D"></a><font face="Helvetica"><b>setBackgroundTransparent:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundTransparent:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the background gray level of the Matrix to</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 (transparent).&nbsp; If <i>flag</i> is NO, set the background gray level to NX_WHITE.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isBackgroundTransparent</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundGray:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellBackgroundColor:%5D"></a><font face="Helvetica"><b>setCellBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundColor:</b>(NXColor)<i>aColor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the background color for the Cells in the Matrix to <i>aColor</i>.&nbsp; This color is used to fill the space behind non-opaque Cells. Doesn't redraw the Matrix even if autodisplay is on.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellBackgroundGray:%5D"></a><font face="Helvetica"><b>setCellBackgroundGray:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundGray:</b>(float)<i>value</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the background gray level for the Cells in the Matrix to <i>value</i>.&nbsp; This gray level is used to draw the space behind non-opaque Cells.&nbsp; If the gray level is</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1, the Cell background is transparent (that is, doesn't get drawn).&nbsp; Updates the Matrix if the Cell background gray level changes.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellBackgroundGray</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundGray:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellBackgroundTransparent:%5D"></a><font face="Helvetica"><b>setCellBackgroundTransparent:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundTransparent:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the background gray level of Cells in the Matrix to</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 (transparent).&nbsp; If <i>flag</i> is NO, set their background gray level to NX_WHITE.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isCellBackgroundTransparent</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellBackgroundGray:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellClass:%5D"></a><font face="Helvetica"><b>setCellClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Configures a single Matrix to use instances of <i>classId</i> when creating new Cells.&nbsp; <i>classId</i> should be the <b>id</b> of a subclass of Cell, obtained by sending the <b>class</b> message to either the Cell subclass object or to an instance of that subclass.&nbsp; The Cell class is that set with the class method <b>setCellClass:</b>; the default Cell class is ActionCell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">You only need to use this method with Matrices initialized with <b>initFrame:</b>, since the other initializers allow you to specify an instance-specific Cell class or Cell prototype.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setCellClass:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrototype:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setCellSize:%5D"></a><font face="Helvetica"><b>setCellSize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellSize:</b>(const NXSize *)<i>aSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the width and the height of each of the Cells in the Matrix to those in <i>aSize</i>.&nbsp; This may change the size of the Matrix.&nbsp; Does not redraw the Matrix, even if autodisplay is on.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCellSize:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setDoubleAction:%5D"></a><font face="Helvetica"><b>setDoubleAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Make <i>aSelector</i> the action sent to the target of the Matrix when the user double-clicks a Cell.&nbsp; A double-click action is always sent after the appropriate single-click action; the Cell's if it has one, otherwise the single-click action of the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If a Matrix has no double-click action set, then by default a double-click is treated as a single-click.&nbsp; Setting a double-click action also sets <b>allowMultiClick</b>: to YES; be sure to set the Matrix to ignore multiple-clicks if you later remove the double-click action.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ignoreMultiClick:</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setEmptySelectionEnabled:%5D"></a><font face="Helvetica"><b>setEmptySelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEmptySelectionEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, then the Matrix will allow one or zero Cells to be selected.&nbsp; If <i>flag</i> is NO, then the Matrix will allow one and only one Cell (not zero Cells) to be selected.&nbsp; This setting has effect only in NX_RADIOMODE.</font>
+
+<p><font face="Times">This method replaces the <b>allowEmptySel:</b> method of NEXTSTEP Release 2.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEmptySelectionEnabled</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setEnabled:%5D"></a><font face="Helvetica"><b>setEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, enables all Cells in the Matrix; if NO, disables all Cells.&nbsp; If autodisplay is on, this redraws the entire Matrix. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b> (ActionCell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setErrorAction:%5D"></a><font face="Helvetica"><b>setErrorAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setErrorAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action sent to the target of the Matrix when the user enters an illegal value in a text Cell for that Cell's entry type (as set by Cell's <b>setEntryType:</b> method and checked by Cell's <b>isEntryAcceptable:</b> method).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>errorAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEntryType:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEntryAccectable:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setFont:%5D"></a><font face="Helvetica"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b><i>fontObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Font for the Matrix to <i>fontObject</i>.&nbsp; This will cause all current Cells to have their Font changed to <i>fontObject</i> as well as cause all future Cells to have that Font.&nbsp; If autodisplay is on, this redraws the entire Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setIcon:at::%5D"></a><font face="Helvetica"><b>setIcon:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIcon:</b>(const char *)<i>iconName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the icon of the Cell at (<i>row</i>, <i>col</i>) to the NXImage with the name <i>iconName</i>.&nbsp; If autodisplay is on, then the Cell is redrawn. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIcon:</b> (ButtonCell, Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setIntercell:%5D"></a><font face="Helvetica"><b>setIntercell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntercell:</b>(const NXSize *)<i>aSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the width and the height of the space between Cells to those in <i>aSize</i>.&nbsp; Doesn't redraw the Matrix, even if autodisplay is on. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntercell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setMode:%5D"></a><font face="Helvetica"><b>setMode:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMode:</b>(int)<i>aMode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the selection mode of the Matrix.&nbsp; <i>aMode</i> can be one of four constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TRACKMODE</font></td>
+
+<td><font face="Times">Just track the mouse inside the Cells</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_HIGHLIGHTMODE</font></td>
+
+<td><font face="Times">Highlight the Cell, then track, then unhighlight</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RADIOMODE</font></td>
+
+<td><font face="Times">Allow no more than one selected Cell</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_LISTMODE</font></td>
+
+<td><font face="Times">Allow multiple selected Cells</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The behaviors associated with these constants are explained in the class description.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setNextText:%5D"></a><font face="Helvetica"><b>setNextText:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNextText:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets <i>anObject</i> as the object whose text is selected when the user presses Tab while editing the last editable text Cell.&nbsp; <i>anObject </i>should respond to the <b>selectText:</b> message.&nbsp; If <i>anObject</i> also responds to both <b>selectText:</b> and <b>setPreviousText:</b>, it's sent <b>setPrevious:</b> with the receiving Matrix as the argument; this builds a two-way connection, so that pressing Tab in the last text Cell selects <i>anObject</i>'s text, and pressing Shift-Tab in <i>anObject</i> selects the last text Cell of the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreviousText:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setPreviousText:%5D"></a><font face="Helvetica"><b>setPreviousText:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreviousText:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets <i>anObject</i> as the object whose text is selected when the user presses Shift-Tab while editing the first editable text Cell. <i>anObject</i> should respond to the <b>selectText:</b> message.&nbsp; Your code shouldn't need to use this method directly, since it's invoked automatically by <b>setNextText:</b>.&nbsp; In deference to <b>setNextText:</b>, this method doesn't build a two-way connection.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNextText:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setPrototype:%5D"></a><font face="Helvetica"><b>setPrototype:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrototype:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the prototype Cell that is copied whenever a new Cell needs to be made.&nbsp; <i>aCell</i> should be an instance of a subclass of Cell. If a Matrix has a prototype Cell, it doesn't use its Cell class object to create new Cells; if you want your Matrix to use its Cell class, invoke this method with <b>nil</b> as the argument.&nbsp; The Matrix is considered to own the prototype, and will free it when the Matrix is itself freed; be sure to make a copy of an instance that your code may use elsewhere.&nbsp; Returns the old prototype Cell, or <b>nil</b> if there wasn't one.</font>
+
+<p><font face="Times">If you implement your own Cell subclass for use as a prototype with a Matrix, make sure your Cell does the right thing when it receives a <b>copy</b> message.&nbsp; For example, Object's <b>copy</b> copies only pointers, not what they point to--sometimes this is what it should do, sometimes not.&nbsp; The best way to implement <b>copy</b> when you subclass Cell is send <b>copy</b> to <b>super</b>, then copy instance variable values (for example, title strings) into your subclass instance individually.&nbsp; Also, be careful that freeing the prototype will not damage any of the copies that were made and put into the Matrix (due to shared pointers that are freed, for example).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>prototype</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:mode:prototype:numRows:numCols:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setReaction:%5D"></a><font face="Helvetica"><b>setReaction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReaction:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sent to the Matrix by the target of an action message.&nbsp; If <i>flag</i> is NO, prevents the selected Cell from changing back to its previous state; if YES, allows it to revert to its previous state (to reflect unhighlighting, for example).&nbsp; Invoke this from an action method if the action causes the Cell to change in such a way that trying to unhighlight it would be incorrect; for example, if the Cell is deleted or its visual appearance completely changed by the action method.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setScrollable:%5D"></a><font face="Helvetica"><b>setScrollable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setScrollable:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets all the Cells to be scrollable, so that the text they contain scrolls to remain in view if the user types past the edge of the Cell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setScrollable:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setSelectionByRect:%5D"></a><font face="Helvetica"><b>setSelectionByRect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectionByRect:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, a rectangle of Cells in the Matrix can be selected by dragging the cursor; if <i>flag</i> is NO, such selection isn't possible.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isSelectionByRect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectionFrom:to:anchor:lit:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setSelectionFrom:to:anchor:lit:%5D"></a><font face="Helvetica"><b>setSelectionFrom:to:anchor:lit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectionFrom:</b>(int)<i>startPos</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>to:</b>(int)<i>endPos</i></font><br>
+<font face="Times"><b>anchor:</b>(int)<i>anchorPos</i></font><br>
+<font face="Times"><b>lit:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Programmatically selects a range of Cells.&nbsp; <i>startPos</i>, <i>endPos</i>, and <i>anchorPos</i> are Cell positions, counting from 0 at the upper left Cell of the Matrix, rows before columns.&nbsp; For example, the third Cell in the top row would be number 2.</font>
+
+<p><font face="Times"><i>startPos</i> and <i>endPos</i> are used to mark where the user would have pressed the mouse button and released it, respectively. <i>anchorPos</i> locates the &quot;last selected Cell&quot; with regard to extending the selection by Shift- or Alternate-clicking.&nbsp; Finally, <i>lit </i>determines whether Cells selected by this method are highlighted.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isSelectionByRect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellList</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setState:at::%5D"></a><font face="Helvetica"><b>setState:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setState:</b>(int)<i>value</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the state of the Cell at row <i>row</i> and column <i>col</i> to <i>value</i>.&nbsp; For radio-mode Matrices, this is identical to <b>selectCellAt:: </b>except that the state can be set to any arbitrary <i>value</i>.&nbsp; If autodisplay is on, redraws the affected Cell; if the Matrix is in radio mode, the Cell is redrawn regardless of the setting of autodisplay.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setState:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTag:at::%5D"></a><font face="Helvetica"><b>setTag:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there's a Cell at (<i>row</i>, <i>col</i>), sets that Cell's tag to <i>anInt</i> and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:target:action:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b> (ActionCell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTag:target:action:at::%5D"></a><font face="Helvetica"><b>setTag:target:action:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>target:</b><i>anObject</i></font><br>
+<font face="Times"><b>action:</b>(SEL)<i>aSelector</i></font><br>
+<font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there's a Cell at (<i>row</i>, <i>col</i>), sets that Cell's tag, target, and action to <i>anInt</i>, <i>anObject</i>, and <i>aSelector</i>, respectively.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:at::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTarget:%5D"></a><font face="Helvetica"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the target object of the Matrix.&nbsp; This is the object to which actions will be sent for Cells that don't have their own target. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTarget:at::%5D"></a><font face="Helvetica"><b>setTarget:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there's a Cell at (<i>row</i>, <i>col</i>), sets that Cell's target to <i>anObject</i> and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:target:action:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b> (ActionCell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTextDelegate:%5D"></a><font face="Helvetica"><b>setTextDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTextDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the object to which the Matrix will forward messages from the field editor.&nbsp; These messages include <b>text:isEmpty:</b>, <b>textWillEnd:</b>, <b>textDidEnd:endChar:</b>, <b>textWillChange:</b>, and <b>textDidChange:</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDelegate</b>, Text class delegate methods</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-setTitle:at::%5D"></a><font face="Helvetica"><b>setTitle:at::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>at:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>:</b>(int)<i>col</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there's a Cell at (<i>row</i>, <i>col</i>), sets that Cell's title to <i>aString</i> and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Use this method only with Matrices that have Cells that respond to <b>setTitle:</b>.&nbsp; Not all subclasses of Cell implement this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:</b> (ButtonCell, FormCell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sizeTo::%5D"></a><font face="Helvetica"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo:</b>(float)<i>width</i> <b>:</b>(float)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resizes the Matrix to <i>width</i> and <i>height</i>, but doesn't redraw it.&nbsp; If the Matrix has been set to autosize its Cells, each Cell is resized proportionally to the change in size of the Matrix, keeping the inter-Cell spacing constant; if the Matrix doesn't autosize, then the inter-Cell spacing is adjusted, and the Cells remain the same size.&nbsp; If editing is going on in the Matrix, it's aborted; after the Matrix is redrawn, the text is reselected to allow editing to continue.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutosizeCells:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectText:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sizeToCells%5D"></a><font face="Helvetica"><b>sizeToCells</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the width and the height of the Matrix frame so that it exactly contains the Cells.&nbsp; Does not redraw the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-sizeToFit%5D"></a><font face="Helvetica"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the Cell size to accommodate the Cell with the largest contents in the Matrix, then changes the width and the height of the Matrix frame so that it exactly contains the Cells.&nbsp; Doesn't redraw the Matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcCellSize:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-target%5D"></a><font face="Helvetica"><b>target</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the target of the Matrix.&nbsp; This object receives action messages for Cells that don't have their own target or action, and receives all double-click action messages.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:at::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textDelegate%5D"></a><font face="Helvetica"><b>textDelegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDelegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object that receives messages passed on by the Matrix from the field editor.&nbsp; The field editor, as mentioned in the TextField class specification, is the Text object used to draw text in all Cells in a Window.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTextDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textDidChange:%5D"></a><font face="Helvetica"><b>textDidChange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidChange:</b><i>textObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Passes this message on, with the same argument, to the Text delegate of the Matrix.&nbsp; Override this method if you want your subclass of Matrix to act as the field editor's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidChange:</b> (Text class delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textDidEnd:endChar:%5D"></a><font face="Helvetica"><b>textDidEnd:endChar:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidEnd:</b><i>textObject</i> <b>endChar:</b>(unsigned short)<i>whyEnd</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked by <i>textObject</i> (the field editor) when text editing ends.&nbsp; Passes this message on, with the same argument, to the Text delegate of the Matrix, then ends editing for the field editor and checks <i>whyEnd</i> to see if an action key (Return or Tab) was pressed.&nbsp; If Return was pressed, an action message is sent as explained in the <b>sendAction</b> method description.&nbsp; If Tab was pressed, the next editable text Cell is selected, or if the current Cell is the last one, <b>selectText:</b> is sent to the next text if there is one and it responds; failing that, the first selectable text field in the Matrix is selected (that is, the selection cycles within a Matrix with no next text).&nbsp; If Shift-Tab was pressed, a similar sequence is performed in reverse.&nbsp; Returns the object sent the <b>selectText:</b> message.</font>
+
+<p><font face="Times">You may want to override this method to interpret more characters (such as the Enter or Escape keys) in ending editing.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNextText:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreviousText:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidEnd:endChar:</b> (Text class delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textDidGetKeys:isEmpty:%5D"></a><font face="Helvetica"><b>textDidGetKeys:isEmpty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidGetKeys:</b><i>textObject</i> <b>isEmpty:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Passes this message on, with the same argument, to the Text delegate of the Matrix.&nbsp; Override this method if you want your subclass of Matrix to act as the field editor's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textDidGetKeys:isEmpty:</b> (Text class delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textWillChange:%5D"></a><font face="Helvetica"><b>textWillChange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>textWillChange:</b><i>textObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked automatically during editing to determine if it is OK to edit the selected text.&nbsp; This method checks whether the Cell is editable and sends <b>textWillChange:</b> to the TextField's Text delegate to allow it to respond.&nbsp; Returns YES if the text isn't editable; NO if the text is editable but the Text delegate doesn't respond to <b>textWillChange:</b>; the text delegate's return value for <b>textWillChange:</b> if the Text delegate responds to it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEditable:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTextDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textWillChange:</b> (Text class delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-textWillEnd:%5D"></a><font face="Helvetica"><b>textWillEnd:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>textWillEnd:</b><i>textObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked automatically before text editing ends.&nbsp; Checks the text by sending <b>isEntryAcceptable:</b> to the Cell being edited.&nbsp; If the entry isn't acceptable, sends the error action to the target.&nbsp; This method is then passed on to the Text delegate with the same argument.&nbsp; The return value is based on whether the entry is acceptable and on the return value from the Text delegate.&nbsp; If the delegate responds to <b>textWillEnd:</b>, then the return value is NO only if the entry is acceptable and the delegate returns NO. Otherwise the return value is YES to indicate that editing shouldn't end, and this method generates a beep (to indicate an error in the entry).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEntryAcceptable:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTextDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>textWillEnd:</b> (Text class delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-validateSize:%5D"></a><font face="Helvetica"><b>validateSize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateSize:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, then the size information in the Matrix is assumed correct.&nbsp; If <i>flag</i> is NO, then <b>calcSize</b> will be invoked before any further drawing is done.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BMatrix-write:%5D"></a><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the receiving Matrix to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/B_ImprovingLaunchTimes.rtf -->
+<!-- Date: Sun Jun 28 19:36:56 1998 -->
+<head>
+<title>B_ImprovingLaunchTimes</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Improving Launch Times of the Application and Panels</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Be Lazy</b></font>
+
+<p><font face="Times">Often launch times can be dramatically improved by taking a lazy approach to the creation and initialization of data structures and objects in your application.&nbsp; That is, don't spend launch time creating and initializing objects unless they're central to the working of your application, or unless they'll benefit the typical user and you want to optimize response time.&nbsp; Panels are a classic example of this.</font>
+
+<p><font face="Times">Panels should always be put in separate Interface Builder files so that interface objects are loaded on demand rather than at startup time.&nbsp; Even if the panel is deferred (that is, the creation of the PostScript window is deferred until the window is about to become visible), the time required to read in the interface data and do initialization is substantial. For example, Preferences panels or Info panels should never be in your &#34;main&#34; nib file.</font>
+
+<p><font face="Times">In many instances it may make sense to create a separate class that owns a panel and is the target for the panel's controls.&nbsp; In this case the interface is typically loaded within the class method responsible for creating an instance of the class.&nbsp; The OpenPanel, SavePanel, and PageLayoutPanel classes all use this technique.&nbsp; Once again, create the object only when you absolutely need to.</font>
+
+<p><font face="Times">Interface Builder associates a name with every object in an interface file.&nbsp; When <b>loadNibSection:owner:</b> is invoked, the names are read in along with the objects themselves.&nbsp; Subsequently, <b>NXGetNamedObject()</b> can be used to return the <b>id</b> of an object associated with a given name.&nbsp; However, if you don't need this functionality, you can save time and memory by not having the names read into memory.&nbsp; If you use <b>loadNibSection:owner:withNames:</b> rather than <b>loadNibSection:owner:</b> and pass NO as the argument for <b>withNames:</b>, the names will not be read in.</font>
+
+<p><font face="Times">Another consideration for panels is whether to make them <b>one-shot</b>.&nbsp; If a window is one-shot, the underlying PostScript window is freed when the panel is closed.&nbsp; On a color system, this is a substantial amount of memory to be reclaimed. With the drawing speed of today's CPUs, only panels that are very complex and take a long time to draw should not be one-shot.&nbsp; For example, all panels in the Application Kit are one-shot.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Procedure Reordering</b></font>
+
+<p><font face="Times">Procedure reordering (sometimes called &#34;Scatter Loading&#34;) is the process of reordering the functions and methods of your application to reduce the number of virtual memory pages required for a given operation.&nbsp; For example, if you reorder all your application's initialization code so that these routines are contiguous instead of spread throughout your application's text segment, fewer pages of your application's code will need to be loaded at launch time.&nbsp; This also has the additional benefit that these once-used routines can then page out together, instead of being mixed with other routines that are used later.&nbsp; This reduces the working set of your application during subsequent use.&nbsp; For more information, see the performance note on &#34;Link Optimization&#34;.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

@@ -1,0 +1,2044 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Pre3.0_Concepts/05_Events.rtfd -->
+<!-- Date: Sun Jun 28 19:37:23 1998 -->
+<head>
+<title>05_Events</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Helvetica" size="+3"><b>5</b></font></td>
+
+<td><font face="Times" size="+3"><i>Events</i></font></td></tr>
+
+</table>
+
+<p><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>Changes made for the current release of NeXTstep affect the information presented in this chapter.&nbsp; For details see:</b></font>
+
+<p><img src="../../Images/sp.gif" width=19 height=1><font face="Times"><b>/NextLibrary/Documentation/NextDev/ReleaseNotes/WindowServer.rtf</b></font><br>
+<img src="../../Images/sp.gif" width=19 height=1><font face="Times"><b>/NextLibrary/Documentation/NextDev/ReleaseNotes/AppKit.rtf</b></font>
+
+<p><br><br><br><br>
+
+<p><font face="Times">Applications on the NeXT computer respond to four types of input:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Events.&nbsp; The direct or indirect reports of a user's actions--<i>key-down</i> and <i>mouse-up</i> events, for example.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Timed entries.&nbsp; Functions that are executed at a given frequency.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Data received at a Mach port.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Data waiting at a file descriptor.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Of these four, events are by far the most prevalent and important.&nbsp; In fact, the heart of an application is its <i>event loop</i>, the routine that repeatedly checks for the arrival of new events.&nbsp; It's only when the application is running the event loop that it can receive input from the three other sources.&nbsp; Because these four types of input are so closely interrelated, they're discussed together in this chapter.</font>
+
+<p><font face="Times">The chapter begins with an examination of events:&nbsp; their types, components, and how they're distributed to an application.&nbsp; It then discusses the other types of input and how an application coordinates its response to them.</font>
+
+<p><font face="Times">Since most of an application's event processing is done through the Application Kit objects it includes, the close look at events that this chapter provides may at times contain more detail that you'll actually need to get started writing an application.&nbsp; The next two chapters, &quot;Program Structure&quot; and &quot;Program Dynamics,&quot; introduce the Application Kit and its event-handling system.&nbsp; You can either turn directly to those chapters and refer back to this one for background information as needed, or you can read through this chapter first.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Event Basics</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Applications on the NeXT computer are driven by the user's actions on the keyboard and mouse.&nbsp; The Window Server treats each user action as an <i>event,</i> which it associates with a window and reports to the application that created the window.&nbsp; For most events, the Window Server sends the event to the application only if the window's <i>event mask </i>permits it.&nbsp; The mask has a different bit set for each type of event the application is interested in.</font>
+
+<p><font face="Times">Pertinent information about each event--such as which character was typed and where the mouse was located--is collected in an <i>event record</i>.&nbsp; When an event is reported to an application, its record is stored in a C structure and made available to the application through the Application Kit.</font>
+
+<p><font face="Times">Since an application and the Window Server are separate processes that execute asynchronously, a system is needed to coordinate their communication.&nbsp; For example, an application may be involved in a long computation and momentarily unable to process the event records that the Window Server sends.&nbsp; So that no information is lost, as event records are received in the application, they're temporarily placed in storage called the <i>event queue</i>.&nbsp; When the application is ready to process an event, it takes an event record from the queue.&nbsp; Only when the application checks the queue can it also check for timed entries or data at a Mach port or in a file.</font>
+
+<p><font face="Times">Most events follow the same path:&nbsp; from the Window Server to the application's event queue, and from there, to the objects and functions of the application.&nbsp; However, the Application Kit can create an event record and insert it into the event queue for distribution or send it directly to its destination.&nbsp; In some cases, it's more efficient or convenient for the Application Kit to create an event record itself.&nbsp; The Kit can then either insert the record in the event queue for distribution or send it directly to its destination.&nbsp; If an event follows one of these alternate pathways, it's pointed out in the discussion that follows.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Types of Events</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The different types of events an application receives can be grouped in these seven categories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Keyboard events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Mouse events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Timer events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Cursor-update events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Kit-defined events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">System-defined events</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Application-defined events</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">As described in the following sections, some of these categories comprise <i>discrete events</i>.&nbsp; For example, mouse-down, mouse-up, and mouse-dragged events are discrete types of the mouse events category.&nbsp; Some categories contain a single <i>compound event</i> whose event record contains information specifying which of several possible actions caused the event.&nbsp; The distinction between discrete and compound events will become clear from the examination of the event record later in this chapter.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Keyboard Events</b></font>
+
+<p><font face="Times">Among the most common events sent to an application are these direct reports of the user's keyboard actions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>key-down</i> event when the user generates a character by pressing a key</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>key-up</i> event when the key is released</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>flags-changed</i> event when the user presses or releases the Alternate, Shift, Control, or Command key, or turns Alpha Lock on or off</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Of these, key-down events are the most useful to the application.&nbsp; Key-up events are less used since they follow almost automatically when there has been a key-down event.</font>
+
+<p><font face="Times">Because the event record for every event type includes flags that indicate the state of Alpha Lock, Alternate, Shift, Control, and Command, applications normally don't need to receive flags-changed events; they're useful only for applications that have to keep track of the state of these keys continuously.&nbsp; The default event mask for a new window doesn't allow flags-changed events.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Mouse Events</b></font>
+
+<p><font face="Times">Mouse events are generated by changes in the state of the mouse buttons and by changes in the position of the mouse cursor on the screen.&nbsp; Along with keyboard events, they're among the most useful to applications.&nbsp; This category consists of:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Two sets of <i>mouse-down</i> and <i>mouse-up</i> events, one for the left mouse button and one for the right.&nbsp; &quot;Mouse-down&quot; means the user pressed the button; &quot;mouse-up&quot; means the button was released.&nbsp; If the mouse has just one button, only left mouse events are generated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Two types of <i>mouse-dragged</i> events--one for when the mouse is moved with its left mouse button down, or with both buttons down, and one for when it's moved with just the right button down.&nbsp; A mouse with a single button generates only left mouse-dragged events.&nbsp; As the mouse is moved with a button down, a series of mouse-dragged events is produced.&nbsp; The series is always preceded by a mouse-down event and followed by a mouse-up event.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>mouse-moved</i> event when the user moves the mouse without holding down either mouse button.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Mouse-entered</i> and <i>mouse-exited</i> events if the application has asked the Window Server to set a <i>tracking rectangle </i>in a window.&nbsp; These events report whether the cursor has entered the rectangle or left it.&nbsp; For each rectangle, you can specify whether these events should be generated only when one or another (or both) of the mouse buttons is being held down.&nbsp; A window can have any number of tracking rectangles; the event record identifies which rectangle was entered or exited.&nbsp; For more information on setting a tracking rectangle, see &quot;Mouse-Exited and Mouse-Entered Events&quot; in Chapter 7, &quot;Program Dynamics.&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Mouse-dragged and mouse-moved events are generated repeatedly as long as the user keeps moving the mouse.&nbsp; If the user holds the mouse stationary, neither event is generated until it moves again.&nbsp; Nevertheless, mouse-dragged and mouse-moved events are different from all other events in that they report continuous rather than discrete user actions. They therefore place a heavy load on the system; applications should ask for them only when necessary.&nbsp; The default event mask for a newly created window doesn't allow either of these two mouse events.&nbsp; You need to reset the mask when you're ready to respond to these events and set it back again when you're done.&nbsp; See &quot;Modal Event Loops&quot; in Chapter 7 for an example of how this can be done.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The use of the terms &quot;left&quot; and &quot;right&quot; above is a matter of convention (see Chapter 2, &quot;NeXT User Interface&quot; for more information).&nbsp; Unless the mouse buttons have been differentiated using the Preferences program, either mouse button generates the &quot;left&quot; version of these mouse events.&nbsp; If, on the other hand, a user unlinks the two buttons, the primary mouse button (either left or right) generates &quot;left&quot; mouse events and the other button generates &quot;right&quot; mouse events.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Timer Events</b></font>
+
+<p><font face="Times">A <i>timer event</i> notifies an application that a certain time interval has elapsed.&nbsp; An application can register that it wants timer events and that they should be placed in its event queue at a certain frequency.&nbsp; When the application no longer needs them, the flow of timer events can be turned off.&nbsp; An application can't have more than one stream of timer events active at a time.&nbsp; These events are a service of the routines that place events in an application's event queue and so aren't created by the Window Server.</font>
+
+<p><font face="Times">Timer events provide a way for applications to interleave two activities.&nbsp; For example, consider automatic scrolling. As the user drags the mouse outside a window, the application checks for mouse-dragged events and sends a message to select and scroll the contents of the window.&nbsp; The number of lines scrolled at a time depends on the distance the mouse is dragged way from the top or bottom edges of the window:&nbsp; The farther it's dragged, the greater the number of lines scrolled at a time.&nbsp; However, the sending of scrolling messages can't be contingent on the receipt of mouse-dragged events.&nbsp; If the user stops moving the mouse but continues to hold the mouse button down, the flow of mouse-dragged events stops although the window should continue scrolling.</font>
+
+<p><font face="Times">To solve this problem, the application can specify that, while it's checking for mouse-dragged events (whether it finds one or not), it will receive timer events at a given interval.&nbsp; Each time it receives a timer event, it can send a message to the window to scroll.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Cursor-Update Events</b></font>
+
+<p><font face="Times">A <i>cursor-update</i> event informs an application that the cursor has crossed the boundary of a predefined rectangular area within a window.&nbsp; The application can then respond by updating the cursor's shape.&nbsp; For example, the Edit application changes the cursor from an arrow to an I-beam whenever the cursor is within the text area of the window.&nbsp; There may be one or more rectangles defined at a time, and the rectangles can overlap partially or fully.&nbsp; A different cursor can be defined for each rectangle.</font>
+
+<p><font face="Times">Cursor-update events may seem closely related to mouse-entered and mouse-exited events.&nbsp; In fact, the Application Kit converts specially marked mouse-entered and mouse-exited events into cursor-update events and then sends them on to the application.&nbsp; Consequently, these events are only available to applications based on the Kit.&nbsp; The Kit also provides the facilities for registering a cursor and assigning it to a particular area of a window.&nbsp; Once your application has assigned a cursor to a specific area, the Application Kit does the rest.&nbsp; Kit routines check for incoming cursor-update events and update the cursor's image accordingly.&nbsp; In doing so, the Kit consumes the cursor-update events, making it unnecessary for your code to handle them.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Kit-Defined Events</b></font>
+
+<p><font face="Times">Kit-defined events contain information that the Application Kit uses to manage your application.&nbsp; Since the Kit is designed to respond to events of this type, the code you write will rarely need to take them into account.</font>
+
+<p><font face="Times">A kit-defined event is a compound event, a single event type that serves as a vehicle for various subevents.&nbsp; By examining the event record of a kit-defined event, an application can determine which of several kit-defined subevents has occurred.&nbsp; These subevents report changes to a window or to the status of the application that created the window. Kit-defined subevents are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>window-moved</i> subevent when the user has dragged the window to another location on the screen.&nbsp; Most applications won't care exactly where a user moves a window and won't need to respond to this subevent.&nbsp; The Application Kit uses it to keep track of where windows are on the screen.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>window-resized</i> subevent when the application has the Window Server resize a window in response to the user's actions.&nbsp; The subevent reports the window's new dimensions to the application.&nbsp; Although the Window Server resizes the window, it doesn't generate the window-resized subevent.&nbsp; Instead, the Application Kit creates the subevent and sends it on to its destination.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <i>window-exposed</i> subevent when a nonretained window that was covered or positioned off-screen becomes exposed.&nbsp; This subevent lets the application know which part of the window needs to be redrawn.&nbsp; Window-exposed subevents also occur for retained windows when instance drawing in them is exposed.&nbsp; (See &quot;Instance Drawing,&quot; in Chapter 4, &quot;Drawing.&quot;)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An <i>application-activated</i> subevent when an inactive application is activated.&nbsp; This subevent alerts the application to display the markings on its main and key windows and to redisplay any panels that it hid when it became inactive.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An <i>application-deactivated</i> subevent to cause a previously active application to become inactive.&nbsp; The application receiving an application-deactivated subevent makes its panels disappear and relinquishes the main and key windows.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>System-Defined Events</b></font>
+
+<p><font face="Times">A system-defined event is also a compound event, serving to group subevents which report activities of system-wide importance.&nbsp; As with kit-defined events, the Application Kit responds to system-defined events, making it unnecessary in most cases for you to handle these events directly.</font>
+
+<p><font face="Times">Currently, there's only one subevent, the <i>power-off</i> subevent, of the system-defined event.&nbsp; This subevent is generated when the user turns the power off by pressing the Power key on the keyboard.&nbsp; Before the power actually goes off, applications have time to notify the user of files not saved and do other cleanup if necessary.&nbsp; This subevent is not generated by power failures or any other means that might be used to turn the computer off.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Application-Defined Events</b></font>
+
+<p><font face="Times">An application-defined event is a compound event with no predefined subevent types.&nbsp; An application can define as many subevent types as it needs.&nbsp; The event record contains several fields that the application can use to give specific content to the subevent.</font>
+
+<p><font face="Times">An application might make use of these events in a number of ways.&nbsp; From the keyboard and mouse events it receives, it could recognize the user's intentions and generate an event record for the appropriate application-defined subevent. It could post the event record to its queue and then process the record as it does those it receives from the Window Server.&nbsp; (See &quot;The Event Queue&quot; at the end of this chapter and <b>DPSPostEvent()</b> in <i>NeXTstep Reference, Volume 2</i>.)</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>The Event Record</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Information about each event is stored in an <i>event record</i>.&nbsp; In some cases, the Application Kit extracts information out of the event record for you; usually, you'll need to access it directly.&nbsp; When the application sees it, the event record has the structure shown below.&nbsp; This structure is defined, along with event-related constants and macros, in the NeXT header file <b>dpsclient/event.h</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct _NXEvent {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* event type */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXPoint&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; location;&nbsp;&nbsp; /* mouse location */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">long&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* time since startup */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; flags;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* key state flags */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int&nbsp; window;&nbsp;&nbsp;&nbsp;&nbsp; /* window number */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXEventData&nbsp;&nbsp; data;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* type-specific information */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">DPSContext&nbsp;&nbsp;&nbsp; ctxt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* context number */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} NXEvent;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Here's what the event record contains in its various components (called &quot;fields&quot; or &quot;members&quot; in standard C terminology):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Component</b></font></td>
+
+<td><font face="Helvetica"><b>Content</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">type</font></td>
+
+<td><font face="Times">The event type--whether it's a mouse-down, key-up, or kit-defined event, for example.&nbsp; (See the list in the next section.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">location</font></td>
+
+<td><font face="Times">The mouse location--its x and y coordinates in the window's base coordinate system--immediately following the event, except for two subevents:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=231></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For window-moved subevents, it's the lower left corner of the window after the move, in screen coordinates.&nbsp; (This point is the origin of the base coordinate system.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=231 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=231></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For window-exposed subevents, it's the lower left corner of the rectangle to be redrawn, in base coordinates.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">time</font></td>
+
+<td><font face="Times">The time that the event occurred relative to system startup.&nbsp; The unit of time is hardware-dependent; on the NeXT computer, it's measured as the number of vertical retrace intervals (1/68 seconds) since the startup of the Window Server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">flags</font></td>
+
+<td><font face="Times">Flags indicating whether the mouse buttons or modifier keys like Shift and Command were down when the event occurred, or whether a key that was pressed was on the numeric keypad (see &quot;Event Flags&quot; below).</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">window</font></td>
+
+<td><font face="Times">In most cases, the window number of the window associated with the event.&nbsp; For left mouse-down, left mouse-up, and left mouse-dragged events, it's the window that the cursor was over when the mouse button was pressed.&nbsp; For right mouse events that occur over a window in the active application, it's also the window that the cursor was over when the mouse button was pressed.&nbsp; However, for right mouse events that occur elsewhere, it's the number of the window that last received a left mouse-down event.&nbsp; (The Application Kit uses this information to bring up the application's main menu in response to a right mouse-down event.)&nbsp; For mouse-moved events, it's the number of the topmost window that accepts this type of event.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">In the case of application-activated and application-deactivated subevents, this field identifies the application that's being deactivated (for application-activated subevents) or the application that's being activated (for application-deactivated subevents).</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">data</font></td>
+
+<td><font face="Times">Type-specific information (see &quot;Type-Specific Event Data&quot; below).</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ctxt</font></td>
+
+<td><font face="Times">A number identifying the PostScript context associated with this event.&nbsp; Since an application typically creates only one context in the Window Server, the content of this field won't be of interest.&nbsp; This field is provided for applications that establish multiple PostScript contexts and that must know which context an event arrived from.&nbsp; (See &quot;The Event Queue&quot; at the end of this chapter and Chapter 4 for more information about PostScript contexts.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Event Types</b></font>
+
+<p><font face="Times">The event type is indicated by one of these symbolic constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Event Type</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_KEYDOWN</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Key-down</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_KEYUP</font></td>
+
+<td><font face="Times">Key-up</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_FLAGSCHANGED</font></td>
+
+<td><font face="Times">Flags-changed</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEDOWN</font></td>
+
+<td><font face="Times">Mouse-down, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEUP</font></td>
+
+<td><font face="Times">Mouse-up, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEDOWN</font></td>
+
+<td><font face="Times">Mouse-down, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEUP</font></td>
+
+<td><font face="Times">Mouse-up, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEMOVED</font></td>
+
+<td><font face="Times">Mouse-moved</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEDRAGGED</font></td>
+
+<td><font face="Times">Mouse-dragged, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEDRAGGED</font></td>
+
+<td><font face="Times">Mouse-dragged, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEENTERED</font></td>
+
+<td><font face="Times">Mouse-entered</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEEXITED</font></td>
+
+<td><font face="Times">Mouse-exited</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_TIMER</font></td>
+
+<td><font face="Times">Timer</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_CURSORUPDATE</font></td>
+
+<td><font face="Times">Cursor-update</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_KITDEFINED</font></td>
+
+<td><font face="Times">Kit-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_SYSDEFINED</font></td>
+
+<td><font face="Times">System-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_APPDEFINED</font></td>
+
+<td><font face="Times">Application-defined</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">As a convenience, these synonyms for left mouse events are provided for your use:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Equivalent to</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_MOUSEDOWN</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">NX_LMOUSEDOWN</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEUP</font></td>
+
+<td><font face="Times">NX_LMOUSEUP</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEDRAGGED</font></td>
+
+<td><font face="Times">NX_LMOUSEDRAGGED</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Event Flags</b></font>
+
+<p><font face="Times">The <b>flags</b> component of the event record contains the flags illustrated in Figure 5-1.&nbsp; Each flag is 1 in the situation stated in the diagram, and 0 otherwise.&nbsp; Bits that aren't labeled in the diagram are reserved for future use.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><img src="F0.gif" width=405 height=307></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Figure 5-1</b></font><font face="Times">.&nbsp; Event Flags</font>
+
+<p><br><br>
+
+<p><font face="Times">Only the flags in the high-order half of the flags integer are hardware-independent, that is, guaranteed to have the indicated meaning for any keyboard or mouse.&nbsp; The hardware-dependent flags (in the low-order half) should be used only when your application must distinguish between the left and right Alternate, Control, or Command keys.&nbsp; If you use the hardware-dependent flags, your application will require changes before it will work on later versions of the NeXT computer keyboard or with NeXT software running on other hardware systems.</font>
+
+<p><font face="Times">The low-order event flags imply certain high-order flags.&nbsp; If either of the low-order flags corresponding to Alternate is set, the high-order Alternate flag is also set.&nbsp; Similarly, if either low-order flag referring to Command or Shift is set, the corresponding high-order bit is set.&nbsp; If the low-order Control flag is set, so too will be the high-order Control flag.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The Command and Alternate keys may be labeled differently on other keyboards, and you may set Alpha Lock differently.&nbsp; Flags referring to keys entirely missing from other keyboards will always be 0 when those keyboards are used.</font>
+
+<p><font face="Times">The following constants are provided as masks for accessing these flags.</font>
+
+<p><font face="Times">Hardware-independent:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Mask</b></font></td>
+
+<td><font face="Helvetica"><b>Event Flag</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_ALPHASHIFTMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if Alpha Lock is set or any Shift key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_SHIFTMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if any Shift key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_CONTROLMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if any Control key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_ALTERNATEMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if any Alternate key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_COMMANDMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if any Command key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_NUMERICPADMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if key is on numeric keypad</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">NeXT hardware only:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Mask</b></font></td>
+
+<td><font face="Helvetica"><b>Event Flag</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_NEXTCTRLKEYMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">1 if Control key is down</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTLSHIFTKEYMASK</font></td>
+
+<td><font face="Times">1 if left Shift key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTRSHIFTKEYMASK</font></td>
+
+<td><font face="Times">1 if right Shift key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTLCMDKEYMASK</font></td>
+
+<td><font face="Times">1 if left Command key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTRCMDKEYMASK</font></td>
+
+<td><font face="Times">1 if right Command key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTLALTKEYMASK</font></td>
+
+<td><font face="Times">1 if left Alternate key is down</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_NEXTRALTKEYMASK</font></td>
+
+<td><font face="Times">1 if right Alternate key is down</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For example, the following code tests whether Alternate was pressed at the time of the last event; <b>theEvent</b> is a pointer to the event record of the current event.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( theEvent-&gt;flags &amp; NX_ALTERNATEMASK )</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">doSomething();</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">doSomethingElse();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Since the state of Alternate, Alpha Lock, Shift, and Control is reflected in the character information returned for a keyboard event (as described below), there's normally no need to check flags for them.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Type-Specific Event Data</b></font>
+
+<p><font face="Times">The <b>data</b> component of the event record is a C union that contains different information depending on the type of event:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef union {</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* For mouse-down and mouse-up events: */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; reserved;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; eventNum;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* event number */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; click;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* single, double, triple, etc.*/</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; unused;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} mouse;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* For key-down and key-up events: */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reserved;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; repeat;&nbsp;&nbsp;&nbsp; /* key repeat indicator */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned short&nbsp;&nbsp; charSet;&nbsp;&nbsp; /* character set */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned short&nbsp;&nbsp; charCode;&nbsp; /* character code */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned short&nbsp;&nbsp; keyCode;&nbsp;&nbsp; /* key code */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; keyData;&nbsp;&nbsp; /* hardware-dependent data */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} key;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* For mouse-entered and mouse-exited events: */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; reserved;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; eventNum;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* mouse-down event number */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; trackingNum;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* tracking rectangle number */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; userData;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* programmer-determined data */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} tracking;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* For kit-defined, sys-defined, and app-defined events */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; reserved;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">short&nbsp; subtype;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* subevent type for compound events */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">union {</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">float&nbsp; F[2];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">long&nbsp;&nbsp; L[2];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">short&nbsp; S[4];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">char&nbsp;&nbsp; C[8];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">} misc;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} compound;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} NXEventData;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">As shown here, <b>data</b> provides additional information for some types of events.&nbsp; For other types of events, <b>data</b> is undefined.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Mouse-Down and Mouse-Up Events</b></font>
+
+<p><font face="Times">For a mouse-down or mouse-up event, <b>data.mouse.click</b> tells whether the event is part of a click, double-click, triple-click, or another number of successive clicks:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Value</b></font></td>
+
+<td><font face="Helvetica"><b>Means</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times">1</font></td>
+
+<td><font face="Times">Mouse-down or mouse-up of a single-click in a</font></td></tr>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times">window that is already the key</font></td>
+
+<td><font face="Times">window.</font></td></tr>
+
+<tr valign=top>
+
+<td width=307 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times">2</font></td>
+
+<td><font face="Times">Mouse-down or mouse-up of a double-click</font></td></tr>
+
+<tr valign=top>
+
+<td width=307 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times">3</font></td>
+
+<td><font face="Times">Mouse-down or mouse-up of a triple-click</font></td></tr>
+
+<tr valign=top>
+
+<td width=307 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times"><i>n</i></font></td>
+
+<td><font face="Times"><i>n</i>th successive click</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For applications based on the Application Kit, <b>data.mouse.click</b> can also have a</font> <img src="../../Images/c2D.gif" width=8 height=4><font face="Times">1 value.&nbsp; This is made possible by PostScript procedures that the Application Kit loads into the Window Server when an application starts.&nbsp; Among the many functions of these procedures (called <i>packages</i>), is to assign a</font> <img src="../../Images/c2D.gif" width=8 height=4><font face="Times">1 value to the first click in a non-key window. The Application Kit then has the opportunity to interpret a first click differently from following clicks.&nbsp; For example, a first click in a non-key window containing text makes the window the key window but doesn't affect the selection in the text.&nbsp; A second click, however, moves the insertion point in the text to the location of the mouse event.</font>
+
+<p><font face="Times">The Window Server interprets two or more clicks as either individual clicks or as part of a multiple-click, depending on the proximity of the clicks in time and location.&nbsp; You can modify the default time settings with the Preferences application.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Key-Down and Key-Up Events</b></font>
+
+<p><font face="Times">When the user holds a repeating key down, the Window Server sends a succession of key-down events followed by a key-up event when the user releases the key.&nbsp; For a key-down or key-up event, <b>data.key.repeat</b> indicates whether the event is a discrete keyboard event or part of a succession of events generated by a repeating key.&nbsp; Keyboard events that are part of a succession are marked with a nonzero value in <b>data.key.repeat</b>; discrete events contain 0 in this field.</font>
+
+<p><font face="Times">After sending the first key-down event, the Window Server waits a preset length of time before sending repeated key-down events.&nbsp; This delay, and the frequency of the repeated key-down events, can be set using the Preferences application.</font>
+
+<p><font face="Times"><b>data.key.charSet</b> indicates the <i>character set</i> and <b>data.key.charCode</b> indicates the <i>character code</i>, which together correspond to a particular character.&nbsp; The <i>key code</i>, <b>data.key.keyCode</b>, which maps to a key on the keyboard, will rarely be used.&nbsp; <b>data.key.keyData</b>, which can contain hardware-dependent data, is undefined for the NeXT keyboard. See &quot;Keyboard Information&quot; below for more information.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Mouse-Entered and Mouse-Exited Events</b></font>
+
+<p><font face="Times">A mouse-entered or mouse-exited event's <b>data.tracking.trackingNum</b> field contains an arbitrary number that the application supplied when it set the tracking rectangle.&nbsp; The <b>data.tracking.eventNum</b> field contains the event number of the latest mouse-down event.&nbsp; The tracking number enables applications to associate mouse-exited and mouse-entered events with the correct tracking rectangle.&nbsp; If the mouse is being tracked only while one of its buttons is pressed, <b>eventNum</b> should match the event number of the mouse-down event that initiated the tracking.</font>
+
+<p><font face="Times">You can use the <b>data.tracking.userData</b> field for your own purposes.&nbsp; It's commonly used to identify an object in your application that you want notified whenever the mouse enters or exits a tracking rectangle.&nbsp; Whereas the value in <b>data.tracking.trackingNum</b> must be unique for each tracking rectangle, any number of tracking rectangles can share the same <b>data.tracking.userData</b> value, which can be used to identify this object.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Kit-Defined Events</b></font>
+
+<p><font face="Times">For a kit-defined event, <b>data.compound.subtype</b> identifies the kit-defined subevent.&nbsp; The constants corresponding to these subevents are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Subevent Type</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_WINMOVED</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Window-moved</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_WINRESIZED</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Window-resized</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_WINEXPOSED</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Window-exposed</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_APPACT</font></td>
+
+<td><font face="Times">Application-activated</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_APPDEACT</font></td>
+
+<td><font face="Times">Application-deactivated</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">A window-moved subevent's <b>location</b> field contains the window's new location in screen coordinates.</font>
+
+<p><font face="Times">A window-resized subevent's <b>location</b> field contains the window's new location in screen coordinates. <b>data.compound.misc.L[0]</b> contains the window's new width, and <b>data.compound.misc.L[1]</b> contains the window's new height.</font>
+
+<p><font face="Times">A window-exposed subevent's <b>location</b> field contains the location of the rectangle to be redrawn, given in base coordinates.&nbsp; <b>data.compound.misc.L[0]</b> and <b>data.compound.misc.L[1]</b> contain the width and height of the rectangle, also in base coordinates.</font>
+
+<p><font face="Times">Application-activated and application-deactivated subevents are somewhat different from the other kit-defined subevents.&nbsp; Application-activated and application-deactivated subevents are sent in pairs.&nbsp; When a user clicks in the window of an inactive application, the currently active application receives an application-deactivated subevent, and then the application that received the click receives an application-activated subevent.&nbsp; For an application-deactivated subevent, the event record's <b>window</b> field contains the PostScript context number of the application that will receive the application-activated subevent.&nbsp; Similarly, for an application-activated subevent, the event's <b>window</b> field contains the PostScript context number of the application that received the application-deactivated subevent.&nbsp; If the application-activated event was caused by a mouse click in one of the application's windows, the event's <b>data.compound.misc.L[1]</b> field contains a number identifying the window the event occurred in.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>System-Defined Events</b></font>
+
+<p><font face="Times">A system-defined event currently has only one subevent type, the power-off subevent.&nbsp; For this system-defined subevent, <b>data.compound.subtype</b> is equal to the constant NX_POWEROFF.&nbsp; No other field of the event record contains useful data.&nbsp; All applications, including the Workspace Manager, receive this event.&nbsp; Those applications that were started from the Workspace ignore the event, waiting instead for notification from the Workspace Manager. Applications that were started from Terminal or Shell can respond to this subevent directly, if they choose.&nbsp; (See &quot;System-Defined Events&quot; in Chapter 7 for details about handling power-off subevents.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Application-Defined Events</b></font>
+
+<p><font face="Times">For an application-defined event, <b>data.compound.subtype</b> identifies the subtype of the event, as defined by the application.&nbsp; <b>data.compound.misc</b> has fields for each of the following data types:&nbsp; two floats, two longs, four shorts, and eight characters.&nbsp; An application can use these fields in any way it chooses.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Keyboard Information</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For every keyboard event, the <b>data</b> component of the event record specifies the character that was typed, by indicating the <i>character set</i> and the <i>character code</i>.&nbsp; The character set is one of the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_ASCIISET</font></td>
+
+<td><font face="Times">Standard (extension of ASCII)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_SYMBOLSET</font></td>
+
+<td><font face="Times">Symbol</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The standard character set is an extended version of ASCII (the American Standard Code for Information Interchange); this is the character set for most fonts.&nbsp; There's a separate character set for the Symbol font.&nbsp; Each character set has an <i>encoding vector</i> that maps the character code to a particular character.&nbsp; The <i>NeXT Technical Summaries</i> manual shows the encoding vectors for each character set.</font>
+
+<p><font face="Times">The character information in the event record incorporates the effect of Alternate, Shift, Control, and Alpha Lock (Command-Shift), but not necessarily Command (except for Command-Shift).&nbsp; For example, Command-Return (which is Enter) has a different character code than Return.&nbsp; On the other hand, D has the same character code as Command-D.&nbsp; Command-D is distinguished from D in that the event flag for Command is set in the event record.</font>
+
+<p><font face="Times">The <b>flags</b> field can also be used to distinguish between the possible ways the codes for the arrow characters can be generated.&nbsp; If, for example, the code for the down arrow is generated by pressing the down arrow key, the numeric keypad flag is 1.&nbsp; Applications should interpret such a character code as a command to move the insertion point down one line in the text.&nbsp; If, on the other hand, the code is generated by pressing Alternate-Shift-n, the numeric keypad flag is 0.&nbsp; Applications should respond to this by drawing a down arrow in the text.&nbsp; The Application Kit's Text class interprets these codes correctly; if your application implements its own text editor, it should test the numeric keypad bit to support this convention.</font>
+
+<p><font face="Times">On future international versions of the NeXT keyboard, an individual key may correspond to a symbol formed by combining two different characters (for example, a letter and an accent).&nbsp; In this case, the application will receive a sequence of two key-down events followed by two key-up events, even though only a single key was pressed.&nbsp; If the key is held down, multiple key-down events will also be generated in pairs.</font>
+
+<p><font face="Times">The <b>data</b> component of the event record also contains:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A hardware-dependent key code, which indicates the position on the keyboard of the key that was pressed or released.&nbsp; The key codes for the NeXT keyboard are listed in <i>Technical Summaries</i>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Two additional bytes of hardware-dependent data; for events generated from the NeXT keyboard, these bytes contain 0.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Event Masks</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Each window has an <i>event mask</i> maintained by the Window Server.&nbsp; The mask is a long integer with a bit assigned to each event type.&nbsp; For events coming from the Window Server, if the bit for a given type is 0, no events of that type will be associated with the window and sent to the application process.&nbsp; The Window Server passes an event to the window's application only if the event mask allows it.</font>
+
+<p><font face="Times">When a window is created by the Window Server, it has a mask that allows all but mouse-moved, mouse-dragged, and flags-changed events.&nbsp; A standard window created with the Application Kit has an event mask that allows it to receive these events:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">key-down</font></td>
+
+<td><font face="Times">mouse-entered</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">key-up</font></td>
+
+<td><font face="Times">mouse-exited</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">left mouse-down</font></td>
+
+<td><font face="Times">kit-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">left mouse-up</font></td>
+
+<td><font face="Times">system-defined</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">right mouse-down</font></td>
+
+<td><font face="Times">application-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">right mouse-up</font></td>
+
+<td></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Applications can set the event masks for the windows they create.&nbsp; You should be careful not to place an unnecessary burden on the Window Server by asking for events your application doesn't need.&nbsp; &quot;Event Masks&quot; in Chapter 7 tells how to change event masks through the Application Kit.</font>
+
+<p><font face="Times">To help you set event masks and test event types, the NeXT header file <b>dpsclient/event.h</b> defines a mask for each event type.&nbsp; As shown below, the mask name is the same as the symbolic constant for the event type followed by &quot;MASK&quot;.&nbsp; There's also a symbolic constant for a mask that accepts all types of events.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Event Type</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_KEYDOWNMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Key-down</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../Images/sp.gif" width=7 height=1><font face="Times">NX_KEYUPMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=25 height=1><font face="Times">Key-up</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_FLAGSCHANGEDMASK</font></td>
+
+<td><font face="Times">Flags-changed</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEDOWNMASK</font></td>
+
+<td><font face="Times">Mouse-down, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEUPMASK</font></td>
+
+<td><font face="Times">Mouse-up, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEDOWNMASK</font></td>
+
+<td><font face="Times">Mouse-down, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEUPMASK</font></td>
+
+<td><font face="Times">Mouse-up, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEMOVEDMASK</font></td>
+
+<td><font face="Times">Mouse-moved</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_LMOUSEDRAGGEDMASK</font></td>
+
+<td><font face="Times">Mouse-dragged, left or only mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_RMOUSEDRAGGEDMASK</font></td>
+
+<td><img src="../../Images/sp.gif" width=101 height=1><font face="Times">Mouse-dragged, right mouse button</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEENTEREDMASK</font></td>
+
+<td><font face="Times">Mouse-entered</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_MOUSEEXITEDMASK</font></td>
+
+<td><font face="Times">Mouse-exited</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_TIMERMASK</font></td>
+
+<td><font face="Times">Timer</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_CURSORUPDATEMASK</font></td>
+
+<td><font face="Times">Cursor-update</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_KITDEFINEDMASK</font></td>
+
+<td><font face="Times">Kit-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_SYSDEFINEDMASK</font></td>
+
+<td><font face="Times">System-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_APPDEFINEDMASK</font></td>
+
+<td><font face="Times">Application-defined</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">NX_ALLEVENTS</font></td>
+
+<td><font face="Times">All event types</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">There are some restrictions concerning setting the masks for timer and cursor-update events.&nbsp; As described earlier, timer events are created outside the Window Server, so setting the Server's event mask to exclude this type has no effect.&nbsp; The NX_TIMERMASK constant is only used to check for timer event records in the event queue.</font>
+
+<p><font face="Times">Cursor-update events are based on mouse-entered and mouse-exited events, and so setting a window's mask to exclude these events could interfere with an application's ability to update the cursor.&nbsp; To solve this problem, the Application Kit forces the key window to accept mouse-entered, mouse-exited, and cursor-update events if any cursors have been assigned to areas within the window.&nbsp; The Application Kit overrides the event mask only temporarily; when the need for tracking the cursor is removed, or the window is no longer the key window, the mask is reset to the last requested value.&nbsp; See &quot;Changing the Cursor&quot; in Chapter 7 for more information.</font>
+
+<p><font face="Times">To convert a variable event type to a mask, you can use the macro NX_EVENTCODEMASK, also from <b>dpsclient/event.h</b>.&nbsp; For example, NX_EVENTCODEMASK(NX_KEYUP) is the same as NX_KEYUPMASK.&nbsp; If <b>someEvent</b> is an event record, NX_EVENTCODEMASK(someEvent.type) is a mask for its type.</font>
+
+<p><font face="Times">When you want to create a mask of several types, use the bitwise OR operator to join together the masks for each type. Here a mask for keyboard events is used to test the type of <b>someEvent</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NX_EVENTCODEMASK(someEvent.type) &amp; (NX_KEYDOWNMASK |&nbsp; NX_KEYUPMASK)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Notice that each compound event type has only one mask:&nbsp; You can't set masks for individual subevents of a compound event, only for the compound event itself.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>The Event Queue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Events are returned from the Window Server over a bidirectional communication channel.&nbsp; This is the same channel that the application uses to send drawing instructions to the Server.&nbsp; Chapter 4, discusses this interface to the Window Server and the various kinds of data that pass from the application to the Server.&nbsp; This section introduces some of the functions that access the data returned from the Window Server.</font>
+
+<p><font face="Times">As the Window Server creates each event record, it's dispatched to the application process.&nbsp; When the event record arrives in the application process, it's added to the application's event queue.&nbsp; The event queue is a ring buffer that can hold a maximum of 50 events.&nbsp; The queue created and maintained by routines defined in the library <b>libNeXT.a</b>.&nbsp; This library includes the basic Display PostScript client library along with extensions that support the NeXT window system.</font>
+
+<p><font face="Times">For applications based on the Application Kit, event records are taken from the queue and returned to the application whenever the main event loop is executing.&nbsp; If event records are consistently added to the queue faster than the application can remove them, the capacity of 50 records can be reached.&nbsp; Although this rarely happens, if it does a new event record replaces the oldest one in the queue.</font>
+
+<p><font face="Times">The events the application finds are distributed by Kit objects and can be accessed by the custom objects you create. Your custom objects can also preempt the normal distribution process if necessary.&nbsp; (See Chapter 7 for more information on event handling in the Application Kit.)&nbsp; Since the Application Kit has a structure for accessing events and defines object-oriented interfaces for the event handling most applications need, in most cases programmers using the Kit shouldn't make direct calls to the underlying event-handling functions.</font>
+
+<p><font face="Times">Applications that don't use the Application Kit must access the event queue directly.&nbsp; The functions that check the event queue are <b>DPSGetEvent()</b> and <b>DPSPeekEvent()</b>.&nbsp; <b>DPSGetEvent()</b> retrieves a specific type of event from the queue; <b>DPSPeekEvent()</b> simply checks to see if a specific type of event is present.&nbsp; Each function has a <i>timeout </i>argument that determines how long it will wait for an event before returning.&nbsp; <b>DPSDiscardEvents()</b> removes an event of a specific type from the event queue.&nbsp; An application can add an event to the beginning or end of its own queue using <b>DPSPostEvent()</b>.</font>
+
+<p><font face="Times">Two low-level functions that might be used by both Kit and non-Kit applications are <b>DPSSetEventFunc()</b> and <b>DPSSetTracking()</b>.&nbsp; <b>DPSSetEventFunc()</b> lets you establish an event filter for a particular context.&nbsp; When the Window Server sends an event to the application, it is examined by the filter function.&nbsp; Depending on the filter function's return value, the event is then either discarded or added to the event queue.&nbsp; This allows your application to single out certain events for special processing before letting them enter the event queue.&nbsp; <b>DPSSetTracking()</b> affects how multiple mouse-dragged and mouse-moved are treated in the event queue.&nbsp; As an optimization, a string of mouse-dragged or mouse-moved event records can be coalesced into a single event record.&nbsp; For example, the event queue can fill with numerous mouse-dragged events when the user drags the mouse rapidly.&nbsp; Rather than process each event separately, applications by default coalesce these events into a smaller number of similar events. <b>DPSSetTracking()</b> lets you turn off this behavior in case it's important for your application to receive each event.&nbsp; A drawing program, for instance, might need each discrete event so that it can accurately follow the trajectory of the user's mouse movements.&nbsp; Note, however, that by turning off event coalescence, your application runs a greater risk of overrunning the capacity of the event queue.</font>
+
+<p><font face="Times">See <i>NeXTstep Reference, Volume 2</i> for descriptions of each of the functions mentioned above.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Event-Related Services</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The client library routines that manage the event queue can also provide other services to an application.&nbsp; They can:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Execute a timed entry.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Monitor a Mach port for messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Monitor a file descriptor for data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">An application can request these services by calling the appropriate function:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">DPSAddTimedEntry()</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">DPSAddPort()</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">DPSAddFD()</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For each service, you register a function that you want called when the corresponding condition is met.&nbsp; For example, <b>DPSAddPort()</b> requires a function to call when a message arrives at a Mach port.&nbsp; The function is called only if there's work for it to do--the timed entry must be due, a message must have been received at the port, data must be ready to read from the file.</font>
+
+<p><font face="Times">The registered functions take different arguments depending on which service has been requested.&nbsp; However, they have an argument in common:&nbsp; one of type <b>void *</b>.&nbsp; You can use this generic pointer to pass information to the function. For example, you might use it to pass the <b>id</b> of an object within your application that the function should send a message to.</font>
+
+<p><font face="Times">When an application requests one of these services, it must also assign it a priority level.&nbsp; Before a condition is checked, its priority level is compared to a threshold assigned by the application.&nbsp; The condition is checked (and the registered function called) only if its priority is equal or greater than the threshold.&nbsp; By temporarily raising the threshold, an application can defer processing input from other sources in favor of processing events.</font>
+
+<p><font face="Times">The sections below describe these features in greater detail.&nbsp; For more information on the functions mentioned in the following sections, see the descriptions in <i>NeXTstep Reference, Volume 2</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Executing Timed Entries</b></font>
+
+<p><font face="Times">A <i>timed entry</i> is a function you specify to be called at a given frequency.&nbsp; If your application includes a timed entry, the system checks the entry's status (assuming its priority level qualifies it) whenever the application accesses the event queue.&nbsp; If the specified period of dormancy has elapsed, the timed entry is executed.</font>
+
+<p><font face="Times">Applications can use timed entries for various ends.&nbsp; For example, the Application Kit's Text class employs a timed entry to blink the cursor.&nbsp; The Application Kit also uses a timed entry to insert timer event records into the requesting application's event queue.</font>
+
+<p><font face="Times">You register a function as a timed entry by calling <b>DPSAddTimedEntry()</b>.&nbsp; The arguments to <b>DPSAddTimedEntry() </b>are the function to be called, the time interval between calls, an arbitrary piece of data to be passed to the function, and a priority level.&nbsp; Since you can have more than one function registered as a timed entry within an application, each call to <b>DPSAddTimedEntry()</b> returns a unique registration number.&nbsp; When a specific timed entry is no longer needed, it's eliminated by calling <b>DPSRemoveTimedEntry()</b> with the timed entry's registration number.</font>
+
+<p><font face="Times">For example, consider a simple function that prints a character that's passed to it.&nbsp; To be used as a timed entry, the function would need a declaration of this type:</font>
+
+<p><font face="Times">void printIt(DPSTimedEntry teNum, double now, void *userData)</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *theChar = userData;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">printf(&#34;%c\n&#34;, *theChar);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The first two arguments aren't used in this example but could be used to identify the caller and the time of the call.&nbsp; The <b>userData</b> argument is a generic pointer that's serves to pass the character to the timed entry.</font>
+
+<p><font face="Times">To register the function as a timed entry, you call <b>DPSAddTimedEntry()</b>, passing the interval, timed entry function, some arbitrary data (in this case, the character to be printed), and a priority level:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DPSTimedEntry teNum;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char aChar = '.';</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">double interval = 0.5;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int priority = 1;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">teNum = DPSAddTimedEntry(interval, printIt, &amp;aChar, priority);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">(Priority levels are discussed in more detail in &quot;Scheduling&quot; below.)</font>
+
+<p><font face="Times">After the timed entry is registered, the <b>printIt()</b> function is called every half second.&nbsp; Each time it's called, it prints the character pointed to by its third argument.&nbsp; Later, you could remove the timed entry by calling <b>DPSRemoveTimedEntry()</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DPSRemoveTimedEntry(teNum);</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Interval Variability</b></font>
+
+<p><font face="Times">It's important to realize that the interval you set for the timed entry is only a request to the system; the actual interval depends on several factors.&nbsp; Foremost among them is that a timed entry is called only when the application is waiting for events.&nbsp; If one of your program's routines involves a long computation, no timed entry will be executed until the routine finishes the computation and returns control to the main event loop.</font>
+
+<p><font face="Times">Once an application is free to check for a timed entry, several other factors come into play.&nbsp; It's obviously futile to specify a period of 1 second for a function that, when called, has an execution duration of 2 seconds.&nbsp; Less obvious is the problem caused by the interaction between multiple timed entries.&nbsp; If your application involves two timed entries, one of short duration and period and another of long duration, the execution of the first timed entry will be periodically delayed by the execution of the second.&nbsp; As the number of timed entries increases, so too does the possibility for interference among them.&nbsp; In a similar fashion, the execution of a timed entry can be delayed if the application is also processing a message at a Mach port or data at a file descriptor.</font>
+
+<p><font face="Times">Another factor affecting the frequency of timed-entry execution is the resolution of the system clock.&nbsp; A timed entry having a period approaching the clock's resolution will experience a proportionately greater variability in its true period than a timed entry having a much longer period.</font>
+
+<p><font face="Times">Finally, because your application is running within a multitasking operating environment, it's periodically suspended to allow execution time for other processes.&nbsp; When your application restarts, a timed entry may be overdue for execution. For some purposes, such as blinking an image, process suspension is of little consequence.&nbsp; For others, such as the simulation of the movement of a real object, you need to design the timed entry in a more sophisticated way to compensate for periodic process suspension.&nbsp; One strategy for simulations of this type is to design the timed entry so that it calculates the state of the simulated object relative to the absolute system time, which, as shown in the example above, is passed as an argument to the function.</font>
+
+<p><font face="Times">For example, consider two designs for a timed entry that draws the path of an object moving at a constant speed.&nbsp; In the first case, when the timed entry is called, it simply increments the object's coordinates and redraws the object.&nbsp; This strategy doesn't take into account that the application process will be suspended periodically during its execution. Consequently, the object's position as a function of time won't be accurate.&nbsp; In the second case, each time the timed entry is called, it checks the system time and determines the elapsed time since the start of the simulation.&nbsp; It then calculates the object's displacement from the starting point and draws the object in this new position.&nbsp; Although the object's motion will not be entirely smooth, this technique preserves the relationship between time and distance.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Checking Mach Ports</b></font>
+
+<p><font face="Times">An application can use a Mach port as a conduit for communication with other applications.&nbsp; (For information on Mach and Mach ports, see the <i>NeXT Operating System Software</i> manual.)&nbsp; Applications receive messages of various types at Mach ports; for example, when the Workspace Manager needs an application to open a file, it sends an appropriate message to one of the application's Mach ports.</font>
+
+<p><font face="Times">The function <b>DPSAddPort()</b> adds a port to the list of ports that the application can check when it's getting events.&nbsp; It also registers a function to be called when a message is received.&nbsp; Other arguments are the message's maximum size, a pointer to user-defined data, and a priority level.&nbsp; Again, the function call is contingent on the function's assigned priority level.&nbsp; When an application no longer needs this service it calls <b>DPSRemovePort()</b>.</font>
+
+<p><font face="Times">You'll rarely need to manage Mach ports and messages directly; the Application Kit furnishes a more convenient object-oriented interface to these services.&nbsp; It provides applications with the Mach ports they need to communicate with the Workspace Manager and with other applications.&nbsp; The Application Kit also defines classes that you can use to create and monitor any additional ports your application may require.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Checking File Descriptors</b></font>
+
+<p><font face="Times">Applications can also communicate by sending data to, or receiving it from, a file.&nbsp; The file (which may represent a disk file, a socket, a device, or some other file type) is represented by an integer called a file descriptor<i>.</i>&nbsp; <b>DPSAddFD() </b>adds a file descriptor to the list of those the application checks (depending on priority level) each time it attempts to retrieve an event.&nbsp; Other arguments specify a function to be called to read the data from the file, a pointer to some user-defined data to be passed to this function, and a priority level.</font>
+
+<p><font face="Times">Most UNIX commands are designed to take their input from one file and write their output to another.&nbsp; In addition, peripheral devices such as terminals and printers are represented by files.&nbsp; Given the design of the UNIX operating system, checking file descriptors provides your application with a general interface to other programs and devices.&nbsp; For example, your application could monitor a file descriptor to check for error messages generated during the compilation of another program.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Scheduling</b></font>
+
+<p><font face="Times">Whether a timed entry is called, or a port or file descriptor is checked, depends largely on the priority level assigned to the registered function.&nbsp; The priority level is an integer from 0 to 30, with 30 as the highest possible priority and 0 as the lowest.&nbsp; The priority of a function is set when it's first registered (with the <b>DPSAddTimedEntry()</b>, <b>DPSAddPort()</b>, and <b>DPSAddFD()</b> functions).</font>
+
+<p><font face="Times">Whenever an application checks for an event, it specifies a priority threshold.&nbsp; Registered functions with priorities lower than the threshold are screened out; all those with equal or higher priorities are checked at least once to see whether they should be called.&nbsp; If an application has to wait for an event to arrive in the queue, it's possible for a function to be checked and called many times over.&nbsp; Even if there's no wait, all functions at or above the threshold will be checked once.</font>
+
+<p><font face="Times">In general, applications ask for events at a threshold of 1, which ensures that functions registered with a priority level of 1 or above will be called.&nbsp; The highest threshold an application can specify is 31, and the highest priority level for a function is 30.&nbsp; Thus, specifying a threshold of 31 prevents any registered function from being called, without regard for its priority level.&nbsp; Assigning a function a priority level of 0 effectively blocks it from ever being called, without regard for the current threshold.&nbsp; For more information on the use of thresholds in the Application Kit, see &quot;Scheduling&quot; in Chapter 7.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">A function's priority level is compared only to the threshold, not to the priorities of other functions.&nbsp; If two functions have priorities at or above the threshold, it doesn't matter that one may have a priority of 29 and the other a priority of 10.&nbsp; Both will be scheduled equally.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br><br><br>
+
+</body>
+</html>

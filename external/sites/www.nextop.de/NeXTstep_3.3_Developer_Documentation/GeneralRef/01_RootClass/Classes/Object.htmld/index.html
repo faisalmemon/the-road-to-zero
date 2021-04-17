@@ -1,0 +1,3700 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/01_RootClass/Classes/Object.rtf -->
+<!-- Date: Sun Jun 28 19:59:11 1998 -->
+<head>
+<title>Object</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>Object</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">none&nbsp; <i>(Object is the root class)</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">objc/Object.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Object is the root class of all ordinary Objective C inheritance hierarchies; it's the one class that has no superclass.&nbsp; From Object, other classes inherit a basic interface to the run-time system for the Objective C language.&nbsp; It's through Object that instances of all classes obtain their ability to behave as objects.</font>
+
+<p><font face="Times">Among other things, the Object class provides inheriting classes with a framework for creating, initializing, freeing, copying, comparing, and archiving objects, for performing methods selected at run-time, for querying an object about its methods and its position in the inheritance hierarchy, and for forwarding messages to other objects.&nbsp; For example, to ask an object what class it belongs to, you'd send it a <b>class</b> message.&nbsp; To find out whether it implements a particular method, you'd send it a <b>respondsTo: </b>message.</font>
+
+<p><font face="Times">The Object class is an abstract class; programs use instances of classes that inherit from Object, but never of Object itself.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Initializing an Object to Its Class</b></font>
+
+<p><font face="Times">Every object is connected to the run-time system through its <b>isa</b> instance variable, inherited from the Object class.&nbsp; <b>isa</b> identifies the object's class; it points to a structure that's compiled from the class definition.&nbsp; Through <b>isa</b>, an object can find whatever information it needs at run time--such as its place in the inheritance hierarchy, the size and structure of its instance variables, and the location of the method implementations it can perform in response to messages.</font>
+
+<p><font face="Times">Because all objects directly or indirectly inherit from the Object class, they all have this variable.&nbsp; The defining characteristic of an &quot;object&quot; is that its first instance variable is an <b>isa</b> pointer to a class structure.</font>
+
+<p><font face="Times">The installation of the class structure--the initialization of <b>isa</b>--is one of the responsibilities of the <b>alloc</b>, <b>allocFromZone:</b>, and <b>new</b> methods, the same methods that create (allocate memory for) new instances of a class.&nbsp; In other words, class initialization is part of the process of creating an object; it's not left to the methods, such as <b>init</b>, that initialize individual objects with their particular characteristics.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Instance and Class Methods</b></font>
+
+<p><font face="Times">Every object requires an interface to the run-time system, whether it's an instance object or a class object.&nbsp; For example, it should be possible to ask either an instance or a class about its position in the inheritance hierarchy or whether it can respond to a particular message.</font>
+
+<p><font face="Times">So that this won't mean implementing every Object method twice, once as an instance method and again as a class method, the run-time system treats methods defined in the root class in a special way:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><i>Instance methods defined in the root class can be performed both by instances</i></font><br>
+<font face="Times"><i>and by class objects.</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A class object has access to class methods--those defined in the class and those inherited from the classes above it in the inheritance hierarchy--but generally not to instance methods.&nbsp; However, the run-time system gives all class objects access to the instance methods defined in the root class.&nbsp; Any class object can perform any root instance method, provided it doesn't have a class method with the same name.</font>
+
+<p><font face="Times">For example, a class object could be sent messages to perform Object's <b>respondsTo:</b> and <b>perform:with:</b> instance methods:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL method = @selector(riskAll:);</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [MyClass respondsTo:method] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[MyClass perform:method with:self];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a class object receives a message, the run-time system looks first at the receiver's repertoire of class methods.&nbsp; If it fails to find a class method that can respond to the message, it looks at the set of instance methods defined in the root class.&nbsp; If the root class has an instance method that can respond (as Object does for <b>respondsTo:</b> and <b>perform:with:</b>), the run-time system uses that implementation and the message succeeds.</font>
+
+<p><font face="Times">Note that the only instance methods available to a class object are those defined in the root class.&nbsp; If MyClass in the example above had reimplemented either <b>respondsTo:</b> or <b>perform:with:</b>, those new versions of the methods would be available only to instances.&nbsp; The class object for MyClass could perform only the versions defined in the Object class.&nbsp; (Of course, if MyClass had implemented <b>respondsTo:</b> or <b>perform:with:</b> as class methods rather than instance methods, the class would perform those new versions.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Interface Conventions</b></font>
+
+<p><font face="Times">The Object class defines a number of methods that other classes are expected to override.&nbsp; Often, Object's default implementation simply returns <b>self</b>.&nbsp; Putting these &quot;empty&quot; methods in the Object class serves two purposes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It means that every object can readily respond to certain standard messages, such as <b>awake</b> or <b>init</b>, even if the response is to do nothing&nbsp; It's not necessary to check (using <b>respondsTo:</b>) before sending the message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It establishes conventions that, when followed by all classes, make object interactions more reliable.&nbsp; These conventions are explained in full under the method descriptions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sometimes a method is merely declared in the Object class; it has no implementation, not even the empty one of returning <b>self</b>. These &quot;unimplemented&quot; methods serve the same purpose--defining an interface convention--as Object's &quot;empty&quot; methods. When implemented, they enable objects to respond to system-generated messages.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Class <b>isa</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">isa</font></td>
+
+<td><font face="Times">A pointer to the instance's class structure.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing the class</font></td>
+
+<td><font face="Times">+ initialize</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating, copying, and freeing instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ alloc</font><br>
+<font face="Times">+ allocFromZone:</font><br>
+<font face="Times">+ new</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyFromZone:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">zone</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font><br>
+<font face="Times">+ free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing a new instance</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Identifying classes</font></td>
+
+<td><font face="Times">+ name</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ class</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">class</font><br>
+<font face="Times">+ superclass</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">superclass</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Identifying and comparing instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqual:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">hash</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">self</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">printForDebugger:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Testing inheritance relationships</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isKindOf:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isKindOfClassNamed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isMemberOf:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isMemberOfClassNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Testing class functionality</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">respondsTo:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ instancesRespondTo:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Testing for protocol conformance</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><font face="Times">+ conformsTo:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">conformsTo:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Sending messages determined at run time</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:with:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:with:with:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Forwarding messages</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">forward::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">performv::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Obtaining method information</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">methodFor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ instanceMethodFor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">descriptionForMethod:</font><br>
+<font face="Times">+ descriptionForInstanceMethod:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Posing</font></td>
+
+<td><font face="Times">+ poseAs:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Enforcing intentions</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">notImplemented:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">subclassResponsibility:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Error handling</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesNotRecognize:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">error:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Dynamic loading</font></td>
+
+<td><font face="Times">+ finishLoading:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ startUnloading</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">startArchiving:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">awake</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">finishUnarchiving</font><br>
+<font face="Times">+ setVersion:</font><br>
+<font face="Times">+ version</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>alloc</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>alloc</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new instance of the receiving class.&nbsp; The <b>isa</b> instance variable of the new object is initialized to a data structure that describes the class; memory for all other instance variables is set to 0.&nbsp; A version of the <b>init</b> method should be used to complete the initialization process.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id newObject = [[TheClass alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Other classes shouldn't override <b>alloc</b> to add code that initializes the new instance.&nbsp; Instead, class-specific versions of the <b>init </b>method should be implemented for that purpose.&nbsp; Versions of the <b>new</b> method can also be implemented to combine allocation and initialization.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The <b>alloc</b> method doesn't invoke <b>allocFromZone:</b>.&nbsp; The two methods work independently.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>allocFromZone:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>, + <b>new</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allocFromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>allocFromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new instance of the receiving class.&nbsp; Memory for the new object is allocated from <i>zone</i>.</font>
+
+<p><font face="Times">The <b>isa</b> instance variable of the new object is initialized to a data structure that describes the class; memory for its other instance variables is set to 0.&nbsp; A version of the <b>init</b> method should be used to complete the initialization process.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id newObject = [[TheClass allocFromZone:someZone] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>allocFromZone:</b> method shouldn't be overridden to include any initialization code.&nbsp; Instead, class-specific versions of the <b>init</b> method should be implemented for that purpose.</font>
+
+<p><font face="Times">When one object creates another, it's often a good idea to make sure they're both allocated from the same region of memory. The <b>zone</b> method can be used for this purpose; it returns the zone where the receiver is located.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myCompanion = [[TheClass allocFromZone:[self zone]] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>alloc</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>zone</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>class</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>.&nbsp; Since this is a class method, it returns the class object.</font>
+
+<p><font face="Times">When a class is the receiver of a message, it can be referred to by name.&nbsp; In all other cases, the class object must be obtained through this, or a similar method.&nbsp; For example, here SomeClass is passed as an argument to the <b>isKindOf:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL test = [self isKindOf:[SomeClass class]];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>conformsTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>conformsTo:</b>(Protocol *)<i>aProtocol</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiving class conforms to <i>aProtocol</i>, and NO if it doesn't.</font>
+
+<p><font face="Times">A class is said to &quot;conform to&quot; a protocol if it adopts the protocol or inherits from another class that adopts it.&nbsp; Protocols are adopted by listing them within angle brackets after the interface declaration.&nbsp; Here, for example, MyClass adopts the imaginary AffiliationRequests and Normalization protocols:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface MyClass : Object &lt;AffiliationRequests, Normalization&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A class also conforms to any protocols that are incorporated in the protocols it adopts or inherits.&nbsp; Protocols incorporate other protocols in the same way that classes adopt them.&nbsp; For example, here the AffiliationRequests protocol incorporates the Joining protocol:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol AffiliationRequests &lt;Joining&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a class adopts a protocol, it must implement all the methods the protocol declares.&nbsp; If it adopts a protocol that incorporates another protocol, it must also implement all the methods in the incorporated protocol or inherit those methods from a class that adopts it.&nbsp; In the example above, MyClass must implement the methods in the AffiliationRequests and Normalization protocols and, in addition, either inherit from a class that adopts the Joining protocol or implement the Joining methods itself.</font>
+
+<p><font face="Times">When these conventions are followed and all the methods in adopted and incorporated protocols are in fact implemented, the <b>conformsTo:</b> test for a set of methods becomes roughly equivalent to the <b>respondsTo:</b> test for a single method.</font>
+
+<p><font face="Times">However, <b>conformsTo:</b> judges conformance solely on the basis of the formal declarations in source code, as illustrated above. It doesn't check to see whether the methods declared in the protocol are actually implemented.&nbsp; It's the programmer's responsibility to see that they are.</font>
+
+<p><font face="Times">The Protocol object required as this method's argument can be specified using the <b>@protocol()</b> directive:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL canJoin = [MyClass conformsTo:@protocol(Joining)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Protocol class is documented in Chapter 15, &quot;Run-Time System.&quot;</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>conformsTo:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descriptionForInstanceMethod:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (struct objc_method_description *)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>descriptionForInstanceMethod:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a structure that describes the <i>aSelector</i> instance method, or NULL if the <i>aSelector</i> method can't be found. To ask the class for a description of a class method, or an instance for the description of an instance method, use the <b>descriptionForMethod:</b> instance method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForMethod:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>finishLoading:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>finishLoading:</b>(struct mach_header *)<i>header</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to integrate the class, or a category of the class, into a running program.&nbsp; A <b>finishLoading:</b> message is sent immediately after the class or category has been dynamically loaded into memory, but only if the newly loaded class or category implements a method that can respond.&nbsp; <i>header</i> is a pointer to the structure that describes the modules that were just loaded.</font>
+
+<p><font face="Times">Once a dynamically loaded class is used, it will also receive an <b>initialize</b> message.&nbsp; However, because the <b>finishLoading: </b>message is sent immediately after the class is loaded, it always precedes the <b>initialize</b> message, which is sent only when the class receives its first message from within the program.</font>
+
+<p><font face="Times">A <b>finishLoading:</b> method is specific to the class or category where it's defined; it's not inherited by subclasses or shared with the rest of the class.&nbsp; Thus a class that has four categories can define a total of five <b>finishLoading:</b> methods, one in each category and one in the main class definition.&nbsp; The method that's performed is the one defined in the class or category just loaded.</font>
+
+<p><font face="Times">There's no default <b>finishLoading:</b> method.&nbsp; The Object class declares a prototype for this method, but doesn't implement it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>startUnloading</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>nil</b>.&nbsp; This method is implemented to prevent class objects, which are &quot;owned&quot; by the run-time system, from being accidentally freed.&nbsp; To free an instance, use the instance method <b>free</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initialize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>initialize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the class before it's used (before it receives its first message).&nbsp; The run-time system generates an <b>initialize</b> message to each class just before the class, or any class that inherits from it, is sent its first message from within the program.&nbsp; Each class object receives the <b>initialize</b> message just once.&nbsp; Superclasses receive it before subclasses do.</font>
+
+<p><font face="Times">For example, if the first message your program sends is this,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Application new]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the run-time system will generate these three <b>initialize</b> messages,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Object initialize];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Responder initialize];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Application initialize];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">since Application is a subclass of Responder and Responder is a subclass of Object.&nbsp; All the <b>initialize</b> messages precede the <b>new</b> message and are sent in the order of inheritance, as shown.</font>
+
+<p><font face="Times">If your program later begins to use the Text class,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Text instancesRespondTo:someSelector]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the run-time system will generate these additional <b>initialize</b> messages,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[View initialize];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Text initialize];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">since the Text class inherits from Object, Responder, and View.&nbsp; The <b>instancesRespondTo:</b> message is sent only after all these classes are initialized.&nbsp; Note that the <b>initialize</b> messages to Object and Responder aren't repeated; each class is initialized only once.</font>
+
+<p><font face="Times">You can implement your own versions of <b>initialize</b> to provide class-specific initialization as needed.</font>
+
+<p><font face="Times">Because <b>initialize</b> methods are inherited, it's possible for the same method to be invoked many times, once for the class that defines it and once for each inheriting class.&nbsp; To prevent code from being repeated each time the method is invoked, it can be bracketed as shown in the example below:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( self == [MyClass class] ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* <i>put initialization code here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Since the run-time system sends a class just one <b>initialize</b> message, the test shown in the example above should prevent code from being invoked more than once.&nbsp; However, if for some reason an application also generates <b>initialize</b> messages, a more explicit test may be needed:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">static BOOL tooLate = NO;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( !tooLate ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* <i>put initialization code here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">tooLate = YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>instanceMethodFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (IMP)<b>instanceMethodFor:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Locates and returns the address of the implementation of the <i>aSelector</i> instance method.&nbsp; An error is generated if instances of the receiver can't respond to <i>aSelector</i> messages.</font>
+
+<p><font face="Times">This method is used to ask the class object for the implementation of an instance method.&nbsp; To ask the class for the implementation of a class method, use the instance method <b>methodFor:</b> instead of this one.</font>
+
+<p><font face="Times"><b>instanceMethodFor:</b>, and the function pointer it returns, are subject to the same constraints as those described for <b>methodFor:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>methodFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>instancesRespondTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>instancesRespondTo:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if instances of the class are capable of responding to <i>aSelector</i> messages, and NO if they're not.&nbsp; To ask the class whether it, rather than its instances, can respond to a particular message, use the <b>respondsTo:</b> instance method instead of <b>instancesRespondTo:</b>.</font>
+
+<p><font face="Times">If <i>aSelector</i> messages are forwarded to other objects, instances of the class will be able to receive those messages without error even though this method returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>respondsTo:</b>,</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forward::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a null-terminated string containing the name of the class.&nbsp; This information is often used in error messages or debugging statements.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b>, + <b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>new</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>new</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates a new instance of the receiving class, sends it an <b>init</b> message, and returns the initialized object returned by <b>init</b>.</font>
+
+<p><font face="Times">As defined in the Object class, <b>new</b> is essentially a combination of <b>alloc</b> and <b>init</b>.&nbsp; Like <b>alloc</b>, it initializes the <b>isa</b> instance variable of the new object so that it points to the class data structure.&nbsp; It then invokes the <b>init</b> method to complete the initialization process.</font>
+
+<p><font face="Times">Unlike <b>alloc</b>, <b>new</b> is sometimes reimplemented in subclasses to have it invoke a class-specific initialization method.&nbsp; If the <b>init </b>method includes arguments, they're typically reflected in the <b>new</b> method as well.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initArg:tag arg:data];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, there's little point in implementing a <b>new...</b> method if it's simply a shorthand for <b>alloc</b> and <b>init...</b>, like the one shown above.&nbsp; Often <b>new...</b> methods will do more than just allocation and initialization.&nbsp; In some classes, they manage a set of instances, returning the one with the requested properties if it already exists, allocating and initializing a new one only if necessary.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id theInstance;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( theInstance = findTheObjectWithTheTag(tag) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return theInstance;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initArg:tag arg:data];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although it's appropriate to define new <b>new...</b> methods in this way, the <b>alloc</b> and <b>allocFromZone:</b> methods should never be augmented to include initialization code.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>, + <b>alloc</b>, + <b>allocFromZone:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>poseAs:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>poseAs:</b><i>aClassObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the receiving class to &quot;pose as&quot; its superclass, the <i>aClassObject</i> class.&nbsp; The receiver takes the place of <i>aClassObject</i> in the inheritance hierarchy; all messages sent to <i>aClassObject</i> will actually be delivered to the receiver.&nbsp; The receiver must be defined as a subclass of <i>aClassObject</i>.&nbsp; It can't declare any new instance variables of its own, but it can define new methods and override methods defined in the superclass.&nbsp; The <b>poseAs:</b> message should be sent before any messages are sent to <i>aClassObject</i> and before any instances of <i>aClassObject</i> are created.</font>
+
+<p><font face="Times">This facility allows you to add methods to an existing class by defining them in a subclass and having the subclass substitute for the existing class.&nbsp; The new method definitions will be inherited by all subclasses of the superclass.&nbsp; Care should be taken to ensure that this doesn't generate errors.</font>
+
+<p><font face="Times">A subclass that poses as its superclass still inherits from the superclass.&nbsp; Therefore, none of the functionality of the superclass is lost in the substitution.&nbsp; Posing doesn't alter the definition of either class.</font>
+
+<p><font face="Times">Posing is useful as a debugging tool, but category definitions are a less complicated and more efficient way of augmenting existing classes.&nbsp; Posing admits only two possibilities that are absent for categories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A method defined by a posing class can override any method defined by its superclass.&nbsp; Methods defined in categories can replace methods defined in the class proper, but they cannot reliably replace methods defined in other categories.&nbsp; If two categories define the same method, one of the definitions will prevail, but there's no guarantee which one.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A method defined by a posing class can, through a message to <b>super</b>, incorporate the superclass method it overrides.&nbsp; A method defined in a category can replace a method defined elsewhere by the class, but it can't incorporate the method it replaces.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If successful, this method returns <b>self</b>.&nbsp; If not, it generates an error message and aborts.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setVersion:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setVersion:</b>(int)<i>aVersion</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the class version number to <i>aVersion</i>, and returns <b>self</b>.&nbsp; The version number is helpful when instances of the class are to be archived and reused later.&nbsp; The default version is 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>version</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>startUnloading</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>startUnloading</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to prepare for the class, or a category of the class, being unloaded from a running program.&nbsp; A <b>startUnloading</b> message is sent immediately before the class or category is unloaded, but only if the class or category about to be unloaded implements a method that can respond.</font>
+
+<p><font face="Times">A <b>startUnloading</b> method is specific to the class or category where it's defined; it isn't inherited by subclasses or shared with the rest of the class.&nbsp; Thus a class that has four categories can define a total of five <b>startUnloading</b> methods, one in each category and one in the main class definition.&nbsp; The method that's performed is the one defined in the class or category that will be unloaded.</font>
+
+<p><font face="Times">There's no default <b>startUnloading</b> method.&nbsp; The object class declares a prototype for this method but doesn't implement it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>finishLoading:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>superclass</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>superclass</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the class object for the receiver's superclass.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>class</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>superclass</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>version</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>version</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the version number assigned to the class.&nbsp; If no version has been set, this will be 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setVersion:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>awake</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to reinitialize the receiving object after it has been unarchived (by <b>read:</b>).&nbsp; An <b>awake</b> message is automatically sent to every object after it has been unarchived and after all the objects it refers to are in a usable state.</font>
+
+<p><font face="Times">The default version of the method defined here merely returns <b>self</b>.</font>
+
+<p><font face="Times">A class can implement an <b>awake</b> method to provide for more initialization than can be done in the <b>read:</b> method.&nbsp; Each implementation of <b>awake</b> should limit the work it does to the scope of the class definition, and incorporate the initialization of classes farther up the inheritance hierarchy through a message to <b>super</b>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- awake</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super awake];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All implementations of <b>awake</b> should return <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Not all objects loaded from a nib file (created by Interface Builder) are unarchived; some are newly instantiated.&nbsp; Those that are unarchived receive an <b>awake</b> message, but those that are instantiated do not.&nbsp; See the Interface Builder documentation in <i>NEXTSTEP Development Tools</i> for more information.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>finishUnarchiving</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awakeFromNib</b> (NXNibNotification protocol in the Application Kit),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadNibFile:owner:</b> (Application class in the Application Kit)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>class</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the class object for the receiver's class.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>conformsTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>conformsTo:</b>(Protocol *)<i>aProtocol</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the class of the receiver conforms to <i>aProtocol</i>, and NO if it doesn't.&nbsp; This method invokes the <b>conformsTo: </b>class method to do its work.&nbsp; It's provided as a convenience so that you don't need to get the class object to find out whether an instance can respond to a given set of messages.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>conformsTo:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copy</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copy</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new instance that's an exact copy of the receiver.&nbsp; This method creates only one new object.&nbsp; If the receiver has instance variables that point to other objects, the instance variables in the copy will point to the same objects.&nbsp; The values of the instance variables are copied, but the objects they point to are not.</font>
+
+<p><font face="Times">This method does its work by invoking the <b>copyFromZone:</b> method and specifying that the copy should be allocated from the same memory zone as the receiver.&nbsp; If a subclass implements its own <b>copyFromZone:</b> method, this <b>copy</b> method will use it to copy instances of the subclass.&nbsp; Therefore, a class can support copying from both methods just by implementing a class-specific version of <b>copyFromZone:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyFromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new instance that's an exact copy of the receiver.&nbsp; Memory for the new instance is allocated from <i>zone</i>.</font>
+
+<p><font face="Times">This method creates only one new object.&nbsp; If the receiver has instance variables that point to other objects, the instance variables in the copy will point to the same objects.&nbsp; The values of the instance variables are copied, but the objects they point to are not.</font>
+
+<p><font face="Times">Subclasses should implement their own versions of <b>copyFromZone:</b>, not <b>copy</b>, to define class-specific copying.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copy</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>zone</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descriptionForMethod:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(struct objc_method_description *)<b>descriptionForMethod:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a structure that describes the <i>aSelector</i> method, or NULL if the <i>aSelector</i> method can't be found.&nbsp; When the receiver is an instance, <i>aSelector</i> should be an instance method; when the receiver is a class, it should be a class method.</font>
+
+<p><font face="Times">The <b>objc_method_description</b> structure is declared in <b>objc/Protocol.h</b>, and is mostly used in the implementation of protocols. It includes two fields--the selector for the method (which will be the same as <i>aSelector</i>) and a character string encoding the method's return and argument types:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct objc_method_description {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">SEL name;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *types;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Type information is encoded according to the conventions of the <b>@encode()</b> directive, but the string also includes information about total argument size and individual argument offsets.&nbsp; For example, if <b>descriptionForMethod:</b> were asked for a description of itself, it would return this string in the <b>types</b> field:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">^{objc_method_description=:*}12@8:12:16</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This records the fact that <b>descriptionForMethod:</b> returns a pointer (`^') to a structure (&quot;{...}&quot;) and that it pushes a total of 12 bytes on the stack.&nbsp; The structure is called &quot;objc_method_description&quot; and it consists of a selector (`:') and a character pointer (`*').&nbsp; The first argument, <b>self</b>, is an object (`@') at an offset of 8 bytes from the stack pointer, the second argument, <b>_cmd</b>, is a selector (`:') at an offset of 12 bytes, and the third argument, <i>aSelector</i>, is also a selector but at an offset of 16 bytes.&nbsp; The first two arguments--<b>self</b> for the message receiver and <b>_cmd</b> for the method selector--are passed to every method implementation but are hidden by the Objective C language.</font>
+
+<p><font face="Times">The type codes used for methods declared in a class or category are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Meaning</b></font></td>
+
+<td><font face="Helvetica"><b>Code</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>id</b></font></td>
+
+<td><font face="Times">`@'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Class</font></td>
+
+<td><font face="Times">`#'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SEL</font></td>
+
+<td><font face="Times">`:'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>void</b></font></td>
+
+<td><font face="Times">`v'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>char</b></font></td>
+
+<td><font face="Times">`c'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>unsigned char</b></font></td>
+
+<td><font face="Times">`C'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>short</b></font></td>
+
+<td><font face="Times">`s'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>unsigned short</b></font></td>
+
+<td><font face="Times">`S'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>int</b></font></td>
+
+<td><font face="Times">`i'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>unsigned int</b></font></td>
+
+<td><font face="Times">`I'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>long</b></font></td>
+
+<td><font face="Times">`l'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>unsigned long</b></font></td>
+
+<td><font face="Times">`L'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>float</b></font></td>
+
+<td><font face="Times">`f'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>double</b></font></td>
+
+<td><font face="Times">`d'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>char *</b></font></td>
+
+<td><font face="Times">`*'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">any other pointer</font></td>
+
+<td><font face="Times">`^'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">an undefined type</font></td>
+
+<td><font face="Times">`?'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">a bitfield</font></td>
+
+<td><font face="Times">`b'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">begin an array</font></td>
+
+<td><font face="Times">`['</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">end an array</font></td>
+
+<td><font face="Times">`]'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">begin a union</font></td>
+
+<td><font face="Times">`('</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">end a union</font></td>
+
+<td><font face="Times">`)'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">begin a structure</font></td>
+
+<td><font face="Times">`{'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">end a structure</font></td>
+
+<td><font face="Times">`}'</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The same codes are used for methods declared in a protocol, but with these additions for type modifiers:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>const</b></font></td>
+
+<td><font face="Times">`r'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>in</b></font></td>
+
+<td><font face="Times">`n'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>inout</b></font></td>
+
+<td><font face="Times">`N'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>out</b></font></td>
+
+<td><font face="Times">`o'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>bycopy</b></font></td>
+
+<td><font face="Times">`O'</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>oneway</b></font></td>
+
+<td><font face="Times">`V'</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>descriptionForInstanceMethod:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForClassMethod:</b> (Protocol class in the Run-Time System),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForInstanceMethod</b> (Protocol class in the Run-Time System)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesNotRecognize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesNotRecognize:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Handles <i>aSelector</i> messages that the receiver doesn't recognize.&nbsp; The run-time system invokes this method whenever an object receives an <i>aSelector</i> message that it can't respond to or forward.&nbsp; This method, in turn, invokes the <b>error:</b> method to generate an error message and abort the current process.</font>
+
+<p><font face="Times"><b>doesNotRecognize:</b> messages should be sent only by the run-time system.&nbsp; Although they're sometimes used in program code to prevent a method from being inherited, it's better to use the <b>error:</b> method directly.&nbsp; For example, an Object subclass might renounce the <b>copy</b> method by reimplementing it to include an <b>error:</b> message as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- copy</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self error:&#34;&nbsp; %s objects should not be sent '%s' messages\n&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[[self class] name], sel_getName(_cmd)];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This code prevents instances of the subclass from recognizing or forwarding <b>copy</b> messages--although the <b>respondsTo: </b>method will still report that the receiver has access to a <b>copy</b> method.</font>
+
+<p><font face="Times">(The <b>_cmd</b> variable identifies the current selector; in the example above, it identifies the selector for the <b>copy</b> method.&nbsp; The <b>sel_getName()</b> function returns the method name corresponding to a selector code; in the example, it returns the name &quot;copy&quot;.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>error:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>subclassResponsibility:</b>, + <b>name</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>error:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>error:</b>(const char *)<i>aString,</i> ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Generates a formatted error message, in the manner of <b>printf()</b>, from <i>aString</i> followed by a variable number of arguments.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[self error:&#34;index %d exceeds limit %d\n&#34;, index, limit];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The message specified by <i>aString</i> is preceded by this standard prefix (where <i>class</i> is the name of the receiver's class):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;error: <i>class</i> &#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method doesn't return.&nbsp; It calls the run-time <b>_error</b> function, which first generates the error message and then calls <b>abort() </b>to create a core file and terminate the process.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>subclassResponsibility:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>notImplemented:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesNotRecognize:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>finishUnarchiving</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>finishUnarchiving</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to replace an unarchived object with a new object if necessary.&nbsp; A <b>finishUnarchiving</b> message is sent to every object after it has been unarchived (using <b>read:</b>) and initialized (by <b>awake</b>), but only if a method has been implemented that can respond to the message.</font>
+
+<p><font face="Times">The <b>finishUnarchiving</b> message gives the application an opportunity to test an unarchived and initialized object to see whether it's usable, and, if not, to replace it with another object that is.&nbsp; This method should return <b>nil</b> if the unarchived instance (<b>self</b>) is OK; otherwise, it should free the receiver and return another object to take its place.</font>
+
+<p><font face="Times">There's no default implementation of the <b>finishUnarchiving</b> method.&nbsp; The Object class declares this method, but doesn't define it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startArchiving:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>forward::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forward:</b>(SEL)<i>aSelector</i> <b>:</b>(marg_list)<i>argFrame</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to forward messages to other objects.&nbsp; When an object is sent an <i>aSelector</i> message, and the run-time system can't find an implementation of the method for the receiving object, it sends the object a <b>forward::</b> message to give it an opportunity to delegate the message to another receiver.&nbsp; (If the delegated receiver can't respond to the message either, it too will be given a chance to forward it.)</font>
+
+<p><font face="Times">The <b>forward::</b> message thus allows an object to establish relationships with other objects that will, for certain messages, act on its behalf.&nbsp; The forwarding object is, in a sense, able to &quot;inherit&quot; some of the characteristics of the object it forwards the message to.</font>
+
+<p><font face="Times">A <b>forward::</b> message is generated only if the <i>aSelector</i> method isn't implemented by the receiving object's class or by any of the classes it inherits from.</font>
+
+<p><font face="Times">An implementation of the <b>forward::</b> method has two tasks:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To locate an object that can respond to the <i>aSelector</i> message.&nbsp; This need not be the same object for all messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To send the message to that object, using the <b>performv::</b> method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the simple case, in which an object forwards messages to just one destination (such as the hypothetical <b>friend</b> instance variable in the example below), a <b>forward::</b> method could be as simple as this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- forward:(SEL)aSelector :(marg_list)argFrame</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [friend respondsTo:aSelector] )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return [friend performv:aSelector :argFrame];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self doesNotRecognize:aSelector];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>argFrame</i> is a pointer to the arguments included in the original <i>aSelector</i> message.&nbsp; It's passed directly to <b>performv::</b> without change.&nbsp; (However, <i>argFrame</i> does not correctly capture variable arguments.&nbsp; Messages that include a variable argument list--for example, messages to perform Object's <b>error</b>: method--cannot be forwarded.)</font>
+
+<p><font face="Times">The <i>aSelector</i> message will return the value returned by <b>forward::</b>.&nbsp; (Note in the example that <b>forward::</b> returns unchanged the value returned by <b>performv::</b>.)&nbsp; Since <b>forward::</b> returns a pointer, specifically an <b>id</b>, the <i>aSelector</i> method must also be one that returns a pointer (or <b>void</b>).&nbsp; Methods that return other types cannot be reliably forwarded.</font>
+
+<p><font face="Times">Implementations of the <b>forward::</b> method can do more than just forward messages.&nbsp; <b>forward::</b> can, for example, be used to consolidate code that responds to a variety of different messages, thus avoiding the necessity of having to write a separate method for each selector.&nbsp; A <b>forward::</b> method might also involve several other objects in the response to a given message, rather than forward it to just one.</font>
+
+<p><font face="Times">The default version of <b>forward::</b> implemented in the Object class simply invokes the <b>doesNotRecognize:</b> method; it doesn't forward messages.&nbsp; Thus, if you choose not to implement <b>forward::</b>, unrecognized messages will generate an error and cause the task to abort.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If it's necessary for a <b>forward::</b> method to reason about the arguments passed in <i>argFrame</i>, it can get information about what kinds of arguments they are by calling the <b>method_getNumberOfArguments()</b>, <b>method_getSizeOfArguments()</b>, and <b>method_getArgumentInfo()</b> run-time functions.&nbsp; It can then examine and alter argument values with the <b>marg_getValue()</b>, <b>marg_getRef()</b>, and <b>marg_setValue()</b> macros.&nbsp; These functions and macros are documented in Chapter 15, &quot;Run-Time System.&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>performv::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesNotRecognize:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the memory occupied by the receiver and returns <b>nil</b>.&nbsp; Subsequent messages to the object will generate an error indicating that a message was sent to a freed object (provided that the freed memory hasn't been reused yet).</font>
+
+<p><font face="Times">Subclasses must implement their own versions of <b>free</b> to deallocate any additional memory consumed by the object--such as dynamically allocated storage for data, or other objects that are tightly coupled to the freed object and are of no use without it. After performing the class-specific deallocation, the subclass method should incorporate superclass versions of <b>free</b> through a message to <b>super</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- free {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[companion free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">free(privateMemory);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">vm_deallocate(task_self(), sharedMemory, memorySize);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super free];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If, under special circumstances, a subclass version of <b>free</b> refuses to free the receiver, it should return <b>self</b> instead of <b>nil</b>. Object's default version of this method always frees the receiver and always returns <b>nil</b>.&nbsp; It calls <b>object_dispose()</b> to accomplish the deallocation.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>hash</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>hash</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an unsigned integer that's derived from the <b>id</b> of the receiver.&nbsp; The integer is guaranteed to always be the same for the same <b>id</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEqual:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to initialize a new object (the receiver) immediately after memory for it has been allocated.&nbsp; An <b>init </b>message is generally coupled with an <b>alloc</b> or <b>allocFromZone:</b> message in the same line of code:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id newObject = [[TheClass alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An object isn't ready to be used until it has been initialized.&nbsp; The version of the <b>init</b> method defined in the Object class does no initialization; it simply returns <b>self</b>.</font>
+
+<p><font face="Times">Subclass versions of this method should return the new object (<b>self</b>) after it has been successfully initialized.&nbsp; If it can't be initialized, they should free the object and return <b>nil</b>.&nbsp; In some cases, an <b>init</b> method might free the new object and return a substitute.&nbsp; Programs should therefore always use the object returned by <b>init</b>, and not necessarily the one returned by <b>alloc</b> or <b>allocFromZone:</b>, in subsequent code.</font>
+
+<p><font face="Times">Every class must guarantee that the <b>init</b> method returns a fully functional instance of the class.&nbsp; Typically this means overriding the method to add class-specific initialization code.&nbsp; Subclass versions of <b>init</b> need to incorporate the initialization code for the classes they inherit from, through a message to <b>super</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super init];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that the message to <b>super</b> precedes the initialization code added in the method.&nbsp; This ensures that initialization proceeds in the order of inheritance.</font>
+
+<p><font face="Times">Subclasses often add arguments to the <b>init</b> method to allow specific values to be set.&nbsp; The more arguments a method has, the more freedom it gives you to determine the character of initialized objects.&nbsp; Classes often have a set of <b>init...</b> methods, each with a different number of arguments.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The convention is that at least one of these methods, usually the one with the most arguments, includes a message to <b>super</b> to incorporate the initialization of classes higher up the hierarchy.&nbsp; This method is the <i>designated initializer</i> for the class.&nbsp; The other <b>init...</b> methods defined in the class directly or indirectly invoke the designated initializer through messages to <b>self</b>.&nbsp; In this way, all <b>init...</b> methods are chained together.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:-1];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:tag arg:NULL];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super init. . .];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In this example, the <b>initArg:arg:</b> method is the designated initializer for the class.</font>
+
+<p><font face="Times">If a subclass does any initialization of its own, it must define its own designated initializer.&nbsp; This method should begin by sending a message to <b>super</b> to perform the designated initializer of its superclass.&nbsp; Suppose, for example, that the three methods illustrated above are defined in the B class.&nbsp; The C class, a subclass of B, might have this designated initializer:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data arg:anObject</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super initArg:tag arg:data];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If inherited <b>init...</b> methods are to successfully initialize instances of the subclass, they must all be made to (directly or indirectly) invoke the new designated initializer.&nbsp; To accomplish this, the subclass is obliged to cover (override) only the designated initializer of the superclass.&nbsp; For example, in addition to its designated initializer, the C class would also implement this method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:tag arg:data arg:nil];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This ensures that all three methods inherited from the B class also work for instances of the C class.</font>
+
+<p><font face="Times">Often the designated initializer of the subclass overrides the designated initializer of the superclass.&nbsp; If so, the subclass need only implement the one <b>init...</b> method.</font>
+
+<p><font face="Times">These conventions maintain a direct chain of <b>init...</b> links, and ensure that the <b>new</b> method and all inherited <b>init...</b> methods return usable, initialized objects.&nbsp; They also prevent the possibility of an infinite loop wherein a subclass method sends a message (to <b>super</b>) to perform a superclass method, which in turn sends a message (to <b>self</b>) to perform the subclass method.</font>
+
+<p><font face="Times">This <b>init</b> method is the designated initializer for the Object class.&nbsp; Subclasses that do their own initialization should override it, as described above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>new</b>, + <b>alloc</b>, + <b>allocFromZone:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isEqual:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqual:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is the same as <i>anObject</i>, and NO if it isn't.&nbsp; This is determined by comparing the <b>id</b> of the receiver to the <b>id</b> of <i>anObject</i>.</font>
+
+<p><font face="Times">Subclasses may need to override this method to provide a different test of equivalence.&nbsp; For example, in some contexts, two objects might be said to be the same if they're both the same kind of object and they both contain the same data:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL)isEqual:anObject</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( anObject == self )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [anObject isKindOf:[self class]] ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if ( !strcmp(stringData, [anObject stringData]) )</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return NO;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isKindOf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isKindOf:</b><i>aClassObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is an instance of <i>aClassObject</i> or an instance of any class that inherits from <i>aClassObject</i>. Otherwise, it returns NO.&nbsp; For example, in this code <b>isKindOf:</b> would return YES because, in the Application Kit, the Menu class inherits from Window:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp; aMenu = [[Menu alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [aMenu isKindOf:[Window class]] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the receiver is a class object, this method returns YES if <i>aClassObject</i> is the Object class, and NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isMemberOf:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isKindOfClassNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isKindOfClassNamed:</b>(const char *)<i>aClassName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is an instance of <i>aClassName</i> or an instance of any class that inherits from <i>aClassName</i>.&nbsp; This method is the same as <b>isKindOf:</b>, except it takes the class name, rather than the class <b>id</b>, as its argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isMemberOfClassNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isMemberOf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isMemberOf:</b><i>aClassObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is an instance of <i>aClassObject</i>.&nbsp; Otherwise, it returns NO.&nbsp; For example, in this code, <b>isMemberOf: </b>would return NO:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp; aMenu = [[Menu alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ([aMenu isMemberOf:[Window class]])</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the receiver is a class object, this method returns NO.&nbsp; Class objects are not &quot;members of&quot; any class.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isKindOf:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isMemberOfClassNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isMemberOfClassNamed:</b>(const char *)<i>aClassName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is an instance of <i>aClassName</i>, and NO if it isn't.&nbsp; This method is the same as <b>isMemberOf:</b>, except it takes the class name, rather than the class <b>id</b>, as its argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isKindOfClassNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>methodFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IMP)<b>methodFor:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Locates and returns the address of the receiver's implementation of the <i>aSelector</i> method, so that it can be called as a function. If the receiver is an instance, <i>aSelector</i> should refer to an instance method; if the receiver is a class, it should refer to a class method.</font>
+
+<p><font face="Times"><i>aSelector</i> must be a valid, nonNULL selector.&nbsp; If in doubt, use the <b>respondsTo:</b> method to check before passing the selector to <b>methodFor:</b>.</font>
+
+<p><font face="Times">IMP is defined (in the <b>objc/objc.h</b> header file) as a pointer to a function that returns an <b>id</b> and takes a variable number of arguments (in addition to the two &quot;hidden&quot; arguments--<b>self</b> and <b>_cmd</b>--that are passed to every method implementation):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef id (*IMP)(id, SEL, ...);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This definition serves as a prototype for the function pointer that <b>methodFor:</b> returns.&nbsp; It's sufficient for methods that return an object and take object arguments.&nbsp; However, if the <i>aSelector</i> method takes different argument types or returns anything but an <b>id</b>, its function counterpart will be inadequately prototyped.&nbsp; Lacking a prototype, the compiler will promote <b>float</b>s to <b>double</b>s and <b>char</b>s to <b>int</b>s, which the implementation won't expect.&nbsp; It will therefore behave differently (and erroneously) when called as a function than when performed as a method.</font>
+
+<p><font face="Times">To remedy this situation, it's necessary to provide your own prototype.&nbsp; In the example below, the declaration of the <b>test </b>variable serves to prototype the implementation of the <b>isEqual:</b> method.&nbsp; <b>test</b> is defined as pointer to a function that returns a BOOL and takes an <b>id</b> argument (in addition to the two &quot;hidden&quot; arguments).&nbsp; The value returned by <b>methodFor:</b> is then similarly cast to be a pointer to this same function type:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL (*test)(id, SEL, id);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">test = (BOOL (*)(id, SEL, id))[target methodFor:@selector(isEqual:)];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( !test(target, @selector(isEqual:), someObject) ) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In some cases, it might be clearer to define a type (similar to IMP) that can be used both for declaring the variable and for casting the function pointer <b>methodFor:</b> returns.&nbsp; The example below defines the <b>EqualIMP</b> type for just this purpose:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef BOOL (*EqualIMP)(id, SEL, id);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">EqualIMP test;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">test = (EqualIMP)[target methodFor:@selector(isEqual:)];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( !test(target, @selector(isEqual:), someObject) ) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Either way, it's important to cast <b>methodFor:</b>'s return value to the appropriate function type.&nbsp; It's not sufficient to simply call the function returned by <b>methodFor:</b> and cast the result of that call to the desired type.&nbsp; This can result in errors.</font>
+
+<p><font face="Times">Note that turning a method into a function by obtaining the address of its implementation &quot;unhides&quot; the <b>self</b> and <b>_cmd </b>arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>instanceMethodFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to return a name associated with the receiver.</font>
+
+<p><font face="Times">By default, the string returned contains the name of the receiver's class.&nbsp; However, this method is commonly overridden to return a more object-specific name.&nbsp; You should therefore not rely on it to return the name of the class.&nbsp; To get the name of the class, use the class <b>name</b> method instead:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">const char *classname = [[self class] name];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>name</b>, + <b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>notImplemented:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>notImplemented:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Used in the body of a method definition to indicate that the programmer intended to implement the method, but left it as a stub for the time being.&nbsp; <i>aSelector</i> is the selector for the unimplemented method; <b>notImplemented:</b> messages are sent to <b>self</b>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- methodNeeded</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self notImplemented:_cmd];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a <b>methodNeeded</b> message is received, <b>notImplemented:</b> will invoke the <b>error:</b> method to generate an appropriate error message and abort the process.&nbsp; (In this example, <b>_cmd</b> refers to the <b>methodNeeded</b> selector.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>subclassResponsibility:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>error:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>perform:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends an <i>aSelector</i> message to the receiver and returns the result of the message.&nbsp; This is equivalent to sending an <i>aSelector </i>message directly to the receiver.&nbsp; For example, all three of the following messages do the same thing:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myClone = [anObject copy];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myClone = [anObject perform:@selector(copy)];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myClone = [anObject perform:sel_getUid(&#34;copy&#34;)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, the <b>perform:</b> method allows you to send messages that aren't determined until run time.&nbsp; A variable selector can be passed as the argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL myMethod = findTheAppropriateSelectorForTheCurrentSituation();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject perform:myMethod];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>aSelector</i> should identify a method that takes no arguments.&nbsp; If the method returns anything but an object, the return must be cast to the correct type.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *myClass;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myClass = (char *)[anObject perform:@selector(name)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Casting generally works for pointers and for integral types that are the same size as pointers (such as <b>int</b> and <b>enum</b>).&nbsp; Whether it works for other integral types (such as <b>char</b>, <b>short</b>, or <b>long</b>) is machine dependent.&nbsp; Casting doesn't work if the return is a floating type (<b>float</b> or <b>double</b>) or a structure or union.&nbsp; This is because the C language doesn't permit a pointer (like <b>id</b>) to be cast to these types.</font>
+
+<p><font face="Times">Therefore, <b>perform:</b> shouldn't be asked to perform any method that returns a floating type, structure, or union, and should be used very cautiously with methods that return integral types.&nbsp; An alternative is to get the address of the method implementation (using <b>methodFor:</b>) and call it as a function.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL aSelector = @selector(backgroundGray);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float aGray = ( (float (*)(id, SEL))</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">[anObject methodFor:aSelector] )(anObject, aSelector);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:with:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:with:with:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>methodFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>perform:with:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b>(SEL)<i>aSelector</i> <b>with:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends an <i>aSelector</i> message to the receiver with <i>anObject</i> as an argument.&nbsp; This method is the same as <b>perform:</b>, except that you can supply an argument for the <i>aSelector</i> message.&nbsp; <i>aSelector</i> should identify a method that takes a single argument of type <b>id</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:with:afterDelay:cancelPrevious:</b> (Application Kit Object Additions)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>perform:with:with:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>with:</b><i>anObject</i></font><br>
+<font face="Times"><b>with:</b><i>anotherObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends the receiver an <i>aSelector</i> message with <i>anObject</i> and <i>anotherObject</i> as arguments.&nbsp; This method is the same as <b>perform:</b>, except that you can supply two arguments for the <i>aSelector</i> message.&nbsp; <i>aSelector</i> should identify a method that can take two arguments of type <b>id</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>performv::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>performv:</b>(SEL)<i>aSelector</i> <b>:</b>(marg_list)<i>argFrame</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends the receiver an <i>aSelector</i> message with the arguments in <i>argFrame</i>.&nbsp; <b>performv::</b> messages are used within implementations of the <b>forward::</b> method.&nbsp; Both arguments, <i>aSelector</i> and <i>argFrame</i>, are identical to the arguments the run-time system passes to <b>forward::</b>.&nbsp; They can be taken directly from that method and passed through without change to <b>performv::</b>.</font>
+
+<p><font face="Times"><b>performv::</b> should be restricted to implementations of the <b>forward::</b> method.&nbsp; Because it doesn't restrict the number of arguments in the <i>aSelector</i> message or their type, it may seem like a more flexible way of sending messages than <b>perform:</b>, <b>perform:with:</b>, or <b>perform:with:with:</b>.&nbsp; However, it's not an appropriate substitute for those methods.&nbsp; First, it's more expensive than they are.&nbsp; The run-time system must parse the arguments in <i>argFrame</i> based on information stored for <i>aSelector</i>. Second, in future releases, <b>performv::</b> may not work in contexts other than the <b>forward::</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forward::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>perform:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>printForDebugger:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>printForDebugger:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to write a useful description of the receiver to <i>stream</i>.&nbsp; Object's default version of this method provides the class name and the hexadecimal address of the receiver, formatted as follows:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">&lt;<i>classname</i>: 0x<i>address</i>&gt;</font>
+
+<p><font face="Times">Debuggers can use this method to ask objects to identify themselves.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to read the receiver's instance variables from the typed stream <i>stream</i>.&nbsp; You need to implement a <b>read:</b> method for any class you create, if you want its instances (or instance of classes that inherit from it) to be archivable.</font>
+
+<p><font face="Times">The method you implement should unarchive the instance variables defined in the class in a manner that matches they way they were archived by <b>write:</b>.&nbsp; In each class, the <b>read:</b> method should begin with a message to <b>super</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- read:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super read:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific code goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This ensures that all inherited instance variables will also be unarchived.</font>
+
+<p><font face="Times">All implementations of the <b>read:</b> method should return <b>self</b>.&nbsp; Also, don't reassign the value of <b>self</b> within a <b>read:</b> method.</font>
+
+<p><font face="Times">After an object has been read, it's sent an <b>awake</b> message so that it can reinitialize itself, and may also be sent a <b>finishUnarchiving</b> message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>finishUnarchiving</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>respondsTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>respondsTo:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver implements or inherits a method that can respond to <i>aSelector</i> messages, and NO if it doesn't.&nbsp; The application is responsible for determining whether a NO response should be considered an error.</font>
+
+<p><font face="Times">Note that if the receiver is able to forward <i>aSelector</i> messages to another object, it will be able to respond to the message, albeit indirectly, even though this method returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forward::</b>, + <b>instancesRespondTo:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>self</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>self</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>class</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>startArchiving:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startArchiving:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to prepare an object for being archived--that is, for being written to the typed stream <i>stream</i>.&nbsp; A <b>startArchiving:</b> message is sent to an object just before it's archived--but only if it implements a method that can respond.&nbsp; The message gives the object an opportunity to do anything necessary to get itself, or the stream, ready before a <b>write:</b> message begins the archiving process.</font>
+
+<p><font face="Times">There's no default implementation of the <b>startArchiving:</b> method.&nbsp; The Object class declares the method, but doesn't define it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>finishUnarchiving</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>subclassResponsibility:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>subclassResponsibility:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Used in an abstract class to indicate that its subclasses are expected to implement <i>aSelector</i> methods.&nbsp; If a subclass fails to implement the method, it will inherit it from the abstract superclass.&nbsp; That version of the method generates an error when it's invoked.&nbsp; To avoid the error, subclasses must override the superclass method.</font>
+
+<p><font face="Times">For example, if subclasses are expected to implement <b>doSomething</b> methods, the superclass would define the method this way:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- doSomething</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self subclassResponsibility:_cmd];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When this version of <b>doSomething</b> is invoked, <b>subclassResponsibility:</b> will--by in turn invoking Object's <b>error: </b>method--abort the process and generate an appropriate error message.</font>
+
+<p><font face="Times">(The <b>_cmd</b> variable identifies the current method selector, just as <b>self</b> identifies the current receiver.&nbsp; In the example above, it identifies the selector for the <b>doSomething</b> method.)</font>
+
+<p><font face="Times">Subclass implementations of the <i>aSelector</i> method shouldn't include messages to <b>super</b> to incorporate the superclass version.&nbsp; If they do, they'll also generate an error.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesNotRecognize:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>notImplemented:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>error:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>superclass</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>superclass</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the class object for the receiver's superclass.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>superclass</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to write the receiver's instance variables to the typed stream <i>stream</i>.&nbsp; You need to implement a <b>write:</b> method for any class you create, if you want to be able to archive its instances (or instances of classes that inherit from it).</font>
+
+<p><font face="Times">The method you implement should archive only the instance variables defined in the class, but should begin with a message to <b>super</b> so that all inherited instance variables will also be archived:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific archiving code goes here</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All implementations of the <b>write:</b> method should return <b>self</b>.</font>
+
+<p><font face="Times">During the archiving process, <b>write:</b> methods may be performed twice, so they shouldn't do anything other than write instance variables to a typed stream.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startArchiving:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>zone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXZone *)<b>zone</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the zone from which the receiver was allocated.&nbsp; Objects created without specifying a zone are allocated from the default zone, which is returned by <b>NXDefaultMallocZone()</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>allocFromZone:</b>, + <b>alloc</b>, + <b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

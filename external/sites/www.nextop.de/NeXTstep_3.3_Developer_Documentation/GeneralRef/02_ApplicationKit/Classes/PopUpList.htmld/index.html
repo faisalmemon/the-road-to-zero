@@ -1,0 +1,1000 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/PopUpList.rtf -->
+<!-- Date: Sun Jun 28 20:01:26 1998 -->
+<head>
+<title>PopUpList</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:PopUpList"></a><font face="Helvetica" size="+2"><b>PopUpList</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Menu : Panel : Window : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/PopUpList.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A PopUpList is a type of Menu that's used to make choices from a limited set of options, usually in a specific context.&nbsp; The PopUpList is usually triggered to pop up by a Button, and tracks the mouse like a Menu does until the user releases the mouse, at which time the PopUpList sends its action message to its target and disappears.&nbsp; Depending on the type of the PopUpList (see below), the title of the trigger Button is set to the title of the item selected from the PopUpList.&nbsp; Though a PopUpList is a user-interface device and sends an action message, it's not a Control class.&nbsp; The trigger that pops it up, however, is a Control; it's nearly always a Button, but may be a Cell in a Matrix, or a subclass of View that responds to the <b>setTitle:</b> and <b>title </b>messages.</font>
+
+<p><font face="Times">There are actually two types of PopUpList:&nbsp; The pop-up list and the pull-down list.&nbsp; The type is set with the <b>changeButtonTitle: </b>method.&nbsp; A pop-up list's trigger always displays the item that was last selected, so a pop-up list is often used for selecting items from a small- to medium-sized set of options (like the zoom factor for a document Window).&nbsp; It's a useful alternative to a Matrix of radio Buttons or an NXBrowser when screen space is at a premium; a zoom factor pop-up can easily be fit next to a scroll bar on the bottom of a Window, for example.&nbsp; If there are very many items in the set of options, however, a pop-up list can nearly fill the height of the screen; in this case it would be better to use an NXBrowser, possibly in its own Panel.</font>
+
+<p><font face="Times">A pull-down list is generally used for selecting actions in a very specific context, like the &quot;Operations&quot; pull-down list in Interface Builder's Classes browser.&nbsp; It has a &quot;title&quot; item that is always displayed on the trigger.&nbsp; When the actions only make sense in the context of a particular display, a pull-down list can be used in that display to keep the related actions nearby, and to keep them out of the way when that display isn't visible.&nbsp; This also helps reduce clutter in Menus.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Using PopUpLists with Interface Builder</b></font>
+
+<p><font face="Times">Interface Builder contains a palette item that looks like a pop-up list.&nbsp; This item is actually a trigger Button for a PopUpList, which is the target of the Button.&nbsp; You can change the list to be a pull-down list with Interface Builder's Button Inspector, which shows radio buttons for selecting a pop-up or pull-down list instead of the usual Button options.</font>
+
+<p><font face="Times">If you create an outlet from some other object and connect it to the graphical PopUpList as shown on the screen, you're actually connecting the outlet to the trigger Button.&nbsp; If you need a connection directly to the PopUpList, you should reset the outlet at run-time.&nbsp; This can be done in your Application delegate's <b>appDidInit:</b> method, in the <b>awake</b> method of the object containing the outlet, or preferably in the <b>awakeFromNib</b> method of the interface module's &quot;File's Owner&quot; class (<b>awakeFromNib</b> is described in the NXNibNotification protocol specification).&nbsp; For example, if the object has an outlet called <b>popup</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- awakeFromNib</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super awakeFromNib];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (![popup isKindOf:[PopUpList class]]) popup = [popup target];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* other setup code */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you need connections to both the trigger Button and the PopUpList itself, create outlets with names that distinguish the two, like <b>popupButton</b> and <b>popupList</b>, and only connect <b>popupButton</b> in Interface Builder.&nbsp; The object's <b>awakeFromNib</b> or other such method can then set the <b>popupList</b> outlet from <b>popupButton</b>'s target.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Creating a PopUpList Programmatically</b></font>
+
+<p><font face="Times">To create a PopUpList programmatically, simply allocate an instance, send it an <b>init</b> message, and use the <b>changeButtonTitle: </b>method to configure the PopUpList as a pop-up or pull-down list.&nbsp; Your code can then add whatever items are needed with the <b>addItem:</b> method, or configure the PopUpList in other ways.</font>
+
+<p><font face="Times">Once a PopUpList has been built, it must be attached to a trigger, which is usually a Button (though it may also be a ButtonCell). There are two functions that attach a PopUpList to a Button, as well as making the Button look like a pop-up or pull-down list by adding the appropriate icon and setting other parameters.&nbsp; <b>NXAttachPopUpList()</b> attaches the PopUpList to a Button or ButtonCell passed to the function.&nbsp; <b>NXCreatePopUpListButton()</b> creates and returns a Button that triggers the PopUpList passed to it; your code can then add the Button to a View in your application.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If you use <b>NXAttachPopUpList()</b> with a Button whose title doesn't appear in the PopUpList, the PopUpList will add that title to the top of its list when the Button triggers it.&nbsp; This is desirable for a pull-down list, since you won't have to add the title item to the list yourself, but it should be avoided for pop-up lists.&nbsp; Specifically, this is not a reliable means of adding items to the PopUpList; use <b>addItem:</b> for that.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Working with a PopUpList</b></font>
+
+<p><font face="Times">PopUpList is actually a subclass of Menu that contains a Matrix of MenuCells (Menu's <b>itemList</b> method can be used to get the Matrix from the PopUpList).&nbsp; When the PopUpList's target is sent the action message, the sender of that message is actually the Matrix.&nbsp; The trigger Button itself can't be accessed by the target of the PopUpList.&nbsp; To get the PopUpList itself from the sending Matrix, the target can use View's <b>window</b> method (since PopUpList is a kind of Window).&nbsp; If the target needs specific Cells, it can ask the Matrix directly for those with <b>selectedCell</b>, <b>cellAt::</b>, and other such methods.</font>
+
+<p><font face="Times">If the title of a pull-down list needs to be changed, both the title of the trigger Button and the title item of the PopUpList itself need to be changed.&nbsp; The easiest way to do this is to change the Button's title, and to remove the title item from the pull-down list with <b>removeItemAt:</b> (it's kept at position 0).&nbsp; When the PopUpList is next triggered by the Button, it will add the Button's new title to the top of its list if that title isn't already in the list.</font>
+
+<p><font face="Times">If you want to change the title of a pop-up list's trigger Button, be aware that this title represents the selected item to the user, so your code will have to also change the selected Cell in the PopUpList's Matrix.&nbsp; It can do this either by scanning for the title, or by changing the selected Cell by position first, then getting that Cell's title to use as the title of the trigger Button.</font>
+
+<p><font face="Times">For more information, see the class specifications for Matrix, MenuCell, and Button</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing a PopUpList</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up the items</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addItem:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertItem:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeItem:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeItemAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">indexOfItem:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">count</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Interacting with the trigger Button</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">changeButtonTitle:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getButtonFrame:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Activating the PopUpList</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">popUp:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting the user's selection</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedItem</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying the items</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFont:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">font</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Target and action</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">action</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">target</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Resizing the PopUpList</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeWindow::</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-action%5D"></a><font face="Helvetica"><b>action</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>action</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action sent to the PopUpList's target when an item is selected from the list.&nbsp; This is actually the action message of the PopUpList's Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-addItem:%5D"></a><font face="Helvetica"><b>addItem:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addItem:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds an item with the name <i>title</i> to the bottom of the PopUpList, and returns the MenuCell created for that item (so a key equivalent can be added, for example).&nbsp; If an item with the name <i>title</i> already exists in the PopUpList, the MenuCell for that item is returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertItem:at:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItem:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-changeButtonTitle:%5D"></a><font face="Helvetica"><b>changeButtonTitle:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>changeButtonTitle:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, then when a selection is made from the list, the title of the selected item becomes the title on the Cell of the trigger that sent the <b>popUp:</b> message (nearly always a Button, but sometimes a Matrix).&nbsp; This makes the Button appear to the user as a pop-up list, with a small rectangular knob as the icon.&nbsp; If <i>flag</i> is NO, then the Button's title doesn't change, so that it appears to the user as a pull-down list, with a small inverted triangular mark for an icon.&nbsp; The default is YES (that is, a pop-up list).&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-count%5D"></a><font face="Helvetica"><b>count</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>count</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of items in the PopUpList.&nbsp; If the PopUpList is configured as a pull-down list, this number includes the MenuCell that holds the pull-down list's title.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-font%5D"></a><font face="Helvetica"><b>font</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Font used to draw the items in the PopUpList.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-getButtonFrame:%5D"></a><font face="Helvetica"><b>getButtonFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getButtonFrame:</b>(NXRect *)<i>bFrame</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b>, and by reference in <i>bFrame</i> the frame for the trigger that last popped up the PopUpList.&nbsp; The origin of the frame is set to (0.0, 0.0), so this method effectively returns the size of the trigger.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-indexOfItem:%5D"></a><font face="Helvetica"><b>indexOfItem:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>indexOfItem:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the item with the name <i>title</i>, or</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no such item is in the PopUpList.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the receiver, a new instance of PopUpList.&nbsp; This method is the designated initializer for PopUpList. PopUpList does not override the designated initializers for Menu, Panel, or Window; your code should not use those methods with a PopUpList.&nbsp; If you create a subclass of PopUpList that performs its own initialization, you must override this method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-insertItem:at:%5D"></a><font face="Helvetica"><b>insertItem:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertItem:</b>(const char *)<i>title</i> <b>at:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts an item with the name <i>title</i> at position <i>index</i> in the PopUpList.&nbsp; The item with an index of 0 is the one at the top.&nbsp; Returns the newly inserted MenuCell.</font>
+
+<p><font face="Times">If an item with a title of <i>title</i> already exists in the PopUpList, it's removed and the new one is added.&nbsp; This essentially moves <i>title</i> to a new position, though if the item removed was at a position before <i>index</i>, the new item will actually be inserted at <i>index </i>+ 1.&nbsp; If you want to move an item, it's better to invoke <b>removeItem:</b> explicitly and then send <b>insertItem:at:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addItem:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItemAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-popUp:%5D"></a><font face="Helvetica"><b>popUp:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>popUp:</b><i>trigger</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Pops up the PopUpList over the location of <i>trigger</i>, after resizing the PopUpList to be as wide as <i>trigger</i>.&nbsp; This is the action method sent by the trigger object to the target PopUpList.&nbsp; If the mouse goes up in an item of the PopUpList, the Matrix that displays the PopUpList's entries sends the action message to the target.&nbsp; If the PopUpList is a pop-up type list (set with <b>changeButtonTitle:</b>), <i>trigger</i>'s title is set to the title of the selected item in the PopUpList; <i>trigger</i>'s icon is not altered by this method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method works if and only if the following conditions are met.&nbsp; The Application object's current event must be a mouse-down, and that mouse-down must have occurred within <i>trigger</i>'s frame; this method can therefore be effectively invoked only as a result of a mouse-down occurring in <i>trigger</i>.&nbsp; <i>trigger</i> must also be either a subclass of View that responds to the messages <b>title</b> and <b>setTitle:</b>, or a subclass of Matrix whose selected Cell responds to <b>title</b> and <b>setTitle:</b>.&nbsp; If there are no items in the PopUpList and <i>trigger</i>'s title is NULL, this method does nothing.</font>
+
+<p><font face="Times">If <i>trigger</i>'s title isn't in the PopUpList, it's added as an item at the top before the PopUpList pops up.&nbsp; The list pops up with the item having the same title as <i>trigger</i> (either a pop-up list's selected item or the &quot;title&quot; item of a pull-down list) exactly over <i>trigger</i> if possible; if this would cause part of the list to be off the top or bottom of the screen, the entire list is shifted up or down so that it can fit on screen.</font>
+
+<p><font face="Times">If any of the MenuCells in the PopUpList's Matrix bring up submenus (that is, have a Menu as a target and <b>submenuAction:</b> as the action message), they are changed to simply be title-displaying MenuCells, and will never bring up their submenus. Essentially, this means that you can't create a hierarchical PopUpList with this class unless you completely override this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>changeButtonTitle:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-removeItem:%5D"></a><font face="Helvetica"><b>removeItem:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItem:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes and returns the MenuCell with the name <i>titl</i>e.&nbsp; If there is no such MenuCell, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItemAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-removeItemAt:%5D"></a><font face="Helvetica"><b>removeItemAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItemAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the MenuCell for the item at the specified <i>index</i>.&nbsp; Returns the MenuCell at that location, or <b>nil</b> if there was no such MenuCell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeItem:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-selectedItem%5D"></a><font face="Helvetica"><b>selectedItem</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>selectedItem</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the title of the item last selected by the user (the item that was highlighted when the user released the mouse button), or NULL if for some reason there is no selected item.&nbsp; It is possible for a pull-down list's selected item to be its title item.</font>
+
+<p><font face="Times">The target of the PopUpList can get the title of the selected item in one of two ways.&nbsp; Since the sender of the action message is actually the PopUpList's Matrix, the target can ask the Matrix for its selected Cell, and then ask that Cell for its title.&nbsp; Also, the PopUpList is the Matrix's Window, so the target can retrieve that and then send <b>selectedItem</b> to the PopUpList.&nbsp; These two methods can be coded as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">item = [[sender selectedCell] title];&nbsp; // sender is actually a Matrix</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">item = [[sender window] selectedItem]; // PopUpList is Matrix's Window</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first example is the preferred way to get the title.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell:</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>title</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-setAction:%5D"></a><font face="Helvetica"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action sent to the PopUpList's target when an item is selected.&nbsp; The action message is actually sent by the Matrix containing the MenuCells that make up the PopUpList.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">A pull-down list does send its action if the mouse goes up in its title item.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-setFont:%5D"></a><font face="Helvetica"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b><i>fontObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Font used to draw the PopUpList's items.&nbsp; The PopUpList does redraw itself, but since it normally won't be on the screen when it receives this message, this shouldn't cause any undesirable side-effects.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b> (Matrix)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-setTarget:%5D"></a><font face="Helvetica"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the object to which an action will be sent when an item is selected from the PopUpList.&nbsp; The action is actually sent by the Matrix containing the MenuCells that make up the PopUpList.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-sizeWindow::%5D"></a><font face="Helvetica"><b>sizeWindow::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeWindow:</b>(NXCoord)<i>width</i> <b>:</b>(NXCoord)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method, though you're free to override it.&nbsp; This method is overridden from Menu because PopUpList needs to surround itself with a dark gray border, and thus needs to be one pixel wider and taller than a Menu.&nbsp; It simply adds 1.0 to each dimension and sends <b>sizeWindow::</b> to <b>super</b>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BPopUpList-target%5D"></a><font face="Helvetica"><b>target</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object to which the action will be sent when an item is selected from the list.&nbsp; The default value is <b>nil</b>, which causes the action message to be sent up the responder chain.&nbsp; The target is actually sent the action by the PopUpList's Matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

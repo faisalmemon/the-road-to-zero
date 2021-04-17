@@ -1,0 +1,917 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSCoder.rtf -->
+<!-- Date: Sun Jun 28 19:55:49 1998 -->
+<head>
+<title>NSCoder</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSCoder</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCoding</font><br>
+<font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSCoder.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">NSCoder is an abstract class that declares the interface used by subclasses to take Objective C objects from dynamic memory and code them into and out of some other format. This capability provides the basis for archiving (where objects and other structures are stored on disk) and distribution (where objects are copied to different address spaces). See the NSArchiver and NSUnarchiver class specifications for more information on archiving.</font>
+
+<p><font face="Times">NSCoder operates on the basic C and Objective C types--<b>int</b>, <b>float</b>, <b>id</b>, and so on (but excluding <b>void *</b> and <b>union</b>)--as well as on user-defined structures and pointers to these types.</font>
+
+<p><font face="Times">NSCoder declares methods that a subclass can override if it wants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To encode or decode an object only under certain conditions, such as it being an intrinsic part of a larger structure (<b>encodeRootObject:</b> and <b>encodeConditionalObject:</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To allow decoded objects to be allocated from a specific memory zone (<b>setObjectZone:</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To allow system versioning (<b>systemVersion</b>)</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Encoding and Decoding Objects</b></font>
+
+<p><font face="Times">In NEXTSTEP, coding is facilitated by methods declared in several places, most notably the NSCoder class, the NSObject class, and the NSCoding protocol.</font>
+
+<p><font face="Times">The NSCoding protocol declares the two methods (<b>encodeWithCoder:</b> and <b>initWithCoder:</b>) that a class must implement so that objects of that class can be encoded and decoded. When an object receives an <b>encodeWithCoder: </b>message, it should send a message to <b>super</b> to encode inherited instance variables before it encodes the instance variables that it's class declares. For example, the fictitious MapView class, that displays a legend and a map at various magnifications, might implement <b>encodeWithCoder:</b> like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (void)encodeWithCoder:(NSCoder *)coder</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super encodeWithCoder:coder];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[coder encodeValuesOfObjCTypes:&#34;si@&#34;, &amp;mapName, &amp;magnification,</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">&amp;legendView];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Objects are decoded in two steps. First, an object of the appropriate class is allocated and then it's sent an <b>initWithCoder:</b> message to allow it to initialize its instance variables. Again, the object should first send a message to <b>super</b> to initialized inherited instance variables, and then it should initialize its own. MapView's implementation of this method looks like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (id)initWithCoder:(NSCoder *)coder</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = [super initWithCoder:coder];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[coder decodeValuesOfObjCTypes:&#34;si@&#34;, &amp;mapName, &amp;magnification,</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">&amp;legendView];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Note the assignment of the return value of <b>initWithCoder:</b> to <b>self</b> in the example above. This is done in the subclass because the superclass, in its implementation of <b>initWithCoder:</b>, may decide to return a object other than itself.</font>
+
+<p><font face="Times">There are other methods that allow an object to customize its response to encoding or decoding. NSObject declares these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Method</b></font></td>
+
+<td><font face="Helvetica"><b>Typical Use</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">classForCoder:</font></td>
+
+<td><font face="Times">Allows an object, when being encoded, to substitute a class other than its own. For example, the private subclasses of a class cluster substitute the name of their public superclass when being archived.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">replacementObjectForCoder:</font></td>
+
+<td><font face="Times">Allows an object, when being encoded, to substitute another object for itself. For example, an object might encode itself into an archive, but encode a proxy for itself if it's being encoded for distribution.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">awakeAfterUsingCoder:</font></td>
+
+<td><font face="Times">Allows an object, when being decoded, to substitute another object for itself. For example, an object that represents a font might, upon being decoded, release itself and return an existing object having the same font description as itself. In this way, redundant objects can be eliminated.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See the NSObject class specification for more information.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Encoding Data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeArrayOfObjCType:count:at:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeBycopyObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeConditionalObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeDataObject:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeNXObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodePropertyList:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeRootObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeValueOfObjCType:at:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeValuesOfObjCTypes:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Decoding Data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeArrayOfObjCType:count:at:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeDataObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeNXObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodePropertyList</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeValueOfObjCType:at:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeValuesOfObjCTypes:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing Zones</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">objectZone</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">setObjectZone:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting a Version</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">systemVersion</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">versionForClassName:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>decodeArrayOfObjCType:count:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>decodeArrayOfObjCType:</b>(const char *)<i>type</i> <b>count:</b>(unsigned)<i>count</i> <b>at:</b>(void *)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes data of Objective C types listed in <i>type</i> having <i>count</i> elements residing at <i>address</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodeDataObject</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSData *)<b>decodeDataObject</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes and returns an NSData object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodeNXObject</b></font>
+
+<p><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(Object *)<b>decodeNXObject</b></font>
+
+<p><font face="Times">Decodes and returns an object that descends from Object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodeObject</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(id)<b>decodeObject</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes an Objective C object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodePropertyList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(id)<b>decodePropertyList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes a property list (NSData, NSArray, NSDictionary, or NSString objects).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodeValueOfObjCType:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>decodeValueOfObjCType:</b>(const char *)<i>type</i> <b>at:</b>(void *)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes data of the specified Objective C <i>type</i> residing at <i>address</i>. You are responsible for releasing the resulting objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decodeValuesOfObjCTypes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>decodeValuesOfObjCTypes:</b>(const char *)<i>types,...</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Decodes values corresponding to the Objective C types listed in <i>types</i> argument list. You are responsible for releasing the resulting objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeArrayOfObjCType:count:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeArrayOfObjCType:</b>(const char *)<i>type</i> <b>count:</b>(unsigned)<i>count</i> <b>at:</b>(const void *)<i>array</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes data of Objective C types listed in <i>type</i> having <i>count</i> elements residing at address <i>array</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeBycopyObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeBycopyObject:</b>(id)<i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Overridden by subclasses to encode the supplied Objective C object so that a copy rather than a proxy of <i>anObject</i> is created upon decoding. NSCoder's implementation simply invokes <b>encodeObject:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeConditionalObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeConditionalObject:</b>(id)<i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Overridden by subclasses to conditionally encode the supplied Objective C object. The object should be encoded only if it is an intrinsic member of the larger data structure. NSCoder's implementation simply invokes <b>encodeObject:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeDataObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeDataObject:</b>(NSData *)<i>data</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes the NSData object <i>data</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeNXObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeNXObject:</b>(Object *)<i>object</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes an object that descends from Object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeObject:</b>(id)<i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes the supplied Objective C object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodePropertyList:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodePropertyList:</b>(id)<i>plist</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes the supplied property list (NSData, NSArray, NSDictionary, or NSString objects).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeRootObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeRootObject:</b>(id)<i>rootObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Overridden by subclasses to start encoding an interconnected group of Objective C objects, starting with <i>rootObject</i>. NSCoder's implementation simply invokes <b>encodeObject:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeValueOfObjCType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeValueOfObjCType:</b>(const char *)<i>type</i> <b>at:</b>(const void *)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes data of the specified Objective C <i>type</i> residing at <i>address</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>encodeValuesOfObjCTypes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>encodeValuesOfObjCTypes:</b>(const char *)<i>types,..</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Encodes values corresponding to the Objective C types listed in <i>types</i> argument list.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>objectZone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSZone *)<b>objectZone</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the memory zone used by decoded objects. For instances of NSCoder, this is the default memory zone, the one returned by <b>NSDefaultMallocZone()</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>setObjectZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setObjectZone:</b>(NSZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Sets the memory zone used by decoded objects. Instances of NSCoder always use the default memory zone, the one returned by <b>NSDefaultMallocZone()</b>, and so ignore this method.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>systemVersion</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>systemVersion</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the system version number as of the time the archive was created.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>versionForClassName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>versionForClassName:</b>(NSString *)<i>className</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the version number of the class <i>className</i> as of the time it was archived.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

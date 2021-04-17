@@ -1,0 +1,2990 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/16_Sound/SoundFunctions/SoundFunctions.rtf -->
+<!-- Date: Sun Jun 28 20:07:19 1998 -->
+<head>
+<title>SoundFunctions</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDAcquire(), SNDReset(), SNDRelease()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Access sound resources</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/accesssound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDAcquire(</b>int <i>soundResource</i>, int <i>priority</i>, int <i>preempt</i>, int <i>timeout</i>,&nbsp; SNDNegotiationFun <i>negFun</i>, void *<i>arg</i>, port_t *<i>devicePort</i>, port_t *<i>ownerPort</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDReset(</b>int <i>soundResource</i>, port_t <i>devicePort</i>, port_t <i>ownerPort</i><b>)</b></font><br>
+<font face="Times">int <b>SNDRelease(</b>int <i>soundResource</i>, port_t *<i>devicePort</i>, port_t *<i>ownerPort</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDAcquire()</b> attempts to gain ownership of the sound resources specified in <i>soundResource</i>, a value that's created by (bitwise) or'ing a combination of the following resource codes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Resource</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_OUT</font></td>
+
+<td><font face="Times">sound-out</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_IN</font></td>
+
+<td><font face="Times">sound-in</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_DSP</font></td>
+
+<td><font face="Times">the DSP</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Alternatively, you can acquire the sound driver device port without gaining ownership of the device by passing 0 as the value of <i>soundResource</i>.</font>
+
+<p><font face="Times">Device and ownership ports to a successfully acquired sound resource are returned in <i>devicePort</i> and <i>ownerPort</i>, respectively. If you pass a previously created port as the value of <i>devicePort</i>, that port is used; passing a value of PORT_NULL (0) causes <b>SNDAcquire()</b> to create a port for you.&nbsp; The value you pass through <i>ownerPort</i> is ignored by the function; a new owner port is always created.</font>
+
+<p><font face="Times">Acquiring a resource makes it active, such that other acquisition requests may fail, even if the requests are in the same process. You can grant a priority to the acquisition by setting the value of the <i>priority</i> argument--in a subsequent call to <b>SNDAcquire()</b>, the acquisition with the higher priority wins.&nbsp; The <i>preempt</i> flag is used as a tie-breaker.</font>
+
+<p><font face="Times">The function's <i>timeout</i>, <i>negFun</i>, and <i>arg</i> arguments are currently unused.</font>
+
+<p><font face="Times">The ports that are created and returned by <b>SNDAcquire()</b> can be passed as arguments to certain sound driver functions (functions that are prefixed &quot;snddriver&quot;).&nbsp; Furthermore, there's not much reason to call <b>SNDAcquire()</b> unless this is what you're doing:&nbsp; Although you can use the function generally to query for the existence of a particular resource, there's not much point in acquiring a sound device if all you're going to do is call other <b>SND...()</b> functions.</font>
+
+<p><font face="Times"><b>SNDReset()</b> and <b>SNDRelease()</b> reset to a virgin state and release, respectively, the specified resources.&nbsp; The resources must have been previously acquired through <b>SNDAcquire()</b>; the device and owner port arguments are values returned by that function.&nbsp; <b>SNDRelease()</b> sets the owner port to PORT_NULL; the device port is unaffected.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font>
+
+<p><font face="Helvetica" size="-1"><b>ERRORS </b></font><font face="Times">If <b>SNDAcquire()</b> is unable to acquire any one of the resources specified in <i>soundResource</i>, none of the resources are acquired.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDAlloc(), SNDFree()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Create and free a sound structure</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDAlloc(</b>SNDSoundStruct **<i>sound</i>, int <i>dataSize</i>, int <i>dataFormat</i>, int <i>samplingRate</i>, int <i>channelCount</i>, int <i>infoSize</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDFree(</b>SNDSoundStruct *<i>sound</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The SNDSoundStruct structure is the data format used by the sound software to encapsulate a sound.&nbsp; It defines the soundfile format and the sound pasteboard type, and it lies at the heart of every Sound object.&nbsp; <b>SNDAlloc()</b> creates and returns, in <i>sound</i>, a new SNDSoundStruct.&nbsp; The arguments to <b>SNDAlloc()</b> correspond to the SNDSoundStruct fields described below. <b>SNDFree()</b> frees the SNDSoundStruct pointed to by <i>sound.</i>&nbsp; You should always use <b>SNDFree()</b> to free a sound structure created through <b>SNDAlloc()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The fields of the SNDSoundStruct structure list the attributes of the sound that the structure represents.&nbsp; The sound data itself isn't contained in the structure, but is located by a structure field.&nbsp; Nonetheless, it's often convenient to think of a SNDSoundStruct as containing the sound data that it represents.&nbsp; By convention, the structure is referred to as the sound's &quot;header.&quot;&nbsp; It's defined as:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct&nbsp; {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; magic;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* SND_MAGIC ((int)0x2e736e64) */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; dataLocation;&nbsp; /* Offset or pointer to the raw data */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; dataSize;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Raw data size in bytes */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; dataFormat;&nbsp;&nbsp;&nbsp; /* The data format code */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; samplingRate;&nbsp; /* The sampling rate */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; channelCount;&nbsp; /* The number of channels */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char info[4];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Textual information about the sound */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SNDSoundStruct;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>magic</b> field is a magic number that identifies a SNDSoundStruct.&nbsp; It's automatically set when you allocate the structure.</font>
+
+<p><font face="Times">The <b>dataLocation</b> field indicates the location of the actual sound data.&nbsp; Usually, the data immediately follows the header.&nbsp; In this case, <b>dataLocation</b> is the offset from the beginning of the structure to the first byte of the sound data--in other words, it's the size of the sound's header.&nbsp; However, if you edit the sound through functions such as <b>SNDDeleteSamples()</b> or <b>SNDInsertSamples()</b>, the sound can become fragmented such that the data no longer follows the header.&nbsp; In this case, <b>dataLocation</b> is a pointer to a NULL-terminated block of addresses, each of which points to a separate SNDSoundStruct.&nbsp; The collection of these SNDSoundStructs make up the fragmented data.</font>
+
+<p><font face="Times"><b>dataSize</b> is the size, in bytes, of the memory allocated for the sound data.&nbsp; The memory is initialized to zero.</font>
+
+<p><font face="Times"><b>dataFormat</b> describes the sound data as one of the following codes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Format</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_MULAW_8</font></td>
+
+<td><font face="Times">8-bit mu-law samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_LINEAR_8</font></td>
+
+<td><font face="Times">8-bit linear samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_LINEAR_16</font></td>
+
+<td><font face="Times">16-bit linear samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_EMPHASIZED</font></td>
+
+<td><font face="Times">16-bit linear with emphasis SND_FORMAT_COMPRESSED 16-bit linear with compression SND_FORMAT_COMPRESSED_EMPHASIZED A combination of the two above</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_LINEAR_24</font></td>
+
+<td><font face="Times">24-bit linear samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_LINEAR_32</font></td>
+
+<td><font face="Times">32-bit linear samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_FLOAT</font></td>
+
+<td><font face="Times">floating-point samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DOUBLE</font></td>
+
+<td><font face="Times">double-precision float samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DSP_DATA_8</font></td>
+
+<td><font face="Times">8-bit fixed-point samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DSP_DATA_16</font></td>
+
+<td><font face="Times">16-bit fixed-point samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DSP_DATA_24</font></td>
+
+<td><font face="Times">24-bit fixed-point samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DSP_DATA_32</font></td>
+
+<td><font face="Times">32-bit fixed-point samples</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DSP_CORE</font></td>
+
+<td><font face="Times">DSP program</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_DISPLAY</font></td>
+
+<td><font face="Times">non-audio display data</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_INDIRECT</font></td>
+
+<td><font face="Times">fragmented sampled data</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_FORMAT_UNSPECIFIED</font></td>
+
+<td><font face="Times">unspecified format</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All but the last five formats identify different sizes and types of sampled data.&nbsp; The others deserve special note:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">SND_FORMAT_DSP_CORE format contains data that represents a loadable DSP core program.&nbsp; Sounds in this format are required by the <b>SNDBootDSP()</b> and <b>SNDRunDSP()</b> functions.&nbsp; You create a SND_FORMAT_DSP_CORE sound by reading a DSP load file (extension &quot;.lod&quot;) with the <b>SNDReadDSPfile()</b> function.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">SND_FORMAT_DISPLAY format is used by the Sound Kit's SoundView class.&nbsp; Such sounds can't be played.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">SND_FORMAT_INDIRECT indicates data that has become fragmented due to editing.&nbsp; Only sampled data can become fragmented.&nbsp; You never allocate a sound with this format.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">SND_FORMAT_UNSPECIFIED is used for unrecognized formats.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>samplingRate</b> is also given as a code and should be cast into an <b>int</b>.&nbsp; The NeXT sound hardware supports the following sampling rates for recording and playback:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Sampling Rate (Hz)</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_RATE_CODEC</font></td>
+
+<td><font face="Times">8012.8210513</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_RATE_LOW</font></td>
+
+<td><font face="Times">22050</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_RATE_HIGH</font></td>
+
+<td><font face="Times">44100</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>channelCount</b> is the number of channels of sound.&nbsp; Playback of one- and two-channel sounds is supported; a sound with more than two channels is unplayable.</font>
+
+<p><font face="Times"><b>infoSize</b> is the size of a variable-length string that can be used to textually describe the sound.&nbsp; The size is extended to the next 4-byte boundary (the minimum size is 4 bytes).&nbsp; You can't increase the length of the info string once its size has been set.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDBootDSP()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Boot the DSP</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/accesssound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDBootDSP(</b>port_t *<i>devicePort</i>, port_t *<i>ownerPort</i>, SNDSoundStruct *<i>dspCore</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDBootDSP()</b> boots the DSP using the DSP bootstrap image specified in <i>dspCore.</i>&nbsp; This allows you to load all internal RAM and all but the top six words of external RAM on the DSP.&nbsp; The owner and device ports must have been previously acquired through <b>SNDAcquire()</b>.&nbsp; The format of <i>dspCore</i> must SND_FORMAT_DSP core image should be in loadable (&quot;.lod&quot;) form, such as is created through the <b>SNDReadDSPfile()</b> function.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDBytesToSamples()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSampleCount()</b></font>
+
+<p><font face="Helvetica"><b>SNDGetCompressionOptions()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetCompressionOptions()</b></font>
+
+<p><font face="Helvetica"><b>SNDCompactSamples()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDInsertSamples()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDCompressSound()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Compress or decompress a sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/convertsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDCompressSound(</b>SNDSoundStruct *<i>fromSound</i>, SNDSoundStruct **<i>toSound</i>, BOOL <i>bitFaithful</i>, int <i>compressionAmount</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDCompressSound()</b> creates and returns, in <i>toSound</i>, a new SNDSoundStruct that contains a compressed or decompressed version of the sound in <i>fromSound</i>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If <i>fromSound's</i> format is SND_FORMAT_LINEAR_16 or SND_FORMAT_EMPHASIZED, the sound returned in <i>toSound </i>is compressed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If its format is SND_FORMAT_COMPRESSED or SND_FORMAT_COMPRESSED_EMPHASIZED, the sound is decompressed.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">No other formats are allowed; in addition, the sound can't have more than two channels.</font>
+
+<p><font face="Times">The function's <i>bitFaithful</i> and <i>compressionAmount</i> arguments are used only when compressing:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>bitFaithful</i> determines the fidelity with which a compressed sound can be restored to its original state.&nbsp; If <i>bitFaithful</i> is YES, the sound returned in <i>toSound</i> can be decompressed to exactly match the original sound data; if it's NO, some degradation can be expected.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <i>compressionAmount</i> argument controls the amount of compression.&nbsp; Its value ranges from 4 to 8 with higher numbers giving more compression but less fidelity.&nbsp; Depending on the signal, a <i>compressionAmount</i> of 4 will compress the sound to about half its original size; a value of 8 compresses to about one-sixth the size.&nbsp; For bit-faithful compression, you should set <i>compressionAmount</i> to 4.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDConvertDecibelsToLinear(), SNDConvertLinearToDecibels()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Convert between logarithmic and linear units</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">soundkit/NXSoundDevice.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">float <b>SNDConvertDecibelsToLinear(</b>float <i>dB</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">float <b>SNDConvertLinearToDecibels(</b>float <i>linear</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These convenience functions convert from units of decibels to a linear value, and vice versa.&nbsp; Decibels express the difference between two quantities in logarithmic units, while on a linear scale the same relationship is expressed as the ratio of the two quantities.&nbsp; For example, a difference of zero decibels is equivalent to a ratio of 1.0.&nbsp; The functions are, in their entirety:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float SNDConvertDecibelsToLinear(float dB)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return (float)pow(10.0, (double)dB/20.0);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float SNDConvertLinearToDecibels(float linear)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return (float)(20.0 * log10((double)linear));</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDConvertLinearToDecibels()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDConvertDecibelsToLinear()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDConvertSound(), SNDMulaw(), SNDiMulaw()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Convert a sound's attributes</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/convertsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDConvertSound(</b>SNDSoundStruct *<i>fromSound</i>, SNDSoundStruct **<i>toSound</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">unsigned char <b>SNDMulaw(</b>short <i>linearValue</i><b>)</b></font><br>
+<font face="Times">short <b>SNDiMulaw(</b>unsigned char <i>mulawValue</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDConvertSound()</b> copies the sampled data from <i>fromSound</i> into <i>toSound</i>, converting the copied data to the format, channel count, and sampling rate specified by <i>toSound</i>.&nbsp; Memory for the converted data is automatically allocated.&nbsp; The following conversions are possible:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Arbitrary sampling rate conversion.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Compression and decompression.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Floating-point formats (including double-precision) to and from linear formats.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Mono to stereo.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">CODEC mu-law to and from linear formats.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDMulaw()</b> converts a value from 16-bit linear to mu-law:&nbsp; It takes a single linear 16-bit argument and returns the corresponding mu-law value.&nbsp; <b>SNDiMulaw()</b> performs the inverse operation:&nbsp; It takes a mu-law argument and returns the 16-bit linear value.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, <b>SNDConvertSound()</b> returns SND_ERR_NONE.&nbsp; Otherwise an error code, as described in <b>SNDSoundError()</b>, is returned.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>SNDAlloc()</b>, <b>SNDSamplesToBytes()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDCopySamples()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDCopySound()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDCopySound(), SNDCopySamples()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy all or part of a sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/editsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDCopySound(</b>SNDSoundStruct **<i>toSound</i>, SNDSoundStruct *<i>fromSound</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDCopySamples(</b>SNDSoundStruct **<i>toSound</i>, SNDSoundStruct *<i>fromSound</i>, int <i>startSample</i>, int <i>sampleCount</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDCopySound()</b> creates and returns, in <i>toSound</i>, a new SNDSoundStruct that contains a copy of the sound in <i>fromSound. </i>This works for any type of sound, including DSP sounds.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDCopySamples()</b> also creates a new SNDSoundStruct pointed to by <i>toSound</i>, but copies only the specified of <i>fromSound</i>, starting with the <i>startSample</i> sample (counting from sample 0) and copying <i>sampleCount</i> samples.&nbsp; This function works only for sampled sounds.</font>
+
+<p><font face="Times"><i>toSound</i> should eventually be freed with <b>SNDFree()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Both functions return an error code as described in <b>SNDSoundError()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>ERRORS </b></font><font face="Times">If an error occurs, the SNDSoundStruct isn't created.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDDeleteSamples()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDInsertSamples()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDDropATCSamples(), SNDInsertATCSamples()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Speed up or slow down playback of ATC sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/atcsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDDropATCSamples(</b>int <i>numSamples</i>, int <i>bySamples</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDInsertATCSamples(</b>int <i>numSamples</i>, int <i>bySamples</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDDropATCSamples()</b> and <b>SNDInsertATCSamples()</b> provide elementary support for synchronizing sound playback to other events.&nbsp; By skipping or repeating selected samples of an ATC sound while it's playing, you can slightly shrink or stretch its duration, as necessary.&nbsp; This mechanism is intended for subtle timing adjustments, not for effects like fast forward.&nbsp; Although dropping or inserting samples shouldn't cause any clicks in the&nbsp; sound, it will cause some distortion.&nbsp; A sound in the ATC (Audio Transform Compression) format must be playing for these functions to have any effect.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>bySamples</i> is zero, one sample is chosen randomly out of the next 256 consecutive samples and omitted (in the case of <b>SNDDropATCSamples()</b>) or repeated (in the case of <b>SNDInsertATCSamples()</b>).&nbsp; This process repeats until <i>numSamples </i>samples have been dropped or inserted.&nbsp; If <i>bySamples</i> is greater than zero, an attempt is made to drop or add <i>numSamples </i>samples before <i>bySamples</i> more samples of the original sound have played.&nbsp; Too large a ratio of <i>numSamples</i> to <i>bySamples</i> may produce unwanted results.</font>
+
+<p><font face="Times">To determine when to drop or insert samples, call <b>SNDSamplesProcessed()</b> to obtain an estimate of how many samples have been played thus far.&nbsp; Divide this number by the sampling rate to obtain the elapsed time in seconds, and compare the result to the notion of time with which you want to synchronize.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>SNDSamplesProcessed()</b>, <b>SNDCompressSound()</b>, <b>SNDSetATCGain()</b>, <b>SNDGetNumberOfATCBands()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDFree()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDAlloc()</b></font>
+
+<p><font face="Helvetica"><b>SNDGetCompressionOptions()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDCompressSound()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDGetDataPointer()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Gain access to sampled sound data</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDGetDataPointer(</b>SNDSoundStruct *<i>sound</i>, char **<i>data</i>, int *<i>sampleCount</i>, int *<i>width</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The <b>SNDGetDataPointer()</b> provides access to <i>sound</i>'s sound data (which must be unfragmented sample data).&nbsp; A pointer to the sound data is returned by reference in <i>data</i>, the number of samples in the data is returned in <i>sampleCount</i>, and the width (in bytes) of a single sample is returned in <i>width</i>.&nbsp; Note that <i>sampleCount</i> is the total sample count--it isn't a count of the sample frames.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDGetFilter()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetVolume()</b></font>
+
+<p><font face="Helvetica"><b>SNDGetMute()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetVolume()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDGetNumberOfATCBands(), SNDGetATCBandFrequencies(), SNDGetATCBandwidths()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Query for frequency bands used by Audio Transform Compression</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/atcsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDGetNumberOfATCBands(</b>int *<i>numBands</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDGetATCBandFrequencies(</b>int <i>numBands</i>, float *<i>centerFreqs</i><b>)</b></font><br>
+<font face="Times">int <b>SNDGetATCBandwidths(</b>int <i>numBands</i>, float *<i>bandwidths</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDGetNumberOfATCBands()</b> returns, by reference in <i>numBands</i>, the number of frequency bands that <b>SNDCompressSound()</b> uses for compressing sounds with ATC (Audio Transform Compression).&nbsp;&nbsp; Currently, this number is always 40.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDGetATCBandFrequencies()</b> fills the array <i>centerFreqs</i> with floating-point numbers that specify the center frequency in Hertz of each band.&nbsp; Similarly, the array filled by <b>SNDGetATCBandwidths()</b> contains the width in Hertz of each band.&nbsp; The first argument to each of these functions should be the value returned by <b>SNDGetNumberOfATCBands()</b>.</font>
+
+<p><font face="Times">The ATC bands correspond roughly to the &quot;critical bands&quot; of hearing.&nbsp; Band zero is centered at zero Hz, and the highest band is centered at half the sampling rate.&nbsp; The bandwidths and spacing are uniform below a certain frequency, above which the bands are progressively wider in Hertz and spaced further apart.&nbsp; For sounds having the standard sampling rate of 44.1 kHz, bands below 1000 Hz have the same bandwidth, while bands above 1000 Hz have bandwidths of approximately 20% of the band's center frequency.&nbsp; For sounds with other sampling rates, the bands' frequencies are scaled so that the same number of bands covers zero Hz to half the sampling rate, whatever the latter may be.&nbsp; <b>SNDGetATCBandFrequencies()</b> and <b>SNDGetATCBandwidths()</b> assume a 44.1-kHz sampling rate when filling the arrays <i>centerFreqs</i> and <i>bandwidths</i>, respectively.&nbsp; To obtain the correct values for other sampling rates, multiply each element of the returned arrays by the ratio of the sampling rate to 44.1 kHz.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">0 is returned unless the host isn't a NeXT computer, in which case ATC is unavailable.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>SNDCompressSound()</b>, <b>SNDSetATCGain()</b>, <b>SNDDropATCSamples()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDGetVolume()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetVolume()</b></font>
+
+<p><font face="Helvetica"><b>SNDiMulaw()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDConvertSound()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDInsertSamples(), SNDDeleteSamples(), SNDCompactSamples()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Edit a sampled sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/editsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDInsertSamples(</b>SNDSoundStruct *<i>toSound</i>, SNDSoundStruct *<i>fromSound</i>, int <i>startSample</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDDeleteSamples(</b>SNDSoundStruct *<i>sound</i>, int <i>startSample</i>, int <i>sampleCount</i><b>)</b></font><br>
+<font face="Times">int <b>SNDCompactSamples(</b>SNDSoundStruct **<i>toSound</i>, SNDSoundStruct *<i>fromSound</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDInsertSamples()</b> inserts a copy of <i>fromSound</i> into <i>toSound</i> at position <i>startSample</i> of <i>toSound</i> (counting from sample 0). This operation may fragment <i>toSound</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDDeleteSamples()</b> deletes <i>sampleCount</i> samples from <i>sound</i>, starting at sample <i>startSample.</i>&nbsp; The memory occupied by the deleted segment is freed.&nbsp; The sound may become fragmented.</font>
+
+<p><font face="Times"><b>SNDCompactSamples()</b> creates and returns, in <i>toSound</i>, a new SNDSoundStruct that contains a compacted version of <i>fromSound.</i>&nbsp; Compaction eliminates the fragmentation that can be caused by inserting and deleting samples.</font>
+
+<p><font face="Times">These functions work only on sounds that contain sampled data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDModifyPriority()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDMulaw()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDConvertSound()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDPlaySoundfile()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Play a soundfile</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDPlaySoundfile(</b>char *<i>path</i>, int <i>priority</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDPlaySoundfile()</b> plays the soundfile named <i>path.</i>&nbsp; The function returns immediately while playback continues in a background thread.&nbsp; Playback interrupts a currently playing sound of the same or lower priority.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDRead()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDReadSoundfile()</b></font>
+
+<p><font face="Helvetica"><b>SNDReadDSPfile()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDReadSoundfile()</b></font>
+
+<p><font face="Helvetica"><b>SNDReadHeader()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDReadSoundfile()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDReadSoundfile(), SNDRead(), SNDReadHeader(), SNDReadDSPfile()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Read a sound from a file</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/filesound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDReadSoundfile(</b>char *<i>path</i>, SNDSoundStruct **<i>sound</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDRead(</b>int <i>fd</i>, SNDSoundStruct **<i>sound</i><b>)</b></font><br>
+<font face="Times">int <b>SNDReadHeader(</b>int <i>fd</i>, SNDSoundStruct **<i>sound</i><b>)</b></font><br>
+<font face="Times">int <b>SNDReadDSPfile(</b>char *<i>path</i>, SNDSoundStruct **<i>sound</i>, char *<i>info</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Each of these functions creates and returns, by reference in the <i>sound</i> argument, a SNDSoundStruct that contains the sound represented in a specified file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDReadSoundfile()</b> and <b>SNDRead()</b> read the entire contents of a soundfile.&nbsp; The <i>path</i> argument to <b>SNDReadSoundfile()</b> is a pathname; the function opens and closes the file automatically.&nbsp; <b>SNDRead()</b> takes a file descriptor <i>fd</i> that must be open for reading.</font>
+
+<p><font face="Times"><b>SNDReadHeader()</b> reads only the header portion of the file descriptor <i>fd.</i>&nbsp; Storage for the actual sound data isn't allocated. The <b>dataLocation</b> field of the new SNDSoundStruct can be interpreted as the size of the header.</font>
+
+<p><font face="Times"><b>SNDReadDSPfile()</b> creates a SNDSoundStruct for the given loadable DSP core file.&nbsp; The file, which is opened and closed by the function, is specified as a pathname and must have a &quot;.lod&quot; extension.&nbsp; The <i>info</i> argument is provided as a convenience, allowing you to specify an information string that's written in <i>sound</i>'s header.&nbsp; The DSP program is executed by calling <b>SNDBootDSP()</b> or <b>SNDRunDSP()</b>.</font>
+
+<p><font face="Times">For all three functions, <i>sound</i> should eventually be deallocated with <b>SNDFree()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font>
+
+<p><font face="Helvetica" size="-1"><b>ERRORS </b></font><font face="Times">If an error occurs, the SNDSoundStruct isn't created.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times">SNDFree()</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDRelease()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDAcquire()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDReserve(), SNDUnreserve()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Reserve sound resources for recording or playback</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/accesssound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDReserve(</b>int <i>soundResource</i>, int <i>priority</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDUnreserve(</b>int <i>soundResource</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDReserve()</b> attempts to gain ownership of the sound resources specified in <i>soundResource</i>, a value that's created by (bitwise) or'ing a combination of the following resource codes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Resource</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_OUT</font></td>
+
+<td><font face="Times">sound out</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_IN</font></td>
+
+<td><font face="Times">sound in</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ACCESS_DSP</font></td>
+
+<td><font face="Times">the DSP</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <i>priority</i> argument is used, ostensibly, to determine whether a particular reservation can supercede an existing one. However, the priority scheme doesn't work between applications--if you successfully reserve a sound resource, no other application can take it from you, regardless of the relative priority values that were used in the respective <b>SNDReserve()</b> calls. (The priority argument does have an affect within the same application, but there really isn't much reason for one part of an application to steal sound resources from another part.)</font>
+
+<p><font face="Times">Despite this, <b>SNDReserve()</b> isn't utterly useless; it eliminates some of the overhead of acquiring and setting up a device that would otherwise occur upon each instance of playback (or recording).&nbsp; For example, if you want to play a series of soundfiles, you stand a better chance of seamless playback if you first reserve the sound-out device.</font>
+
+<p><font face="Times">Use of <b>SNDReserve()</b> is optional; prioritized access to the appropriate resource is established when either the <b>SNDStartPlaying()</b> or the <b>SNDStartRecording()</b> function is called.&nbsp; The process should eventually free its reserved resources by calling <b>SNDUnreserve()</b>.&nbsp; Sound resources are automatically freed when the process terminates.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font>
+
+<p><font face="Helvetica" size="-1"><b>ERRORS </b></font><font face="Times">If <b>SNDReserve()</b> is unable to reserve any one of the resources specified in <i>soundResource</i>, it won't reserve any of them.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDReset()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDAcquire()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDRunDSP()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Run the DSP</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/convertsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDRunDSP(</b>SNDSoundStruct *<i>dspCore</i>, char *<i>toDSP</i>, int <i>toCount</i>, int <i>toWidth</i>, int <i>toBufferSize</i>, char **<i>fromDSP</i>, int *<i>fromCount</i>, int <i>fromWidth</i>, int <i>negotiationTimeout</i>, int <i>flushTimeout</i>, int <i>conversionTimeout</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDRunDSP()</b> loads and runs the DSP program that you provide.&nbsp; The functions is designed to be used with DSP programs that process sound data--you typically use this function to provide your own sound conversion algorithms.&nbsp; The arguments are as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The DSP program is represented by <i>dspCore</i>; it must implement complex DMA mode for its output, and must be in loadable (&quot;.lod&quot;) form<i>.</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>toDSP</i> is a pointer to the data that you wish to feed to the DSP.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>toCount</i> is the number of samples to process.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>toWidth</i> is the size of a single unprocessed sample.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>toBufferSize</i> is the total size, in bytes, of the <i>toDSP</i> data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>fromDSP</i> is a pointer to the address of the processed data.&nbsp; The memory to store the data is allocated for you.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>fromCount</i> is returned by the function to give the number of samples that it actually processed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>fromWidth</i> is the size, in bytes, of a single processed sample.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The timeout arguments, <i>negotiationTimeout</i>, <i>flushTimeout</i>, and <i>conversionTimeout</i>, are ignored.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSampleCount(), SNDBytesToSamples(), SNDSamplesToBytes()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Measure samples in a sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSampleCount(</b>SNDSoundStruct *<i>sound</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDBytesToSamples(</b>int <i>byteCount</i>, int <i>channelCount</i>, int <i>dataFormat</i><b>)</b></font><br>
+<font face="Times">int <b>SNDSamplesToBytes(</b>int <i>sampleCount</i>, int <i>channelCount</i>, int <i>dataFormat</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDSampleCount()</b> returns the number of sample frames, or channel-independent samples, in <i>sound</i>.&nbsp; The sound must contain sampled data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDBytesToSamples()</b> returns the number of samples contained in <i>byteCount</i> bytes of sound data with the given channel count and data format.&nbsp; <b>SNDSamplesToBytes()</b> performs the inverse operation, returning the number of bytes needed to store <i>sampleCount</i> samples.&nbsp; The value returned by <b>SNDSamplesToBytes()</b> is useful for computing the <i>dataSize</i> argument to <b>SNDAlloc()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If <i>sound</i> doesn't contain sampled data (or if for any other reason the sample count can't be determined), <b>SNDSampleCount() </b>returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.&nbsp; <b>SNDBytesToSamples()</b> and <b>SNDSamplesToBytes()</b> return 0 if <i>dataFormat</i> isn't a sampled sound format and</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if <i>dataFormat</i> isn't recognized.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDSamplesProcessed()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDSamplesToBytes()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSampleCount()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSetATCGain(), SNDGetATCGain(), SNDSetATCEqualizerGains(), SNDGetATCEqualizerGains(), SNDScaleATCEqualizerGains()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Modify volume or equalization for ATC playback</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/atcsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSetATCGain(</b>float <i>level</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDGetATCGain(</b>float *<i>level</i><b>)</b></font><br>
+<font face="Times">int <b>SNDSetATCEqualizerGains(</b>int <i>numBands</i>, float *<i>gains</i><b>)</b></font><br>
+<font face="Times">int <b>SNDGetATCEqualizerGains(</b>int <i>numBands</i>, float *<i>gains</i><b>)</b></font><br>
+<font face="Times">int <b>SNDScaleATCEqualizerGains(</b>int <i>numBands</i>, float *<i>gainScalars</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Audio Transform Compression (ATC) can be used not only for compression, but also to manipulate a sound's volume or frequency spectrum.&nbsp; These functions determine the&nbsp; playback level of sounds in the ATC format--either their overall gain, or the gains of their individual frequency bands.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDSetATCGain()</b> sets the overall sound output level for ATC sound playback.&nbsp; The value for <i>level</i> can range from 0.0 (which will silence any ATC sound) to 1.0 (which will play sounds unchanged).&nbsp; The new level setting takes effect starting with the next ATC sound played.&nbsp; <b>SNDGetATCGain()</b> returns, in its argument, a pointer to the current level.&nbsp; Note that this volume setting--unlike that specified by <b>SNDSetVolume()</b>--affects not only the speaker and headphone output, but also the line-out jacks.&nbsp; This is possible because <b>SNDSetATCGain()</b> is implemented as a scaling of the ATC equalizer gains, and so it only affects ATC sounds.&nbsp; For such sounds, the volume at the speaker and headphones is the product of the ATC gain and the global setting returned by <b>SNDGetVolume()</b>.</font>
+
+<p><font face="Times">Because ATC manipulates the gain of individual frequency bands, it can be used to implement a graphic equalizer for playback of ATC sounds.&nbsp; An array of &quot;equalizer gains&quot; is provided for this purpose.&nbsp; <b>SNDSetATCEqualizerGains()</b> sets the equalizer gains to the values in the array <i>gains</i>, and <b>SNDGetATCEqualizerGains()</b> returns the current equalizer gains by reference. <b>SNDScaleATCEqualizerGains()</b> multiplies each band's gain by the corresponding scalar in the array <i>gainScalars</i>.&nbsp; For all three functions, <i>numBands</i> should be the value returned by <b>SNDGetNumberOfATCBands()</b>.&nbsp; Each element of the <i>gains</i> array specifies a factor by which the sound amplitude in the corresponding frequency band will be multiplied during sound playback. The gain should be a nonnegative number between 0.0 and 16.0 (inclusive).&nbsp; Gains greater than 1.0 may cause the output to be clipped.&nbsp; The system default gain for each band is 1.0, meaning that the sound is played without modification.&nbsp; Changes take effect starting with the next sound played; any currently playing sound is unaffected.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Zero is returned, with one exception:&nbsp; If <b>SNDSetATCGain()</b>, <b>SNDSetATCEqualizerGains()</b>, or <b>SNDScaleATCEqualizerGains()</b> sets the gains of any frequency bands to values less than zero or greater than the 16.0, those values are set to zero or the maximum (respectively), and the function returns the number of bands that were clipped in this way.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>SNDCompressSound()</b>, <b>SNDGetNumberOfATCBands()</b>, <b>SNDSetVolume</b>, <b>SNDDropATCSamples()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSetATCSquelchThresholds(), SNDGetATCSquelchThresholds(), SNDUseDefaultATCSquelchThresholds()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set or get Audio Transform Compression parameters</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/atcsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSetATCSquelchThresholds(</b>int <i>numBands</i>, float *<i>thresholds</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDGetATCSquelchThresholds(</b>int <i>numBands</i>, float *<i>thresholds</i><b>)</b></font><br>
+<font face="Times">int <b>SNDUseDefaultATCSquelchThresholds(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions set or retrieve parameters that control the amount of compression achieved by <b>SNDCompressSound()</b> when it uses Audio Transform Compression (ATC).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDSetATCSquelchThresholds()</b> and <b>SNDGetATCSquelchThresholds()</b> respectively fill and retrieve the array <i>thresholds</i>, which specifies the squelch thresholds for each frequency band.&nbsp; The first argument to both functions, <i>numBands</i>, should be obtained from <b>SNDGetNumberOfATCBands()</b>.&nbsp; (If desired, the frequencies of the bands can be determined by invoking <b>SNDGetATCBandFrequencies()</b>.)&nbsp;&nbsp; The thresholds can range from zero to one.&nbsp; A value of 0.0 ensures that frequencies in that band will never be suppressed, while a value of 1.0 almost always squelches them. The&nbsp; default squelch threshold for each band is the estimated threshold of audibility at a normal listening level.&nbsp; The defaults can be restored by calling <b>SNDUseDefaultATCSquelchThresholds()</b>.&nbsp; Changes to the thresholds take effect starting with the next sound compressed; any currently compressing sound is unaffected.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Zero is returned upon success, with one exception:&nbsp; If the <i>thresholds</i> array passed to&nbsp; <b>SNDSetATCSquelchThresholds() </b>contains any values less than zero or greater than one, those values are set to zero or one (respectively), and the function returns the number of bands that were clipped in this way.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>SNDCompressSound()</b>, <b>SNDGetNumberOfATCBands()</b>, <b>SNDGetATCBandFrequencies()</b>, <b>SNDSetATCGain()</b>, <b>SNDDropATCSamples()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSetCompressionOptions(), SNDGetCompressionOptions()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set and get compression attributes used in recording</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/preformsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSetCompressionOptions(</b>SNDSoundStruct *<i>sound</i>, int <i>bitFaithful</i>, int <i>compressionAmount</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDGetCompressionOptions(</b>SNDSoundStruct <i>*sound</i>, int *<i>bitFaithful</i>, int *<i>compressionAmount</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDSetCompressionOptions()</b> sets the bit-faithfulness and the compression amount that <b>SNDStartRecording()</b> uses during subsequent recordings into the sound <i>sound</i>.&nbsp; These values are effective only if <i>sound</i>'s format specifies compression.&nbsp; By default, such a recording is bit-faithful with a compression amount of 4.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDGetCompressionOptions()</b> returns, in its arguments, pointers to the currently established compression options.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDSetFilter()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetVolume()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSetHost()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set the host computer for subsequent playback or recording</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/accesssound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSetHost(</b>char *<i>newHostname</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDSetHost()</b> gives you access to the named host for subsequent playbacks or recordings.&nbsp; If <i>newHostname</i> is NULL or a zero-length string, the default (the local host) is restored.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDSetMute()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDSetVolume()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSetVolume(), SNDGetVolume(), SNDSetMute(), SNDGetMute(), SNDSetFilter(), SNDGetFilter()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Sound playback utilities</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSetVolume(</b>int <i>left</i>, int <i>right</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDGetVolume(</b>int *<i>left</i>, int *<i>right</i><b>)</b></font><br>
+<font face="Times">int <b>SNDSetMute(</b>int <i>speakerOn</i><b>)</b></font><br>
+<font face="Times">int <b>SNDGetMute(</b>int *<i>speakerOn</i><b>)</b></font><br>
+<font face="Times">int <b>SNDSetFilter(</b>int <i>filterOn</i><b>)</b></font><br>
+<font face="Times">int <b>SNDGetFilter(</b>int *<i>filterOn</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDSetVolume()</b> sets the sound playback level for the left and right channels, specified as an integer between 1 and 43 (inclusive).&nbsp; This only affects the signal to the internal speaker and the stereo headphone jack; the line-out level is undisturbed. <b>SNDGetVolume()</b> returns, in its arguments, pointers to the playback levels of either channel.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDSetMute()</b> mutes and unmutes the internal speaker and headphone level as <i>speakerOn</i> is 0 and nonzero, respectively. <b>SNDGetMute()</b> returns, in its argument, a pointer to the mute status.</font>
+
+<p><font face="Times"><b>SNDSetFilter()</b> turns the low-pass filter off or on as <i>filterOn</i> is 0 or nonzero, respectively.&nbsp; <b>SNDGetFilter()</b> returns, in its argument, a pointer to the state of the filter.&nbsp; The filter is automatically turned on while sounds whose format is SND_FORMAT_EMPHASIZED or SND_FORMAT_COMPRESSED_EMPHASIZED are being played.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSoundError()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Describe a sound error</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/sounderror.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">char *<b>SNDSoundError(</b>int <i>err</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDSoundError()</b> returns a pointer to a string that describes the given error code.&nbsp; The following are defined as error codes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NONE</font></td>
+
+<td><font face="Times">&#34;&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NOT_SOUND</font></td>
+
+<td><font face="Times">&#34;Not a sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_FORMAT</font></td>
+
+<td><font face="Times">&#34;Bad data format&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_RATE</font></td>
+
+<td><font face="Times">&#34;Bad sampling rate&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_CHANNEL</font></td>
+
+<td><font face="Times">&#34;bad channel count&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_SIZE</font></td>
+
+<td><font face="Times">&#34;bad size&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_FILENAME</font></td>
+
+<td><font face="Times">&#34;Bad file name&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_OPEN</font></td>
+
+<td><font face="Times">&#34;Cannot open file&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_WRITE</font></td>
+
+<td><font face="Times">&#34;Cannot write file&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_READ</font></td>
+
+<td><font face="Times">&#34;Cannot read file&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_ALLOC</font></td>
+
+<td><font face="Times">&#34;Cannot allocate memory&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_FREE</font></td>
+
+<td><font face="Times">&#34;Cannot free memory&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_COPY</font></td>
+
+<td><font face="Times">&#34;Cannot copy&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_RESERVE</font></td>
+
+<td><font face="Times">&#34;Cannot reserve access&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NOT_RESERVED</font></td>
+
+<td><font face="Times">&#34;Access not reserved&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_RECORD</font></td>
+
+<td><font face="Times">&#34;Cannot record sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_ALREADY_RECORDING</font></td>
+
+<td><font face="Times">&#34;Already recording sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NOT_RECORDING</font></td>
+
+<td><font face="Times">&#34;Not recording sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_PLAY</font></td>
+
+<td><font face="Times">&#34;Cannot play sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_ALREADY_PLAYING</font></td>
+
+<td><font face="Times">&#34;Already playing sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NOT_IMPLEMENTED</font></td>
+
+<td><font face="Times">&#34;Not implemented&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_NOT_PLAYING</font></td>
+
+<td><font face="Times">&#34;Not playing sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_FIND</font></td>
+
+<td><font face="Times">&#34;Cannot find sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_EDIT</font></td>
+
+<td><font face="Times">&#34;Cannot edit sound&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_SPACE</font></td>
+
+<td><font face="Times">&#34;Bad memory space in DSP load</font><br>
+<font face="Times">image&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_KERNEL</font></td>
+
+<td><font face="Times">&#34;Mach kernel error&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_CONFIGURATION</font></td>
+
+<td><font face="Times">&#34;Bad configuration&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_CONFIGURE</font></td>
+
+<td><font face="Times">&#34;Cannot configure&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_UNDERRUN</font></td>
+
+<td><font face="Times">&#34;Data underrun&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_ABORTED</font></td>
+
+<td><font face="Times">&#34;Aborted&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BAD_TAG</font></td>
+
+<td><font face="Times">&#34;Bad tag&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_ACCESS</font></td>
+
+<td><font face="Times">&#34;Cannot access hardware resources&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_TIMEOUT</font></td>
+
+<td><font face="Times">&#34;Timeout&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_BUSY</font></td>
+
+<td><font face="Times">&#34;Hardware resources already in use&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_CANNOT_ABORT</font></td>
+
+<td><font face="Times">&#34;Cannot abort operation&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_INFO_TOO_BIG</font></td>
+
+<td><font face="Times">&#34;Information string too large&#34;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SND_ERR_UNKNOWN</font></td>
+
+<td><font face="Times">&#34;Unknown error&#34;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDStartPlaying(),&nbsp; SNDVerifyPlayable(), SNDStartRecording(), SNDStartRecordingFile(), SNDWait(), SNDStop(), SNDSamplesProcessed(), SNDModifyPriority()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Recording and playing a sound</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/performsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDStartPlaying(</b>SNDSoundStruct *<i>sound</i>, int <i>tag</i>, int <i>priority</i>, int <i>preempt</i>, SNDNotificationFun <i>beginFun</i>, SNDNotificationFun <i>endFun</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDVerifyPlayable(</b>SNDSoundStruct *<i>sound</i><b>)</b></font><br>
+<font face="Times">int <b>SNDStartRecording(</b>SNDSoundStruct *<i>sound</i>, int <i>tag</i>, int <i>priority</i>, int <i>preempt</i>, SNDNotificationFun <i>beginFun</i>, SNDNotificationFun <i>endFun</i><b>)</b></font><br>
+<font face="Times">int <b>SNDStartRecordingFile(</b>char *<i>fileName</i>, SNDSoundStruct *<i>sound</i>, int <i>tag</i>, int <i>priority</i>, int <i>preempt</i>, SNDNotificationFun <i>beginFun</i>, SNDNotificationFun <i>endFun</i><b>)</b></font><br>
+<font face="Times">int <b>SNDStop(</b>int <i>tag</i><b>)</b></font><br>
+<font face="Times">int <b>SNDWait(</b>int <i>tag</i><b>)</b></font><br>
+<font face="Times">int <b>SNDSamplesProcessed(</b>int <i>tag</i><b>)</b></font><br>
+<font face="Times">int <b>SNDModifyPriority(</b>int <i>tag</i>, int <i>newPriority</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>SNDStartPlaying()</b> initiates the playback of <i>sound.</i>&nbsp; The function returns immediately while the playback continues in a background thread.&nbsp; During playback, the sound is played on the internal speaker and sent to the stereo line-out jacks.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <i>tag</i> argument is an arbitrary positive integer that the caller supplies to identify the playback session in subsequent calls to <b>SNDWait()</b>, <b>SNDStop()</b>, <b>SNDSamplesProcessed()</b>, and <b>SNDModifyPriority()</b>.&nbsp; You should never set a sound's tag to 0.</font>
+
+<p><font face="Times">The value of <i>priority</i> establishes the sound's right to use the playback resources.&nbsp; The lowest priority is 0, larger numbers signify higher priorities.&nbsp; Negative priorities are reserved.&nbsp; A call to <b>SNDStartPlaying()</b> will interrupt a currently playing sound if the new sound has a higher priority.&nbsp; If the new sound has a lower priority, the old sound continues and the new sound is put in a sound playback queue.&nbsp; Sounds in the queue are sorted by priority.</font>
+
+<p><font face="Times">A nonzero <i>preempt</i> flag is used for urgent sounds, such as system beeps.&nbsp; Preemption allows a new sound to interrupt a sound that has the same (or lower) priority.&nbsp; However, if the new sound can't interrupt, it isn't put in the queue.</font>
+
+<p><font face="Times"><i>beginFun</i> and <i>endFun</i> are user-defined notification functions that are automatically called when the sound begins playing and when it ends, respectively.&nbsp; A notification function is defined as an integer function with three arguments:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">typedef int (*SNDNotificationFun)(SNDSoundStruct *<i>sound</i>, int <i>tag</i>, int <i>err</i>);</font>
+
+<p><font face="Times">The <i>sound</i> and <i>tag</i> arguments are taken directly from the <b>SNDStartPlaying()</b> call.&nbsp; The <i>err</i> argument is one of the error codes listed in <b>SNDSoundError()</b> and is generated automatically to inform the notification function of the state of the playback.&nbsp; The return value is ignored.&nbsp; The value SND_NULL_FUN should be used to specify no function as either <i>beginFun</i> or <i>endFun</i>.</font>
+
+<p><font face="Times"><b>SNDVerifyPlayable()</b> returns SND_ERR_NONE if <i>sound</i> can be played without first being converted to another format, sampling rate, or number of channels.&nbsp; Otherwise, it returns SND_ERR_CANNOT_PLAY.</font>
+
+<p><font face="Times">The arguments to <b>SNDStartRecording()</b> are like those to <b>SNDStartPlaying()</b>.&nbsp; The sound resource used for recording is implied by information in <i>sound</i>'s header; currently, two configurations are allowed:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the sound is one channel of mulaw format (SND_FORMAT_MULAW) at the CODEC sampling rate (SND_RATE_CODEC), then the recording is made from the CODEC input (the microphone jack at the back of the monitor).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the format is one of the DSP data or compressed formats, the recording is made from the DSP port.&nbsp; In the case of a compressed format, the sound is compressed according to options set by <b>SNDSetCompressionOptions()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like playback, recording is performed in a background thread.&nbsp; The recording completes when the storage allocated for the sound is filled with data.</font>
+
+<p><font face="Times">For both playback and recording, reserving the appropriate sound device first (through <b>SNDReserve()</b>) may help eliminate some overhead.&nbsp; This is particularly true if you're playing a series of sounds.</font>
+
+<p><font face="Times"><b>SNDStartRecordingFile()</b> is similar to <b>SNDStartRecording()</b>, but the sound is written directly to the file <i>fileName</i>.&nbsp; The <i>sound</i> argument is used for its size and format information.</font>
+
+<p><font face="Times"><b>SNDStop()</b> terminates the playback or recording session that has a tag of <i>tag</i>.</font>
+
+<p><font face="Times"><b>SNDWait()</b> returns only when the playback or recording with a tag of <i>tag</i> has completed.&nbsp; If <i>tag</i> is 0, all sounds in the sound queue are awaited.&nbsp; Note that if you call this function from the main thread of an application that has an asynchronous event-driven user interface, the interface will be effectively frozen until this function returns.</font>
+
+<p><font face="Times"><b>SNDSamplesProcessed()</b> returns the number of samples that have been played or recorded so far in the playback or recording that has the given tag<i>.</i> If the tagged sound isn't currently active,</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 is returned.</font>
+
+<p><font face="Times"><b>SNDModifyPriority()</b> resets the priority, as <i>newPriority</i>, of the playback or recording that has a tag of <i>tag</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDStartRecording()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDStartRecordingFile()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDStop()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDSwapHostToSound()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>SNDSwapSoundToHost()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDSwapSoundToHost(), SwapHostToSound()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Swap the bytes in each sample in a buffer of sound data</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/utilsound.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDSwapSoundToHost(</b>void *<i>dest</i>, void *<i>src</i>, int <i>sampleCount</i>, int <i>channelCount</i>,</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">int <i>dataFormat</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDSwapHostToSound(</b>void *<i>dest</i>, void *<i>src</i>, int <i>sampleCount</i>, int <i>channelCount</i>,</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">int <i>dataFormat</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions read the data pointed to by <i>src</i>, swap the order of the bytes that comprise each sample (if necessary) and write the swapped data to <i>dest</i> (<i>src</i> and <i>dest</i> can be the same pointer).&nbsp; The other arguments, taken cumulatively, describe the size of the sound buffer:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>sampleCount</i> is the number of sample frames, or channel-independent samples.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>channelCount</i> is the number of channels of sound data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>dataFormat</i> is a format-encoding constant, such as SND_FORMAT_LINEAR_16.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The functions return an error code, where SND_ERR_NONE indicates success.</font>
+
+<p><font face="Times">The &quot;Sound&quot; and &quot;Host&quot; terms in these names have these meanings:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To play a sound, the sound data must be in &quot;Sound&quot; format.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To examine sound data, it must be in &quot;Host&quot; format.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When you read a soundfile or record a sound, the sound data is guaranteed to be in &quot;Sound&quot; format; if all you want to do is play the soundfile or write the recorded sound to a file--in other words, if you don't want to examine the data--then you don't need to call these functions.</font>
+
+<p><font face="Times">However, if, for example, you read a soundfile in order to look at the value at each sample, you must first call <b>SNDSwapSoundToHost()</b> to convert the sound data to &quot;Host&quot; format.&nbsp; If you modify samples in a converted sound, you must re-convert to &quot;Sound&quot; format, through <b>SNDSwapHostToSound()</b>, before the sound can be played or written to a file.</font>
+
+<p><font face="Times">Note that you don't have to convert entire soundfiles (or SNDSoundStruct data buffers) at a time.&nbsp; The arguments let you convert an arbitrary range of samples starting at any sample in a sound data buffer.</font>
+
+<p><font face="Times">These functions are built upon the general <b>NXSwap...</b> functions that are described in <b>/NextLibrary/Documentation/NextDev/Concepts/PortabilityGuide</b>.&nbsp; The primary difference between the sound swapping functions and the general swapping functions is that the sound functions let you convert buffers of data, whereas a single call to a general function can convert only one datum.&nbsp;&nbsp; If you wish, you can call the general functions (iteratively) rather than the sound functions.&nbsp; The correspondences between the&nbsp; functions are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Sound function</b></font></td>
+
+<td><font face="Helvetica"><b>Analogous general function</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SNDSwapSoundToHost()</font></td>
+
+<td><font face="Times">NXSwapBigShortToHost()</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SNDSwapHostToSound()</font></td>
+
+<td><font face="Times">NXSwapHostShortToBig()</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>SNDUnreserve()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDReserve()</b></font>
+
+<p><font face="Helvetica"><b>SNDWait()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDStartPlaying()</b></font>
+
+<p><font face="Helvetica"><b>SNDWrite()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDWriteSoundfile()</b></font>
+
+<p><font face="Helvetica"><b>SNDWriteHeader()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See SNDWriteSoundfile()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>SNDWriteSoundfile(), SNDWrite(), SNDWriteHeader()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Write a sound to a file</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">sound/soundfile.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>SNDWriteSoundfile(</b>char *<i>path</i>, SNDSoundStruct *<i>sound</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>SNDWrite(</b>int <i>fd</i>, SNDSoundStruct *<i>sound</i><b>)</b></font><br>
+<font face="Times">int <b>SNDWriteHeader(</b>int <i>fd</i>, SNDSoundStruct *<i>sound</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>SNDWriteSoundfile()</b> writes the specified sound structure as the soundfile.&nbsp; <i>path</i> is a full pathname that should include the &quot;.snd&quot; extension (the convention for soundfiles).&nbsp; The function automatically opens and closes the file.</font>
+
+<p><font face="Times"><b>SNDWrite()</b> also writes a complete soundfile, but its argument is a file descriptor rather than a pathname.&nbsp; The file must be open for writing.</font>
+
+<p><font face="Times">With both <b>SNDWriteSoundfile()</b> and <b>SNDWrite()</b>, the actual sound data is written as a contiguous block, even if <i>sound</i> is fragmented.&nbsp; However, <i>sound</i> itself isn't affected--if it's fragmented, it remains fragmented.</font>
+
+<p><font face="Times"><b>SNDWriteHeader()</b> is similar to <b>SNDWrite()</b>, but it only writes <i>sound</i>'s header to the file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If no error occurs, SND_ERR_NONE is returned.&nbsp; Otherwise, an error code, as described in <b>SNDSoundError()</b>, is returned.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/17_3DKit/Classes/N3DContextManager.rtf -->
+<!-- Date: Sun Jun 28 20:07:40 1998 -->
+<head>
+<title>N3DContextManager</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>N3DContextManager</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">3Dkit/N3DContextManager.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">N3DContextManager creates and manages the Interactive RenderMan contexts for all applications using the 3D Graphics Kit. It establishes an application's main connection to the Interactive RenderMan renderer in the Window Server, and releases it when done.&nbsp; It also establishes and releases other interactive rendering contexts on request.</font>
+
+<p><font face="Times">You will rarely need to use this class directly.&nbsp; The 3D Kit--through N3DCamera and N3DImageRep--establishes contexts for interactive rendering as needed.</font>
+
+<p><font face="Times">A context is the portion of a RenderMan program contained within the <b>RiBegin()</b> and <b>RiEnd()</b> calls.&nbsp; Thus, each time a new context is created, an <b>RiBegin()</b> function call is sent to the Interactive RenderMan renderer.&nbsp; Each time a context is destroyed, an <b>RiEnd()</b> function call is sent.</font>
+
+<p><font face="Times">An application has only one N3DContextManager object and only one main context.&nbsp; The main context is the context by which the application usually interacts with the Interactive RenderMan renderer.&nbsp; An application's context manager is instantiated and the main context is created the first time an N3DCamera is instantiated.&nbsp; You can get the main context at any time, whether or not it existed previously, with the message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[N3DContextManager new] mainContext]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can create additional contexts for other purposes--for example, for printing or saving RIB output from the program in a file. Each new context created this way is entered into a HashTable of contexts used by the application.&nbsp; You refer to contexts using the token returned by one of the <b>create...</b>&nbsp; methods, or using the name passed to one of those methods.</font>
+
+<p><font face="Times">Interactive RenderMan provides for switching between multiple execution contexts with the <b>RiContext()</b> function.&nbsp; Each time the context is set with one of the N3DContextManager methods, an <b>RiContext()</b> call is sent to the renderer.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">RtToken <b>mainContext</b>;</font>
+
+<p><font face="Times">id <b>contextTable</b>;</font>
+
+<p><font face="Times">RtToken <b>currentContext</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mainContext</font></td>
+
+<td><font face="Times">Main context</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">contextTable</font></td>
+
+<td><font face="Times">Hash table of contexts</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">currentContext</font></td>
+
+<td><font face="Times">Currently selected context</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><font face="Times">+ new</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting the main context</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mainContext</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating other contexts</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">createContext:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">createContext:withRenderer:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">createContext:toFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the current context</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentContext</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCurrentContext:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCurrentContextByName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Destroying a context</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">destroyContext:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">destroyContextByName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">awake</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>new</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>new</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates, if necessary, and returns the N3DContextManager for an application.&nbsp; Each application has one and only one N3DContextManager instance, which handles creating, switching, and destroying all Interactive RenderMan contexts for an application.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>awake</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly unarchived instance of N3DContextManager.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createContext:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>createContext:</b>(const char *)<i>contextName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns the token for a new Interactive RenderMan context with the name <i>contextName</i>.&nbsp; The new context is entered into the Interactive RenderMan context dictionary and made the current context.&nbsp; This method works by invoking <b>createContext:withRenderer:</b> with RI_DRAFT as the <i>renderer</i> argument.&nbsp; If a new context cannot be created for any reason, RI_NULL is returned and the current context remains as before.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:withRenderer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:toFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createContext:toFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>createContext:</b>(const char *)<i>contextName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>toFile:</b>(const char *)<i>ribFile</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns the token for an archiving context with the name <i>contextName</i>.&nbsp; The new context is created and entered into the Interactive RenderMan context dictionary.&nbsp; If you pass a null pointer as <i>contextName</i>, a unique string is created for the context name.</font>
+
+<p><font face="Times"><i>ribFile</i> should be a full pathname, including a &quot;.rib&quot; extension.&nbsp; If <i>ribFile</i> doesn't exist, it is created; if <i>ribFile</i> does exist, it is overwritten.&nbsp; If <i>ribFile</i> is NULL, the context will be opened on a file <b>ri.rib</b> in the application's executable file directory.</font>
+
+<p><font face="Times">When a context is created with this method, making it the current context causes the Interactive RenderMan renderer to send subsequent RIB code from the application to the file <i>ribFile</i>.</font>
+
+<p><font face="Times">If a new context cannot be created for any reason, RI_NULL is returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:withRenderer:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createContext:toStream:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing, returns NULL.&nbsp; This method is not implemented for NEXTSTEP Release 3.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:withRenderer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:toFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createContext:withRenderer:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>createContext:</b>(const char *)<i>contextName</i> <b>withRenderer:</b>(RtToken)<i>renderer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns the token for a new Interactive RenderMan context with the name <i>contextName</i>.&nbsp; The new context is entered into the Interactive RenderMan contexts dictionary and made the current context.&nbsp; If you pass a null pointer as <i>contextName</i>, a unique string is created for the context name.&nbsp; If a new context cannot be created for any reason, RI_NULL is returned and the current context remains as before.</font>
+
+<p><font face="Times"><i>renderer</i> can be RI_DRAFT or RI_ARCHIVE.&nbsp; The RI_DRAFT renderer is used to display interactive rendering; you can create an RI_DRAFT context using the <b>createContext:</b> method.&nbsp; The RI_ARCHIVE renderer is used to archive RIB code; you can create an RI_ARCHIVE context using the method <b>createContext:toFile:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:toFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>currentContext</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>currentContext</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the token for the current Interactive RenderMan context.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>destroyContext:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>destroyContext:</b>(RtToken)<i>aContext</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Destroys <i>aContext</i> by making it the current Interactive RenderMan context, sending an <b>RiEnd()</b> function call to the Interactive RenderMan renderer, then removing <i>aContext</i> from the N3DContextManager's context table.&nbsp; If <i>aContext</i> was the current context, the current context is set to NULL.&nbsp; If another context was the current context, it's reset as the current context.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContest:toFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:withRenderer:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>destroyContextByName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>destroyContextByName:</b>(const char *)<i>contextName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Destroys the Interactive RenderMan context referred to by <i>contextName</i> by making it the current Interactive RenderMan context, sending an <b>RiEnd()</b> function call to the Interactive RenderMan renderer, then removing <i>contextName</i> from the N3DContextManager's context table.&nbsp; If the destroyed context was the current context, current context is set to NULL.&nbsp; If another context was the current context, it is reset as the current context.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContest:toFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createContext:withRenderer:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the receiving N3DContextManager after destroying all Interactive RenderMan contexts the manager has created. Returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>mainContext</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>mainContext</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the token for the main Interactive RenderMan context.&nbsp; If the main context doesn't exist yet, this method creates it and makes it the current context.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the receiver from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCurrentContext:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>setCurrentContext:</b>(RtToken)<i>aContext</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the current Interactive RenderMan context to be <i>aContext</i> (if that context is valid).&nbsp; Returns the token for the former current context.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCurrentContextByName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(RtToken)<b>setCurrentContextByName:</b>(const char *)<i>contextName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the current Interactive RenderMan context to be the context named <i>contextName</i> (if it is a valid context).&nbsp; Returns the token for the former current context.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the receiver to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

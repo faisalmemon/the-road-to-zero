@@ -1,0 +1,1072 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Reference/Classes/IOEthernet.rtf -->
+<!-- Date: Sun Jun 28 20:11:32 1998 -->
+<head>
+<title>IOEthernet</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IOEthernet</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">IODirectDevice : IODevice : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IONetworkDeviceMethods</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">driverkit/IOEthernet.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IOEthernet is an abstract class for controlling Ethernet devices. It provides a framework for sending and receiving packets, handling interrupts, and setting and detecting transmission timeouts. It also provides an IONetwork instance that connects the driver with the kernel networking subsystem, as well as an I/O thread from which most of the IOEthernet instance methods are invoked.</font>
+
+<p><font face="Times">IOEthernet includes support for multicast mode and promiscuous mode. It doesn't currently provide <b>gdb</b> support for non-NeXT drivers. (<b>gdb</b> support enables the kernel running the IOEthernet driver to be debugged over the network.)</font>
+
+<p><font face="Times">IOEthernet's multicast support consists mainly of keeping a list of the multicast addresses at which multicast packets should be received and providing methods for configuring multicast addresses. Depending on the hardware's capability, you can either implement <b>enableMulticastMode</b> and <b>disableMulticastMode</b> to allow and disallow receptions of all multicast packets or implement <b>addMulticastAddress:</b> and <b>removeMulticastAddress:</b> to configure the hardware for individual addresses.</font>
+
+<p><font face="Times">Most hardware implementations don't guarantee filtering based on individual addresses. For this reason, the <b>isUnwantedMulticastPacket:</b> method exists to indicate packets that aren't bound for an address in the list of valid multicast addresses. A subclass of IOEthernet written for hardware that implements partial or no filtering based upon individual addresses should invoke this method each time it receives a multicast packet to determine whether it should be discarded or not.</font>
+
+<p><font face="Times">To write an Ethernet driver, you create a subclass of IOEthernet.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Implementing a Subclass</b></font>
+
+<p><font face="Times">Your subclass of IOEthernet must do the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement <b>probe:</b> and <b>initFromDeviceDescription:</b>. The implementation of <b>probe:</b> should allocate an instance and invoke <b>initFromDeviceDescription:</b>. See the IODevice specification for more information on implementing <b>probe:</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement <b>transmit:</b>, <b>resetAndEnable:</b>, <b>interruptOccurred</b>, and <b>timeoutOccurred</b>. These methods perform the real work of the driver. <b>interruptOccurred</b> is invoked from the I/O thread whenever the Ethernet hardware interrupts. See the EISA/ISA method descriptions in the IODirectDevice specification for more information on <b>interruptOccurred</b> and <b>timeoutOccurred</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If your subclass supports multicast mode, you must implement either <b>enableMulticastMode</b> and <b>disableMulticastMode</b> or <b>addMulticastAddress:</b> and <b>removeMulticastAddress:</b>.</font>
+
+<p><font face="Times">If your subclass supports promiscuous mode, you must implement <b>enablePromiscuousMode</b> and <b>disablePromiscuousMode</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>IONetworkDeviceMethods Protocol Implementation</b></font>
+
+<p><font face="Times">In IOEthernet's implementation, <b>finishInitialization</b> invokes <b>resetAndEnable:YES</b> if [self isRunning] == YES.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IONetworkDeviceMethods</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">allocateNetbuf</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">finishInitialization</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">outputPacket:address:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">performCommand:data:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating and destroying IOEthernet instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromDeviceDescription:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">attachToNetworkWithAddress:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Handling interrupts</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">interruptOccurred (IODirectDevice)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Transmitting packets</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">transmit:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">performLoopback:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting and handling hardware timeouts</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRelativeTimeout:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">relativeTimeout</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">clearTimeout</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">timeoutOccurred (IODirectDevice)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting and getting the state of the hardware</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">isRunning</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">resetAndEnable</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Supporting multicast</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">enableMulticastMode</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">disableMulticastMode</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">addMulticastAddress:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeMulticastAddress:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">isUnwantedMulticastPacket:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Supporting promiscuity</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">disablePromiscuousMode</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">enablePromiscuousMode</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addMulticastAddress:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>addMulticastAddress:</b>(enet_addr_t *)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing. Subclasses that support multicast mode can implement this method so that it notifies the hardware that it should receive packets sent to <i>address</i>. Some subclasses that support multicast don't implement this method because their hardware doesn't provide filtering based upon individual multicast addresses. Instead, they inspect all multicast packets, using <b>isUnwantedMulticastPacket:</b> to weed out packets to unwanted multicast addresses. This method, followed by <b>enableMulticastMode</b>, is invoked in the I/O thread every time a new multicast address is added to the list that IOEthernet maintains.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>enableMulticastMode</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isUnwantedMulticastPacket:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeMulticastAddress:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>attachToNetworkWithAddress:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IONetwork *)<b>attachToNetworkWithAddress:</b>(enet_addr_t)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates an IONetwork instance and attaches to the network subsystem by sending the IONetwork an <b>initForNetworkDevice:...</b> message. Before returning, this method logs a message including the ethernet address. Returns the IONetwork instance just created.</font>
+
+<p><font face="Times">You invoke this method at the end of your implementation of <b>initFromDeviceDescription:</b>. You must invoke <b>resetAndEnable:NO</b> before invoking this method, as described under <b>initFromDeviceDescription:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>clearTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>clearTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If a transmission timeout is scheduled, unschedules the timeout. This method is normally invoked from a subclass's implementation of <b>interruptOccurred</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>setRelativeTimeout:</b>, <b>relativeTimeout</b>, <b>timeoutOccurred</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>disableMulticastMode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>disableMulticastMode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing. Subclasses that support multicast mode and implement <b>enableMulticastMode</b> should implement this method so that it disables the hardware's support for multicast mode. This method is invoked in the I/O thread when the last multicast address has been removed from the list that IOEthernet maintains.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>enableMulticastMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>disablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>disablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing. Subclasses that support promiscuous mode must implement this method so that it disables the hardware's support for promiscuous mode. This method is invoked in the I/O thread by the networking subsystem.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>enablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>enableMulticastMode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>enableMulticastMode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing and returns YES. Subclasses that support multicast mode can implement this method so that it enables the hardware's support for multicast mode. Every time a new multicast address is added to the list that IOEthernet maintains, <b>addMulticastAddress:</b> and this method are invoked in the I/O thread.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disableMulticastMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>enablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>enablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing and returns YES. Subclasses that support promiscuous mode must implement this method so that it enables the hardware's support for promiscuous mode. This method is invoked in the I/O thread by the networking subsystem.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>enablePromiscuousMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the IOEthernet instance and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromDeviceDescription:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b>(IODeviceDescription *)<i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated IOEthernet instance. This includes invoking <b>initFromDeviceDescription:</b> on <b>super</b>; invoking <b>startIOThread</b>; setting the name, kind, and unit of this instance; and invoking <b>registerDevice</b>.</font>
+
+<p><font face="Times">Subclasses of IOEthernet should implement this method so that it invokes <b>[super initFromDeviceDescription:]</b> and then performs any device-specific initialization. The subclass implementation should invoke <b>resetAndEnable:NO</b> and should finish by invoking <b>attachToNetworkWithAddress:</b>. An example of a subclass implementation of this method is below. Italicized text delineated in angle brackets, that is &lt;&lt; &gt;&gt;, is to be filled in with device-specific code.</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initFromDeviceDescription:(IODeviceDescription *)devDesc</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IOEISADeviceDescription *deviceDescription =</font><br>
+<img src="../../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">(IOEISADeviceDescription *)devDesc;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IORange&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *io;</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ([super initFromDeviceDescription:devDesc] == nil)</font><br>
+<img src="../../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return nil;</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1"><i>&lt;&lt; Perform any 1-time hardware initialization. &gt;&gt;</i></font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* NOTE: This implementation of resetAndEnable: sets myAddress. */</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self resetAndEnable:NO];&nbsp; // Finish initializing the hardware</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1"><i>&lt;&lt; Perform any additional software initialization. &gt;&gt;</i></font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">network = [self attachToNetworkWithAddress:myAddress];</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> if the instance was successfully initialized; otherwise, frees itself and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isRunning</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isRunning</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the hardware is currently capable of communication with other stations in the network; otherwise, returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">s<b>etRunning:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isUnwantedMulticastPacket:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isUnwantedMulticastPacket:</b>(ether_header_t *)<i>header</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Determines whether the specified packet is to a multicast address that this device shouldn't listen to. Returns YES if the packet should be dropped; otherwise, returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addMulticastAddress:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>performLoopback:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>performLoopback:</b>(netbuf_t)<i>packet</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Determines whether the outgoing packet should be received by this device (because it's a broadcast packet, for example, or a multicast packet for an enabled address). If so, simulates reception by sending a copy of <i>packet</i> to the protocol stack. You should invoke this method in your <b>transmit:</b> method if your hardware device can't receive its own packets.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>relativeTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>relativeTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of milliseconds until a transmission timeout will occur. If no transmission timeout is currently scheduled, this method returns zero.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>clearTimeout</b>, <b>setRelativeTimeout:</b>, <b>timeoutOccurred</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeMulticastAddress:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>removeMulticastAddress:</b>(enet_addr_t *)<i>address</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing. Subclasses that support multicast mode can implement this method so that it notifies the hardware that it should stop listening for packets sent to <i>address</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addMulticastAddress:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disableMulticastMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resetAndEnable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>resetAndEnable:</b>(BOOL)<i>enable</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing and returns YES. Subclasses of IOEthernet must implement this method so that it resets and initializes the hardware. Interrupts should be enabled if <i>enable</i> is YES; otherwise, they should be left disabled. In either case, this method should invoke <b>setRunning:</b> to record the basic state of the device.</font>
+
+<p><font face="Times">This method should return YES if it encounters no errors (no matter what the value of <i>enable</i> is); if it encounters errors, it should return NO. For example, the result from <b>resetAndEnable:NO</b> should be YES if the reset is successful.</font>
+
+<p><font face="Times">The only time this method is invoked, with the exception of any invocations from your IOEthernet subclass implementation, is during initialization. Specifically, <b>resetAndEnable:YES</b> is invoked once in the I/O thread after <b>attachToNetworkWithAddress:</b> is invoked.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRunning:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRelativeTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setRelativeTimeout:</b>(unsigned int)<i>timeout</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Schedules a timeout to occur in <i>timeout</i> milliseconds. This method is generally invoked by the IOEthernet's <b>transmit:</b> method. When <i>timeout</i> milliseconds pass without the timeout being cleared (with <b>clearTimeout</b>), the method <b>timeoutOccurred</b> is invoked.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>clearTimeout</b>, <b>relativeTimeout</b>, <b>timeoutOccurred</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRunning:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setRunning:</b>(BOOL)<i>running</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the hardware is on line. The value of <i>running</i> should be YES to indicate that the hardware is on line; otherwise, it should be NO. This method is invoked only by methods in IOEthernet subclasses--not by IOEthernet's own method implementations. You should invoke this method in your implementation of <b>resetAndEnable:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isRunning</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>transmit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>transmit:</b>(netbuf_t)<i>packet</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing except free <i>packet</i>, using the <b>nb_free()</b> function. This method is invoked by the kernel networking subsystem when the hardware should transmit a packet.</font>
+
+<p><font face="Times">Subclasses of IOEthernet must implement this method. To determine the number of bytes of data to be transmitted, use the <b>nb_size()</b> function. To get a pointer to the data, use <b>nb_map()</b>. After getting the information you need from <i>packet</i>, you must free it with <b>nb_free()</b>. Just before transmitting the packet, you can set a timeout with <b>setRelativeTimeout:</b>. If your hardware can't receive packets it transmits, you must invoke <b>performLoopback:</b> in your implementation of this method.</font>
+
+<p><font face="Times">This method can be invoked in many contexts, not just from the I/O thread (or from the I/O task). For example, <b>transmit:</b> and <b>interruptOccurred</b> can run at the same time, so any common structures they both use must be protected with locks.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

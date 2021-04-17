@@ -1,0 +1,1968 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSObject.rtf -->
+<!-- Date: Sun Jun 28 19:56:05 1998 -->
+<head>
+<title>NSObject</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSObject</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">none&nbsp; <i>(NSObject is the root class)</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCoding</font><br>
+<font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSObject.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">NSObject is the root class of all ordinary Objective C inheritance hierarchies; it's the one class that has no superclass. From NSObject, other classes inherit a basic interface to the run-time system for the Objective C language.&nbsp; It's through NSObject that instances of all classes obtain their ability to behave as objects.</font>
+
+<p><font face="Times">Among other things, the NSObject class provides inheriting classes with a framework for creating, initializing, deallocating, copying, comparing, and archiving objects, for performing methods selected at run-time, for querying an object about its methods and its position in the inheritance hierarchy, and for forwarding messages to other objects. For example, to ask an object what class it belongs to, you'd send it a <b>class</b> message (<b>class</b> is declared in the NSObject protocol). To find out whether it implements a particular method, you'd send it a <b>respondsToSelector:</b> message.</font>
+
+<p><font face="Times">The NSObject class is an abstract class; programs use instances of classes that inherit from NSObject, but never of NSObject itself.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Initializing an Object to Its Class</b></font>
+
+<p><font face="Times">Every object is connected to the run-time system through its <b>isa</b> instance variable, inherited from the NSObject class. <b>isa</b> identifies the object's class; it points to a structure that's compiled from the class definition. Through <b>isa</b>, an object can find whatever information it needs at run time--such as its place in the inheritance hierarchy, the size and structure of its instance variables, and the location of the method implementations it can perform in response to messages.</font>
+
+<p><font face="Times">Because all objects directly or indirectly inherit from the NSObject class, they all have this variable.&nbsp; The defining characteristic of an &quot;object&quot; is that its first instance variable is an <b>isa</b> pointer to a class structure.</font>
+
+<p><font face="Times">The installation of the class structure--the initialization of <b>isa</b>--is one of the responsibilities of the <b>alloc</b>, <b>allocWithZone:</b>, and <b>new</b> methods, the same methods that create (allocate memory for) new instances of a class. In other words, class initialization is part of the process of creating an object; it's not left to the methods, such as <b>init</b>, that initialize individual objects with their particular characteristics.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Instance and Class Methods</b></font>
+
+<p><font face="Times">Every object requires an interface to the run-time system, whether it's an instance object or a class object.&nbsp; For example, it should be possible to ask either an instance or a class about its position in the inheritance hierarchy or whether it can respond to a particular message.</font>
+
+<p><font face="Times">So that this won't mean implementing every NSObject method twice, once as an instance method and again as a class method, the run-time system treats methods defined in the root class in a special way:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><i>Instance methods defined in the root class can be performed both by instances</i></font><br>
+<font face="Times"><i>and by class objects.</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">A class object has access to class methods--those defined in the class and those inherited from the classes above it in the inheritance hierarchy--but generally not to instance methods.&nbsp; However, the run-time system gives all class objects access to the instance methods defined in the root class.&nbsp; Any class object can perform any root instance method, provided it doesn't have a class method with the same name.</font>
+
+<p><font face="Times">For example, a class object could be sent messages to perform NSObject's <b>respondsToSelector:</b> and <b>perform:withObject:</b> instance methods:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL method = @selector(riskAll:);</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [MyClass respondsToSelector:method] )</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[MyClass perform:method withObject:self];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When a class object receives a message, the run-time system looks first at the receiver's repertoire of class methods. If it fails to find a class method that can respond to the message, it looks at the set of instance methods defined in the root class. If the root class has an instance method that can respond (as NSObject does for <b>respondsToSelector:</b> and <b>perform:withObject:</b>), the run-time system uses that implementation and the message succeeds.</font>
+
+<p><font face="Times">Note that the only instance methods available to a class object are those defined in the root class. If MyClass in the example above had reimplemented either <b>respondsToSelector:</b> or <b>perform:withObject:</b>, those new versions of the methods would be available only to instances. The class object for MyClass could perform only the versions defined in the NSObject class. (Of course, if MyClass had implemented <b>respondsToSelector:</b> or <b>perform:withObject:</b> as class methods rather than instance methods, the class would perform those new versions.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Interface Conventions</b></font>
+
+<p><font face="Times">The NSObject class defines a number of methods that other classes are expected to override.&nbsp; Often, NSObject's default implementation simply returns <b>self</b>.&nbsp; Putting these &quot;empty&quot; methods in the NSObject class serves two purposes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It means that every object can readily respond to certain standard messages, such as <b>load</b> or <b>init</b>, even if the response is to do nothing. It's not necessary to check (using <b>respondsToSelector:</b>) before sending the message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It establishes conventions that, when followed by all classes, make object interactions more reliable.&nbsp; These conventions are explained in full under the method descriptions.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Class <b>isa</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">isa</font></td>
+
+<td><font face="Times">A pointer to the instance's class structure.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCoding</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeWithCoder:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCoder:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSObject</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">autorelease</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">class</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">conformsToProtocol:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">hash</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqual:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isKindOfClass:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isMemberOfClass:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isProxy</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:withObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:withObject:withObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">release</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">respondsToSelector:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">retain</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">retainCount</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">self</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">zone</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing the class</font></td>
+
+<td><font face="Times">+ initialize</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating and destroying instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td><font face="Times">+ allocWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ alloc</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font><br>
+<font face="Times">+ new</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">dealloc</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Identifying classes</font></td>
+
+<td><font face="Times">+ class</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ superclass</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Testing class functionality</font></td>
+
+<td><font face="Times">+ instancesRespondToSelector:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Testing protocol conformance</font></td>
+
+<td><font face="Times">+ conformsToProtocol:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Obtaining method information</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">methodForSelector:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ instanceMethodForSelector:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">methodSignatureForSelector:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Describing objects</font></td>
+
+<td><font face="Times">+ description</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">description</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Posing</font></td>
+
+<td><font face="Times">+ poseAsClass:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Error handling</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">doesNotRecognizeSelector:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Forwarding messages</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">forwardInvocation:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Dynamic loading</font></td>
+
+<td><font face="Times">+ load</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">awakeAfterUsingCoder:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">classForArchiver</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">classForCoder</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">replacementObjectForArchiver</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">replacementObjectForCoder:</font><br>
+<font face="Times">+ setVersion:</font><br>
+<font face="Times">+ version</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>alloc</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>alloc</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a new instance of the receiving class. The <b>isa</b> instance variable of the new object is initialized to a data structure that describes the class; memory for all other instance variables is set to 0. This method invokes <b>allocWithZone:</b>, passing the default zone (as returned by <b>NSDefaultMallocZone()</b>) as its argument.</font>
+
+<p><font face="Times">A version of the <b>init</b> method should be used to complete the initialization process.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">TheClass *newObject = [[TheClass alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Other classes shouldn't override <b>alloc</b> to add code that initializes the new instance.&nbsp; Instead, class-specific versions of the <b>init</b> method should be implemented for that purpose.&nbsp; Versions of the <b>new</b> method can also be implemented to combine allocation and initialization.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>allocWithZone:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>, + <b>new</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>allocWithZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>allocWithZone:</b>(NSZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a new instance of the receiving class.&nbsp; Memory for the new object is allocated from <i>zone</i>.</font>
+
+<p><font face="Times">The <b>isa</b> instance variable of the new object is initialized to a data structure that describes the class; memory for its other instance variables is set to 0.&nbsp; A version of the <b>init</b> method should be used to complete the initialization process. For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">TheClass *newObject = [[TheClass allocWithZone:someZone] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The <b>allocWithZone:</b> method shouldn't be overridden to include any initialization code.&nbsp; Instead, class-specific versions of the <b>init</b> method should be implemented for that purpose.</font>
+
+<p><font face="Times">When one object creates another, it's often a good idea to make sure they're both allocated from the same region of memory.&nbsp; The <b>zone</b> method (declared in the NSObject protocol) can be used for this purpose; it returns the zone where the receiver is located.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myCompanion = [[TheClass allocWithZone:[self zone]] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>alloc</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>class</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (Class)<b>class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns <b>self</b>.&nbsp; Since this is a class method, it returns the class object.</font>
+
+<p><font face="Times">When a class is the receiver of a message, it can be referred to by name. In all other cases, the class object must be obtained through this, or a similar method. For example, here SomeClass is passed as an argument to the <b>isKindOfClass:</b> method (declared in the NSObject protocol):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL test = [self isKindOfClass:[SomeClass class]];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b> (NSObject protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>conformsToProtocol:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>conformsToProtocol:</b>(Protocol *)<i>aProtocol</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if the receiving class conforms to <i>aProtocol</i>, and NO if it doesn't.</font>
+
+<p><font face="Times">A class is said to &quot;conform to&quot; a protocol if it adopts the protocol or inherits from another class that adopts it. Protocols are adopted by listing them within angle brackets after the interface declaration. Here, for example, MyClass adopts the imaginary AffiliationRequests and Normalization protocols:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface MyClass : NSObject &lt;AffiliationRequests, Normalization&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">A class also conforms to any protocols that are incorporated in the protocols it adopts or inherits.&nbsp; Protocols incorporate other protocols in the same way that classes adopt them.&nbsp; For example, here the AffiliationRequests protocol incorporates the Joining protocol:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol AffiliationRequests &lt;Joining&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When a class adopts a protocol, it must implement all the methods the protocol declares.&nbsp; If it adopts a protocol that incorporates another protocol, it must also implement all the methods in the incorporated protocol or inherit those methods from a class that adopts it.&nbsp; In the example above, MyClass must implement the methods in the AffiliationRequests and Normalization protocols and, in addition, either inherit from a class that adopts the Joining protocol or implement the Joining methods itself.</font>
+
+<p><font face="Times">When these conventions are followed and all the methods in adopted and incorporated protocols are in fact implemented, the <b>conformsToProtocol:</b> test for a set of methods becomes roughly equivalent to the <b>respondsToSelector:</b> test for a single method.</font>
+
+<p><font face="Times">However, <b>conformsToProtocol:</b> judges conformance solely on the basis of the formal declarations in source code, as illustrated above.&nbsp; It doesn't check to see whether the methods declared in the protocol are actually implemented.&nbsp; It's the programmer's responsibility to see that they are.</font>
+
+<p><font face="Times">The Protocol object required as this method's argument can be specified using the <b>@protocol()</b> directive:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL canJoin = [MyClass conformsToProtocol:@protocol(Joining)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>conformsToProtocol:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSString *)<b>description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object that represents the contents of the receiver.&nbsp; The debugger's <b>print-object</b> command invokes this method to produce a textual description of an object.</font>
+
+<p><font face="Times">NSObject's implementation of this method simply prints the name of the class.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>description</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initialize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>initialize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the class before it's used (before it receives its first message).&nbsp; The run-time system sends an <b>initialize </b>message to each class just before the class, or any class that inherits from it, is sent its first message from within the program.&nbsp; Each class object receives the <b>initialize</b> message just once.&nbsp; Superclasses receive it before subclasses do.</font>
+
+<p><font face="Times">For example, if the first message your program sends is this,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Application new]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">the run-time system will generate these three <b>initialize</b> messages,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[NSObject initialize];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Responder initialize];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Application initialize];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">since Application is a subclass of Responder and Responder is a subclass of NSObject. All the <b>initialize</b> messages precede the <b>new</b> message and are sent in the order of inheritance, as shown.</font>
+
+<p><font face="Times">If your program later begins to use the Text class,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Text instancesRespondToSelector:someSelector]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">the run-time system will generate these additional <b>initialize</b> messages,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[View initialize];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[Text initialize];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">since the Text class inherits from NSObject, Responder, and View. The <b>instancesRespondToSelector:</b> message is sent only after all these classes are initialized. Note that the <b>initialize</b> messages to NSObject and Responder aren't repeated; each class is initialized only once.</font>
+
+<p><font face="Times">You can implement your own versions of <b>initialize</b> to provide class-specific initialization as needed.</font>
+
+<p><font face="Times">Because <b>initialize</b> methods are inherited, it's possible for the same method to be invoked many times, once for the class that defines it and once for each inheriting class.&nbsp; To prevent code from being repeated each time the method is invoked, it can be bracketed as shown in the example below:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( self == [MyClass class] ) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* <i>put initialization code here</i> */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Since the run-time system sends a class just one <b>initialize</b> message, the test shown in the example above should prevent code from being invoked more than once.&nbsp; However, if for some reason an application also generates <b>initialize </b>messages, a more explicit test may be needed:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">static BOOL tooLate = NO;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( !tooLate ) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* <i>put initialization code here</i> */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">tooLate = YES;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b> (NSObject protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>instanceMethodForSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (IMP)<b>instanceMethodForSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Locates and returns the address of the implementation of the <i>aSelector</i> instance method.&nbsp; An error is generated if instances of the receiver can't respond to <i>aSelector</i> messages.</font>
+
+<p><font face="Times">This method is used to ask the class object for the implementation of an instance method.&nbsp; To ask the class for the implementation of a class method, use the instance method <b>methodForSelector:</b> instead of this one.</font>
+
+<p><font face="Times"><b>instanceMethodForSelector:</b>, and the function pointer it returns, are subject to the same constraints as those described for <b>methodForSelector:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>methodForSelector:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>instancesRespondToSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>instancesRespondToSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if instances of the class are capable of responding to <i>aSelector</i> messages, and NO if they're not.&nbsp; To ask the class whether it, rather than its instances, can respond to a particular message, use the <b>respondsToSelector: </b>instance method instead of <b>instancesRespondToSelector:</b>.</font>
+
+<p><font face="Times">If <i>aSelector</i> messages are forwarded to other objects, instances of the class will be able to receive those messages without error even though this method returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>respondsToSelector:</b>,</font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forwardInvocation:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>load</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>load</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Implemented by subclasses to integrate the class, or a category of the class, into a running program.&nbsp; The NSObject implementation of this method simply returns <b>self</b>.</font>
+
+<p><font face="Times">A <b>load</b> message is sent immediately after the class or category has been dynamically loaded into memory, but only if the newly loaded class or category implements a method that can respond.</font>
+
+<p><font face="Times">Once a dynamically loaded class is used, it will also receive an <b>initialize</b> message.&nbsp; However, because the <b>load </b>message is sent immediately after the class is loaded, it always precedes the <b>initialize</b> message, which is sent only when the class receives its first message from within the program.</font>
+
+<p><font face="Times">A <b>load</b> method is specific to the class or category where it's defined; it's not inherited by subclasses or shared with the rest of the class.&nbsp; Thus a class that has four categories can define a total of five <b>load</b> methods, one in each category and one in the main class definition.&nbsp; The method that's performed is the one defined in the class or category just loaded.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>new</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>new</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Allocates a new instance of the receiving class, sends it an <b>init</b> message, and returns the initialized object returned by <b>init</b>.</font>
+
+<p><font face="Times">As defined in the NSObject class, <b>new</b> is a combination of <b>alloc</b> and <b>init</b>.&nbsp; Like <b>alloc</b>, it initializes the <b>isa</b> instance variable of the new object so that it points to the class data structure.&nbsp; It then invokes the <b>init</b> method to complete the initialization process.</font>
+
+<p><font face="Times">Unlike <b>alloc</b>, <b>new</b> is sometimes reimplemented in subclasses to have it invoke a class-specific initialization method. If the <b>init</b> method includes arguments, they're typically reflected in the <b>new</b> method as well. For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initArg:tag arg:data];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">However, there's little point in implementing a <b>new...</b> method if it's simply a shorthand for <b>alloc</b> and <b>init...</b>, like the one shown above.&nbsp; Often <b>new...</b> methods will do more than just allocation and initialization.&nbsp; In some classes, they manage a set of instances, returning the one with the requested properties if it already exists, allocating and initializing a new one only if necessary.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">MyClass *theInstance;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( theInstance = findTheObjectWithTheTag(tag) )</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return theInstance;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initArg:tag arg:data];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Although it's appropriate to define new <b>new...</b> methods in this way, the <b>alloc</b> and <b>allocWithZone:</b> methods should never be augmented to include initialization code.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>, + <b>alloc</b>, + <b>allocWithZone:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>poseAsClass</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>poseAsClass:</b>(Class)<i>aClassObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Causes the receiving class to &quot;pose as&quot; its superclass, the <i>aClassObject</i> class. The receiver takes the place of <i>aClassObject</i> in the inheritance hierarchy; all messages sent to <i>aClassObject</i> will actually be delivered to the receiver. The receiver must be defined as a subclass of <i>aClassObject</i>. It can't declare any new instance variables of its own, but it can define new methods and override methods defined in the superclass. The <b>poseAsClass:</b> message should be sent before any messages are sent to <i>aClassObject</i> and before any instances of <i>aClassObject</i> are created.</font>
+
+<p><font face="Times">This facility allows you to add methods to an existing class by defining them in a subclass and having the subclass substitute for the existing class.&nbsp; The new method definitions will be inherited by all subclasses of the superclass.&nbsp; Care should be taken to ensure that this doesn't generate errors.</font>
+
+<p><font face="Times">A subclass that poses as its superclass still inherits from the superclass.&nbsp; Therefore, none of the functionality of the superclass is lost in the substitution.&nbsp; Posing doesn't alter the definition of either class.</font>
+
+<p><font face="Times">Posing is useful as a debugging tool, but category definitions are a less complicated and more efficient way of augmenting existing classes.&nbsp; Posing admits only two possibilities that are absent for categories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A method defined by a posing class can override any method defined by its superclass.&nbsp; Methods defined in categories can replace methods defined in the class proper, but they cannot reliably replace methods defined in other categories.&nbsp; If two categories define the same method, one of the definitions will prevail, but there's no guarantee which one.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A method defined by a posing class can, through a message to <b>super</b>, incorporate the superclass method it overrides.&nbsp; A method defined in a category can replace a method defined elsewhere by the class, but it can't incorporate the method it replaces.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If successful, this method returns <b>self</b>.&nbsp; If not, it generates an error message and aborts.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>setVersion</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>setVersion:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Sets the class version number to <i>anInt</i>, and returns <b>self</b>.&nbsp; The version number is helpful when instances of the class are to be archived and reused later.&nbsp; The default version is 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>version</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>superclass</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>superclass</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the class object for the receiver's superclass.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>class</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>superclass</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>version</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>version</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the version number assigned to the class.&nbsp; If no version has been set, this will be 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setVersion:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>awakeAfterUsingCoder:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awakeAfterUsingCoder:</b>(NSCoder *)<i>aCoder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This method is implemented by subclasses to reinitialize the receiver, providing one last chance for the object to propose another in its place. The NSObject implementation of this method simply returns <b>self</b>.</font>
+
+<p><font face="Times">This method is necessary because an object (say an instance of a subclass <b>Font</b>) may decide to replace itself after all the <b>initWithCoder</b> messages have been processed, and the method deciding to replace maybe in the middle of the inheritance hierarchy (say, <b>Font</b>).</font>
+
+<p><font face="Times">If a replacement takes place, the implementation of <b>awakeAfterUsingCoder:</b> is responsible for releasing the old self.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCoder:</b>(NSCoding protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>classForArchiver</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(Class)<b>classForArchiver</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Identifies the class to be used during archiving. NSObject's implementation returns the object returned by <b>classForCoder:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>classForCoder</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(Class)<b>classForCoder</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Identifies the class to be used during coding. An NSObject returns its own class by default.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>class</b> (NSObject protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dealloc</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>dealloc</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Deallocates the memory occupied by the receiver. Subsequent messages to the object will generate an error indicating that a message was sent to a freed object (provided that the freed memory hasn't been reused yet).</font>
+
+<p><font face="Times">You never send a <b>dealloc</b> message directly.&nbsp; Instead, an object's <b>dealloc</b> method is invoked indirectly through the <b>release</b> method.&nbsp; See the introduction to the Foundation Kit for more details on the use of these methods.</font>
+
+<p><font face="Times">Subclasses must implement their own versions of <b>dealloc</b> to allow the deallocation of any additional memory consumed by the object--such as dynamically allocated storage for data, or other objects that are tightly coupled to the freed object and are of no use without it.&nbsp; After performing the class-specific deallocation, the subclass method should incorporate superclass versions of <b>dealloc</b> through a message to <b>super</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- dealloc {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[companion release];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">free(privateMemory);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">vm_deallocate(task_self(), sharedMemory, memorySize);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super dealloc];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>release</b> (NSObject protocol),</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>autorelease</b> (NSObject protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object that represents the contents of the receiver.&nbsp; The debugger's <b>print-object</b> command invokes this method to produce a textual description of an object.</font>
+
+<p><font face="Times">NSObject's implementation of this method simply prints the name of the receiver's class and the hexadecimal value of its <b>id</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>description</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>doesNotRecognizeSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>doesNotRecognizeSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Handles <i>aSelector</i> messages that the receiver doesn't recognize.&nbsp; The run-time system invokes this method whenever an object receives an <i>aSelector</i> message that it can't respond to or forward.&nbsp; This method, in turn, raises an NSInvalidArgumentException exception, and generates an error message.</font>
+
+<p><font face="Times"><b>doesNotRecognizeSelector:</b> messages are generally sent only by the run-time system. However, they can be used in program code to prevent a method from being inherited. For example, an NSObject subclass might renounce the <b>copy </b>method by reimplementing it to include a <b>doesNotRecognizeSelector:</b> message as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- copy</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self doesNotRecognizeSelector:_cmd];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This code prevents instances of the subclass from recognizing or forwarding <b>copy</b> messages--although the <b>respondsToSelector:</b> method will still report that the receiver has access to a <b>copy</b> method.</font>
+
+<p><font face="Times">(The <b>_cmd</b> variable identifies the current selector; in the example above, it identifies the selector for the <b>copy</b> method.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>forwardInvocation:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>forwardInvocation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>forwardInvocation:</b>(NSInvocation *)<i>anInvocation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Implemented by subclasses to forward messages to other objects. When an object is sent a message for which it has no corresponding method, the run-time system gives the receiver an opportunity to delegate the message to another receiver. It does this by creating an NSInvocation object representing the message and sending the receiver a <b>forwardInvocation:</b> message containing this NSInvocation as the argument. The receiver's <b>forwardInvocation: </b>method can then choose to forward the message to another object. (If the delegated receiver can't respond to the message either, it too will be given a chance to forward it.)</font>
+
+<p><font face="Times">The <b>forwardInvocation:</b> message thus allows an object to establish relationships with other objects that will, for certain messages, act on its behalf.&nbsp; The forwarding object is, in a sense, able to &quot;inherit&quot; some of the characteristics of the object it forwards the message to.</font>
+
+<p><font face="Times">A <b>forwardInvocation:</b> message is generated only if the message encoded in <i>anInvocation</i> isn't implemented by the receiving object's class or by any of the classes it inherits from.</font>
+
+<p><font face="Times">An implementation of the <b>forwardInvocation:</b> method has two tasks:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To locate an object that can respond to the message encoded in <i>anInvocation</i>.&nbsp; This need not be the same object for all messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To dispatch the message to that object.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In the simple case, in which an object forwards messages to just one destination (such as the hypothetical <b>friend </b>instance variable in the example below), a <b>forwardInvocation:</b> method could be as simple as this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (void)forwardInvocation:(NSInvocation *)invocation</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ([friend respondsToSelector:[invocation selector]]) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[invocation setTarget:friend];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[invocation dispatch];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self doesNotRecognizeSelector:aSelector];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The message that's forwarded must have a fixed number of arguments; variable numbers of arguments (in the style of <b>printf()</b>) are not supported.</font>
+
+<p><font face="Times">The return value of the message that's forwarded is returned to the original sender.&nbsp; All types of return values can be delivered to the sender: <b>id</b>s, structures, double-precision floating point numbers.</font>
+
+<p><font face="Times">Implementations of the <b>forwardInvocation:</b> method can do more than just forward messages.&nbsp; <b>forwardInvocation: </b>can, for example, be used to consolidate code that responds to a variety of different messages, thus avoiding the necessity of having to write a separate method for each selector.&nbsp; A <b>forwardInvocation:</b> method might also involve several other objects in the response to a given message, rather than forward it to just one.</font>
+
+<p><font face="Times">The default version of <b>forwardInvocation:</b> implemented in the NSObject class simply invokes the <b>doesNotRecognizeSelector:</b> method; it doesn't forward messages.&nbsp; Thus, if you choose not to implement <b>forwardInvocation:</b>, unrecognized messages will generate an error and cause the task to abort.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If it's necessary for a <b>forwardInvocation:</b> method to reason about or modify the arguments passed in <i>anInvocation</i>, it can do so through the methods declared by the NSInvocation class.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesNotRecognizeSelector:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>hash</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">@protocol NSObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>hash</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an unsigned integer that can be used as a table address in a hash table structure. For NSObject, <b>hash</b> returns a value based on the object's <b>id</b>. If two objects are equal (as determined by the <b>isEqual:</b> method), they will have the same hash value.This last point is particularly important if you define <b>hash</b> in a subclass and intend to put instances of that subclass into a collection.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEqual:</b> (NSObject protocol)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Implemented by subclasses to initialize a new object (the receiver) immediately after memory for it has been allocated. An <b>init</b> message is generally coupled with an <b>alloc</b> or <b>allocWithZone:</b> message in the same line of code:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">TheClass *newObject = [[TheClass alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">An object isn't ready to be used until it has been initialized.&nbsp; The version of the <b>init</b> method defined in the NSObject class does no initialization; it simply returns <b>self</b>.</font>
+
+<p><font face="Times">Subclass versions of this method should return the new object (<b>self</b>) after it has been successfully initialized.&nbsp; If it can't be initialized, they should free the object and return <b>nil</b>.&nbsp; In some cases, an <b>init</b> method might free the new object and return a substitute.&nbsp; Programs should therefore always use the object returned by <b>init</b>, and not necessarily the one returned by <b>alloc</b> or <b>allocWithZone:</b>, in subsequent code.</font>
+
+<p><font face="Times">Every class must guarantee that the <b>init</b> method returns a fully functional instance of the class.&nbsp; Typically this means overriding the method to add class-specific initialization code.&nbsp; Subclass versions of <b>init</b> need to incorporate the initialization code for the classes they inherit from, through a message to <b>super</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super init];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Note that the message to <b>super</b> precedes the initialization code added in the method.&nbsp; This ensures that initialization proceeds in the order of inheritance.</font>
+
+<p><font face="Times">Subclasses often add arguments to the <b>init</b> method to allow specific values to be set.&nbsp; The more arguments a method has, the more freedom it gives you to determine the character of initialized objects.&nbsp; Classes often have a set of <b>init... </b>methods, each with a different number of arguments.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The convention is that at least one of these methods, usually the one with the most arguments, includes a message to <b>super</b> to incorporate the initialization of classes higher up the hierarchy.&nbsp; This method is the <i>designated initializer</i> for the class.&nbsp; The other <b>init...</b> methods defined in the class directly or indirectly invoke the designated initializer through messages to <b>self</b>.&nbsp; In this way, all <b>init...</b> methods are chained together.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:-1];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:tag arg:NULL];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super init. . .];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In this example, the <b>initArg:arg:</b> method is the designated initializer for the class.</font>
+
+<p><font face="Times">If a subclass does any initialization of its own, it must define its own designated initializer.&nbsp; This method should begin by sending a message to <b>super</b> to perform the designated initializer of its superclass.&nbsp; Suppose, for example, that the three methods illustrated above are defined in the B class.&nbsp; The C class, a subclass of B, might have this designated initializer:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data arg:anObject</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super initArg:tag arg:data];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>class-specific initialization goes here</i> */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If inherited <b>init...</b> methods are to successfully initialize instances of the subclass, they must all be made to (directly or indirectly) invoke the new designated initializer.&nbsp; To accomplish this, the subclass is obliged to cover (override) only the designated initializer of the superclass.&nbsp; For example, in addition to its designated initializer, the C class would also implement this method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initArg:(int)tag arg:(struct info *)data</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initArg:tag arg:data arg:nil];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This ensures that all three methods inherited from the B class also work for instances of the C class.</font>
+
+<p><font face="Times">Often the designated initializer of the subclass overrides the designated initializer of the superclass.&nbsp; If so, the subclass need only implement the one <b>init...</b> method.</font>
+
+<p><font face="Times">These conventions maintain a direct chain of <b>init...</b> links, and ensure that the <b>new</b> method and all inherited <b>init... </b>methods return usable, initialized objects.&nbsp; They also prevent the possibility of an infinite loop wherein a subclass method sends a message (to <b>super</b>) to perform a superclass method, which in turn sends a message (to <b>self</b>) to perform the subclass method.</font>
+
+<p><font face="Times">This <b>init</b> method is the designated initializer for the NSObject class.&nbsp; Subclasses that do their own initialization should override it, as described above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>new</b>, + <b>alloc</b>, + <b>allocWithZone:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>isEqual:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">@protocol NSObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqual:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if the receiver and <i>anObject</i> are equal; otherwise returns NO. For NSObject, the <b>id</b> of <i>anObject</i> and the receiver are compared to determine equality.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>methodForSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(IMP)<b>methodForSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Locates and returns the address of the receiver's implementation of the <i>aSelector</i> method, so that it can be called as a function.&nbsp; If the receiver is an instance, <i>aSelector</i> should refer to an instance method; if the receiver is a class, it should refer to a class method.</font>
+
+<p><font face="Times"><i>aSelector</i> must be a valid, non-NULL selector.&nbsp; If in doubt, use the <b>respondsToSelector:</b> method to check before passing the selector to <b>methodForSelector:</b>.</font>
+
+<p><font face="Times">IMP is defined as a pointer to a function that returns an <b>id</b> and takes a variable number of arguments (in addition to the two &quot;hidden&quot; arguments--<b>self</b> and <b>_cmd</b>--that are passed to every method implementation):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef id (*IMP)(id, SEL, ...);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This definition serves as a prototype for the function pointer that <b>methodForSelector:</b> returns. It's sufficient for methods that return an object and take object arguments. However, if the <i>aSelector</i> method takes different argument types or returns anything but an <b>id</b>, its function counterpart will be inadequately prototyped. Lacking a prototype, the compiler will promote <b>float</b>s to <b>double</b>s and <b>char</b>s to <b>int</b>s, which the implementation won't expect. It will therefore behave differently (and erroneously) when called as a function than when performed as a method.</font>
+
+<p><font face="Times">To remedy this situation, it's necessary to provide your own prototype.&nbsp; In the example below, the declaration of the <b>test</b> variable serves to prototype the implementation of the <b>isEqual:</b> method.&nbsp; <b>test</b> is defined as pointer to a function that returns a BOOL and takes an <b>id</b> argument (in addition to the two &quot;hidden&quot; arguments).&nbsp; The value returned by <b>methodForSelector:</b> is then similarly cast to be a pointer to this same function type:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL (*test)(id, SEL, id);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">test = (BOOL (*)(id, SEL, id))[target</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">methodForSelector:@selector(isEqual:)];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( !test(target, @selector(isEqual:), someObject) ) {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In some cases, it might be clearer to define a type (similar to IMP) that can be used both for declaring the variable and for casting the function pointer <b>methodForSelector:</b> returns. The example below defines the <b>EqualIMP</b> type for just this purpose:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef BOOL (*EqualIMP)(id, SEL, id);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">EqualIMP test;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">test = (EqualIMP)[target methodForSelector:@selector(isEqual:)];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( !test(target, @selector(isEqual:), someObject) ) {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Either way, it's important to cast <b>methodForSelector:</b>'s return value to the appropriate function type. It's not sufficient to simply call the function returned by <b>methodForSelector:</b> and cast the result of that call to the desired type. This can result in errors.</font>
+
+<p><font face="Times">Note that turning a method into a function by obtaining the address of its implementation &quot;unhides&quot; the <b>self</b> and <b>_cmd </b>arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>instanceMethodForSelector:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>methodSignatureForSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSMethodSignature *)<b>methodSignatureForSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSMethodSignature object that contains a description of the <i>aSelector</i> method, or nil if the <i>aSelector </i>method can't be found.&nbsp; When the receiver is an instance, <i>aSelector</i> should be an instance method; when the receiver is a class, it should be a class method.&nbsp; This method is mostly used in the implementation of protocols.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>replacementObjectForArchiver:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(id)<b>replacementObjectForArchiver:</b>(NSArchiver *)<i>anArchiver</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Allows an object to substitute another object for itself during archiving. NSObject's implementation returns the object returned by <b>replacementObjectForCoder:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>replacementObjectForCoder:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replacementObjectForCoder:</b>(NSCoder *)<i>encoder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Allows an object to substitute another object for itself during coding. An <i>encoder</i> value of <b>nil</b> indicates that nothing should be encoded. NSObject's implementation returns <b>self</b>.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

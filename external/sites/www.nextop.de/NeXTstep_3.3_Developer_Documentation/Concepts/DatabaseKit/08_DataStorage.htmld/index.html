@@ -1,0 +1,1410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/08_DataStorage.rtfd -->
+<!-- Date: Sun Jun 28 19:36:01 1998 -->
+<head>
+<title>08_DataStorage</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>8</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Data Storage, Retrieval, and Manipulation</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To retrieve data from the server and store it in your application, you configure a set of data-storage objects (instances of DBRecordList) and tell them to fetch.&nbsp; This is a fairly simple process that's complicated, primarily, by the extent to which you refine your DBRecordList objects.</font>
+
+<p><font face="Times">Once you've retrieved and stored data, you use instances of the DBValue class to examine and modify individual data values in a DBRecordList.&nbsp; The modified data isn't seen by the server immediately; to save your modifications, you must invoke a method that tells the DBRecordList to send the modified data back to the server.</font>
+
+<p><font face="Times">This chapter describes the principal techniques for configuring and using DBRecordList and DBValue objects to fetch, manipulate, and save data.&nbsp; These descriptions are far from the entire tale; the next two chapters (Chapters 9 and 10) tell you how to refine DBRecordList objects, and how to exhibit greater control over data transactions.&nbsp; Although the star of this show is DBRecordList, the story is easier put if DBValue is introduced first.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The DBValue Class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBValue class defines general-purpose, atomic-data storage objects.&nbsp; DBValue objects are an important part of the Database Kit's data-storage system, but their use isn't confined to that arena--you can use a DBValue to represent almost any single-valued data item.</font>
+
+<p><font face="Times">There are two parts to a DBValue:&nbsp; a value and a data type.&nbsp; The value is represented directly; the data type is represented by a DBTypes-conforming object (the DBTypes protocol was described in Chapter 6).&nbsp; For example, a DBValue that represents the floating-point number 3.1416 might be depicted as:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=150 height=91></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 75</b></font><font face="Times">. A DBValue Object</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Setting a DBValue</b></font>
+
+<p><font face="Times">You set a DBValue's value and data type at the same time, through one of the <b>set<i>Type</i>Value:</b> methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setObjectValue:</b>(id)<i>anObject</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setStringValue:</b>(const char *)<i>aString</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setIntValue:</b>(int)<i>anInteger</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setFloatValue:</b>(float)<i>aFloat</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setDoubleValue:</b>(double)<i>aDoubl</i>e</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The argument to each of these methods supplies the object's value; the individual methods set the DBTypes object to represent the appropriate (named) data type.&nbsp; The DBValue shown in Figure 75, for instance, would have been set through the <b>setFloatValue:</b> message, as shown below:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBValue *aValue = [[DBValue alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aValue setFloatValue:3.1416];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>setObjectValue:</b> and <b>setStringValue:</b> methods copy the value of their arguments and then set the DBValue's value to the copies.&nbsp; To set an object or string value without copying, use one of these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setObjectValueNoCopy:</b>(id)<i>anObject</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setStringValueNoCopy:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Null Values</b></font>
+
+<p><font face="Times">In deference to the significance of NULL values in a database (in that they represent &quot;missing&quot; values, as explained in Chapter 2), DBValue provides the <b>setNull</b> method.&nbsp; This method sets a DBValue's value to NULL.</font>
+
+<p><font face="Times">You should ask a DBValue if it has a NULL value before asking for the value itself; determining whether a DBValue holds NULL is done through the <b>isNull</b> method (the value-retrieval methods are described in the next section).&nbsp; A DBValue will hold NULL if it has received a <b>setNull</b> message or if it hasn't yet had its value set.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Getting Values</b></font>
+
+<p><font face="Times">To retrieve a DBValue's value, you invoke one of the value-retrieval methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">(id)<b>objectValue</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">(const char *)<b>stringValue</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">(int)<b>intValue</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">(float)<b>floatValue</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">(double)<b>doubleValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These methods convert the object's value, if necessary, before returning it, thus you don't have to use the &quot;correct&quot; method when asking a DBValue for its value.&nbsp; In other words, the data type by which you ask for the value needn't match that by which it was set.&nbsp; Of course, the requested conversion must be reasonable:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You can convert between any of the numeric types (with a possible loss of precision), from a number to a string, and from a string to a number (if the string represents a number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You can never convert a non-object to an object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you send an object-laden DBValue a <b>stringValue</b> message, the message will be forwarded to the embedded object.&nbsp; This is provided as a convenience; however, the courtesy doesn't extend to the number-retrieving methods (in other words, <b>intValue</b>, <b>floatValue</b>, and <b>doubleValue</b> are not forwarded to the embedded object).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If an unsupported conversion is requested, the value-getting methods return the following values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Method</b></font></td>
+
+<td><font face="Helvetica"><b>Value</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>objectValue</b></font></td>
+
+<td><font face="Times">nil</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>stringValue</b></font></td>
+
+<td><font face="Times">&quot;&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>intValue</b></font></td>
+
+<td><font face="Times">0</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>floatValue</b></font></td>
+
+<td><font face="Times">0.0</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>doubleValue</b></font></td>
+
+<td><font face="Times">0.0</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Asking a DBValue for its value in an &quot;unnatural&quot; data type, and so prompting a data conversion, doesn't change the DBValue itself.&nbsp; For example, if you set a DBValue thus:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aValue setFloatValue:2.6];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">and then send it the following message:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int anInt = [aValue intValue];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the <b>anInt</b> variable will properly hold the value 2.&nbsp; However, the <b>aValue</b> object's value and data type aren't changed--the object still holds the floating-point value 2.6</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Getting Data Types</b></font>
+
+<p><font face="Times">To retrieve a DBValue's <b>DBTypes</b> object, you send it a <b>valueType</b> message.&nbsp; To the DBTypes object you send, primarily, the <b>objcType</b> message.&nbsp; As described in Chapter 6,&nbsp; the method returns a string that represents the data types according to the following convention:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Data type</b></font></td>
+
+<td><font face="Helvetica"><b>DBTypes objcType value</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">object</font></td>
+
+<td><font face="Times">&quot;@&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">string</font></td>
+
+<td><font face="Times">&quot;*&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">integer</font></td>
+
+<td><font face="Times">&quot;i&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">float</font></td>
+
+<td><font face="Times">&quot;f&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">double</font></td>
+
+<td><font face="Times">&quot;d&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The DBRecordList Class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">DBRecordList is the Database Kit's pre-eminent data-storage class.&nbsp; It provides a random access storage system for records that are drawn from a database server.</font>
+
+<p><font face="Times">A DBRecordList stores records in its <i>record table</i>.&nbsp; Each column in this two-dimensional table is represented by a property, and each row holds a single record.&nbsp; A record is identified by an index that gives its ordinal position in the table (starting with record 0).&nbsp; The intersection of a column and row is called a &quot;field.&quot;&nbsp; Each field holds a single atomic value that's cast as the data type of the property that represents the field's column.</font>
+
+<p><font face="Times">Figure 76, below, illustrates the components of a DBRecordList's record table.&nbsp; The entity to which the DBRecordList corresponds is</font> <font face="Helvetica">Customer</font><font face="Times">; the properties that are shown here are assumed to be directly contained by this entity.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=323 height=116></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 76</b></font><font face="Times">.&nbsp; A Record Table</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Properties, Records, and Fields as Programming Elements</b></font>
+
+<p><font face="Times">The properties, records, and fields that make up a record table are not only architecturally distinct, they're programmatically different things.&nbsp; Each component demands its own techniques for its identification and manipulation.&nbsp; Most of the rest of this chapter explains these techniques in detail.&nbsp; But before proceeding to these explanations, you should be aware of the programmatic differences between records, properties, and fields:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As mentioned in the previous section, the properties that are used to represent a record table's columns are the familiar DBProperties objects (described in Chapter 6).&nbsp; The important point here is that a record table's properties are <i>objects</i>.&nbsp; You set them into a DBRecordList and retrieve them as objects, you can send them messages, and, perhaps most important, a property has a meaning independent of its use in a record table.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Records, on the other hand, are <i>not</i> objects.&nbsp; Moreover, what they <i>are</i> is unspecified; as stated above, you can identify a record (within a record table) by its index, but that's as close as you get to the record itself.&nbsp; All the methods that manipulate records--methods that add, delete, and reorder records--do so on the basis of record indices.&nbsp; And these methods are performed within the context of a particular record table; records have no meaning outside a record table.&nbsp; This means, for example, that you can't move a record directly from one table to another.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Fields are also identified by position:&nbsp; To identify a particular field, you specify the property object that represents its column and the index of the record in which it lies.&nbsp; To examine or change the value that lies in a particular field, you must provide a DBValue object.&nbsp; The DBValue takes on the value (and data type) of the identified field.&nbsp; Similarly, to alter a field's value, you provide a DBValue from which you want the value copied, and specify the field that you want the value copied into.&nbsp; But at all times, the DBValue is independent of the field (and the record table in general).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">One more element deserves consideration:&nbsp; the record table itself.&nbsp; A DBRecordList object represents a single record table; in object-oriented terms, the object <i>is</i> the table.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>DBRecordStream</b></font>
+
+<p><font face="Times">The DBRecordList class inherits from the DBRecordStream class.&nbsp; This class isn't abstract--you can use instances of DBRecordStream directly in your application.&nbsp; However, DBRecordStream objects aren't as flexible as DBRecordLists:&nbsp; A DBRecordStream provides serial, forward-only, one-record-at-a-time access to a set of records that lie on the server.</font>
+
+<p><font face="Times">Although DBRecordStreams are sometimes more efficient than DBRecordLists, the increased efficiency is seldom very compelling.&nbsp; In practice, you rarely create instances of DBRecordStream--you almost always use DBRecordList objects to store database data in your application.&nbsp; Accordingly, the sections below employ DBRecordList objects exclusively to demonstrate and explain the concepts of data storage.&nbsp; Exceptional differences between DBRecordStream and DBRecordList are noted.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Setting the Properties</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Having minted a DBRecordList object (through the usual nesting of <b>alloc</b> and <b>init</b> methods), one of the first things you do with it is tell it what sort of data you want it to provide storage for.&nbsp; This is done by setting the object's property list, through the <b>setProperties:ofSource:</b> method:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The method's first argument is a list of property objects (more technically, a list of DBProperties-conforming objects).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The second argument is the &quot;source&quot; of the properties; in other words, it's an object that represents the entity to which the properties in the property list belong.&nbsp; In the simplest case, as exemplified below, this argument is a DBEntities object.&nbsp; An example of a different class of source object is given in the next chapter.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The single source argument enforces a rule that's stated thus:&nbsp; All the properties that are set in a DBRecordList must be &quot;rooted at&quot; the same entity.&nbsp; As a convenience, you can pass <b>nil</b> as the source; this sets the DBRecordList's source to the entity of the first object in the property list.</font>
+
+<p><font face="Times">The following example shows a DBRecordList-creating function called <b>makeRecordList()</b>.&nbsp; The function creates and returns a DBRecordList that's configured to store data for all the properties in its <b>entity</b> argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Create a DBRecordList that contains all the properties found in</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">the given entity.*/</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *makeRecordList(id entity)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBRecordList *recordList = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *props = [[List alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the entity's property list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[entity getProperties:props];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Make sure the DBDatabase is connected to the server (this</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">is explained in the Note below). */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if (![[entity database] isConnected])</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">if (![[entity database] connect])</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">return nil; // failure</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Set the property list into the DBRecordList object. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[recordList setProperties:props ofSource:nil];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[props free];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">return recordList;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notice that the List object that's passed as the first argument to <b>setProperties:ofSource:</b> is freed after the method is invoked. DBRecordList maintains its own property List object into which it copies the contents of the List that you pass, leaving you to free the argument yourself.</font>
+
+<p><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">If you're using the Oracle adaptor, then you <i>must</i> make sure that your DBDatabase object is connected to the server before you invoke <b>setProperties:ofSource:</b>.&nbsp; For other adaptors this isn't a requirement, but it can't hurt.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Property List Discrimination</b></font>
+
+<p><font face="Times">The function shown in the example above doesn't discriminate between attributes and relationships:&nbsp; It sets the entity's gamut of properties into the DBRecordList.&nbsp; Even though relationships don't represent actual data, they're allowed in a DBRecordList's property list.&nbsp; Furthermore, and as will be shown in the next chapter, this is a necessary practice when constructing master-detail tables.&nbsp; For the present, it's enough to understand that a DBRecordList's list of properties isn't restricted to attributes.</font>
+
+<p><font face="Times">As a corollary to this, you don't <i>have</i> to use all the properties in an entity when setting a DBRecordList's property list.&nbsp; In the following example, only string-valued properties are used:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Create a DBRecordList that contains all the string-typed</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">properties found in the given entity.*/</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *makeStringRecordList(id entity)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBRecordList *recordList = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *props = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int n;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id thisProp;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the entity's property list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[entity getProperties:props];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Remove the non-string properties from the list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">for ( n = [props count]; n &gt; 0; n--) {</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">thisProp = [props objectAt:n-1];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">if ( *[[thisProp propertyType] objcType] != '*')</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">[props removeObject:thisProp];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[recordList setProperties:props ofSource:nil];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[props free];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">return recordList;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Resetting a Property List</b></font>
+
+<p><font face="Times">Typically, the lifetime of a DBRecordList object is defined by the desirability of its property</font><br>
+<font face="Times">list.&nbsp; Accordingly, you usually send the <b>setProperties:ofSource:</b> message only once to each DBRecordList that you use.&nbsp; You can then fetch data, modify the values, save the modifications, re-fetch, re-modify, re-save, and so on, but you rarely send <b>setProperties:ofSource:</b> a second</font><br>
+<font face="Times">time.&nbsp; When you're no longer interested in the DBRecordList's set of properties, you should</font><br>
+<font face="Times">free the entire object rather than reuse it.</font>
+
+<p><font face="Times">However, if you find that you absolutely <i>must</i> reset a DBRecordList's property list, then be aware that you must clear the object first, by sending it a <b>clear</b> message.&nbsp; Each time a DBRecordList object receives a <b>setProperties:ofSource:</b> message it empties its current property list, but it doesn't fully reset itself to the virgin state that's attained through <b>clear</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Retrieving a DBRecordList's Properties</b></font>
+
+<p><font face="Times">You retrieve a DBRecordList's properties through the <b>getProperties:</b> method.&nbsp; The method copies (by reference) the DBRecordList's properties into the List object that you supply as an argument.&nbsp; If the object isn't able to fulfill the request, it returns <b>nil</b>, otherwise it returns the argument List that you passed.&nbsp; The method should only fail if the object's property list hasn't been set (or has been cleared).</font>
+
+<p><font face="Times">The list of properties that you retrieve through the <b>getProperties:</b> method may contain objects that you didn't explicitly set. Specifically, the list may contain primary key attributes that were added automatically, as explained in the &quot;Key Properties&quot; section, below.</font>
+
+<p><font face="Times">In the following example function, which demonstrates a use of the <b>getProperties:</b> method, a DBRecordList's property list is searched for a particular (named) property:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&lt;DBProperties *&gt;findRecordListPropertyByName(DBRecordList *rList,</font> &nbsp;&nbsp; const char *propName)<br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *propList = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id prop;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int n;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the property list (and check for success).*/</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if ([rList getProperties:propList]) {</font>
+
+<p><img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">/* Look for the property by name. */</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">for (n=0; n&lt;[propList count]; prop=[propList objectAt:n++])</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">if (strcmp([prop name], propName) == 0)</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">prop = nil;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Free the (local) property list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[propList free];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Return the property. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">return prop;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Key Properties</b></font>
+
+<p><font face="Times">In order to function properly and completely, a DBRecordList must know the primary keys for its source.&nbsp; One of the features of the <b>setProperties:ofSource:</b> method is that it tries to make this determination for you:&nbsp; It gets the properties from the source entity and asks each one if it's a primary key.&nbsp; If it is, the method adds the property to the DBRecordList's property list, even if you didn't ask for it to be included.</font>
+
+<p><font face="Times">You can retrieve a DBRecordList's primary key properties through the <b>getKeyProperties:</b></font><br>
+<font face="Times">method.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Setting the Key Properties Directly</b></font>
+
+<p><font face="Times">Although the automatic key-searching mechanism is usually sufficient, it's possible to set the primary keys yourself, through the <b>setKeyProperties:</b> method.&nbsp; However, setting the key properties of a DBRecordList subverts the design of the model that you're using, so you should rarely have need of this method.&nbsp; Also, if you set the key properties yourself, you should be aware of some subtleties of the <b>setKeyProperties:</b> method:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The property objects that you include in the list that you pass as the argument to <b>setKeyProperties:</b> aren't themselves marked as being key; they're only key with respect to the DBRecordList that receives the message.&nbsp;&nbsp; The following code example demonstrates this; in it, the <b>name</b> property responds NO to both invocations of <b>isKey</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; By the definition of this example, this message returns NO. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL nameIsKey = [name isKey];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Add name to the (existing) keyList List object and set it as a</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">key property of the (existing) recordList DBRecordList object. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[keyList addObject:name];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordList setKeyProperties:keyList];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; This will still return NO, even though the name property is used</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">as a primary key for the recordList object. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">nameIsKey = [name isKey];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An invocation of <b>setKeyProperties:</b> erases the DBRecordList's current notion of its key properties, whether this notion was gotten from a previous invocation of the method, or through the automatic key-searching mechanism included with <b>setProperties:ofSource:</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you invoke <b>setProperties:ofSource:</b> before invoking <b>setKeyProperties:</b>, the primary keys that were found and added to the DBRecordList through the former method's key-searching mechanism will still be present in the object's property list (although, as stated above, they will no longer function as primary keys).&nbsp; If you reverse the sequence of these messages--if you set the key properties before setting the &quot;regular&quot; properties--the key-searching mechanism is turned off, thus the attributes that are marked as primary keys (in the entity) won't automatically appear in the property list.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Fetching Data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To tell a DBRecordList to retrieve data from the server, you send it a <b>fetchUsingQualifier:</b> message.&nbsp; The argument is a DBQualifier object that limits the range of records that are returned.&nbsp; The DBQualifier class is discussed in the next chapter; as a default, you can pass <b>nil</b> as the argument, thereby returning all the records (for a given entity) that lie on the server.&nbsp; The following example demonstrates this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; For the purposes of the example, we &#34;hard-wire&#34; two properties</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">from an entity in the OracleDemo model into the DBRecordList. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBDatabase *db = [DBDatabase findDatabaseNamed:&#34;OracleDemo&#34;</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">connect:NO];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *customerList = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *props = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id customer = [db entityNamed:&#34;Customer&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:[customer propertyNamed:&#34;name&#34;]];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:[customer propertyNamed:&#34;creditLimit&#34;]];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[customerList setProperties:props ofSource:nil];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Remember to connect first. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[db connect]</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Test the connection and fetch. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (![db isConnected])</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;The DBDatabase isn't connected\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else if ([customerList fetchUsingQualifier:nil])</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">fprintf( stderr, &#34;Fetch succeeded\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">fprintf( stderr, &#34;Fetch failed\n&#34;);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As implied by this demonstration, the <b>fetchUsingQualifier:</b> method returns <b>nil</b> if the fetch fails.</font>
+
+<p><font face="Times">Figure 76, earlier in this chapter, depicts the record table that's constructed as a result of this fetch.&nbsp; Notice that the property named</font> <font face="Helvetica">customerID</font> <font face="Times">has been added to the DBRecordList's properties.&nbsp; This is a result of the automatic key-searching mechanism described earlier.</font>
+
+<p><font face="Times">The finer points of fetching are described in Chapter 10.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Record Table</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">DBRecordList, through its conformance to the DBContainers protocol, provides a couple of methods that let you examine and manipulate its record table.&nbsp; These are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>count</b> returns the number of records that are in the table.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>empty</b> removes all the records from the table (it sets the record count to 0).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Of these two methods, <b>count</b> is by far the more important.&nbsp; You use it whenever you need to perform an operation on all the records in a record table.&nbsp; The trivial example below shows a typical loop construction that uses <b>count</b> for such a purpose:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* n, a counting variable, and recordList, a DBRecordList, are</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">for (n = 0; n &lt; [recordList count]; n++)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">printf(&#34;Got a record.\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>empty</b> method is invoked automatically when you set a DBRecordList's properties, when you tell the object to fetch (this can be suppressed, as explained in Chapter 10), and when you send it a <b>clear</b> message.&nbsp; Because of this automatism, you rarely have to invoke <b>empty</b> directly.</font>
+
+<p><font face="Times">If you do find yourself tempted by the <b>empty</b> method, be aware that emptying a record table is <i>not</i> the same as deleting all its records.&nbsp; When you delete a record (and this is explained in greater detail in a section below) and then save the DBRecordList, the data-saving mechanism will attempt to delete, from the server, the data that corresponds to the deleted record.&nbsp; Emptying a record table <i>doesn't</i> mark the removed records for such deletion.&nbsp; You can think of the <b>empty</b> method as setting a record table to its pre-fetch state.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">The DBContainers protocol declares other methods as well, but <b>count</b> and <b>empty</b> are the only DBContainers messages that you should send to a DBRecordList object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">DBRecordList also conforms to the DBCursorPositioning protocol.&nbsp; This protocol declares methods that let you point to records in the table by moving a &quot;cursor.&quot;&nbsp; Although these methods will work with a DBRecordList object, they don't let you do anything that you can't otherwise do through methods declared directly by the DBRecordList class.&nbsp; Furthermore, it's strongly advised that you not use the cursor positioning methods as they can cause some confusion, particularly if you're using Database Kit interface layer objects to control your DBRecordList objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=44></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica" size="+1"><b>Finding a Record</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=13></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Finding a record in a record table seems like a fairly simple task:&nbsp; As described earlier in this chapter, you identify a record by the index that gives its position in the table.&nbsp; More specifically, the DBRecordList methods that act on particular records take record index arguments.&nbsp; The challenge, here, is in supplying the proper index value.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">If you're simply walking down the record table and looking at records one-by-one, then you shouldn't have much of a problem supplying an index.&nbsp; In the following example function (which jumps ahead a bit with its use of the <b>getValue:forProperty:at: </b>method), the value for each record's</font> <font face="Helvetica">name</font> <font face="Times">property is printed:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void printAllNames(DBRecordList *rList)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int n;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id nameProp;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBValue *nameVal = [[DBValue alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the &#34;name&#34; property by calling the</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">findRecordListPropertyByName() function (as defined</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">in a previous example).. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if (!(nameProp = findRecordListPropertyByName(rList, &#34;name&#34;)))</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">printf(&#34;Property not found.\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">[nameVal free];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Loop over the record table, printing the name value of each</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">record. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">for (n = 0; n &lt; [rList count]; n++)</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">[rList getValue:nameVal forProperty:nameProp at:n]</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">printf(&#34;%s\n&#34;, [nameVal stringValue]);</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[nameVal free];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Finding a Specific Record</b></font>
+
+<p><font face="Times">If you want a specific record, then you have to supply a particular index.&nbsp; But because records can be reordered (as described in a later section), you can't rely on index values completely.&nbsp; Instead, the correct way to find a record is to ask for the index of the record with a given value as its primary key.&nbsp; This is done through the <b>positionForRecordKey:</b> method.&nbsp; The method takes a DBValue object that's been set to hold the primary key value of the record that you're interested in.</font>
+
+<p><font face="Times">In the following example function, the value of the</font> <font face="Helvetica">name</font> <font face="Times">property of a particular record is printed.&nbsp; The function takes, as arguments, a DBRecordList object and an integer that's assumed to characterize the value of the record's primary key attribute:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void printOneName(DBRecordList *rList, int keyVal)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int index;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id nameProp;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBValue *indexVal = [[DBValue alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBValue *nameVal = [[DBValue alloc] init];</font>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the &#34;name&#34; property. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if (!(nameProp = findRecordListPropertyByName(rList, &#34;name&#34;)))</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">printf(&#34;Property not found.\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">[indexVal free];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">[nameVal free];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Set the indexVal object to hold the primary key value. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[indexVal setIntValue:keyVal];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Get the index of the requested record. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if ((index = [rlist positionForRecordKey:keyVal]) == DB_NoIndex)</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">printf(&#34;No record with %d as a primary key.\n&#34;, keyVal);</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the name value and print it. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[rList getValue:nameVal forProperty:nameProp at:index];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">printf(&#34;%s\n&#34;, [nameVal stringValue]);</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[indexVal free];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[nameVal free];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As shown in the example, the <b>positionForRecordKey:</b> method returns DB_NoIndex if the record table doesn't hold a record with the designated primary key value.</font>
+
+<p><font face="Times">The result of the <b>positionForRecordKey:</b> method should be applied immediately and then forgotten.&nbsp; Put a better way, if you're searching for a specific record, you should invoke this method immediately before you need to use the index.&nbsp; The method's return value shouldn't be stored for later use since this defeats the problem that it's trying to solve, namely the mutability of record position within a record table.</font>
+
+<p><font face="Times">DBRecordList doesn't provide a method that lets you quickly find a record that has a compound primary key.&nbsp; To do this, you must ask the DBRecordList for its list of primary key attributes, ask for the values of these attributes from each record in the table (through the <b>getValue:forProperty:at:</b> method, which was demonstrated in the examples, and will be explained in greater detail later in this chapter), and compare these values to the target values.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Manipulating Records</b></font>
+
+<p><font face="Times">You can change the contents of the record table by manipulating entire records.&nbsp; Specifically, you can add new records to the table, delete records, and move a record from one position to another (but only within the same table).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Adding Records</b></font>
+
+<p><font face="Times">DBRecordList provides two methods that let you add records to its record table:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>insertRecordAt:</b> adds a new record at the location specified by the index argument.&nbsp; The previous occupant of the given index and all subsequent records are moved down to make room for the new record.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>appendRecord</b> adds a new record to the end of the record table.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Both of these methods return <b>nil</b> if the addition is unsuccessful--this should only happen if you pass an out-of-bounds index to <b>insertRecordAt:</b> or if the DBRecordList's property list hasn't been set.</font>
+
+<p><font face="Times">To determine if the record at a particular index is new (as opposed to having been fetched from the server), you invoke the boolean method <b>isNewRecordAt:</b>.</font>
+
+<p><font face="Times">All the fields in a new record are set to NULL.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>New Records and Primary Keys</b></font>
+
+<p><font face="Times">A newly-added record is in a curious state:&nbsp; Since all its fields are NULL, it has no primary key value.&nbsp; Whenever you add a new record to a record table, one of your first tasks is to supply a value for its primary key (the method by which a field's value is set is described later).&nbsp; However, the uniqueness of a primary key is determined by the server, not by the Database Kit.</font>
+
+<p><font face="Times">Most servers provide routines that generate new primary key values, or that check candidate values.&nbsp; You should consult your server's API for more information on how to guarantee the unique-ness of primary key values.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Adding Records Without Fetching</b></font>
+
+<p><font face="Times">Although the sequence of actions described so far places the act of fetching as a precursor to&nbsp; other record manipulations, this order isn't inviolable:&nbsp; You don't have to fetch before you add a new record.&nbsp; For example, consider an application that doesn't care about existing data, all it wants to do is create new records, fill them with data, and then save them to the server.&nbsp; To create a table to hold these records, you would create a DBRecordList, set its property list, and then send it a series of record-adding messages.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Deleting Records</b></font>
+
+<p><font face="Times">To delete a record, you pass its index to the <b>deleteRecordAt:</b> method.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Moving Records</b></font>
+
+<p><font face="Times">You can move records within the record table through these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>swapRecordAt:withRecordAt:</b> switches the locations of the two records identified by the index arguments.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>moveRecordAt:to:</b> moves the record at the index given by the first argument to the index given by the second argument.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In general, there's little reason to programmatically move records in a record table.&nbsp; The DBRecordList class provides a means for sorting records as they're fetched (as described in the next chapter).&nbsp; You should try to use the sorting techniques rather than move records after they've been fetched.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Examining and Modifying Fields</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can't examine the values of a record's fields directly; to determine the value of a field, you must use a DBValue object.&nbsp; A DBValue object takes on a value stored in a DBRecordList object through DBRecordList's <b>getValue:forProperty:at:</b> method. The method takes, as arguments, a DBValue object, a property object, and a record index.&nbsp; When the method returns, the DBValue object that you passed will hold the value that was found at the field designated by the record and property arguments. An example of this method was given in the &quot;Finding a Record&quot; section, earlier in this chapter.</font>
+
+<p><font face="Times">To write a value back into a record table field, you use DBRecordList's <b>setValue:forProperty:at:</b> method.&nbsp; The order and types of arguments are the same as in the&nbsp; <b>getValue:forProperty:at:</b> method:&nbsp; The method takes a DBValue object, a property object, and a record index.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Record Field Data Type Immutability</b></font>
+
+<p><font face="Times">The <b>setValue:forProperty:at:</b> method, you'll notice, doesn't let you proclaim the data type of the field that's being set.&nbsp; This is because you can't change the data type of a field.&nbsp; For example, the</font> <font face="Helvetica">creditLimit</font> <font face="Times">property, shown in Figure 76 earlier in this chapter, represents floating-point data.&nbsp; All fields that are created for this property hold floating-point data.&nbsp; If you try to set an integer-typed DBValue object into a &quot;creditLimit&quot; field, the value that's set in the record will be a floating-point number that's converted from the DBValue's integer value.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Altering Primary Key Values</b></font>
+
+<p><font face="Times">In general, you shouldn't alter primary key values.&nbsp; However, there are two cases in which you may have to:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>You've added a new record to the DBRecordList</i>.&nbsp; The records that you add through DBRecordList methods such as <b>newRecord</b> are created with NULL values for every property, including the primary key attributes.&nbsp; Obviously, you'll have to set the primary key values (at least) of any new records before they can be sent to the server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>The primary key holds significant value</i>.&nbsp; As described in Chapter 2, the actual values that are held by most primary keys are arbitrary numbers that are meaningful only to the database (and then only to discriminate between records).&nbsp; Some primary keys, however, may hold &quot;real world&quot; values; for example, a table of &quot;people&quot; data might use social security numbers as primary key values.&nbsp; If such a value changes in the real world, then it will probably have to be changed in the database.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As a general rule, if you must change the primary key value(s) of an existing record, you should create a new record with the new primary key, copy all the other values that you need from the old record, and then delete the old record.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Saving Modified Records</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You've fetched records from the server into a DBRecordList, examined the records' values, and modified some of them; perhaps you've added some new records or deleted some existing ones.&nbsp; Now you want to write your changes back to the server.&nbsp; To do so, you send a <b>saveModifications</b> message to the modified DBRecordList.&nbsp; If the attempt at saving is successful, the method returns zero.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">DBRecordStream objects, which also respond to <b>saveModifications</b>, return 1 if the save is successful.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">There are a number of reasons why an attempt at saving modified data may fail; these are examined and their antidotes described in Chapter 10.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

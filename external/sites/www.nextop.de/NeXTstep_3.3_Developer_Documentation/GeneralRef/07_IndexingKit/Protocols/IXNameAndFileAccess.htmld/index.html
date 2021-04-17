@@ -1,0 +1,534 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Protocols/IXNameAndFileAccess.rtf -->
+<!-- Date: Sun Jun 28 20:06:04 1998 -->
+<head>
+<title>IXNameAndFileAccess</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXNameAndFileAccess</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Adopted By:</b></font></td>
+
+<td><font face="Times">IXBTree</font><br>
+<font face="Times">IXFileFinder</font><br>
+<font face="Times">IXRecordManager</font><br>
+<font face="Times">IXStoreDirectory</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Incorporates:</b></font></td>
+
+<td><font face="Times">IXBlockAndStoreAccess</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">store/protocols.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocol Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The IXNameAndFileAccess protocol defines methods for initializing and freeing store file clients by name instead of by block handle.&nbsp; A store file client is an object that uses data in a store file (see below).&nbsp; You use this protocol to create new store file clients, to initialize clients from data previously created in a store file, and to destroy store file clients.&nbsp; For general information on store clients, see the IXBlockAndStoreAccess protocol specification.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Store Files</b></font>
+
+<p><font face="Times">Files with a &quot;.store&quot; extension are assumed by convention to contain an IXStoreDirectory at block handle 1.&nbsp; You can take advantage of this convention when implementing IXNameAndFileAccess for your class by accessing the contents of the store file through its IXStoreDirectory.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Although the term &quot;store file&quot; can refer to any file created by an IXStoreFile, the term &quot;file-based store&quot; is preferred. &quot;Store file,&quot; in this protocol specification, refers specifically to a file-based store obeying the above convention;&nbsp; that is, a storage file having an IXStoreDirectory at block handle 1 (the &quot;.store&quot; extension merely advertises this fact, and is entirely optional).</font>
+
+<p><font face="Times">A store file can be created by allocating an IXStoreDirectory and sending it <b>initInStore:</b>, passing a newly created IXStoreFile (with the filename ending in &quot;.store&quot; if desired).&nbsp; This method will allocate a block handle for the IXStoreDirectory.&nbsp; An IXStore guarantees that the first block allocated from it will have a handle of 1, so you can safely use this technique to create a store file. Note, however, that if allocations occur before the store directory is initialized, this guarantee no longer holds.&nbsp; Therefore, if allocations may occur before the store directory is initialized, your code should verify that the handle allocated for the store directory is in fact 1.</font>
+
+<p><font face="Times">To open a store file, initialize an IXStoreFile object with the <b>initFromFile:forWriting:</b> method, and then allocate an IXStoreDirectory and send it an <b>initFromBlock:inStore:</b> message with 1 as the block handle and the <b>id</b> of the IXStoreFile as the store.&nbsp; You can then use the IXStoreDirectory to access entries in the store file by name, either reconstituting entries directly with <b>openEntryNamed:</b>, or getting the boot block and class for an entry and sending <b>initFromBlock:inStore:</b> messages to newly allocated instances of those store file client classes.</font>
+
+<p><font face="Times">The IXStoreDirectory at block 1 is intended as a public root directory for implementors of this protocol.&nbsp; Your store file clients shouldn't use it to store named private clients.&nbsp; Any clients belonging to a store file client should be accessed only through that client's boot block, and referenced by handle.&nbsp; If your client needs to store other (private) clients by name, it should create a private IXStoreDirectory and record the handle in its own boot block.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Ownership of a Store File by a Client</b></font>
+
+<p><font face="Times">An object initialized with a method from the IXNameAndFileAccess protocol should assume responsibility for freeing the IXStoreFile when it receives a <b>free</b> message.&nbsp; For this reason, if you want to initialize a number of store file clients by name, you should create an IXStoreDirectory and initialize those clients <i>only</i> through the IXStoreDirectory (by getting their block handles and initializing with <b>initFromBlock:inStore:</b>, or by using IXStoreDirectory's <b>openEntryNamed:</b> method).&nbsp; These objects should then be freed before the IXStoreDirectory is freed.</font>
+
+<p><font face="Times">The client responsible for freeing the IXStoreFile (or the user of that client) should be sure that the IXStoreFile is in a proper state before actually sending <b>free</b> to it.&nbsp; This involves sending either <b>abortTransaction</b> or <b>commitTransaction</b> to the IXStoreFile until all transactions are completed, or they'll be effectively aborted when the IXStoreFile is freed.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Previous versions of this documentation indicated that a store file client didn't have to free its IXStoreFile when freed itself. This is in fact nearly the opposite case from the behavior of standard Indexing Kit classes that conform to the IXNameAndFileAccess protocol, and from the behavior indicated above. You should change any classes you may have written to use the behavior described here.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Temporary Store File Clients</b></font>
+
+<p><font face="Times">In addition to the methods in this protocol, you may find it convenient to implement a simple <b>init</b> method that initializes the store file client for temporary use by creating an IXStoreFile private to that instance (typically in <b>/tmp</b>).&nbsp; The temporary instance is then responsible for freeing the run-time store and removing any storage file from the file system when it receives a <b>free </b>message.&nbsp; In such a case, of course, the store file client will essentially be a regular (nonpersistent) object.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing a client</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithName:inFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromName:inFile:forWriting:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromName:inFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Retrieving the block and store</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getName:andFile:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeFromName:inFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>freeFromName:</b>(const char *)<i>aName</i> <b>inFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes from <i>filename</i> the storage for the named client.&nbsp; Normally, your code would have to instantiate a client for the data stored under <i>aName</i> in <i>filename</i>, and send that client a <b>freeFromStore</b> message.&nbsp; This method provides a convenient way to remove an object from a storage file without allocating and initializing it yourself.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">One way to implement this method is to open the root IXStoreDirectory, and have it free the entry with <b>freeEntryNamed: </b>(which in turn sends <b>freeFromBlock:inStore:</b> to the client's class object).&nbsp; Here's a simple example, without any error handling:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ freeFromName:(const char *)aName andFile:(const char *)filename</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreFile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *theStore;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreDirectory *theDirectory;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">theStore = [[IXStoreFile alloc] initFromFile:filename]</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">forWriting:YES];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">theDirectory = [[IXStoreDirectory alloc] initFromBlock:1</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">inStore:theStore];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theDirectory freeEntryNamed:aName];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theStore commitTransaction];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theDirectory free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theStore free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notice that <b>commitTransaction</b> must be sent to the IXStoreFile before freeing it, or the removal won't take effect.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeFromStore</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeEntryNamed:</b> (IXStoreDirectory)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeFromStore</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeFromStore</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the client's data from its IXStoreFile's store file and frees the run-time object.&nbsp; A store file client's <b>free</b> method simply frees the run-time object without affecting any data in the store file.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>freeFromName:inFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getName:andFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getName:</b>(const char **)<i>aName</i> <b>andFile:</b>(const char **)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the name of the client and of the store file in which it keeps its data.&nbsp; Also returns <b>self</b>.</font>
+
+<p><font face="Times">A store file client must record at least its name (preferably in an instance variable).&nbsp; The file name can be retrieved from the IXStoreFile by sending it a <b>filename</b> message.&nbsp; If this is done, the implementation of this method can simply put those values into <i>aName</i> and <i>filename</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromName:inFile:forWriting:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromName:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>inFile:</b>(const char *)<i>filename</i></font><br>
+<font face="Times"><b>forWriting:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver from data previously stored in <i>filename</i> under entry <i>aName</i>.&nbsp;&nbsp;&nbsp; That data should have been created by a previous invocation of the <b>initWithName:inFile:</b> method on the original instance of the store file client.&nbsp; If <i>flag</i> is YES, <i>filename</i> is opened for reading and writing.&nbsp; If <i>flag</i> is NO, <i>filename</i> is opened for reading only;&nbsp; changes can be made to the store file's data, but they won't be flushed out to disk.&nbsp; The receiver isn't required to be of the same class as the original creator of the store data, but it must be able to make sense of it.&nbsp; Returns <b>self</b> if successful, or <b>nil</b> if the receiver can't be initialized (for example, if <i>aName</i> doesn't exist in <i>filename</i>, or if <i>filename</i> itself doesn't exist).</font>
+
+<p><font face="Times">One way to implement this method is to create an IXStoreDirectory, have it get the block for the entry named <i>aName</i>, and initialize from that block.&nbsp;&nbsp;&nbsp; Here's a simple example, without any error handling:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initFromName:(const char *)aName</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">inFile:(const char *)filename</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">forWriting:(BOOL)flag</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreFile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *theStore;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreDirectory *theDirectory;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bootBlock;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">theStore = [[IXStoreFile alloc] initFromFile:filename</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">forWriting:flag];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">theDirectory = [[IXStoreDirectory alloc] initFromBlock:1</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">inStore:theStore];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theDirectory getBlock:&amp;bootBlock ofEntryNamed:aName];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Take advantage of the IXBlockAndStoreAccess protocol. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self initFromBlock:bootBlock inStore:theStore];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Don't free theStore. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theDirectory free];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notice that the IXStoreFile has to be created and retained separately from the IXStoreDirectory, which is freed.&nbsp; This implementation also assumes that the client conforms to the IXBlockAndStoreAccess protocol (which is in fact incorporated by this IXNameAndFileAccess protocol).</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">While a store file client instance exists, it's considered to own its data in the store file.&nbsp; Your code should never use this method a second time with a specific name unless it's known for certain that any previous instance using that data has been freed (or that both instances will be using the storage for read-only access).&nbsp; If a second store file client is initialized from the same name as an active client, the data associated with it will probably be corrupted, since there is no means provided for synchronizing changes made by the two instances.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithName:inFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initWithName:inFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithName:</b>(const char *)<i>aName</i> <b>inFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver to maintain its data in <i>filename</i> (creating the file if necessary) under the name <i>aName</i>.&nbsp; Returns <b>self</b>, or <b>nil</b> if the receiver can't initialize itself (for example, if a store file client named <i>aName</i> already exists, or if <i>filename</i> couldn't be created).</font>
+
+<p><font face="Times">Here's a simple example implementation, without any error handling:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initWithName:(const char *)name inFile:(const char *)aFile</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreFile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *theStore;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXStoreDirectory *theDirectory;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXBTree&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *theEntry;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Try to open the file first; we have to write to initialize. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">theStore = [[IXStoreFile alloc] initFromFile:aFile</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">forWriting:YES];</font>
+
+<p><img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* If the file doesn't exist, create a new one and put an</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* IXStoreDirectory in it. Otherwise open the existing</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* IXStoreDirectory at block 1.</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (nil == theStore) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">theStore = [[IXStoreFile alloc] initWithFile:aFile];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (nil == theStore) return [self free];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">theDirectory = [[IXStoreDirectory alloc]</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">initInStore:theStore];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">theDirectory = [IXStoreDirectory alloc];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[theDirectory initFromBlock:1 inStore:theStore]</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* Take advantage of the IXBlockAndStoreAccess protocol.</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* addEntryNamed:ofClass: will invoke initInStore: on self</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* and add the new object to the directory.</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = [theDirectory addEntryNamed:aName ofClass:[self class]];</font>
+
+<p><img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* See if anything went wrong.</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (nil == self) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[theStore free];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return nil;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font>
+
+<p><img src="../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">* entryName and myStore are instance variables.&nbsp; All store</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">* file clients should cache their name and at least the id</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">* of the IXStoreFile. Be sure to send commitTransaction.</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">entryName = NXCopyStringBufferFromZone(name,</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">NXZoneFromPtr(self));</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">myStore = theStore;</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[theStore commitTransaction];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Don't free the store file. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[theDirectory free];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromName:inFile:forWriting:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

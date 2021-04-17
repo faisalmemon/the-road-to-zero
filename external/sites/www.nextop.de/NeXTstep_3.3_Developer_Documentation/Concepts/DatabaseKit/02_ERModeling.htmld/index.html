@@ -1,0 +1,919 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/02_ERModeling.rtfd -->
+<!-- Date: Sun Jun 28 19:35:42 1998 -->
+<head>
+<title>02_ERModeling</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>2</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Entity-Relationship Modeling</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A database server stores data in the structures that it defines:&nbsp; A relational database uses tables to store data, an object-oriented database uses objects, a file system uses files, and so on.&nbsp; Regardless of the server's natural bias, the Database Kit creates tables into which database data is fetched.&nbsp; The organization of these tables emulates the organization of the data structures on the server.&nbsp; But the Database Kit needs some help in configuring the tables.&nbsp; You have to provide a <i>database model</i> that describes the server's data structures in terms that the Database Kit can understand.&nbsp; These terms are those of <i>Entity-Relationship modeling</i> (or <i>E-R modeling</i>).</font>
+
+<p><font face="Times">Entity-Relationship modeling isn't unique to the Database Kit; it's a popular discipline with a set of rules and terms that are documented in database literature.&nbsp; The Database Kit uses a modified version of the traditional rules of E-R modeling.&nbsp; This chapter presents the E-R terms and concepts as they are used by the Kit.&nbsp; The next chapter, &quot;Database Models,&quot; puts these concepts into practice.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Modeling Objects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In an Entity-Relationship model, distinguishable things are known as <i>entities</i>, each entity is defined by its component <i>attributes</i>, and the affiliations, or <i>relationships</i>, between entities are identified.&nbsp; From these three simple <i>modeling objects</i> (entities, attributes, and relationships), arbitrarily complex systems can be modeled--a company's customer base, a library of books, a network of computers, and so on, can all be depicted as E-R models.&nbsp; If the parts of a system can be identified, the system can be expressed as an E-R model.</font>
+
+<p><font face="Times">Pure Entity-Relationship modeling is independent of native database architecture.&nbsp; Theoretically, an E-R model can be implemented as a relational database, an object-oriented database, a file system, or any other data storage system.&nbsp; In practice, the version of E-R modeling used by the Database Kit fits most naturally with relational databases; in other words, with databases that store data in two-dimensional tables.&nbsp; This follows from the Database Kit's use of tables as the buffers in which it stores data that's fetched from the server.&nbsp; The examples and illustrations in this chapter follow this lead by posing a hypothetical relational database server from which data is drawn.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Conventions</b></font>
+
+<p><font face="Times">Throughout this manual, the names of entities, attributes, and relationships are presented typographically as</font> <font face="Helvetica">Entity</font><font face="Times">,</font> <font face="Helvetica">attribute</font><font face="Times">, and</font> <font face="Helvetica">relationship</font><font face="Times">.&nbsp; The naming conventions for the three modeling objects are given as the objects are described in this chapter.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Entities and Attributes</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Imagine that you're creating an Entity-Relationship model for a library of books.&nbsp; Your first task is to identify the classes of &quot;things,&quot; considered abstractly, that you want to characterize; each such class becomes an entity.&nbsp; An obvious entity for a library is</font> <font face="Helvetica">Book</font><font face="Times">.</font>
+
+<p><font face="Times">Contained within an entity is a list of features, or attributes, of the thing that's being modeled.&nbsp; The</font> <font face="Helvetica">Book</font> <font face="Times">entity would contain attributes such as</font> <font face="Helvetica">title</font><font face="Times">,</font> <font face="Helvetica">author</font><font face="Times">,</font> <font face="Helvetica">publisher</font><font face="Times">, and so on.&nbsp; This simple model is depicted in Figure 3.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=122 height=85></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 3</b></font><font face="Times">.&nbsp; The</font> <font face="Helvetica">Book</font> <font face="Times">Entity</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Names and Model Paths</b></font>
+
+<p><font face="Times">Every modeling object is identified by a unique, case-sensitive name.&nbsp; By convention, entity names are capitalized and attributes aren't; thus, as shown above, you have a</font> <font face="Helvetica">Book</font> <font face="Times">entity and</font> <font face="Helvetica">title</font><font face="Times">,</font> <font face="Helvetica">author</font><font face="Times">, and</font> <font face="Helvetica">publisher</font> <font face="Times">attributes.</font>
+
+<p><font face="Times">An attribute can be distinguished as belonging to a particular entity through the <i>model path</i> format</font> <font face="Helvetica">&quot;Entity.attribute</font><font face="Times">&quot;.&nbsp; For example, the model path</font> <font face="Helvetica">Book.title</font> <font face="Times">identifies the</font> <font face="Helvetica">title</font> <font face="Times">attribute in the</font> <font face="Helvetica">Book</font> <font face="Times">entity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Data</b></font>
+
+<p><font face="Times">Entities and attributes represent structures that contain data.&nbsp; In a relational database,&nbsp; entities represent tables; an entity's attributes represent the table's columns.&nbsp; An example table that could be represented by the</font> <font face="Helvetica">Book</font> <font face="Times">entity (and that will be used through most of this chapter) is shown below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F7.gif" width=287 height=174></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 4</b></font><font face="Times">.&nbsp; The &quot;BOOK&quot; Table</font>
+
+<p><br><br>
+
+<p><font face="Times">Each row in the table is called a <i>record</i>.&nbsp; A record is also referred to as an &quot;instance of an entity.&quot;&nbsp; Thus, a book record is called an instance of the</font> <font face="Helvetica">Book</font> <font face="Times">entity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Names and the Data Dictionary</b></font>
+
+<p><font face="Times">The table and column names shown in Figure 4 are the names that a hypothetical server might use.&nbsp; The collection of a server's table and column names is called its <i>data dictionary</i>.&nbsp; In your application, you can't refer directly to items in the server's data dictionary.&nbsp; To identify the server's &quot;BOOK&quot; table, for example, you must refer to the entity that represents the table--in other words, the</font> <font face="Helvetica">Book</font> <font face="Times">entity.&nbsp; The correspondence between the server's names and the names of the modeling objects that you create isn't coincidental; you have to tell each modeling object which data dictionary name it represents.&nbsp; This is done as you create the model, a subject that's addressed in the next chapter.</font>
+
+<p><font face="Times">Server names (in other words, names in a server's data dictionary) are, typically, case-insensitive.&nbsp; As mentioned previously, the names of modeling objects are case-sensitive.&nbsp; Throughout this chapter (and the rest of this manual) modeling objects are given names that match, but for case, the corresponding dictionary names (given the hypothetical relational database server that's used in the examples).&nbsp; To distinguish the two, the server names are upper-case and quoted--for example, the &quot;BOOK&quot; table--while modeling object names follow the conventions already described.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Attribute Data</b></font>
+
+<p><font face="Times">When you use an attribute to identify a particular datum in a table, you refer to the value <i>for</i> that attribute, given a particular record.&nbsp; The author of a book, for example, is the value <i>for</i> the</font> <font face="Helvetica">Book.author</font> <font face="Times">attribute.&nbsp; The &quot;value for an attribute&quot; construction enforces the notion that the attribute itself doesn't contain data.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>NULL Data</b></font>
+
+<p><font face="Times">Notice that not every book in the table shown in Figure 4 has an author.&nbsp; If a record's value for a particular attribute can't be determined (or doesn't exist), the value is said to be NULL.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Data Types</b></font>
+
+<p><font face="Times">Every attribute is assigned a data type (such as <b>int</b>, <b>char *</b>, and so on).&nbsp; All values for a particular attribute take the data type of that attribute.&nbsp; In other words, the values in a particular column are all of the same type.</font>
+
+<p><font face="Times">None of the candidate data types (which are described in the next chapter) allow lists of data; the value for a particular attribute in a particular record must be a single datum.&nbsp; Thus, the model shown in Figure 3 says more than simply that a book has a title, an author, and a publisher.&nbsp; It signifies that every book has a <i>single</i> title, a <i>single</i> author, and a <i>single</i> publisher (where any of these single values can be NULL).&nbsp; This &quot;atomic attribute rule&quot; will become particularly important in the discussion of relationships, later in this chapter.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Primary Key</b></font>
+
+<p><font face="Times">Each of the records in a table must be unique--no two records can contain exactly the same values.&nbsp; To ensure this, the entity from which the records are instantiated must contain an attribute that's guaranteed to represent a unique value for each record. This attribute is called the entity's <i>primary key</i>.</font>
+
+<p><font face="Times">The</font> <font face="Helvetica">Book</font> <font face="Times">entity, as defined above, doesn't contain a primary key.&nbsp; If the library were to contain two copies of the same book, the records for the two books wouldn't be distinguishable from each other.&nbsp; To amend this, a primary key called</font> <font face="Helvetica">bookID</font><font face="Times">--an attribute for which each distinct book takes a unique (and arbitrary) value--is added to the</font> <font face="Helvetica">Book</font> <font face="Times">entity.&nbsp; Figure 5 shows the amended entity; the primary key is marked with a bullet.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=111 height=67></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 5</b></font><font face="Times">.</font>&nbsp; <font face="Helvetica">Book</font> <font face="Times">Entity with Primary Key</font>
+
+<p><br><br>
+
+<p><font face="Times">An entity can contain any number of attributes that represent unique data, but only one of them needs to be declared as a primary key.&nbsp; Declaring more than one as a primary key is allowed--this creates a <i>compound primary key</i>, as described below--but it should be avoided if possible.&nbsp; In other words, if you have more than one &quot;unique data&quot; attribute in an entity, you should choose one of them to act as the primary key.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Primary Key Significance</b></font>
+
+<p><font face="Times">The data that a primary key signifies needn't correspond to an actual facet of the entity.&nbsp; In other words, the value for a primary key can be arbitrary.&nbsp; The</font> <font face="Helvetica">bookID</font> <font face="Times">attribute used above is an example of a primary key that represents &quot;meaningless&quot; values:&nbsp; A book record's value for the</font> <font face="Helvetica">bookID</font> <font face="Times">attribute wouldn't tell you anything about the actual (&quot;real-world&quot;) book.&nbsp; The value would only distinguish that particular record from other book records.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Compound Primary Keys</b></font>
+
+<p><font face="Times">Typically, the primary key for an entity is a single attribute.&nbsp; However, it's possible to designate a combination of attributes as a compound primary key.&nbsp; In a compound primary key, the value for any one of the constituent attributes isn't necessarily unique, but the combination of all of them is.</font>
+
+<p><font face="Times">For example, every book in our library could be uniquely identified through a combination of its ISBN number and an additional copy number (to distinguish multiple copies of the same book).&nbsp; Taken on their own, neither of these numbers is necessarily unique for all books, but the combination of the two is.&nbsp; Figure 6 illustrates a modification of the</font> <font face="Helvetica">Book</font> <font face="Times">entity (renamed </font><font face="Helvetica">ISBNBook</font><font face="Times">) in which the attributes</font> <font face="Helvetica">ISBNNum</font> <font face="Times">and</font> <font face="Helvetica">copyNum</font> <font face="Times">form a compound primary key.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=89 height=85></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 6</b></font><font face="Times">.&nbsp; Entity with Compound Primary Key</font>
+
+<p><br><br>
+
+<p><font face="Times">A compound primary key doesn't provide a benefit beyond that of a simple primary key.&nbsp; For example, the</font> <font face="Helvetica">ISBNBook</font> <font face="Times">entity doesn't, by force of its compound key, let you do anything that the simpler</font> <font face="Helvetica">Book</font> <font face="Times">entity lets you do.&nbsp; Furthermore, the simplicity of a single-attribute primary key make its a better choice than the compound key alternative.</font>
+
+<p><font face="Times">So why would you ever choose to use a compound primary key?&nbsp; Actually, you seldom <i>choose</i> to do so:&nbsp; Some entities <i>demand </i>compound keys.&nbsp; This is demonstrated in the section &quot;Simulating a Bidirectional Relationship,&quot; later in this chapter.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Relationships</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you lend books from your library, you would probably have, in addition to the</font> <font face="Helvetica">Book</font> <font face="Times">entity, a</font> <font face="Helvetica">Borrower</font> <font face="Times">entity that characterizes a book borrower's name, address, telephone number, and so on.&nbsp; There's an obvious affinity between books and borrowers:&nbsp; Books are lent to borrowers.&nbsp; To express this affinity in an E-R model, you create a <i>relationship</i> between the</font> <font face="Helvetica">Book </font><font face="Times">entity and the</font> <font face="Helvetica">Borrower</font> <font face="Times">entity.&nbsp; Graphically, a relationship is shown as a named arrow that points from one entity to another; the Book-Borrower relationship (which is named</font> <font face="Helvetica">toBorrower</font><font face="Times">) is depicted in Figure 7.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">To support the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship, the</font> <font face="Helvetica">Book</font> <font face="Times">entity has been altered--the</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute has been added to it.&nbsp; This is explained in &quot;Relationship Keys,&quot; below.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F11.gif" width=234 height=85></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7</b></font><font face="Times">.&nbsp; The</font> <font face="Helvetica">toBorrower</font> <font face="Times">Relationship</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Relationship Names</b></font>
+
+<p><font face="Times">It's suggested that you name your relationships &quot;</font><font face="Helvetica">toEntity</font><font face="Times">&quot;, just as the relationship drawn in Figure 7 is named</font> <font face="Helvetica">toBorrower</font><font face="Times">. However, this convention is often sacrificed in deference to purpose; an example of this is given in &quot;Reflexive Relationships,&quot; below.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Relationships and the Data Dictionary</b></font>
+
+<p><font face="Times">Unlike entities and attributes, relationships don't correspond to names in the server's data dictionary.&nbsp; In general, most servers don't define structural elements for relationships, so their data dictionaries don't contain names to which E-R relationships can correspond.&nbsp; But relationships aren't completely disassociated from the data dictionary:&nbsp; A relationship's definition, as explained in the next section, depends on the existence of particular entities and attributes (which, as described earlier, must correspond to data dictionary names).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Relationship Keys</b></font>
+
+<p><font face="Times">The construction of a relationship involves more than just two entities.&nbsp; You also have to designate an attribute from either of the entities as <i>relationship keys</i>.&nbsp; In the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship, the</font> <font face="Helvetica">Book.borrowerID</font> <font face="Times">and</font> <font face="Helvetica">Borrower.borrowerID</font> <font face="Times">are so designated; this is indicated in Figure 7 as the two attributes lie at either end of the relationship arrow.</font>
+
+<p><font face="Times">The reason you need to designate relationship keys is so the relationship can be used to create cross-references between specific instances of the related entities (this is called &quot;resolving&quot; the relationship).&nbsp;&nbsp; For example, let's say you want the record of the borrower that checked out the book <i>Farewell to Farms</i>.&nbsp; You tell the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship to resolve itself:&nbsp; It gets the value for the book's</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute (which identifies the borrower and was set when the book was checked out), and compares it to the value for</font> <font face="Helvetica">borrowerID</font> <font face="Times">in each</font> <font face="Helvetica">Borrower</font> <font face="Times">instance.&nbsp; A match locates the desired borrower record.</font>
+
+<p><font face="Times">For this cross-referencing scheme to work, the two relationship keys must characterize the same data--you couldn't find a book's borrower by comparing, for example,</font> <font face="Helvetica">Book.bookID</font> <font face="Times">to</font> <font face="Helvetica">Borrower.borrowerID</font><font face="Times">.&nbsp; This is why the</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute was added to the</font> <font face="Helvetica">Book</font> <font face="Times">entity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Example with Data</b></font>
+
+<p><font face="Times">To further the example of how a relationship is resolved, consider the &quot;BOOK&quot; and &quot;BORROWER&quot; tables presented below (for brevity, only the essential columns are shown).</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=326 height=191></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 8</b></font><font face="Times">.&nbsp; &quot;BOOK&quot; and &quot;BORROWER&quot; Tables</font>
+
+<p><br><br>
+
+<p><font face="Times">Here we see that the value for the</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute for the book that's titled <i>Farewell to Farms</i> is 0.&nbsp; Looking in the &quot;BORROWER&quot; table, we see that 0 is the ID of Arrigo Boito.&nbsp; Thus, <i>Farewell to Farms</i> is currently checked out to Mr. Boito. Similarly we can determine that Mara Wilson has <i>Pelican Island</i> checked out, <i>Good Times</i> is being read by Emma Decca, and so on.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Reading on through the &quot;BOOK&quot; table, you'll notice that the record for <i>The Crime of the Century</i> has a NULL value for its</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute.&nbsp; The meaning of the value is clear:&nbsp; The book isn't currently checked out.&nbsp; But it raises an important question:&nbsp; What happens when an attempt is made to resolve the relationship for this record?&nbsp; The answer is given later in this chapter.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Choosing the Keys</b></font>
+
+<p><font face="Times">Any attribute can be used as a relationship key, but some are better suited than others.&nbsp; In general, of the two relationship keys for a particular relationship, one key will be a primary key for its entity (or, otherwise, an attribute that characterizes unique data) and the other key is manufactured to emulate the first.&nbsp;&nbsp; In traditional E-R modeling, the emulating attribute is called a <i>foreign key</i>.&nbsp; The</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship demonstrated this:&nbsp; The relationship key in the</font> <font face="Helvetica">Borrower</font> <font face="Times">entity is</font> <font face="Helvetica">borrowerID</font><font face="Times">, the primary key for that entity.&nbsp; The</font> <font face="Helvetica">borrowerID</font> <font face="Times">attribute is added to</font> <font face="Helvetica">Book</font> <font face="Times">as a foreign key.</font>
+
+<p><font face="Times">With regard to the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship, you may wonder why the</font> <font face="Helvetica">Book</font> <font face="Times">entity's primary key (</font><font face="Helvetica">bookID</font><font face="Times">) wasn't chosen as a relationship key.&nbsp; The simple answer is that the presence of the requisite foreign key,</font> <font face="Helvetica">Borrower.bookID</font><font face="Times">, would mean that a borrower could only check out one book at a time (this follows from the atomic attribute rule).&nbsp; Rare is the library that imposes a one-book limit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Compound Relationships</b></font>
+
+<p><font face="Times">A relationship's keys needn't be single attributes from the related entities; any number of attributes can be paired as relationship keys within the same relationship.&nbsp; A relationship that designates more than one pair of keys is called a <i>compound relationship</i>.</font>
+
+<p><font face="Times">For example, consider a variation of the</font> <font face="Helvetica">Borrower</font> <font face="Times">entity (which we'll call</font> <font face="Helvetica">NamedBorrower</font><font face="Times">) that uses the attributes</font> <font face="Helvetica">firstName </font><font face="Times">and</font> <font face="Helvetica">lastName</font> <font face="Times">as a compound primary key (using human names for unique identification is a bad idea, but it serves the purpose). To support the</font> <font face="Helvetica">toNamedBorrower</font> <font face="Times">relationship,</font> <font face="Helvetica">borrowerFirstName</font> <font face="Times">and</font> <font face="Helvetica">borrowerLastName</font> <font face="Times">attributes are added as foreign keys to</font> <font face="Helvetica">Book</font><font face="Times">.&nbsp; This is depicted in Figure 9.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=302 height=88></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 9</b></font><font face="Times">.&nbsp; A Compound Relationship</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The keys in a compound relationship can be a combination of <i>any</i> attributes--not just a compound primary key (or foreign keys to a compound primary key).&nbsp; Conversely, you can use a single attribute from a compound primary key as a relationship key in a simple (non-compound) relationship.</font>
+
+<p><font face="Times">Relationship keys always come in pairs (whether the relationship is simple or compound).&nbsp; In other words, if the relationship uses a two-attribute relationship key in one entity, the other entity must also have two relationship keys.&nbsp; If the one has three relationship keys, the other must have three, and so on.</font>
+
+<p><font face="Times">The routine that's used to resolve a compound relationship is similar to that for a simple relationship.&nbsp; The only difference is the number of pairs of relationship key values that are compared.&nbsp; For two records to correspond, each of the comparisons must be successful.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Ownership</b></font>
+
+<p><font face="Times">In the figures in this book, the entity that owns a relationship is the one adjacent to the relationship's label.&nbsp; For example, in Figure 10 the</font> <font face="Helvetica">Book</font> <font face="Times">entity owns the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship, as indicated by the proximity of the &quot;toBorrower&quot; label.</font>
+
+<p><font face="Times">A relationship's owner is called its <i>source entity</i>; the entity to which it points is called the <i>destination entity</i>.&nbsp; In the example below, the source entity of the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship is</font> <font face="Helvetica">Book</font><font face="Times">; its destination entity is</font> <font face="Helvetica">Borrower</font><font face="Times">.&nbsp; Similarly, the relationship key in the source entity is called the <i>source key</i>; the destination's relationship key is the <i>destination key</i>. (By extension, the table that's represented by the source entity can be called the &quot;source table&quot;, the source table contains &quot;source records,&quot; and similarly for the destination table and its records.)</font>
+
+<p><font face="Times">The components of the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship are labeled in Figure 10.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F6.gif" width=312 height=104></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 10</b></font><font face="Times">.</font>&nbsp; <font face="Helvetica">toBorrower</font><font face="Times">'s Source and Destination</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">As in the case of the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship, the source and destination keys often have the same name, although this isn't a requirement of model design.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Unidirectionality</b></font>
+
+<p><font face="Times">A consequence of relationship ownership (by the source entity) is <i>unidirectionality.</i>&nbsp; In a unidirectional relationship, the path that leads from the source to the destination can't be traveled in the opposite direction--you can't use a relationship to go from the destination to the source.&nbsp; For example, although you can use the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship to find the borrower of a particular book, you can't use it to get a list of the books that a borrower has checked out.</font>
+
+<p><font face="Times">Unidirectionality is enforced by the way a relationship is resolved.&nbsp; Specifically, the source record is a given:&nbsp; Resolving a relationship means finding the correct destination record (or, as explained later, multiple records) given a specific source record.</font>
+
+<p><font face="Times">To simulate a bidirectional relationship--in which you can look up records in either direction--you have to create a separate &quot;return-trip&quot; relationship.&nbsp; This is demonstrated in a later section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Reflexive Relationships</b></font>
+
+<p><font face="Times">The source and destination entities in a relationship needn't be different.&nbsp; Where the entities in a relationship are the same, a <i>reflexive relationship</i> is created.&nbsp; Reflexive relationships are important in characterizing a system in which an instance of an entity points to another instance of the same entity.</font>
+
+<p><font face="Times">For example, rather than restrict the use of the</font> <font face="Helvetica">Book</font> <font face="Times">entity to characterize individually bound works in your library, you may want it to represent individual stories in an anthology, articles in a journal, entries in an encyclopedia, and so on.&nbsp; A particular book record may, therefore, need to point to another book record that describes the &quot;volume&quot; (in other words, the anthology, journal, encyclopedia) that it's part of.&nbsp; To represent this, you create a reflexive relationship as shown in Figure 11.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F8.gif" width=160 height=109></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 11</b></font><font face="Times">.&nbsp; A Reflexive Relationship</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The name of the relationship,</font> <font face="Helvetica">componentOf</font><font face="Times">, doesn't follow the relationship naming convention suggested earlier in this chapter.&nbsp; However, it follows from the meaning of the relationship, and meaning takes precedence over form.</font>
+
+<p><font face="Times">The</font> <font face="Helvetica">volumeID</font> <font face="Times">attribute acts as the relationship's source key;</font> <font face="Helvetica">bookID</font> <font face="Times">is the destination key.&nbsp; Where a book's volume ID matches another book's book ID, the first book is said to be a component of the second.&nbsp; If a book isn't part of a volume, the value for the</font> <font face="Helvetica">volumeID</font> <font face="Times">attribute is NULL (in that book's record).</font>
+
+<p><font face="Times">Reflexive relationships can represent arbitrarily deep recursions.&nbsp; Thus, from the model above, a book can be part of a book that's part of yet another book, and so on.&nbsp; This is useful if, for example, you want to characterize an article as being part of a particular issue of a journal.&nbsp; You would create a book record for the article, the issue in which it appears, and the journal taken as a whole, setting the value for the</font> <font face="Helvetica">volumeID</font> <font face="Times">of the article to match the value for the</font> <font face="Helvetica">bookID</font> <font face="Times">of the issue, and the</font> <font face="Helvetica">volumeID </font><font face="Times">of the issue to match the</font> <font face="Helvetica">bookID</font> <font face="Times">of the journal.&nbsp; The value for the journal's</font> <font face="Helvetica">volumeID</font> <font face="Times">would be NULL, thus denoting that it's the last rung in the recursion.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Model Paths</b></font>
+
+<p><font face="Times">Because it's owned by an entity, a relationship can be identified through a model path.&nbsp; The format of a relationship's model path name is &quot;</font><font face="Helvetica">SourceEntity.relationship</font><font face="Times">&quot;; for example,</font>&nbsp; <font face="Helvetica">Book.toBorrower</font><font face="Times">.</font>
+
+<p><font face="Times">Furthermore, you can extend the model path through a relationship and on to an attribute in the destination entity through the form &quot;</font><font face="Helvetica">SourceEntity.relationship.destinationAttribute</font><font face="Times">&quot;.&nbsp;&nbsp; However, it's important to understand that this &quot;relationship traversal&quot; form of identifying an attribute doesn't mean the same thing as identifying the attribute as it lies naturally in its entity. The difference is in the range of values that the attribute represents.</font>
+
+<p><font face="Times">For example, the range of values for the simple model path</font> <font face="Helvetica">Borrower.name</font> <font face="Times">is any value that appears in the &quot;NAME&quot; column of the &quot;BORROWER&quot; table.&nbsp; The values for the</font> <font face="Helvetica">Book.toBorrower.name</font> <font face="Times">path, on the other hand, are only those names that can be gotten by resolving the</font> <font face="Helvetica">Book.toBorrower</font> <font face="Times">relationship.&nbsp; If a particular borrower doesn't have any books checked out, then </font><font face="Helvetica">Book.toBorrower.name</font> <font face="Times">will never find that borrower's name.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Relationship Degree</b></font>
+
+<p><font face="Times">Every relationship has a <i>degree</i>; the degree tells you how many destination records can (potentially) resolve the relationship. The Database Kit defines two degrees, <i>to-one</i> and <i>to-many</i>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In a to-one relationship, for each source record there's no more than one corresponding destination record.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In a to-many relationship, for each source record there may be more than one corresponding destination record.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship used above is an example of a to-one relationship:&nbsp; A single book can be checked out by no more than one borrower (at a time).&nbsp; The converse relationship, from</font> <font face="Helvetica">Borrower</font> <font face="Times">to</font> <font face="Helvetica">Book</font><font face="Times">, would be to-many:&nbsp; A single borrower can check out more than one book.&nbsp; This relationship, which is owned by</font> <font face="Helvetica">Borrower</font> <font face="Times">and called</font> <font face="Helvetica">toBook</font><font face="Times">, is shown in Figure 12 (for clarity, the source and destination components are pointed out).&nbsp; That the relationship is to-many is indicated by the double arrowhead.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F4.gif" width=318 height=104></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 12</b></font><font face="Times">.&nbsp; A To-Many Relationship</font>
+
+<p><br><br>
+
+<p><font face="Times">Notice that the relationship keys for the</font> <font face="Helvetica">toBook</font> <font face="Times">relationship are the same as for</font> <font face="Helvetica">toBorrower</font><font face="Times">.&nbsp; However, the source and destination key assignments are reversed.&nbsp; In other words, whereas</font> <font face="Helvetica">Book.borrowerID</font> <font face="Times">is the source key for the</font> <font face="Helvetica">toBook </font><font face="Times">relationship, it's the destination key for</font> <font face="Helvetica">toBorrower</font><font face="Times">; similarly does</font> <font face="Helvetica">Borrower.borrowerID</font> <font face="Times">change destination and source key roles between the two relationships.</font>
+
+<p><font face="Times">This switch does more than demonstrate that the same attributes can be used as relationship keys in more than one relationship; it also exemplifies the typical orientation of the primary key with regard to the relationship keys in to-one and to-many relationships:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In a to-one relationship, the destination key is usually the primary key for its entity.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In a to-many relationship, the source key is usually a primary key.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Resolving a To-Many Relationship</b></font>
+
+<p><font face="Times">The only difference in the relationship resolution routine between a to-one and a to-many relationship is the number of destination records that are found.&nbsp; A to-one relationship stops when the first (and what should be the only) matching destination record is found.&nbsp; A to-many relationship finds all the destination records that resolve the relationship for the given source record.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Simulating a Bidirectional Relationship</b></font>
+
+<p><font face="Times">Since relationships, as defined by the Database Kit, are unidirectional, it's natural to assume that to simulate a bidirectional relationship--in other words, to express the natural relationship between two entities without regard for direction--all you need is two relationships:&nbsp; One that leads from entity A to entity B, and one that leads from entity B to entity A, as demonstrated by the</font> <font face="Helvetica">toBorrower</font><font face="Times">/</font><font face="Helvetica">toBook</font> <font face="Times">pair.&nbsp; Unfortunately, it isn't always that easy.</font>
+
+<p><font face="Times">Consider, for example, the actual relationship between books and authors.&nbsp; An author can write many books, and a single book can be contributed to by more than one author.&nbsp; Given that attributes can only characterize atomic data, the</font> <font face="Helvetica">author</font> <font face="Times">attribute in the</font> <font face="Helvetica">Book</font> <font face="Times">entity is improper (since it may have to hold a list of names) and should be removed.&nbsp; To characterize author data, you create a separate</font> <font face="Helvetica">Author</font> <font face="Times">entity, as shown below.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F9.gif" width=83 height=79></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 13</b></font><font face="Times">.&nbsp; The</font> <font face="Helvetica">Author</font> <font face="Times">Entity</font>
+
+<p><br><br>
+
+<p><font face="Times">You might be tempted to form a to-many relationship between</font> <font face="Helvetica">Book</font> <font face="Times">and</font> <font face="Helvetica">Author</font> <font face="Times">(called</font> <font face="Helvetica">toAuthor</font><font face="Times">).&nbsp; Similarly, you would want to form the to-many</font> <font face="Helvetica">toBook</font> <font face="Times">relationship between</font> <font face="Helvetica">Author</font> <font face="Times">and</font> <font face="Helvetica">Book</font> <font face="Times">(to show that a single author may have written more than one book).</font>
+
+<p><font face="Times">But this doesn't work because it's impossible to assign relationship keys that would support this set-up.&nbsp; For example, you can't use, in the</font> <font face="Helvetica">toAuthor</font> <font face="Times">relationship, the</font> <font face="Helvetica">bookID</font> <font face="Times">attribute as a source key because the destination key,</font> <font face="Helvetica">Author.bookID</font> <font face="Times">(added as a foreign key), wouldn't be atomic.&nbsp; This follows from the notion that an author may write more than one book.&nbsp; Importing </font><font face="Helvetica">authorID</font> <font face="Times">as a foreign key into</font> <font face="Helvetica">Book</font> <font face="Times">raises the same objection:&nbsp; The attribute wouldn't be atomic (since a book may have more than one author).</font>
+
+<p><font face="Times">To simulate this &quot;many-to-many&quot; relationship (as it's called in traditional E-R modeling), you need to create an auxiliary entity that stands between</font> <font face="Helvetica">Book</font> <font face="Times">and</font> <font face="Helvetica">Author</font><font face="Times">, and form a network of relationships to and from it.&nbsp; This is depicted in Figure 14.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F15.gif" width=379 height=76></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 14</b></font><font face="Times">.&nbsp; A Many-to-Many Model</font>
+
+<p><br><br>
+
+<p><font face="Times">The compound primary key used in</font> <font face="Helvetica">BookAuthor</font> <font face="Times">indicates that the entity characterizes unique combinations of books and authors.&nbsp; The table that the entity represents would hold a different record for each author of every book (which is the same as saying it holds a unique record for each book of every author).&nbsp; For example, if three authors contributed to a single book, there would be three</font> <font face="Helvetica">BookAuthor</font> <font face="Times">instances with the same value for the</font> <font face="Helvetica">bookID</font> <font face="Times">attribute, but each record would have a different value for its</font> <font face="Helvetica">authorID</font> <font face="Times">attribute.</font>
+
+<p><font face="Times">The relationships between</font> <font face="Helvetica">Book</font><font face="Times">,</font> <font face="Helvetica">BookAuthor</font><font face="Times">, and</font> <font face="Helvetica">Author</font> <font face="Times">let you find all the authors for a particular book, and all the books for a particular author:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Given a &quot;BOOK&quot; record, you resolve the</font> <font face="Helvetica">Book.toBookAuthor</font> <font face="Times">relationship to find all the &quot;BOOKAUTHOR&quot; records for that book.&nbsp; You would then resolve, in turn, the</font> <font face="Helvetica">BookAuthor.toAuthor</font> <font face="Times">relationship for each of these records.&nbsp; Thus do you get all the &quot;AUTHOR&quot; records for the original &quot;BOOK&quot; record.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To get the books for a particular author, you go in the opposite direction:&nbsp; You start with an &quot;AUTHOR&quot; record, resolve </font><font face="Helvetica">Author.toBookAuthor</font><font face="Times">, then resolve</font> <font face="Helvetica">BookAuthor.toBook.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>The Tables Behind the Many-to-Many Model</b></font>
+
+<p><font face="Times">To better understand how the many-to-many model works, it helps to see an example of the tables that store the data.&nbsp; First, we must change the contents of our library to introduce multiple authors.&nbsp; The new list of books and their authors is:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>Farewell to Farms</b> by Harnet Loonset and Aldo Ciccolini</font><br>
+<font face="Times"><b>Pelican Island</b> by Giles Binchois</font><br>
+<font face="Times"><b>Good Times</b> by Aldo Ciccolini, Celina Rumby, and Giles Binchois</font><br>
+<font face="Times"><b>Junior Wrestling Yearbook</b> (no identifiable author)</font><br>
+<font face="Times"><b>The Crime of the Century</b> by Giles Binchois and Celina Rumby</font><br>
+<font face="Times"><b>David Westfield</b> by Aldo Ciccolini</font><br>
+<font face="Times"><b>The Prince and the People</b> by Celina Rumby and Harnet Loonset</font><br>
+<font face="Times"><b>The Green Hills of Alabama</b> by Harnet Loonset, Aldo Ciccolini, and Celina Rumby</font><br>
+<font face="Times"><b>The Small Business Directory</b> (no identifiable author)</font><br>
+<font face="Times"><b>The Tale of Two Towns</b> by Aldo Ciccolini and Giles Binchois</font><br>
+<font face="Times"><b>The Rest of the Angels</b> by Giles Binchois</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The &quot;BOOK&quot; and &quot;AUTHOR&quot; tables that are filled with this information are shown in&nbsp; Figure 15 (omitting data for non-essential attributes).</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F10.gif" width=287 height=190></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 15</b></font><font face="Times">.&nbsp; &quot;BOOK&quot;&nbsp; and &quot;AUTHOR&quot; Tables</font>
+
+<p><br><br>
+
+<p><font face="Times">The &quot;BOOKAUTHOR&quot; table is shown in Figure 16 (for clarity, the titles and author names are shown in the margins).</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F13.gif" width=281 height=263></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 16</b></font><font face="Times">.&nbsp; The &quot;BOOKAUTHOR&quot; Table</font>
+
+<p><br><br>
+
+<p><font face="Times">As expected, some values appear more than once for the</font> <font face="Helvetica">bookID</font> <font face="Times">attribute; similarly are values for</font> <font face="Helvetica">authorID</font> <font face="Times">repeated.&nbsp; But since</font> <font face="Helvetica">bookID</font> <font face="Times">and</font> <font face="Helvetica">authorID</font>&nbsp; <font face="Times">form a compound primary key for the</font> <font face="Helvetica">BookAuthor</font> <font face="Times">entity, no two records may possess the same combination of values for these two attributes.&nbsp; This is the E-R way of signifying that a single book may have more than one author, and a single author may have written more than one book, but no book may have been written more than once by the same author, nor may any single author write the same book twice.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Equijoins and Outer Joins</b></font>
+
+<p><font face="Times">The Database Kit demands that every relationship be declared as either an <i>equijoin</i> or an <i>outer join</i>.&nbsp; The purpose of the declaration only makes sense if you understand what a <i>join</i> is.&nbsp; Roughly put, the practice of joining lets you fabricate a table that contains columns that are based on attributes from different entities--in other words, the columns are &quot;joined&quot; together in a single table (it's convenient to speak of the attributes that represent these columns as being joined as well).&nbsp; However, you can't join arbitrary attributes from various entities:&nbsp; To join attributes from two different entities, there must be a relationship between the entities.</font>
+
+<p><font face="Times">For example, the</font> <font face="Helvetica">toBorrower</font> <font face="Times">relationship lets you join attributes from the</font> <font face="Helvetica">Book</font> <font face="Times">and</font> <font face="Helvetica">Borrower</font> <font face="Times">entities.&nbsp; The result of the join could be captured in a single table (in your application--a join doesn't conjure up an actual server table).&nbsp; The table below is the result of joining the</font> <font face="Helvetica">Book.title</font> <font face="Times">and</font> <font face="Helvetica">Book.toBorrower.name</font> <font face="Times">attributes.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F12.gif" width=224 height=197></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17</b></font><font face="Times">.&nbsp; A Join through the</font> <font face="Helvetica">toBorrower</font> <font face="Times">Relationship</font>
+
+<p><br><br>
+
+<p><font face="Times">The NULL values in the right column indicate that the books titled <i>The Crime of the Century</i>, <i>The Green Hills of Alabama</i>, and <i>The Tale of Two Towns</i> aren't checked out.&nbsp; Nonetheless, the titles of these books find their way into the table.&nbsp; This is because </font><font face="Helvetica">toBorrower</font> <font face="Times">was declared as an <i>outer join</i>:&nbsp; In an outer join, <i>all</i> source records are included in the result of the join.</font>
+
+<p><font face="Times">If we declare</font> <font face="Helvetica">toBorrower</font> <font face="Times">to be an <i>equijoin</i>, the table would appear as shown below.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F14.gif" width=228 height=141></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 18</b></font><font face="Times">.&nbsp; Using</font> <font face="Helvetica">toBorrower</font> <font face="Times">as an Equijoin</font>
+
+<p><br><br>
+
+<p><font face="Times">In an equijoin, if a destination record can't be found for a given source record, then the source record isn't included in the result of the join.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Joins and To-Many Relationships</b></font>
+
+<p><font face="Times">Only to-one relationships can join attributes.&nbsp; Thus, the equijoin/outer join declaration doesn't have any meaning for a to-many relationships.&nbsp; You still have to declare your to-many relationships as one or the other, however.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

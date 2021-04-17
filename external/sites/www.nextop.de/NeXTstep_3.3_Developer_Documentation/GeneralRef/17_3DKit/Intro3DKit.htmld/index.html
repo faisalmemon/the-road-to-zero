@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/17_3DKit/Intro3DKit.rtf -->
+<!-- Date: Sun Jun 28 20:08:02 1998 -->
+<head>
+<title>Intro3DKit</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>17</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>3D Graphics Kit</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Library:</b></font></td>
+
+<td><font face="Times">libMedia_s.a</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Header File Directory:</b></font></td>
+
+<td><font face="Times">/NextDeveloper/Headers/3Dkit</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Import:</b></font></td>
+
+<td><font face="Times">3Dkit/3Dkit.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Introduction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The 3D Graphics Kit enables NEXTSTEP applications to model and render 3-dimensional scenes.&nbsp; Much as the Application Kit's 2D graphics capabilities are based on the Display PostScript interpreter, the 3D Kit's capabilities are based on the Interactive RenderMan renderer.&nbsp; There are both similarities and differences in the inner workings of the two implementations.</font>
+
+<p><font face="Times">One similarity is that both are implemented with a client-server model, in which client applications send drawing code to the Window Server, which does the actual drawing.&nbsp; Another similarity is that N3DCamera--the 3D Kit's View--generates <i>all </i>drawing code, both 2D and 3D, when its <b>drawSelf:</b>&nbsp; method is invoked.&nbsp; This keeps the Application Kit's display mechanism intact for both PostScript and RenderMan drawing.</font>
+
+<p><font face="Times">One difference in the implementations is in the code generated for drawing.&nbsp; For 2D drawing, a View sends PostScript code to the Window Server's Display PostScript interpreter.&nbsp; For 3D drawing, a View sends RenderMan Interface Bytestream (RIB) code to the Window Server's Interactive RenderMan renderer.</font>
+
+<p><font face="Times">The PostScript language is frequently referred to as a <i>page description language</i>; The RenderMan language can be thought of as a <i>scene description language</i>.&nbsp; It provides graphics primitives, lighting specification, camera controls, and other features required for 3D scene description.&nbsp; This documentation assumes you are familiar with the RenderMan language; for an introduction to the language, see <i>The RenderMan Companion</i> by Steve Upstill, published by Addison-Wesley.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The RenderMan Interface and 3D Renderers</b></font>
+
+<p><font face="Times">The RenderMan Interface is a standard API for 3D scene description.&nbsp; One of the main features of the RenderMan Interface is that it separates <i>modeling</i> from <i>rendering</i>.&nbsp; A modeling program stores data for the objects in a 3D scene and generates RIB code to describe that scene to a renderer.&nbsp; The level of detail in the model is fixed in the data stored by the modeler.&nbsp; The quality of rendering is determined by the renderer selected and the rendering techniques selected for that renderer.</font>
+
+<p><font face="Times">The 3D Kit uses two separate renderers:&nbsp; the interactive renderer for display and the photorealistic renderer for printed output.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Interactive Renderer</b></font>
+
+<p><font face="Times">To draw 3D scenes on-screen, a 3D Kit application sends its RIB output to the Interactive RenderMan renderer.&nbsp; For optimal drawing in response to user actions, the interactive renderer doesn't implement some features of the full RenderMan language. However, it does process all RIB code without error, ignoring attributes and options that it doesn't implement.&nbsp; As one example, shaders written in the RenderMan Shading Language aren't applied to surfaces by the interactive renderer (except for a limited group of standard shaders).</font>
+
+<p><font face="Times">So that multiple applications can render 3D scenes simultaneously, the interactive renderer implements additions to the RenderMan language for creating, selecting, and destroying contexts.&nbsp; Client applications create handles for their rendering contexts, select the appropriate context before they begin generating drawing code, and destroy contexts when they are finished with them. For the most part, interactive rendering contexts are managed by the 3D Kit, so you rarely have to deal with them in your code.</font>
+
+<p><font face="Times">A specification for the interactive renderer, including descriptions of new RenderMan procedures it implements and standard RenderMan procedures it ignores, can be found in the release note <b>/NextLibrary/Documentation/NextDev/Pixar/QRMSpec.rtfd</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Photorealistic Renderer</b></font>
+
+<p><font face="Times">The Application Kit's printing mechanism is extended by the 3D Kit to enable RIB output to be correctly incorporated into a print stream.&nbsp; When rendering a 3D image to be printed on a page or saved in a file, 3D Kit applications send their RIB output to the PhotoRealistic RenderMan renderer.&nbsp; The photorealistic renderer generates TIFF image data, which is then incorporated into the PostScript print stream.</font>
+
+<p><font face="Times">The photorealistic renderer supports the full RenderMan standard (with a few minor exceptions), so the images it generates display the detail and features specified in the original model.&nbsp; The photorealistic renderer operates as a separate process.&nbsp; It starts when invoked by a 3D Kit client, and stops when the image based on that RIB has been rendered.&nbsp; For speedier rendering, the 3D Kit supports photorealistic rendering in multiple processes on multiple hosts.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

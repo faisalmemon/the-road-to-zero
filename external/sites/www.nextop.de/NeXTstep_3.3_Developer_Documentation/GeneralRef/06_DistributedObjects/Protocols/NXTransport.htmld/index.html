@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/06_DistributedObjects/Protocols/NXTransport.rtf -->
+<!-- Date: Sun Jun 28 20:05:26 1998 -->
+<head>
+<title>NXTransport</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>NXTransport</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Adopted By:</b></font></td>
+
+<td><font face="Times">List (common classes)</font><br>
+<font face="Times">NXData (Mach Kit)</font><br>
+<font face="Times">NXPort (Mach Kit)</font><br>
+<font face="Times">NXProxy class (Distributed Objects)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">remote/transport.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocol Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXTransport protocol allows objects to be copied over a Distributed Objects connection.&nbsp; This protocol consists of three methods:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeRemotelyFor:freeAfterEncoding:isBycopy:</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeUsing:</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decodeUsing:</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When an object must be vended over a connection, the <b>encodeRemotelyFor:freeAfterEncoding:isBycopy:</b> method is invoked to determine what object is sent.&nbsp; The Object class implements a version of this method that returns an NXProxy; thus all objects may be sent over a connection in virtual form through the use of a proxy.&nbsp; Classes can override this method to specify another object (that conforms to the NXTransport protocol) to be sent over the connection.&nbsp; By sending a real object over the connection rather than a proxy, some applications can save the overhead of remote messaging (though if the object changes, keeping copies synchronized is an issue).</font>
+
+<p><font face="Times">When an object is to be encoded, it is sent an <b>encodeUsing:</b> message.&nbsp; The <i>portal</i> argument for this message is an object that implements the NXEncoding protocol and thus knows how to encode various data types.&nbsp; The object to be encoded should send data to <i>portal</i> that allows a copy of itself to be decoded.</font>
+
+<p><font face="Times">In order to create the copy of the object on the receiving side, the object is allocated and a <b>decodeUsing:</b> message is sent to it. The newly allocated object is not initialized, so the <b>decodeUsing:</b> implementation generally should invoke the object's designated initializer method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>decodeUsing:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>decodeUsing:</b>(id &lt;NXDecoding&gt;)<i>portal</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A newly allocated instance is sent this message in order to initialize itself when an object has been sent by copy over a connection.&nbsp; The instance is not initialized, so it should generally invoke the object's designated initializer.&nbsp; You must send messages (from the NXDecoding protocol) to the <i>portal</i> object to fetch any data that was encoded; these messages may be sent before or after initializing the new instance.</font>
+
+<p><font face="Times">This method generally returns <b>self</b> to indicate that <b>self</b> is the object that is to be used as the local copy of the sent object.&nbsp; If it returns another object, that object is used as the local copy, and the instance that received this message is freed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>encodeUsing:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>encodeRemotelyFor:freeAfterEncoding:isBycopy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>encodeRemotelyFor:</b>(NXConnection *)<i>connection</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>freeAfterEncoding:</b>(BOOL *)<i>flagp</i></font><br>
+<font face="Times"><b>isBycopy:</b>(BOOL)<i>isBycopy</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method is responsible for returning the object that must be encoded to send the receiver over <i>connection</i>.&nbsp; The default implementation inherited from the Object class returns a local proxy to the receiver which, when encoded, yields a remote proxy that forwards all messages to the original object.</font>
+
+<p><font face="Times">You can override this method to change how an object is transported.&nbsp; If you return another object (like <b>self</b>), that object will be encoded instead.&nbsp; The returned object must conform to the <b>NXTransport</b> protocol.&nbsp; You may wish to test the <i>isBycopy</i> flag and return <b>self</b> only if the object (rather than a proxy) is to be copied across the connection.&nbsp; If you want the receiving object to be freed after it is encoded, you can set the boolean pointed to by <i>flagp</i> to YES.</font>
+
+<p><font face="Times">A typical implementation of this method simply ensures that the object or a proxy gets encoded, based on the value of <i>isBycopy</i>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeRemotelyFor:(NXConnection *)connection</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">freeAfterEncoding:(BOOL *)flagp isBycopy:(BOOL)isBycopy</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (isBycopy) return self;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super encodeRemotelyFor:connection</font><br>
+<img src="../../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">freeAfterEncoding:flagp isBycopy:isBycopy];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>encodeUsing:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>encodeUsing:</b>(id &lt;NXEncoding&gt;)<i>portal</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method must send enough data to <i>portal</i> (an object that conforms to the NXEncoding protocol) that a copy of the object can be created on the other side of a connection using the <b>decodeUsing:</b> method.&nbsp; See the introduction to Distributed Objects for an example implementation of this method.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

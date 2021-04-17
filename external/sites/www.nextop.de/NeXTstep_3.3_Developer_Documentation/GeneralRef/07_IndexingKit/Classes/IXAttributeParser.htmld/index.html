@@ -1,0 +1,968 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXAttributeParser.rtf -->
+<!-- Date: Sun Jun 28 20:05:27 1998 -->
+<head>
+<title>IXAttributeParser</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXAttributeParser</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">indexing/IXAttributeParser.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An IXAttributeParser breaks text streams down into lists of lexemes occurring in the text.&nbsp; A <i>lexeme</i> is a word or phrase that should be treated as a single term.&nbsp; Though not directly accessible, the lists are used by other classes in the Indexing Kit to build indexes for the text, or to resolve queries against the text.</font>
+
+<p><font face="Times">An IXAttributeParser uses a number of IXAttributeReaders to divide a text stream into individual lexemes, each associated with a specific attribute, like Title, Author, or Abstract, and collects the lexemes into a histogram for each attribute.&nbsp; The parser can weight the lexemes for a given attribute in several ways:&nbsp; by the number of occurrences within the attribute, by the relative frequency of occurrence within the attribute, or by peculiarity within the attribute relative to a reference domain.&nbsp; A lexeme's peculiarity is the square root of the ratio of its frequency within the attribute to its frequency within the reference domain; for example, the word &quot;computer&quot; has a much lower peculiarity with respect to the domain of computer science literature than to that of archaeological literature because it occurs much more frequently in the former.</font>
+
+<p><font face="Times">An IXAttributeParser parses any of three text formats:&nbsp; Attribute Reader Format (ARF), RTF, or ASCII text (it prefers them in that order).&nbsp; A parser determines a file's or stream's format by examining the type argument to a <b>parse...</b> or <b>analyze...</b> method. If that type is ARF, RTF, or ASCII, the parser can simply start processing the text.&nbsp; If not, the parser will examine the first few bytes of the text to see if it is, indeed, in one of the parsable formats; for example, if it finds &quot;{\rtf&quot; at the beginning of a stream, it assumes that the stream contains RTF.&nbsp; Failing this, the parser will attempt to convert the text into one of the parsable formats using the filtering services provided by the Application Kit.&nbsp; If the text can't be converted into a parsable format using the filtering services, the parser simply treats the file or stream as though it were ASCII, checking first for nonprintable characters; if there is a significant number of them on the first page (more than 1 in 16), the file or stream isn't parsed at all.&nbsp; For example, if told to parse a WordPerfect document, the parser would attempt to convert the document from WordPerfect format to one of the three parsable formats.&nbsp; If the document couldn't be converted, it would be parsed as ASCII,&nbsp; control words, formatting commands, and all (unless the document contained enough nonprintable characters that it would be regarded as unprintable by the parser).</font>
+
+<p><font face="Times">To attempt conversion of a file of type <i>mytype</i>, the parser will call the Application Kit function <b>NXCreateTypedFileName()</b> to generate a typed file-name pasteboard type.&nbsp; Thus, the filter must declare this as its input type in a services file in order to be visible to the parser.&nbsp; If no filter is found by this approach, and the file is readable, then the parser will attempt conversion a second time using the function <b>NXCreateTypedFileContents()</b> to generate a typed file contents pasteboard type.</font>
+
+<p><font face="Times">When a parser isn't supplied for a class or method that needs one (for example, an IXFileFinder), a default parser is created, along with a default reader for the current user's preferred language, as set in the Preferences application.&nbsp; NeXT ships language-specific IXLanguageReaders for all supported user languages in <b>/NextLibrary/Readers</b>.&nbsp; These IXLanguageReaders are dynamically loaded into an application when needed.&nbsp; Your code can get a reader for a specific language by sending the IXLanguageReader class object a <b>readerForLanguage:</b> message.&nbsp; If the language is specified as &quot;Default&quot;, the reader for current user's preferred language is loaded.&nbsp; If a reader for the requested language can't be found, the English reader is used by default.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing an instance</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing readers</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAttributeReaders:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getAttributeReaders:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing text stream types</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">understandsType:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addSourceType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeSourceType:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing parse options</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMinimumWeight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">minimumWeight</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPercentPassed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">percentPassed</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setWeightingDomain:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">weightingDomain</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setWeightingType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">weightingType</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Parsing text</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">parseFile:ofType:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">parseStream:ofType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">analyzeFile:ofType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">analyzeStream:ofType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reset</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addSourceType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Records the Pasteboard type or file extension <i>aType</i> as one of the types for which the IXAttributeParser will respond YES when sent an <b>understandsType:</b> message, and which the IXAttributeParser will attempt to parse. If an IXAttributeParser has had no source types added, or has had all source types removed with <b>removeSourceType:</b>, it acts as though it understands any type, and will parse any file or stream.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeSourceType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:ofType:</b>, Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>analyzeFile:ofType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXStream *)<b>analyzeFile:</b>(const char *)<i>filename</i> <b>ofType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parses the contents of <i>filename</i>, and returns the contents of <i>filename</i> in Attribute Reader Format as produced by the IXAttributeParser's IXAttributeReaders.&nbsp; If the IXAttributeParser doesn't understand the type <i>aType</i>, this method returns NULL.&nbsp; Otherwise, <i>aType</i> is used to determine whether the contents of <i>filename</i> are in a parsable format (one of ARF, RTF, or ASCII), or if not, to locate a filter service that can convert the contents of <i>filename</i>.&nbsp; Files that can't be converted into a parsable format are parsed as though they contained ASCII text, unless they contain a significant amount of nonprintable text (for example, control characters), in which case the file is assumed to be binary, and not parsed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>, Attribute Reader Format (&quot;Other Features&quot; section), Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>analyzeStream:ofType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXStream *)<b>analyzeStream:</b>(NXStream *)<i>stream</i> <b>ofType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parses <i>stream</i>, and returns the contents of <i>stream</i> in Attribute Reader Format as read by the IXAttributeParser's IXAttributeReaders.&nbsp; If the IXAttributeParser doesn't understand the pasteboard type <i>aType</i>, this method returns NULL. Otherwise,&nbsp; <i>aType</i> is used to determine whether <i>stream</i> is in a parsable format (one of ARF, RTF, or ASCII), or if not, to locate a filter service that can convert the contents of <i>stream</i>.&nbsp; Streams that can't be converted into a parsable format are parsed as though they contained ASCII text, unless a significant amount of the text is nonprintable, in which case the stream isn't parsed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>, Attribute Reader Format (Other Features section), Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getAttributeReaders:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getAttributeReaders:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Empties <i>aList</i>, fills it with the IXAttributeReaders used by the IXAttributeParser, and returns it by reference.&nbsp;&nbsp; The sender of this message may free the List, but not its contents.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAttributeReaders:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly created IXAttributeParser, setting the percent passed to 100 and the weighting type to IX_NoWeighting. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPercentPassed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>minimumWeight</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>minimumWeight</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the minimum weight required for a lexeme to be included in the attribute/value list.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinimumWeight</b>:,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>percentPassed</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>parseFile:ofType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:</b>(const char *)<i>filename</i> <b>ofType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parses the contents of <i>filename</i>, and returns <b>self</b>.&nbsp; If the IXAttributeParser doesn't understand the type <i>aType</i>, this method returns <b>nil</b>.&nbsp; Otherwise,&nbsp; <i>aType</i> is used to determine whether the contents of <i>filename</i> are in a parsable format (one of ARF, RTF, or ASCII), or if not, to locate a filter service that can convert the contents of <i>filename</i>.&nbsp; Files that can't be converted into a parsable format are parsed as though they contained ASCII text, unless a significant amount of the text is nonprintable, in which case the stream isn't parsed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>, Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>parseStream:ofType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:</b>(NXStream *)<i>stream</i> <b>ofType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parses <i>stream</i>, and returns <b>self</b>.&nbsp; If the IXAttributeParser doesn't understand the type <i>aType</i>, this method returns <b>nil</b>.&nbsp; Otherwise, <i>aType</i> is used to determine whether <i>stream</i> is in a parsable format (one of ARF, RTF, or ASCII), or if not, to locate a filter service that can convert the contents of <i>stream</i>.&nbsp; Streams that can't be converted into a parsable format are parsed as though they contained ASCII text, unless a significant amount of the text is nonprintable, in which case the stream isn't parsed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>, Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>percentPassed</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>percentPassed</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the percentage of the lexemes for each attribute that will be included in the result of a parse.&nbsp; Any lexeme whose weight puts it at this percentile or higher will be included.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPercentPassed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>minimumWeight</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeSourceType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeSourceType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the pasteboard type or file extension <i>aType</i> from the IXAttributeParser's list of understood types.&nbsp; The IXAttributeParser will respond NO to subsequent <b>understandsType:</b> messages with <i>aType</i> as the argument, and won't parse files or streams of that type.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>understandsType:</b>, Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>reset</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reset</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Clears the state built up by parsing a file or stream, preparing the IXAttributeParser to analyze a different file or stream.&nbsp; It is possible to combine multiple streams or files by parsing them in sequence without resetting the IXAttributeParser, in which case the results accumulate in the attribute/value list.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>analyzeStream:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseFile:ofType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parseStream:ofType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setAttributeReaders:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAttributeReaders:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes the objects in <i>aList</i> as the IXAttributeReaders used by the IXAttributeParser, and frees any of the previous set of IXAttributeReaders that the IXAttributeParser will no longer use.&nbsp; The List must contain instances of IXAttributeReader or a subclass.&nbsp; Readers will be used on a stream of text in the order they appear in the List.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getAttributeReaders:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setMinimumWeight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinimumWeight:</b>(unsigned int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the minimum weight required for inclusion in the parse result.&nbsp; For example, setting the minimum weight to 10 causes all lexemes with weight less than 10 to be dropped from the result of a parse.&nbsp; Returns <b>self</b><i>.</i></font>
+
+<p><font face="Times">The IXAttributeParser uses only one of minimum weight or percent passed.&nbsp; If the minimum weight is set, the percent passed is reset to 100; if the percent passed is set, the minimum weight is reset to 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>minimumWeight</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPercentPassed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setPercentPassed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPercentPassed:</b>(unsigned int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the percentage of lexemes for a given attribute that will be included in the result of a parse.&nbsp; Any lexeme whose weight puts it at this percentile or higher will be included.&nbsp; For example, setting this value to 25 would include the top quarter of the lexemes in the search result; if there were 2000 lexemes, the 500 heaviest lexemes by weight would be included.</font>
+
+<p><font face="Times">The IXAttributeParser uses only one of minimum weight or percent passed.&nbsp; If the minimum weight is set, the percent passed is reset to 100; if the percent passed is set, the minimum weight is reset to 0.</font>
+
+<p><font face="Times">Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>percentPassed</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinimumWeight:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setWeightingDomain:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingDomain:</b>(IXWeightingDomain *)<i>aDomain</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the weighting domain used by the IXAttributeParser to <i>aDomain</i>, and returns <b>self</b>.&nbsp; The weighting domain is used to assign peculiarity weights to lexemes for a given attribute; the frequency of the lexeme within the attribute is divided by the frequency of the lexeme in the domain to give the lexeme's peculiarity, and the result is normalized by taking its square root.&nbsp; This is only done when the IXAttributeParser's weighting type is IX_PeculiarityWeighting.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightingDomain</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setWeightingType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingType:</b>(IXWeightingType)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the weighting type used by the IXAttributeParser to <i>anInt</i> and returns <b>self</b>.&nbsp; The weighting type is used to determine how to calculate lexeme weights, and may be one of the following values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">IX_NoWeighting</font><br>
+<font face="Times">IX_AbsoluteWeighting</font><br>
+<font face="Times">IX_FrequencyWeighting</font><br>
+<font face="Times">IX_PeculiarityWeighting</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IX_NoWeighting means that all lexemes are assigned a weight of 0.&nbsp; With IX_AbsoluteWeighting, each lexeme is assigned a weight equal to the number of times it occurs within the attribute.&nbsp; IX_FrequencyWeighting results in each lexeme being weighted by relative frequency of occurrence:&nbsp; the number of times it occurs in the attribute divided by the total number of lexemes in the attribute.&nbsp; IX_PeculiarityWeighting uses a weighting domain to calculate a frequency relative to some large body of text; the final weight of a lexeme is calculated by taking the square root of its frequency in the attribute divided by its frequency in the domain.&nbsp; IX_PeculiarityWeighting is useful for lowering the significance of lexemes that are common in a particular set of texts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightingType</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingDomain:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>understandsType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>understandsType:</b>(const char *)<i>aType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the IXAttributeParser will parse files of the pasteboard type or file extension <i>aType</i>, NO if not.&nbsp; If no types have been added with <b>addSourceType:</b>, or if all types added have been removed with <b>removeSourceType:</b>, this method always returns YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addSourceType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeSourceType:</b>, Pasteboard class of the Application Kit</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>weightingDomain</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXWeightingDomain *)<b>weightingDomain</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the weighting domain used by the IXAttributeParser, or <b>nil</b> if there is none.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingDomain:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingType</b>:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>weightingType</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXWeightingType)<b>weightingType</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the weighting type used by the IXAttributeParser.&nbsp; See <b>setWeightingType:</b> for a list of the possible values and their meanings.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWeightingDomain:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXBTree.rtf -->
+<!-- Date: Sun Jun 28 20:05:31 1998 -->
+<head>
+<title>IXBTree</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXBTree</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IXBlockAndStoreAccess</font><br>
+<font face="Times">IXNameAndFileAccess</font><br>
+<font face="Times">IXComparatorSetting</font><br>
+<font face="Times">IXComparisonSetting</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">btree/IXBTree.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An IXBTree provides ordered associative storage and retrieval of untyped data.&nbsp; It identifies and orders data items, called <i>values</i>, by key using a comparator function or key format description.&nbsp; A companion class, IXBTreeCursor, is used to actually manipulate the contents of the IXBTree.</font>
+
+<p><font face="Times">An IXBTree can be used with a memory-based IXStore, or with an IXStoreFile.&nbsp; File-based IXBTrees can be used to build persistent dictionaries and databases.&nbsp; As examples, the IXStoreDirectory class makes use of an IXBTree to provide names for other store clients, and the IXRecordManager uses multiple IXBTrees to provide a data management facility that uses Objective C objects as records.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Setting Up an IXBTree</b></font>
+
+<p><font face="Times">An IXBTree can either be initialized as a new client of an IXStore or opened from existing data in an IXStore.&nbsp; In either case, since IXBTree is a store client (as described in the IXBlockAndStoreAccess protocol specification) the IXBTree must use an IXStore to hold its contents.&nbsp; The protocol methods <b>initInStore:</b> and <b>initWithName:inFile:</b> can be used to initialize a new IXBTree in an IXStore.&nbsp; To open an IXBTree from previously created data, use the protocol methods <b>initFromBlock:inStore: </b>or <b>initFromName:inFile:forWriting</b>.</font>
+
+<p><font face="Times">After the IXBTree has been initialized, it must have its comparator function or key format description set with the <b>setComparator:context:</b> or <b>setComparisonFormat:</b> messages.&nbsp; A comparator function takes as arguments two pieces of arbitrary data and their lengths, and returns an integer&nbsp; indicating their ordering relative to one another.&nbsp; A key format description is a character string in the Objective C standard type encoding that describes the contents of the keys; the legal type codes are listed in the IXComparisonSetting protocol specification.&nbsp; IXBTrees compare keys as strings by default.&nbsp; See the <b>IXCompareBytes()</b> and <b>IXFormatComparator()</b> function descriptions for examples and for more information on key comparison.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Getting Data into and out of an IXBTree</b></font>
+
+<p><font face="Times">As stated above, IXBTree simply provides the capacity for associative storage.&nbsp; An IXBTreeCursor is needed to take advantage of that capacity.&nbsp; An IXBTreeCursor is like a pointer into the IXBTree:&nbsp; it can move to specific positions within the key space and perform operations on the values stored at those locations, independent of other cursors.&nbsp; The IXCursorPositioning protocol specification describes basic cursoring techniques, and the IXBTreeCursor class specification describes additional methods unique to IXBTreeCursor.</font>
+
+<p><font face="Times">Multiple IXBTreeCursors may independently access a single IXBTree.&nbsp; The actions of one cursor don't affect any of the other cursors in the IXBTree, except to the extent that they modify the contents of the IXBTree.&nbsp; It is both safe and meaningful to remove a record that another IXBTreeCursor has just located, as long as the code using the other IXBTreeCursor anticipates this possibility, as described below.&nbsp; IXBTree has a mutex lock which may be used to prevent collisions between cursors operating from different threads.</font>
+
+<p><font face="Times">In the case of one cursor removing a value that another cursor has just located, the second cursor will have received an indication from a key-locating method (for example, <b>setKey:andLength:</b>) that it has found a key.&nbsp; When it tries to access the value associated with that key, however, the key may no longer exist.&nbsp; The cursor will detect the deletion and slide forward to the next available key if asked to read the value (see the IXCursorPositioning protocol specification), or will raise an exception if asked to remove or write the value.&nbsp; If your code allows multiple cursors to be concurrently active on a single IXBTree, it must anticipate this behavior by handling the exceptions that may be raised, and by comparing the key against the expected value after invoking <b>getKey:andLength:</b>.&nbsp; Alternatively, your code may group key location and value manipulation operations by locking the IXBTree's mutex with <b>IXLockBTreeMutex()</b> and <b>IXUnLockBTreeMutex()</b> around the pair, or by some alternative mechanism, like a condition, applied at a higher point in the application.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Working with an IXBTree's Store</b></font>
+
+<p><font face="Times">Since IXBTree is a store client, as defined in the IXBlockAndStoreAccess protocol specification, the transaction model of IXStore applies to changes made to the contents of an IXBTree.&nbsp; In particular, the IXBTree's store must be sent <b>commitTransaction</b> messages to make changes to the IXBTree take effect (and be flushed to disk for a file-based store).&nbsp; If an IXBTree is used on a strictly read-only basis, transaction management can be ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">struct mutex <b>mutexLock</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">mutexLock</font></td>
+
+<td><font face="Times">Used to manage concurrent access in multithreaded applications.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXBlockAndStoreAccess</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initInStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromBlock:inStore:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromBlock:inStore:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getBlock:andStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXNameAndFileAccess</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithName:inFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromName:inFile:forWriting:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromName:andFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getName:andFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXComparatorSetting</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setComparator:andContext:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getComparator:andContext:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXComparisonSetting</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setComparisonFormat:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">comparisonFormat</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing IXBTree information</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">count</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">keyLimit</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Affecting IXBTree contents</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">empty</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">compact</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Optimizing performance</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">optimizeForTime</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">optimizeForSpace</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>compact</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compact</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Compacts the contents of the IXBTree so that it consumes as little space as possible (the average amount of reduction is about 25%).&nbsp; This method may move significant amounts of data, so it can take some time to complete.&nbsp; Key insertion will become slower for a while after this method is invoked, because data has to be moved around again to make room.&nbsp; Key search may become substantially faster however, since less data is paged from disk when searching.&nbsp; Compaction is useful when occasional updates to an IXBTree are followed by lots of reading.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">This method does nothing in NEXTSTEP Release 3, but should be fully implemented in a later update of the Indexing Kit.&nbsp; Your code may invoke this method freely in anticipation of its being implemented.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForTime</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForSpace</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>count</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>count</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of key/value pairs stored in the IXBTree.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>empty</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>empty</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes all key/value pairs from the IXBTree, and reduces its storage allocation to the smallest possible size (128 bytes). Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>keyLimit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>keyLimit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the maximum allowable length of keys kept in the IXBTree.&nbsp; An IXBTreeCursor positions itself with a key and the length of the key.&nbsp; That length should never be greater than the key limit.&nbsp; If it is, the IX_TooLargeError exception is raised.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>optimizeForSpace</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForSpace</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the IXBTree to move its contents around when inserting keys, so that the total amount of storage allocated is kept as small as possible.&nbsp; This will result in slower insertion times, but faster seek times.&nbsp; Your code should send this message when the IXBTree will be used mostly for reading.</font>
+
+<p><font face="Times">Once optimization is enabled, it can't be disabled; however, the type of optimization may be switched at any time between space (fast seek times) and time (fast insertions).&nbsp; Also, an IXBTree doesn't record its optimization type in its IXStore, so optimization must be re-enabled whenever an IXBTree is reconstituted.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForTime</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compact</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>optimizeForTime</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForTime</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the IXBTree to avoid moving its contents around when inserting keys, so that insertions happen as fast as possible.&nbsp; This can result in more unused storage space and slower seek times.&nbsp; Your code should send an IXBTree this message when it will be making a lot of insertions.</font>
+
+<p><font face="Times">Once optimization is enabled, it can't be disabled; however, the type of optimization may be switched at any time between space (fast seek times) and time (fast insertions).&nbsp; Also, an IXBTree doesn't record its optimization type in its IXStore, so optimization must be re-enabled whenever an IXBTree is reconstituted.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>optimizeForSpace</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compact</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

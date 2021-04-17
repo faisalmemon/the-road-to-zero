@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Reference/OtherFeatures/AutoDetect.rtf -->
+<!-- Date: Sun Jun 28 20:11:52 1998 -->
+<head>
+<title>AutoDetect</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Auto Detection of Devices</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">EISA- and PCI-compliant systems can support automatic detection of devices, referred to as the <i>auto detect</i> feature. When auto detect is supported, the system can determine which devices are connected to the bus and the location of the devices. Devices are easier to configure because less information is required in the <b>.table</b> files for the driver. Auto detect is nondestructive: It doesn't change the state of any device.</font>
+
+<p><font face="Times">Auto detect determines which devices are connected to a bus and their bus location. Each device identifies itself with an <i>auto detect ID</i> and indicates its location with an <i>anchor</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Auto Detect IDs and Anchors</b></font>
+
+<p><font face="Times">Each device driver identifies itself by an auto detect ID string, which is a list of identifiers that can be used to detect the devices that can be controlled by the driver. The meaning of the identifiers is different for each bus type.</font>
+
+<p><font face="Times">For the EISA, PCI and Plug and Play bus types, this ID is expressed as a 32-bit hexadecimal number containing the vendor ID and the device ID for the device. For the EISA bus and for Plug and Play, the device ID is in the lower 16 bits, and the vendor ID is in the upper 16 bits. For the PCI bus, the vendor ID is in the lower 16 bits, and the device ID is in the upper 16 bits. The &quot;Auto Detect IDs&quot; key should contain IDs for all the devices that can be controlled by the device driver. There is currently no provision for matching &quot;don't care&quot; bits in the ID, although that may be added in the future.</font>
+
+<p><font face="Times">When your driver is configured in the system, the configuration software will scan the bus for devices that match your auto detect IDs. When it finds a device, it will create a device description for your driver with a value for the &quot;Location&quot; key that allows you to locate your device on the bus. This key is known as the &quot;anchor&quot; for your device and is different for each bus type.</font>
+
+<p><font face="Times">For the EISA bus, the anchor is a slot number between 0 and 15. The value of the &quot;Location&quot; key is &quot;Slot &lt;n&gt;&quot;, where &lt;n&gt; is your slot number.</font>
+
+<p><font face="Times">For the PCI bus, the anchor is a three-part identifier containing the bus number, the device number, and the function number for your device. The bus number can be between 0 and 255, the device number can be between 0 and 31, and the function number can be between 0 and 7. The syntax of the &quot;Location&quot; key is &quot;Dev:&lt;d&gt; Func:&lt;f&gt; Bus:&lt;b&gt;&quot;, where &lt;b&gt; is the bus number, &lt;d&gt; is the device number, and &lt;f&gt; is the function number.</font>
+
+<p><font face="Times">Plug and Play support does not currently define an anchor for the card. Instead, the resources assigned in your configuration table, such as base I/O address, IRQ level, and DMA channels, are programmed into your device using the Plug and Play control registers. In the future, an anchor will be assigned so you can use new Driver Kit methods to control resources in more detail.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Auto Detect Process</b></font>
+
+<p><font face="Times">The driver bundle's <b>Default.table</b> has two key/value pairs of interest for auto detection: &quot;Bus Type&quot; and &quot;Auto Detect IDs&quot;. The first tells which bus the driver supports. The second lists the auto detect IDs of all the supported devices for this driver, expressed in the 32-bit hexadecimal number format.</font>
+
+<p><font face="Times">Auto detection is used at two times: During installation and when you use the Configure application.</font>
+
+<p><font face="Times">During initial installation, the auto detect software scans each bus and obtains from each device its auto detect ID and its anchor in the form that the bus uses. It adds the &quot;Location&quot; key to your driver's device description in memory.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">A computer may have more than one bus, and the buses may be different types.</font>
+
+<p><font face="Times">When you use Configure to add a driver to your system, it looks at every file with a <b>.table</b> extension (with the exception of <b>Instance</b><i>n</i><b>.table</b> files) in each configuration bundle, trying to match bus types and auto detect IDs. It first examines the &quot;Bus Type&quot; and then the &quot;Auto Detect IDs&quot; key/value pairs and generates a candidate list of drivers for each device found. There may be more than one candidate driver for a device. In that case, the user is presented with a list of drivers for the device and asked to pick one. After the user chooses, the <b>.table</b> file is copied to an <b>Instance</b><i>n</i><b>.table</b> with this line appended:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Location&#34; = &#34;<i>anchor</i>&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where <i>anchor</i> is the anchor in the format appropriate for the bus.</font>
+
+<p><font face="Times">There are cases where &quot;Location&quot; is blank. Each bus-specific category of IODirectDevice (IOEISADirectDevice, IOPCIDirectDevice, and so on) and IODeviceDescription subclass (IOPCMCIADeviceDescription and so on) provide methods for extracting this information, such as <b>getPCIDevice:function:bus</b> and <b>getEISASlotNumber</b>.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

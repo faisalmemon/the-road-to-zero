@@ -1,0 +1,988 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/_ApA_Utilities/Utilities.rtf -->
+<!-- Date: Sun Jun 28 20:10:43 1998 -->
+<head>
+<title>Utilities</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>A</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Utilities for Loadable Kernel Servers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This appendix describes the syntax of several of the commands that operate on loadable kernel servers:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The kernel-server loader, <b>kern_loader</b>, is the program that loads servers into the kernel.&nbsp; It's also discussed in Chapter 5, &quot;Overview of Loadable Kernel Servers<b>.</b>&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The kernel-server linker, <b>kl_ld</b>, links object files and command scripts into a relocatable object file.&nbsp; The format of command scripts is discussed in detail in this appendix.&nbsp; An example of using <b>kl_ld</b> is in Chapter 9, &quot;Building, Loading, and Debugging Loadable Kernel Servers.&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The kernel-server utility, <b>kl_util</b>, is useful for loading and unloading servers, as well as getting information about servers. It's also discussed briefly in Chapter 9.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The kernel-server log command, <b>kl_log</b>, lets you see log messages from a server.&nbsp; Log messages are discussed in Chapter 6, &quot;Designing Loadable Kernel Servers.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Kernel-Server Loader (kern_loader)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The kernel-server loader, <b>kern_loader</b>, is the task that adds loadable kernel servers to the kernel.&nbsp; The kernel-server loader works by listening to the ports of known loadable kernel servers.&nbsp; When it intercepts a request for a loadable kernel server, it loads the server and initializes it to respond to this request and subsequent requests.</font>
+
+<p><font face="Times">The kernel-server loader also listens on its own port for requests made through the kernel-server loader functions, a group of user-level functions.&nbsp; The kernel-server loader functions can be used to add and delete known servers, to load servers into the kernel and unload running servers from the kernel, and to get status information.&nbsp; You can use the kernel-server utility, <b>kl_util</b>, to communicate with the kernel-server loader (as described later in this appendix), or you can write your own program using the kernel-server loader functions.&nbsp; The kernel-server loader functions are documented in Chapter 3, &quot;Using Loadable Kernel Servers.&quot;</font>
+
+<p><font face="Times">When invoked, the kernel-server loader reads its configuration file, <b>/etc/kern_loader.conf</b>.&nbsp; This file contains a list of relocatable object files, one for each kernel server that is to be prepared for loading into the kernel.&nbsp; Here's a sample <b>kern_loader.conf</b> file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/usr/lib/kern_loader/Midi/mididriver_reloc</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/usr/local/lib/kern_loader/Mydriver/mydriver_reloc</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Starting kern_loader</b></font>
+
+<p><font face="Times">The <b>kern_loader</b> daemon is called automatically during system startup.&nbsp; If it's killed, you normally can't restart it because the Bootstrap Server won't let any process except <b>mach_init</b> register the &quot;server_loader&quot; service.&nbsp; However, if you change a couple of lines in the Bootstrap Server configuration file and then reboot, the Bootstrap Server will let you reinvoke <b>kern_loader</b> in the future.&nbsp; Specifically, you should change the following lines in <b>/etc/bootstrap.conf</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">services NetMessage . . .;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">server &#34;/usr/etc/kern_loader -n&#34; services server_loader;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">to the following:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">services NetMessage . . . server_loader;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">server &#34;/usr/etc/kern_loader -n&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After you make that change to <b>/etc/bootstrap.conf</b> and reboot, you can reinvoke <b>kern_loader</b> at any time, as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>/usr/etc/kern_loader</b> [ <b>-d</b> ] [ <b>-n</b> ] [ <b>-v</b> ] [ <i>relocatable</i> ... ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The command-line options are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>-d</b></font></td>
+
+<td><font face="Times">Don't detach from the invoking terminal; stay in the foreground.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>-n</b></font></td>
+
+<td><font face="Times">Don't fork another process to be <b>kern_loader</b>.&nbsp; This is necessary in the Bootstrap Server configuration file because the Bootstrap Server keeps track of all its servers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>-v</b></font></td>
+
+<td><font face="Times">Display debugging information.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><i>relocatable</i> ...</font></td>
+
+<td><font face="Times">The name of one or more relocatable object files to be read (before those listed in <b>/etc/kern_loader.conf</b>).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Kernel-Server Linker (kl_ld)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The relocatable object file of your loadable kernel server must contain certain information:&nbsp; the name of your server, which functions to call to initialize the server, the names of message-handling functions, the name of your server's instance variable, and so on.&nbsp; You put this information into the relocatable object file by using <b>kl_ld</b> to link your server.</font>
+
+<p><font face="Times">The syntax for using <b>kl_ld</b> follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>kl_ld -n</b> <i>server_name</i> <b>-i</b> <i>instance_var</i> <b>-l</b> <i>load_cmds_file</i> [<b>-u</b> <i>unload_cmds_file</i>] [<b>-d</b> <i>loadable_name</i>] <b>-o</b> <i>output_file input_file </i>...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-n</b> <i>server_name</i></font></td>
+
+<td><font face="Times">Specifies the name of the kernel server.&nbsp; This name is used in calls to the kernel-server loader functions (such as <b>kern_loader_load_server()</b>) and in the <b>kl_util</b> and <b>kl_log</b> command lines.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-i</b> <i>instance_var</i></font></td>
+
+<td><font face="Times">Specifies the name of the kernel server's instance variable.&nbsp; This variable's structure must start with a field of type <b>kern_server_t</b> (defined in the header file <b>kernserv/kern_server_types.h</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-l</b> <i>load_cmds_file</i></font></td>
+
+<td><font face="Times">Specifies the name of the script that contains commands that <b>kern_loader</b> must execute when it loads your server.&nbsp; This file is read into the relocatable object file when you create it.&nbsp; If you want to change the load commands, you must recreate the relocatable object file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-u</b> <i>unload_cmds_file</i></font></td>
+
+<td><font face="Times">Specifies the name of the script that contains commands that <b>kern_loader</b> must execute when it <i>un</i>loads your server.&nbsp; Like load commands, unload commands are read into the relocatable object file when you create it.&nbsp; Thus, you must recreate the relocatable object file if you want to change the unload commands.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-d</b> <i>loadable_name</i></font></td>
+
+<td><font face="Times">Specifies the pathname of the loadable object file that <b>kern_loader</b> creates from the relocatable object file.&nbsp; This pathname can be either absolute or relative to the directory containing the relocatable object file.&nbsp; Use this option to make <b>kern_loader</b> put the loadable object file in a place where the GNU source level debugger, GDB, can easily find and use it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-o</b> <i>output_file</i></font></td>
+
+<td><font face="Times">Specifies the name of the relocatable object file that is created.&nbsp; The <b>kern_loader</b> will later relocate this file against the kernel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><i>input_file ...</i></font></td>
+
+<td><font face="Times">The object files to be linked into the relocatable object file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following example shows a makefile that creates a relocatable object file.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">On the last line of the command for the &quot;$(NAME)_reloc&quot; target, &quot;$@&quot; refers to &quot;$(NAME)_reloc&quot;.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NAME=slot</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">OFILES= slot_server.o slot_handler.o</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CFLAGS= -g -DKERNEL -DKERNEL_FEATURES -DMACH</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">$(NAME)_reloc:&nbsp; $(OFILES) Load_Commands Unload_Commands</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">kl_ld -n $(NAME) -i instance -l Load_Commands \</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">-u Unload_Commands -o $@ $(OFILES)</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.c.o:</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">$(CC) $(CFLAGS) -c $*.c -o $*.o</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Load Commands</b></font>
+
+<p><font face="Times">The load commands script can have the commands described in this section.&nbsp; The script must have at least one of the following commands:&nbsp; HMAP, SMAP, or START.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ADVERTISE</font></td>
+
+<td><font face="Times">Specifies the name of a port that is to be allocated and advertised with the Network Name Server. When <b>kern_loader</b> receives messages on any advertised port, the kernel server will be loaded into the kernel and initialized.&nbsp; As part of the initialization sequence, receive rights for the advertised port are forwarded to the kernel server.&nbsp; The message will then be forwarded by <b>kern_loader</b> to the loaded kernel server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>ADVERTISE</b> <i>port</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">CALL</font></td>
+
+<td><font face="Times">Specifies the name of a function to be called with the specified integer argument as part of the server initialization sequence.&nbsp; If the script has multiple CALL commands, they'll be executed in order.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>CALL</b> <i>function integer</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DETACH</font></td>
+
+<td><font face="Times">Specifies that the server should never be unloaded.&nbsp; The DETACH command makes <b>kern_loader</b> treat any request to unload the server as an error.&nbsp; Requests to deallocate the server will appear to succeed, but although <b>kern_loader</b> stops keeping track of it, the server will remain loaded in kernel memory. The DETACH command is necessary for the correctness of some network protocols.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">HMAP</font></td>
+
+<td><font face="Times">Specifies the mapping of a port to a message-handling function in the kernel server.&nbsp; When <b>kern_loader </b>receives a message on this port, it calls the function with the global variable or integer argument you specify.&nbsp; This function must have a handler interface, as opposed to a server interface (see Chapter 6, &quot;Designing Loadable Kernel Servers&quot;).&nbsp; To advertise this port with the Network Name Server, use the ADVERTISE command, as described previously in this section.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>HMAP</b> <i>port_name handler_function argument</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PORT_DEATH</font></td>
+
+<td><font face="Times">Specifies a function in the server to be called when a port death message is received on its behalf.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>PORT_DEATH</b> <i>function_name</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">SMAP</font></td>
+
+<td><font face="Times">Specifies the mapping of a port to a message-handling function within the kernel server.&nbsp; When <b>kern_loader</b> receives a message on this port, it calls the function with the integer argument you specify. This function must have a server interface, as opposed to a handler interface (see Chapter 6).&nbsp; To advertise this port with the Network Name Server, use the ADVERTISE command, as described previously in this section.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>SMAP</b> <i>port_name server_function integer</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">START</font></td>
+
+<td><font face="Times">Causes the kernel server to be started immediately, rather than waiting for a message to be received on one of its advertised ports.&nbsp; This is most appropriate for kernel servers that don't listen on any ports, or are wired into kernel data structures for nonserver-style access.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>START</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=13></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">WIRE</font></td>
+
+<td><font face="Times">Causes the text and data of the loaded kernel server to be wired down (memory resident), making the kernel server immune from unexpected page faults.&nbsp; You must use WIRE if any part of your kernel server can be called from an interrupt handler.&nbsp; If you use WIRE, your kernel server is wired down before any other load commands are executed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>WIRE</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here's an example of a load commands script.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CALL&nbsp; slot_init 0</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">PORT_DEATH&nbsp; slot_port_death</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># Associate ports with proc/arg</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SMAP&nbsp; slot0 slot_msg 0</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SMAP&nbsp; slot2 slot_msg 1</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SMAP&nbsp; slot4 slot_msg 2</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SMAP&nbsp; slot6 slot_msg 3</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># Server contains interrupt handler code, and so must be wired down</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">WIRE</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># Start this server up immediately</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">START</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Unload Commands</b></font>
+
+<p><font face="Times">The unload commands script can have only CALL commands:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">CALL</font></td>
+
+<td><font face="Times">Specifies the name of a function to be called as part of server shutdown.&nbsp; The function will be passed the specified integer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Syntax:&nbsp; <b>CALL</b> <i>function integer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>Here's an example of an unload commands script.</i></font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># Termination</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CALL&nbsp;&nbsp; slot_signoff&nbsp; 0</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Kernel-Server Utility (kl_util)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The kernel-server utility <b>/usr/etc/kl_util</b> lets you communicate with the kernel-server loader.&nbsp; Various options allow you to query the kernel loader for the status of all registered kernel servers, load a kernel server into the kernel, and remove one or more kernel servers from the kernel.</font>
+
+<p><font face="Times">The command-line options to <b>kl_util</b> are as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>-a</b> <i>server_reloc_file_name</i> ...</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to allocate resources for the specified kernel server or servers.&nbsp; Each added server will have kernel space allocated for it and will be initialized to load at that location when referenced.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-A</b></font></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to shut down; all existing kernel servers are unloaded and deallocated, and the running <b>kern_loader</b> task exits.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>-d</b> <i>server_name</i> ...</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to deallocate the specified kernel server or servers; all physical and virtual resources associated with the kernel server are freed.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>-l</b> <i>server_name</i> ...</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to load the specified kernel server or servers into the kernel.&nbsp; If you don't use this option, loading is normally done either when the kernel server is allocated (if START is specified in the load commands), or when it receives its first message.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-L</b></font></td>
+
+<td><font face="Times">Causes <b>kl_util</b> not to terminate at the end of its operation, so that further <b>kern_loader</b> activity can be monitored. As long as <b>kl_util</b> is running, anything logged by <b>kern_loader</b> is displayed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>-r</b></font></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to deallocate all its servers and set itself up from scratch by rereading its configuration file. This is similar to specifying the <b>-A</b> option and then restarting <b>kern_loader</b>, except that <b>kern_loader</b> never actually exits.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>-s</b> [ <i>server_name</i> ...]</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to return information about the status of registered kernel servers.&nbsp; If a server name isn't specified, a list of all known servers is displayed.&nbsp; If a server name is specified, detailed information about that server is displayed.</font>
+
+<p><font face="Times">The following example shows the status of the MIDI driver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1"># <b>/usr/etc/kl_util -s mididriver</b></font><br>
+<img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">SERVER: mididriver</font><br>
+<img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">RELOCATABLE: /usr/lib/kern_loader/Midi/mididriver_reloc</font><br>
+<img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">STATUS: Allocated at address 0x10f70000 for 0xa000 bytes</font><br>
+<img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">PORTS: mididriver(advertised)</font><br>
+<img src="../../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">#</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>-u</b> <i>server_name</i> ...</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Causes <b>kern_loader</b> to unload the specified kernel server or servers.&nbsp; (Loaded kernel servers remain in the kernel until they're explicitly unloaded.)&nbsp; Unloading the server causes any wired pages to be unwired; thus, this can be used as a mechanism to free up resources in the system when the server is no longer needed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Kernel-Server Log Command (kl_log)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can use the kernel-server log command, <b>kl_log</b>, to see log messages from a loadable kernel server.&nbsp; You can also write your own program that calls the <b>kern_loader_log_level()</b> and <b>kern_loader_get_log()</b> functions to get log messages.&nbsp; The <b>kern_loader_log_level()</b> and <b>kern_loader_get_log()</b> functions are discussed in Chapter 3, &quot;Using Loadable Kernel Servers.&quot;</font>
+
+<p><font face="Times">You must be superuser to call <b>kl_log</b>.&nbsp; It has the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>/usr/etc/kl_log</b> [ <b>-l</b> <i>log_level</i> ] <i>server_name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><i>server_name</i></font></td>
+
+<td><font face="Times">Specifies the loadable kernel server for which you're getting or setting log information.&nbsp; This server must already be loaded.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>-l</b> <i>log_level</i></font></td>
+
+<td><font face="Times">Specifies the priority of messages that should be kept.&nbsp; By default, the log level is zero, and no log messages are printed.&nbsp; By setting <i>log_level</i> to a positive value, you ensure that log messages from the server will be printed to <b>stdout</b> if they have a priority equal to or greater than <i>log_level</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You might use <b>kl_log</b> as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave# <b>kl_log -l 1 mydriver&amp;</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave# <b>kl_log -l 0 mydriver</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave# <b>jobs</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[1]&nbsp; + Running&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kl_log -l 1 mydriver</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave# <b>kill %1</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave#</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Before you stop collecting messages from a kernel server, you should shut off logging by setting its log level to zero.&nbsp; If you don't set the log level to zero, log messages will accumulate even though no process is collecting the messages.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

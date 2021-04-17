@@ -1,0 +1,6089 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/10_KernelFunctions/KernelFunctions.rtf -->
+<!-- Date: Sun Jun 28 20:10:24 1998 -->
+<head>
+<title>KernelFunctions</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>10</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Kernel Support Functions</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter gives detailed descriptions of the C functions provided by the NeXT Mach kernel for loadable kernel servers.&nbsp; Also included are some macros that behave like functions.&nbsp; For this chapter, the functions and macros are divided into two groups: general functions and network functions.</font>
+
+<p><font face="Times">Network functions are those that are specifically for network modules.&nbsp; All the other functions are under the &quot;General Functions&quot; section.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">All functions described in this chapter work only in the kernel.&nbsp; The few that have user-level equivalents are noted.</font>
+
+<p><font face="Times">Within each section, functions are subgrouped with other functions that perform related tasks.&nbsp; These subgroups are described in alphabetical order by the name of the first function listed in the subgroup.&nbsp; Functions within subgroups are also listed alphabetically, with a pointer to the subgroup's description.</font>
+
+<p><font face="Times">For convenience, these functions are summarized in Appendix C, &quot;Summary of Kernel Support Functions.&quot;&nbsp; The summary lists functions by the same subgroups used in this chapter and combines several related subgroups under a heading such as &quot;Time Functions&quot; or &quot;Memory Functions.&quot;&nbsp; For each function, the appendix shows the calling sequence.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>General Functions</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>ASSERT()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Panic if an assumption isn't true</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>ASSERT(</b>int <i>expression</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>expression</i>:&nbsp; A C expression that's 0 when the assumption isn't true.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>ASSERT()</b> is a macro that works only if you specify the DEBUG C preprocessor macro when you compile your server.&nbsp; If <i>expression</i> is 0, <b>ASSERT()</b> calls <b>panic()</b> after printing the line and file that the assertion failed in.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Times">In your makefile:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CFLAGS&nbsp; = ... -DDEBUG</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In your server:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ASSERT(ptr != NULL);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>panic()</b>, <b>kern_serv_panic()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>assert_wait()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Arrange for a thread to sleep on an event</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>assert_wait(</b>int <i>event</i>, boolean_t <i>interruptible</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>event</i>:&nbsp; An integer that identifies the event.&nbsp; Typically, this is the address of a structure.&nbsp; If <i>event</i> is zero, then <b>thread_wakeup() </b>won't work on the thread; only <b>clear_wait()</b> and <b>thread_set_timeout()</b> will be able to wake it up.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>interruptible</i>:&nbsp; Used by <b>clear_wait()</b>.&nbsp; If <i>interruptible</i> is false and the <i>interrupt_only</i> argument to a later call to <b>clear_wait()</b> is true, then this thread won't be waked up by that call to <b>clear_wait()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function before calling <b>thread_block()</b>.&nbsp; This function sets up the event that the thread wants to wait for, but the thread doesn't start sleeping until it executes <b>thread_block()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">extern&nbsp; hz;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">assert_wait(0, FALSE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_set_timeout(hz*2);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_block();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>clear_wait()</b>, <b>thread_block()</b>, <b>thread_set_timeout()</b>, <b>thread_wakeup()</b>, <b>biowait()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>bcopy()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy data into a buffer</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>bcopy(</b>void *<i>from</i>, void *<i>to</i>, int <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>from</i>:&nbsp; Start of buffer to be copied from.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>to</i>:&nbsp; Start of buffer to be copied to.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; Number of bytes to copy.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Like the C library <b>bcopy()</b> function, this function copies bytes from one buffer to another buffer in the same virtual space.&nbsp; This function can't be used to copy data between user space and kernel space.&nbsp; The caller of this function must have already checked the access rights to this memory and wired it down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">Use <b>bytecopy()</b> instead of <b>bcopy()</b> if you're copying to or from hardware device space that's only 8 or 16 bits wide.&nbsp; (<b>bcopy()</b> often uses 32-bit accesses for efficiency, but the 68040 processor doesn't allow 32-bit accesses to 8-bit or 16-bit hardware.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>bytecopy()</b>, <b>strcpy()</b>, <b>copyin()</b>, <b>copyout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>biodone()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Wake up the function doing a <b>biowait()</b> on a buffer</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>biodone(</b>struct buf *<i>bp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>bp</i>:&nbsp; The address of a <b>buf</b> structure.&nbsp; This structure is defined in the header file <b>sys/buf.h</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function marks the buffer as done and wakes up any threads waiting for it.&nbsp; If the B_DONE flag is already set, <b>biodone() </b>panics.&nbsp; Otherwise, if B_CALL is set, <b>biodone()</b> clears it and calls the function pointed to by *<i>bp</i></font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times"><b>&gt;b_iodone</b>.&nbsp; Next, if B_ASYNC is set, <b>biodone()</b> releases the buffer pointed to by <i>bp</i>; if B_ASYNC isn't set, <b>biodone()</b> clears the B_WANTED flag and wakes up all threads that had called <b>biowait()</b> on <i>bp</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">one_thread(void)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">struct buf&nbsp; mybuf;</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">biowait (&amp;mybuf);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">other_thread(struct buf *bp)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">biodone(bp)</font><br>
+<img src="../../../Images/sp.gif" width=126 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>biowait()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>biowait()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Wait until a function calls <b>biodone()</b> on a buffer</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>biowait(</b>struct buf *<i>bp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>bp</i>:&nbsp; The address of a <b>buf</b> structure.&nbsp; This structure is defined in the header file <b>sys/buf.h</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">If the B_DONE flag in the buffer pointed to by <i>bp</i> is already set, this function won't sleep.&nbsp; Otherwise, this function sleeps until another thread calls <b>biodone()</b> on <i>bp</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">one_thread(void)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">struct buf&nbsp; mybuf;</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">biowait (&amp;mybuf);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">other_thread(struct buf *bp)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">biodone(bp)</font><br>
+<img src="../../../Images/sp.gif" width=126 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>biodone()</b>, <b>assert_wait()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>bytecopy()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy bytes into a buffer</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">void <b>bytecopy(</b>void *<i>from</i>, void *<i>to</i>, int <i>length</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>from</i>:&nbsp; Start of buffer to be copied from.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>to</i>:&nbsp; Start of buffer to be copied to.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; Number of bytes to copy.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is like <b>bcopy()</b>, except that it uses only 8-bit instructions to copy data.&nbsp; The <b>bytecopy()</b> function, like <b>bcopy()</b> and the C library <b>bcopy()</b> function, copies bytes from one buffer to another buffer in the same virtual space.&nbsp; The <b>bytecopy() </b>function can't be used to copy data between user space and kernel space.&nbsp; The caller of this function must have already checked the access rights to this memory and wired it down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">This function is less efficient than <b>bcopy()</b>, so you should use <b>bcopy()</b> unless you're copying to or from hardware device space that's only 8 or 16 bits wide.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>bcopy()</b>, <b>strcpy()</b>, <b>copyin()</b>, <b>copyout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>bzero()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Zero out a region of memory</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>bzero(</b>void *<i>address</i>, int <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>address</i>:&nbsp; The address of the first byte of the region of memory.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>length</i>:&nbsp; The number of bytes to write zeros to.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This acts the same as the <b>bzero()</b> C library function.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>bzero(3)</b> UNIX manual page</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>clear_wait()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Stop a thread from waiting for an event</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>#import &lt;kernserv/sched_prim.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>clear_wait(</b>thread_t <i>thread</i>, int <i>result</i>, boolean_t <i>interrupt_only</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>thread</i>:&nbsp; The thread to wake up.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>result</i>:&nbsp; The wakeup result the thread should see.</font>
+
+<p><font face="Times"><i>interrupt_only</i>:&nbsp; If true, don't wake up the thread unless <b>assert_wait()</b> was called with <i>interruptible</i> set to true.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to wake up a thread that's waiting for an event (as the result of <b>assert_wait()</b> and <b>thread_block()</b>), whether or not the event has happened.&nbsp; If <i>interrupt_only</i> is false or if <b>assert_wait()</b> was called with <i>interruptible</i> set to false, then the thread is guaranteed to wake up.&nbsp; The thread will receive <i>result</i> when it calls <b>thread_wait_result()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; new_thread(void);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">extern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; hz;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_t&nbsp;&nbsp;&nbsp; thread1;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread1 = (thread_t)current_thread();</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kernel_thread(current_task(), new_thread);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">assert_wait(&amp;data, FALSE);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread_block();</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;Wait result:&nbsp; %d\n&#34;, thread_wait_result());</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void new_thread()</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">clear_wait(thread1, THREAD_AWAKENED, FALSE);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">} /* new_thread */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>assert_wait()</b>, <b>thread_block()</b>, <b>thread_wait_result()</b>, <b>thread_wakeup()</b>, <b>us_untimeout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>clock_attributes()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get information about a clock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/clock_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">chrono_attributes_t <b>clock_attributes(</b>clock_types_t <i>which_clock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>which_clock</i>:&nbsp; Either <b>Calendar</b> or <b>System</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function lets you get information about the system and calendar clocks, such as what their accuracy is and what their maximum value is.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">char *s;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">chrono_attributes_t&nbsp;&nbsp;&nbsp; attr;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (which_clock == System)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">s = SYSTEMSTRING;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">s = CALENDARSTRING;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">attr = clock_attributes(which_clock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;%s clock has a max value of %d:%d ns and an accuracy of %d ns\n&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">s,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*((int*) &amp;attr-&gt;max_value), *((int *) &amp;attr-&gt;max_value + 1),</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*((int *) &amp;attr-&gt;resolution + 1));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that the kernel version of <b>printf()</b> does not interpret <b>unsigned</b> integers or <b>long long</b> integers.&nbsp; This means that printing an <b>ns_time_t</b> value results in numbers that are difficult to interpret and sometimes negative, as shown in the following printout.&nbsp; If you need to print time values, you can perform one of the conversions shown in the example for <b>clock_value()</b>, later in this chapter.</font>
+
+<p><font face="Times">System clock has a max value of -1:-1 ns and an accuracy of 1000 ns.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>clock_value()</b>, <b>ns_time_to_timeval()</b>, <b>set_clock()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>clock_value()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the current time</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/clock_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">ns_time_t <b>clock_value(</b>clock_types_t <i>which_clock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>which_clock</i>:&nbsp; Either <b>Calendar</b> or <b>System</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the value of either the system clock (which starts over when the machine is booted) or the calendar clock (which continues to keep time between reboots), depending on the value of <i>which_clock</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">unsigned int&nbsp;&nbsp;&nbsp; ms_time;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">struct timeval&nbsp; tv_time;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_time_t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; now;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">now = clock_value(System);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;Time since boot:&nbsp; %d:%d ns == &#34;,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*((int*) &amp;now), *((int *) &amp;now + 1));</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Since the value printed above is fairly useless, convert it */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ms_time = now / 1000000ULL;&nbsp;&nbsp;&nbsp; /* convert to millisecs */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;%u ms == &#34;, ms_time);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_time_to_timeval(now, &amp;tv_time);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;%u seconds and %d microseconds.\n&#34;, tv_time.tv_sec,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">tv_time.tv_usec);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A typical printout:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Time since boot:&nbsp; 8942:-283072128 ns == 38409609 ms == 38409 seconds and 609456 microseconds.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>clock_attributes()</b>, <b>set_clock()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>copyin()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy bytes from user to kernel space</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>copyin(</b>void *<i>from</i>, void *<i>to</i>, int <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>from</i>:&nbsp; The start of the region in user space.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>to</i>:&nbsp; The start of the region in kernel space.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; The number of bytes to copy from user to kernel space.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function works only in UNIX-style servers.&nbsp; It returns 0 if successful,</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 otherwise.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>bcopy()</b>, <b>copyout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>copyout()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy bytes from kernel to user space</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>copyout(</b>void *<i>from</i>, void *<i>to</i>, int <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>from</i>:&nbsp; The start of the region in kernel space.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>to</i>:&nbsp; The start of the region in user space.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; The number of bytes to copy from kernel to user space.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The same as <b>copyin()</b>, except the direction of the copy is reversed.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>bcopy()</b>, <b>copyin()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>curipl()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the current interrupt level</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">int <b>curipl(</b>void<b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the CPU interrupt level, which is a number between 0 and 7.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">#define panic(s) (curipl() == 0 ? \</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic((kern_serv_bootstrap_port(&amp;instance), s) \</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">: printf(&#34;Can't panic: %s\n&#34;, s))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>spl<i>n</i>()</b>, <b>splx()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>current_task()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the current task</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">task_t <b>current_task(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This macro returns the task structure for the current task.&nbsp; Use <b>current_task()</b> whenever you need to refer to the task in which your loadable kernel server executes.&nbsp; Don't use <b>current_task()</b> to refer to memory unless you specifically want the task's native memory map, and not the kernel map that your server uses.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">kernel_thread(current_task(), new_thread);</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kernel_thread()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>DELAY()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Busy-wait for a certain number of microseconds</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;machine/machparam.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>DELAY(</b>unsigned int <i>usecs</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>usecs</i>:&nbsp; The number of microseconds to delay.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This macro makes the processor loop for the number of microseconds specified in the argument.&nbsp; Interrupts are not disabled by this function, so surround <b>DELAY()</b> with <b>spl<i>n</i>()</b> and <b>splx()</b> if interrupts need to be disabled.&nbsp; Because the microsecond resolution clock is used to count the spin interval, the delay is independent of CPU instruction clock speed.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This macro doesn't sleep, so it's safe to use in interrupt handlers.&nbsp; It's often used to wait for the hardware.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">/* set the hardware register for at least 100 microseconds */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">hardware_register = 1;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">DELAY(100);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">hardware_register = 0;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>us_timeout()</b>, <b>us_abstimeout()</b>, <b>us_untimeout()</b>, <b>microtime()</b>, <b>microboot()</b>, <b>spl<i>n</i>()</b>, <b>splx()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>install_polled_intr()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Install an interrupt handler for a polled device</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>install_polled_intr(</b>int <i>which</i>, int (*<i>my_intr</i>)(void)<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>which:</i>&nbsp; Specifies the device and interrupt level.&nbsp; For devices attached through the NeXTbus interface, this should be the constant I_BUS.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>my_intr</i>:&nbsp; The function in your server that handles this interrupt.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function installs an interrupt handler; you can later remove this interrupt handler by calling <b>uninstall_polled_intr()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function returns 0 if the call is successful, or</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if the interrupt level specified by <i>which</i> isn't capable of interrupt polling.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">device_interrupt(void) {</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">if (interrupt_is_for_us) {</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">/* -process interrupt- */</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">return (1);&nbsp; /* say interrupt was for us */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">return (0);&nbsp; /* it must be for someone else */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">device_initialize(void) {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">install_polled_intr(I_BUS, device_interrupt);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>uninstall_polled_intr()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kalloc()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Allocate wired-down kernel memory</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void *<b>kalloc(</b>int <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>size</i>:&nbsp; The size in bytes to be allocated.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is guaranteed to return wired-down memory of the requested size.&nbsp; The returned memory might not contain all zeros.&nbsp; You can't call <b>kalloc()</b> from an interrupt handler because it might sleep.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Memory returned isn't guaranteed to be aligned in any way unless size is a multiple of the page size (in which case the memory is page-aligned).&nbsp; If you need to ensure alignment, you should allocate twice what you need and align the address you start with to the boundary you want.&nbsp; Memory isn't guaranteed to be contained on the same physical page unless you allocate in multiples of the page size and keep track of the page location of addresses you use.&nbsp; The page size is dynamic; there's currently no way to get its value from inside the kernel.&nbsp; However, on 680x0-based machines, 8192 is guaranteed to be an integer multiple of the page size in bytes.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">my_data_t *arg;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">arg = (my_data_t *)kalloc(sizeof (my_data_t));</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kfree(arg, sizeof (my_data_t));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kfree()</b>, <b>kget()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_bootstrap_port()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the port used to initialize your server</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">port_t <b>kern_serv_bootstrap_port(</b>kern_server_t *<i>ksp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the port that the kernel uses to initialize (or &quot;bootstrap&quot;) your server when loading it.&nbsp; Normally, the only reason to use this port is as an argument to <b>kern_serv_panic()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">bootstrap_port=kern_serv_bootstrap_port(&amp;instance);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_panic(bootstrap_port, &#34;Couldn't send message&#34;);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_panic()</b>, <b>kern_serv_local_port()</b>, <b>kern_serv_notify_port()</b>, <b>kern_serv_port_set()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_callout()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Run a function in the loadable kernel server's main thread</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_callout(</b>kern_server_t *<i>ksp</i>, void (*<i>func</i>)(void *), void *<i>arg</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>func</i>:&nbsp; The function to be called.</font>
+
+<p><font face="Times"><i>arg</i>:&nbsp; The argument to be passed to <i>func</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function provides a way for interrupt handlers to call functions in the same loadable kernel server that may sleep or deal with a user context.&nbsp; The function <i>func</i> is called with argument <i>arg</i> at some point in the future.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">void mydriver_func(mydriver_data_t data)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_callout ((kern_server_t *)&amp;instance, mydriver_func, (void *)arg);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The callout was scheduled successfully.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">KERN_RESOURCE_SHORTAGE:&nbsp; The callout couldn't be scheduled.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>kern_serv_kernel_task_port()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the kernel's task port</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">port_t <b>kern_serv_kernel_task_port(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the kernel's task port.&nbsp; You need to specify this port when copying out-of-line data to or from a message, as shown in the following example.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">log_data_t tmp, local_data;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">local_data = (log_data_t)kalloc(8192);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;Calling vm_write\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">r = vm_write((vm_task_t)kernel_task, (vm_address_t)local_data,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">(pointer_t)log_data, 8192);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;Call to vm_write failed \n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">tmp = (log_data_t)kalloc(length+1);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">(void)strncpy(tmp, local_data, length);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;Contents of data are: %s\n&#34;, tmp);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_local_port()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Determine on which port the kernel just received a message</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">port_t <b>kern_serv_local_port(</b>kern_server_t *<i>ksp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the port on which the kernel just received a message in your server's behalf.&nbsp; The only time this function is useful is when your server was just loaded as the result of a message to one of its ports.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">port=kern_serv_local_port(&amp;instance);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (port==debug_port)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">debug=TRUE;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_notify_port()</b>, <b>kern_serv_port_set()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_log()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Put a message in the loadable kernel server's error log</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>kern_serv_log(</b>kern_server_t *<i>ksp</i>, int <i>log_level</i>, char *<i>format</i>, <i>arg1</i>, <i>...</i>, <i>arg5</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>log_level</i>:&nbsp; A number indicating the urgency of this log entry.&nbsp; Higher numbers indicate greater urgency, but the particular range of numbers used in a loadable kernel server is up to the writer of that server.</font>
+
+<p><font face="Times"><i>format</i>:&nbsp; A string containing formatting information.&nbsp; See <b>printf()</b>.</font>
+
+<p><font face="Times"><i>arg1</i>, ..., <i>arg5</i>:&nbsp; Arguments to be printed.&nbsp; (If you don't specify all five arguments, the compiler will display a warning, but the call will still succeed.)&nbsp; See <b>printf()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function puts a message in the error log.&nbsp; The message can be retrieved by a user process that calls <b>kern_loader_get_log()</b>, or by the command <b>kl_log</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">kern_serv_log(&amp;instance, 5, &#34;Reset value of timeout to %d\n&#34;, time, 0, 0,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">0, 0);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>log()</b>, <b>printf()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_notify()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Ask to receive notification messages about a certain port</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_notify(</b>kern_server_t *<i>ksp</i>, port_t <i>reply_port</i>, port_t <i>request_port</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>reply_port</i>:&nbsp; The port that should receive the notification messages.&nbsp; This should normally be the value returned by <b>kern_serv_notify_port()</b>.</font>
+
+<p><font face="Times"><i>request_port</i>:&nbsp; The port you want to be notified about.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function requests that notification messages about <i>request_port</i> be sent to <i>reply_port</i>.&nbsp; The types of notification messages are defined in the header file <b>mach/notify.h</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">notify_port=kern_serv_notify_port(&amp;instance);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_notify(&amp;instance, notify_port, bootstrap_port);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The call succeeded.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">KERN_FAILURE:&nbsp; The same <i>reply_port</i>-<i>request_port</i> pair has already been entered.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_notify_port()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_notify_port()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the notify port of this server</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">port_t <b>kern_serv_notify_port(</b>kern_server_t *<i>ksp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns this server's notify port, which can be used in calls to <b>kern_serv_notify()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">notify_port=kern_serv_notify_port(&amp;instance);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_notify(&amp;instance, notify_port, bootstrap_port);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_notify()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_panic()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Unload this server without panicking the system</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_reply.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_panic(</b>port_t <i>bootstrap_port</i>, panic_msg_t <i>message</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>bootstrap_port</i>:&nbsp; This server's bootstrap port, which is returned by <b>kern_serv_bootstrap_port()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>message</i>:&nbsp; A string to be added to the panic message that's logged.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function unloads the server after logging a message in the kernel-server loader's log.&nbsp; The message is logged at the priority LOG_WARNING and contains the name of the server that called this function, followed by <i>message</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function should not be called when the CPU interrupt level is greater than 0.</font>
+
+<p><font face="Times">This function can return, so your server should avoid doing further work after calling it.&nbsp; After <b>kern_serv_panic()</b> is called, the kernel attempts to call the server's unload functions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">kern_serv_panic(bootstrap_port,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">&#34;my_server_main: received bad return from msg_receive&#34;);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The server will be unloaded.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>ASSERT()</b>, <b>panic()</b>, <b>kern_serv_bootstrap_port()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_port_gone()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Notify the kernel that a port will be deleted</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>kern_serv_port_gone(</b>kern_server_t *<i>ksp</i>, port_name_t <i>port</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>port</i>:&nbsp; The port that will be deleted.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to make sure that the kernel won't send any more messages to a certain port.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">/*</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=112 height=1><font face="Courier" size="-1">* Deallocate transmit port.</font><br>
+<img src="../../../Images/sp.gif" width=112 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_port_gone(&amp;instance, my_dev-&gt;xmit_port);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">(void)port_deallocate((task_t)task_self(), my_dev-&gt;xmit_port);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">my_dev-&gt;xmit_port = PORT_NULL;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_port_proc()</b>, <b>kern_serv_port_serv()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_port_proc()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set which function is a port's handler</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_port_proc(</b>kern_server_t *<i>ksp</i>, port_all_t <i>port</i>, port_map_proc_t <i>function</i>, int <i>arg</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>port</i>:&nbsp; The port that the function should be associated with.</font>
+
+<p><font face="Times"><i>function</i>:&nbsp; The function that handles messages sent to <i>port</i>.</font>
+
+<p><font face="Times"><i>arg</i>:&nbsp; An integer to be passed in the call to <i>function</i> whenever <i>port</i> receives a message.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to register a message-receiving function in a handler-style (not server-style) loadable kernel server.&nbsp; This function provides the functionality of the HMAP load command to your server.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">/* Create the port. */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">r = port_allocate((task_t)task_self(), &amp;port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic(&amp;instance, &#34;couldn't allocate a port&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else printf(&#34;Created port %d\n&#34;, port_name);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Specify which function is its handler. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">r = kern_serv_port_proc(&amp;instance, port_name,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">(port_map_proc_t)myhandler, 0);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic(&#34;port_allocate failed (%d)\n&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_port_gone(&amp;instance, port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_deallocate((task_t)task_self(), port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_name = PORT_NULL;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The call succeeded.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">KERN_RESOURCE_SHORTAGE:&nbsp; No more port-to-function mappings are available for your loadable kernel server.</font>
+
+<p><font face="Times">KERN_NOT_RECEIVER:&nbsp; You don't have receive rights for <i>port</i>.</font>
+
+<p><font face="Times">KERN_INVALID_ARGUMENT:&nbsp; <i>port</i> isn't a valid port.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_port_gone()</b>, <b>kern_serv_port_serv()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_port_serv()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set which function is a port's message server</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_port_serv(</b>kern_server_t *<i>ksp</i>, port_all_t <i>port</i>, port_map_proc_t <i>function</i>, int <i>arg</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>port</i>:&nbsp; The port that the function should be associated with.</font>
+
+<p><font face="Times"><i>function</i>:&nbsp; The function that handles messages sent to <i>port</i>.</font>
+
+<p><font face="Times"><i>arg</i>:&nbsp; An integer to be passed in the call to <i>function</i> whenever <i>port</i> receives a message.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is just like <b>kern_serv_port_proc()</b> except that it registers a function with a server-style, as opposed to a handler-style, interface.&nbsp; This function performs the same function as the SMAP load command.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">/* Create the port. */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">r = port_allocate((task_t)task_self(), &amp;port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic(&amp;instance, &#34;couldn't allocate a port&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else printf(&#34;Created port %d\n&#34;, port_name);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Specify which function is its server. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">r = kern_serv_port_serv(&amp;instance, port_name, (port_map_proc_t)myserv, 0);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic(&#34;port_allocate failed (%d)\n&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kern_serv_port_gone(&amp;instance, port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_deallocate((task_t)task_self(), port_name);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_name = PORT_NULL;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The call succeeded.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">KERN_RESOURCE_SHORTAGE:&nbsp; No more port-to-function mappings are available for your loadable kernel server.</font>
+
+<p><font face="Times">KERN_NOT_RECEIVER:&nbsp; You don't have receive rights for <i>port</i>.</font>
+
+<p><font face="Times">KERN_INVALID_ARGUMENT:&nbsp; <i>port</i> isn't a valid port.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_port_gone()</b>, <b>kern_serv_port_proc()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_port_set()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the port set</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">port_set_name_t <b>kern_serv_port_set(</b>kern_server_t *<i>ksp</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the name of the port set on which messages to the loadable kernel server arrive.&nbsp; The kernel listens to this port set on behalf of your server.&nbsp; Usually, this function is used after you've temporarily removed a port from the port set, and you need the name of the port set as an argument to <b>port_set_add()</b> so you can put the port back into the port set.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">/* Don't accept any more requests until we get rid of the old ones. */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_set_remove((task_t)task_self(), dev-&gt;xmit_port);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">. . . /* Get rid of some old requests. */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Re-enable listening on the port. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">port_set_add((task_t)task_self, kern_serv_port_set(&amp;instance),</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">dev-&gt;xmit_port);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_port_gone()</b>, <b>kern_serv_port_proc()</b>, <b>kern_serv_port_serv()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_unwire_range()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Unwire the specified range of memory in the kernel map</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_unwire_range(</b>kern_server_t *<i>ksp</i>, vm_address_t <i>address</i>, vm_size_t <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>address</i>:&nbsp; A virtual address in the kernel map.</font>
+
+<p><font face="Times"><i>size</i>:&nbsp; The size in bytes to be wired down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function makes a region of kernel memory subject to swapping.&nbsp; Usually, you call it when you're preparing to deallocate the memory with <b>vm_deallocate()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The call succeeded.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">KERN_INVALID_ARGUMENT:&nbsp; The range of memory wasn't wired down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kalloc()</b>, <b>kfree()</b>, <b>kget()</b>, <b>kern_serv_wire_range()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kern_serv_wire_range()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Wire down the specified range of memory in the kernel map</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/kern_server_types.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">kern_return_t <b>kern_serv_wire_range(</b>kern_server_t *<i>ksp</i>, vm_address_t <i>address</i>, vm_size_t <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ksp</i>:&nbsp; The address of the first field (which must be of type <b>kern_server_t</b>) in the server's instance variable.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>address</i>:&nbsp; A virtual address in the kernel map.</font>
+
+<p><font face="Times"><i>size</i>:&nbsp; The size in bytes to be wired down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function wires down a range of kernel memory.&nbsp; Usually you call it after you've copied out-of-line data into the kernel map.</font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">KERN_SUCCESS:&nbsp; The call succeeded.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kalloc()</b>, <b>kget()</b>, <b>kern_serv_unwire_range()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kernel_thread()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Start a new kernel thread in the specified task</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">thread_t <b>kernel_thread(</b>task_t <i>task</i>, void (*<i>start</i>)(void)<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>task</i>:&nbsp; For loadable kernel servers, this must be <b>current_task()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>start</i>:&nbsp; The first function to be called by the new thread.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function can sleep, so don't call it from an interrupt handler.&nbsp; The new thread uses the kernel address map, but the loadable kernel server's task.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">void new_thread(void);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kernel_thread(current_task(), new_thread);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void new_thread(void)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* Do something, then (if necessary) shut down */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread_terminate(current_thread());</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread_halt_self();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">} /* new_thread */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>current_task()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kfree()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Free memory that was allocated using <b>kalloc()</b> or <b>kget()</b></font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>kfree(</b>void *<i>address</i>, int <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>address</i>:&nbsp; The memory to be freed.&nbsp; This must be exactly the same address as was returned by <b>kalloc()</b> or <b>kget()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>size</i>:&nbsp; The size in bytes to be freed.&nbsp; This must be the same size as was specified in the call to <b>kalloc()</b> or <b>kget()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The memory freed will be available for subsequent <b>kalloc()</b> and <b>kget()</b> calls only if the size they specify is the same as <i>size</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">my_data_t *arg;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">arg = (my_data_t *)kalloc(sizeof (my_data_t));</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">kfree(arg, sizeof (my_data_t));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kalloc()</b>, <b>kget()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>kget()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Try to quickly allocate wired-down kernel memory</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void *<b>kget(</b>int <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>size</i>:&nbsp; The size in bytes to be allocated.&nbsp; This size, rounded up to the nearest power of 2, must be less than the page size (default 8192 bytes), or the kernel will panic.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function in interrupt handlers to try to get kernel memory.&nbsp; If no memory of the appropriate size can be allocated without blocking, <b>kget()</b> returns 0.&nbsp; Otherwise, it returns the address of the chunk of memory.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">my_data_t *arg;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">arg = (my_data_t *)kget(sizeof (my_data_t));</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (arg != 0)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{ . . .</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kfree(arg, sizeof (my_data_t));</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kalloc()</b>, <b>kfree()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>lock_alloc(), lock_free()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Create or destroy a lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">lock_t <b>lock_alloc(</b>void<b>)</b></font><br>
+<font face="Times">void <b>lock_free(</b>lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; The lock to be freed.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The function <b>lock_alloc()</b> returns a pointer to a new lock.&nbsp; Before you use the lock, you should initialize it by calling <b>lock_init()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The function <b>lock_free()</b> frees the lock structure pointed to by <i>lock</i>.</font>
+
+<p><font face="Times">See <b>lock_done()</b> for information on using locks.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>lock_done()</b>, <b>lock_init()</b>, <b>lock_read()</b>, <b>lock_write()</b>, <b>simple_lock_alloc()</b>, <b>simple_lock_free()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>lock_done()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Release a read or write lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>lock_done(</b>lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the lock that the reader or writer wants to release.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The <b>lock_</b><i>xxx</i><b>()</b> functions provide reader/writer synchronization.&nbsp; Any number of readers can read, as long as no one has a lock for writing.&nbsp; A writer can get a lock only if no reader or writer locks exist.&nbsp; Once a writer tries to get a lock, no more readers can get the lock, and the writer gets the lock as soon as the last reader releases its lock.&nbsp; The writer sleeps or busy-waits until it can get a lock; you determine which it does when you initialize the lock.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Use the <b>lock_done()</b> function to relinquish a read or write lock.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">lock_write(lock1);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* write to the protected data */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_done(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>lock_alloc()</b>, <b>lock_free()</b>, <b>lock_init()</b>, <b>lock_read()</b>, <b>lock_write()</b>, <b>simple_lock_unlock()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>lock_init()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Initialize a lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>lock_init(</b>lock_t <i>lock</i>, boolean_t <i>can_sleep</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the lock that the reader or writer wants to initialize.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>can_sleep</i>:&nbsp; If true, threads waiting to acquire a lock can sleep.&nbsp; If false, threads will busy-wait while trying to acquire a lock. This should usually be true.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to initialize a lock when you first create it.&nbsp; See <b>lock_done()</b> for a description of how locking works.&nbsp; Use <b>lock_alloc()</b> to create the lock.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">lock_t lock1 = lock_alloc();</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_init(lock1, TRUE);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/*. . .*/</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_free(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>lock_alloc()</b>, <b>lock_done()</b>, <b>lock_free()</b>, <b>lock_read()</b>, <b>lock_write()</b>, <b>simple_lock_init()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>lock_read()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get a lock for reading</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>lock_read(</b>lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the lock that the reader wants to get.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to get a lock for reading some data.&nbsp; If a writer holds or is waiting for a lock, you won't get the lock until the writer is done.&nbsp; Otherwise, you'll get the lock, even if other readers have it locked.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">lock_t lock1 = lock_alloc();</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_init(lock1, TRUE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_read(lock1);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (DONE_READING)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">lock_done(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>lock_alloc()</b>, <b>lock_done()</b>, <b>lock_free()</b>, <b>lock_init()</b>, <b>lock_write()</b>, <b>simple_lock</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>lock_write()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get a lock for writing</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>lock_write(</b>lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the lock that the writer wants to get.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to get a lock for writing some data.&nbsp; If another writer has or is waiting for a lock, you won't get the lock until the writer is done.&nbsp; If any readers have locks, you won't get the lock until every reader releases its lock.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">lock_t lock1;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock1 = lock_alloc();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_init(lock1, TRUE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">lock_write(lock1);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (DONE_WRITING)</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">lock_done(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>lock_alloc()</b>, <b>lock_done()</b>, <b>lock_free()</b>, <b>lock_init()</b>, <b>lock_read()</b>, <b>simple_lock</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>log()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Write a message in the system log buffer</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;sys/syslog.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>log(</b>int <i>level</i>, char *<i>format</i>, <i>arg</i>, <i>...</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>level</i>:&nbsp; The priority of the information.&nbsp; These priorities are defined in the header file <b>sys/syslog.h</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>format</i>:&nbsp; A string containing formatting information.&nbsp; See <b>printf()</b>.</font>
+
+<p><font face="Times"><i>arg</i>, <i>...</i>:&nbsp; Arguments to be printed.&nbsp; See <b>printf()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Prints the time of day and who sent the message (for loadable kernel servers, it's usually sent by Mach).&nbsp; This function doesn't sleep, so it can be called by interrupt functions.&nbsp; If no process is currently reading the system log, <b>log()</b> also writes to the console.&nbsp; This function always returns zero.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">log(LOG_INFO, &#34;My driver: device %s attached\n&#34;, device_type);</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>kern_serv_log()</b>; <b>printf()</b>; UNIX manual pages for <b>syslog()</b> and <b>syslogd</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>map_addr()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Convert a physical address to a virtual address</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">caddr_t <b>map_addr(</b>caddr_t <i>address</i>, int <i>size</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>address</i>:&nbsp; The physical address.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>size</i>:&nbsp; The number of bytes to map.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns a virtual address that corresponds to <i>address</i>.&nbsp; At least <i>size</i> bytes of hardware addresses are mapped into virtual memory.&nbsp; (Currently, <b>map_addr()</b> maps in multiples of the page size, nominally 8192 bytes.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you aren't sure whether a hardware address is implemented, you should use <b>map_addr()</b> to get a virtual address for it, and then call <b>probe_rb()</b> on the virtual address.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">volatile unsigned int *my_reg;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">my_reg = (unsigned int *)map_addr(REG_ADDRESS, 4);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (probe_rb (my_reg))</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*my_reg |= A_FLAG;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;Hardware at physical address 0x%x caused bus error\n&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">REG_ADDRESS);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>probe_rb()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>ns_abstimeout(), ns_timeout()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Schedule the execution of a function at a specific time in the future</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;sys/callout.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>#import &lt;kernserv/ns_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>ns_abstimeout(</b>func <i>function</i>, vm_address_t <i>arg</i>, ns_time_t <i>deadline</i>, int <i>priority</i><b>)</b></font><br>
+<font face="Times">void <b>ns_timeout(</b>func <i>function</i>, vm_address_t <i>arg</i>, ns_time_t <i>time</i>, int <i>priority</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>function</i>:&nbsp; The function to call.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>arg</i>:&nbsp; The argument to pass to <i>function</i>.</font>
+
+<p><font face="Times"><i>time</i>:&nbsp; The number of nanoseconds from the time <b>ns_timeout()</b> is called to the time <i>function</i> should be called.</font>
+
+<p><font face="Times"><i>deadline</i>:&nbsp; The time, in nanoseconds since system boot time, when <i>function</i> is to be called.</font>
+
+<p><font face="Times"><i>priority</i>:&nbsp; The priority at which to execute <i>function</i>.&nbsp; This should almost always be the value CALLOUT_PRI_SOFTINT0 (defined in the header file <b>sys/callout.h</b>).&nbsp; Other values might not be supported by future releases.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The function <b>ns_timeout()</b> schedules the function to be executed at a time relative to the current time; <b>ns_abstimeout() </b>schedules at a time relative to when the system booted.&nbsp; Although these functions allow nanosecond resolution to be specified, the time is rounded up to the system clock tick interval (one microsecond on 68030-based and 68040-based NeXT computers). Your driver should not rely on <i>function</i> running at exactly the specified time, since it takes an unpredictable amount of time to interrupt the current task and start the execution of <i>function</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <i>priority</i> argument specifies how the function will be executed.&nbsp; The value CALLOUT_PRI_SOFTINT0 means that the function will be run from a software interrupt rather than at the interrupt level of the system clock.&nbsp; This prevents the function from delaying interrupts at or below the system clock level.</font>
+
+<p><font face="Times">The function is executed only once per call to <b>ns_timeout()</b> or <b>ns_abstimeout()</b>.&nbsp; Use <b>ns_untimeout()</b> to unschedule the execution of the function before it has been run.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">#define ONE_SECOND 1000000000ULL</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Schedule initial execution in one second. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_timeout(every_second, (void *)0, ONE_SECOND, CALLOUT_PRI_SOFTINT0);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void every_second (void *arg)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* Do something. */</font>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* Reschedule execution for one second from now. */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">ns_timeout(every_second, (void *)0, ONE_SECOND, CALLOUT_PRI_SOFTINT0);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* mydriver_signoff:&nbsp; Called when mydriver is unloaded. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void mydriver_signoff(void)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">if (ns_untimeout(every_second, (void *)0))</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">printf(&#34;Unscheduled every_second.\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">printf(&#34;every_second wasn't found.\n&#34;);</font>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;My driver unloaded\n\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>ns_untimeout()</b>, <b>DELAY()</b>, <b>clock_value()</b>, <b>timeval_to_ns_time()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>ns_time_to_timeval(), timeval_to_ns_time()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Convert between <b>timeval</b> and <b>ns_time_t</b> time formats</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/ns_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>ns_time_to_timeval(</b>ns_time_t <i>ns</i>, struct timeval *<i>tv</i><b>)</b></font><br>
+<font face="Times">ns_time_t <b>timeval_to_ns_time(</b>struct timeval *<i>tv</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ns</i>:&nbsp; The time in nanoseconds to be converted.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>tv</i>:&nbsp; The equivalent time in <b>struct timeval</b> format.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The <b>timeval_to_ns_time()</b> function converts a value from <b>struct timeval</b> format (seconds and microseconds) to <b>ns_time_t </b>(nanoseconds).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>ns_time_to_timeval()</b> function does the opposite conversion--from nanoseconds to seconds and microseconds.&nbsp; This conversion might be useful when printing a value returned by <b>clock_value()</b>, as shown in the following example.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">unsigned int&nbsp;&nbsp;&nbsp; ms_time;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">struct timeval&nbsp; tv_time;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_time_t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; now;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">now = clock_value(System);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;Time since boot:&nbsp; %d:%d ns == &#34;,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*((int*) &amp;now), *((int *) &amp;now + 1));</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Since the value printed above is fairly useless, convert it */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ms_time = now / 1000000ULL;&nbsp;&nbsp;&nbsp; /* convert to millisecs */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;%u ms == &#34;, ms_time);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_time_to_timeval(now, &amp;tv_time);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;%u seconds and %d microseconds.\n&#34;, tv_time.tv_sec,</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">tv_time.tv_usec);</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>ns_untimeout()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Unschedule a timeout</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/ns_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">boolean_t <b>ns_untimeout(</b>func <i>function</i>, vm_address_t <i>arg</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>function</i>:&nbsp; The function that was to be called.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>arg</i>:&nbsp; The argument that was to be passed to <i>function</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is used to unschedule a call to a function previously arranged by <b>ns_timeout()</b> or <b>ns_abstimeout()</b>.&nbsp; Only one instance of the <i>function</i>-<i>arg</i> pair is removed, so it may be necessary to call <b>ns_untimeout()</b> multiple times.&nbsp; The function has no effect if the <i>function</i>-<i>arg</i> pair isn't found or if the function is already being executed.&nbsp; The <b>ns_untimeout()</b> function returns true if the timeout was found and unscheduled; otherwise it returns false.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">#define ONE_SECOND 1000000000ULL</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Schedule execution in five seconds. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_timeout(call_me, (void *)0, 5ULL*ONE_SECOND, CALLOUT_PRI_SOFTINT0);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void call_me (void *arg)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* do something */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* mydriver_signoff:&nbsp; Called when mydriver is unloaded. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">void mydriver_signoff(void)</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">if (ns_untimeout(call_me, (void *)0))</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">printf(&#34;Unscheduled call_me.\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">printf(&#34;call_me already executed.\n&#34;);</font>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;My driver unloaded\n\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>ns_timeout()</b>, <b>ns_abstimeout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>panic()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Hang the system and bring up the Panic window</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>panic(</b>char *<i>string</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>string</i>:&nbsp; The message to be printed to the console, message log, and <b>/usr/adm/messages</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Calling <b>panic()</b> brings up the Panic window (similar to the NMI mini-monitor window) and either hangs or reboots the system, depending on whether you booted with the <b>-p</b> option.&nbsp; See Chapter 9, &quot;Building, Loading, and Debugging Loadable Kernel Servers,&quot; for information on the Panic window.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Instead of using <b>panic()</b>, you should use <b>kern_serv_panic()</b> when possible, since it doesn't cause the whole system to panic. However, <b>kern_serv_panic()</b> can't be called when the interrupt level is greater than 0.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">if (curipl() == 0)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">kern_serv_panic(bootstrap_port, &#34;Couldn't get resource&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">panic(&#34;mydriver:&nbsp; Couldn't get resource&#34;);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>ASSERT()</b>, <b>kern_serv_panic()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>printf()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Display a message on the console</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>printf(</b>char *<i>format</i>, <i>arg</i>, ...<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>format</i>:&nbsp; The format string.&nbsp; It's just like the C library <b>printf()</b> function's format string, except that the only conversions available are <b>%s</b>, <b>%c</b>, <b>%x</b>, <b>%d</b>, and <b>%o</b>.&nbsp; (<b>%X</b>, <b>%D</b>, <b>%u</b>, and <b>%O</b> are recognized but are treated like <b>%x</b>, <b>%d</b>, <b>%d</b>, and <b>%o</b>, respectively.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>arg</i>, <i>...</i>:&nbsp; Optional arguments, to be formatted according to the <i>format</i> string.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is a scaled-down version of the C library <b>printf()</b> function.&nbsp; Output goes not only to the console, but also to the message buffer and to <b>/usr/adm/messages</b>.&nbsp; Since <b>printf()</b> disables interrupts while printing messages, all system activities are suspended while it writes to the console.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although <b>printf()</b> is safe to call in interrupt handlers, its output isn't guaranteed to print on the console.&nbsp; The message buffer, however, should be up-to-date.&nbsp; You can read the message buffer using the <b>msg</b> command in the NMI mini-monitor.</font>
+
+<p><font face="Times"><b>printf()</b> always returns zero.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>sprintf()</b>, <b>kern_serv_log()</b>, <b>log()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>probe_rb()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Check whether an address exists</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>probe_rb(</b>void *<i>address</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>address</i>:&nbsp; A virtual address that refers to a physical address.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns 1 if <i>address</i> refers to a valid hardware address, 0 otherwise.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">volatile unsigned int *my_reg;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">my_reg = (unsigned int *)map_addr(REG_ADDRESS, 4);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (probe_rb (my_reg))</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">*my_reg |= A_FLAG;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">printf(&#34;Hardware at physical address 0x%x caused bus error\n&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=161 height=1><font face="Courier" size="-1">REG_ADDRESS);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>map_addr()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>selthreadcache(), selthreadclear(), selwakeup()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Help for handling the <b>select()</b> system call</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>selthreadcache(</b>void **<i>waiterPtr</i><b>)</b></font><br>
+<font face="Times">void <b>selthreadclear(</b>void **<i>waiterPtr</i><b>)</b></font><br>
+<font face="Times">int <b>selwakeup(</b>void *<i>waiter</i>, int <i>collided</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>waiterPtr</i>:&nbsp; A pointer to a handle for the thread that's waiting for device activity.&nbsp; This handle should be initialized to 0 before calling <b>selthreadcache()</b> for the first time.&nbsp; After the waited-for device activity occurs and the thread handle is no longer needed, the handle should be cleared by a call to <b>selthreadclear()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>waiter</i>:&nbsp; A handle for a thread that's waiting for the device; this value is obtained by calling <b>selthreadcache()</b>.</font>
+
+<p><font face="Times"><i>collided</i>:&nbsp; Should be 0 if only one thread is waiting for the device; otherwise, 1.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions let a UNIX-style driver handle the <b>select()</b> system call.&nbsp; Chapter 6 has more information and examples on how to use these functions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>selthreadcache()</b> function returns in <i>waiterPtr</i> a handle for the thread that's waiting for device activity.&nbsp; This function returns 0 if no other thread is waiting for the device activity; otherwise, it returns a nonzero value.</font>
+
+<p><font face="Times">The <b>selthreadclear()</b> function clears the handle pointed to by <i>waiterPtr</i>.</font>
+
+<p><font face="Times">If <i>collided</i> is 0, <b>selwakeup()</b> wakes up the thread represented by <i>waiter</i>.&nbsp; If <i>collided</i> is nonzero, <b>selwakeup()</b> wakes up all parties that are sleeping as the result of a <b>select()</b> system call.&nbsp; The <b>selwakeup()</b> function returns no meaningful value.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>set_clock()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Sets the current time of the calendar clock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/clock_timer.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>set_clock(</b>clock_types_t <i>which_clock</i>, ns_time_t <i>ns</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>which_clock</i>: Must be <b>Calendar</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>ns</i>:&nbsp; The time in nanoseconds (since midnight, January 1, 1970, Greenwich Mean Time) to set the clock to.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function lets you set the current time of the calendar clock.&nbsp; Because the time is normally set by the Network Time Server or by the Preferences application, you don't usually need to call <b>set_clock()</b> directly.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">unsigned int&nbsp;&nbsp;&nbsp; ms_time;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ns_time_t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; now;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">now = clock_value(Calendar);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ms_time = now / 1000000ULL;&nbsp;&nbsp;&nbsp; /* convert to millisecs */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;The current calendar clock time is %d ms.\n&#34;, ms_time);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">set_clock(Calendar, now + timeToAdd);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">now = clock_value(Calendar);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">ms_time = now / 1000000ULL;&nbsp;&nbsp;&nbsp; /* convert to millisecs */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;The new calendar clock time is %d ms.\n&#34;, ms_time);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>clock_attributes()</b>, <b>clock_value()</b>, <b>timeval_to_ns_time()</b>, <b>settimeofday(2)</b> UNIX manual page</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>simple_lock()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get a simple lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>simple_lock(</b>simple_lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the simple lock.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Simple locks are simple spin-loops that implement exclusive locks.&nbsp; They're designed to be used when you plan to hold the lock for only a short time and/or when you can't sleep.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If someone else already has the lock, this function will busy-wait until it gets the lock.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Simple locks are most useful on multiprocessor systems.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">simple_lock_t&nbsp;&nbsp; slock;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">slock = simple_lock_alloc();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_init(slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Set a lock before manipulating a data structure */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock(slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">mydriver-&gt;data1 = VALUE;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_unlock(slock);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_free(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>simple_lock_alloc()</b>, <b>simple_lock_free()</b>, <b>simple_lock_init()</b>, <b>simple_unlock()</b>, <b>lock_read()</b>, <b>lock_write()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>simple_lock_alloc(), simple_lock_free()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Allocate or free a simple lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">simple_lock_t <b>simple_lock_alloc(</b>void<b>)</b></font><br>
+<font face="Times">void <b>simple_lock_free(</b>simple_lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; The simple lock to be freed.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The <b>simple_lock_alloc()</b> function returns a pointer to a new simple lock.&nbsp; Before you use the simple lock, you should initialize it by calling <b>simple_lock_init()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>simple_lock_free()</b> function frees the structure pointed to by <i>lock</i>.</font>
+
+<p><font face="Times">See <b>simple_lock()</b> for information on how to use simple locks.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">simple_lock_t&nbsp;&nbsp; slock;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">slock = simple_lock_alloc();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_init(slock);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_free(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>simple_lock()</b>, <b>simple_lock_init()</b>, <b>simple_unlock()</b>, <b>lock_alloc()</b>, <b>lock_free()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>simple_lock_init()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Initialize a simple lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>simple_lock_init(</b>simple_lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the simple lock to be initialized.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">Use this function to initialize a new simple lock.&nbsp; You should use <b>simple_lock_alloc()</b> to create the lock.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">simple_lock_t&nbsp;&nbsp; slock;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">slock = simple_lock_alloc();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_init(slock);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_free(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>simple_lock()</b>, <b>simple_lock_alloc()</b>, <b>simple_lock_free()</b>, <b>simple_unlock()</b>, <b>lock_init()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>simple_unlock()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Release a simple lock</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>simple_unlock(</b>simple_lock_t <i>lock</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>lock</i>:&nbsp; A pointer to the simple lock to be released.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">simple_lock_t&nbsp;&nbsp; slock;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">slock = simple_lock_alloc();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_init(slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Set a lock before manipulating a data structure */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock(slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">mydriver-&gt;data1 = VALUE;</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_unlock(slock);</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock_free(lock1);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>simple_lock()</b>, <b>simple_lock_alloc()</b>, <b>simple_lock_free()</b>, <b>simple_lock_init()</b>, <b>lock_done()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>spl<i>n</i>()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set the CPU interrupt level to <i>n</i></font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/</b><i>architecture</i><b>/spl.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>spl0(</b>void<b>)</b>, <b>spl1(</b>void<b>)</b>, <b>spl2(</b>void<b>)</b>, <b>spl3(</b>void<b>)</b>, <b>spl4(</b>void<b>)</b>, <b>spl5(</b>void<b>)</b>, <b>spl6(</b>void<b>)</b>, <b>spl7(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The <b>spl<i>n</i>()</b> macros set the hardware interrupt level of the CPU to level <i>n</i>.&nbsp; This means that devices whose hardware interrupt level is greater than <i>n</i> will be serviced immediately on an interrupt.&nbsp; Devices with interrupt levels equal to or less than <i>n</i> will not be serviced until the CPU interrupt level drops below the device interrupt level.&nbsp; The <b>spl0()</b> macro sets the CPU interrupt level to the lowest level, enabling all interrupts.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>spl<i>n</i>()</b> macros return an integer suitable for use with <b>splx()</b> to reset the CPU interrupt level.</font>
+
+<p><font face="Times">The following table shows the interrupts that occur at each hardware interrupt level.&nbsp; Because the NMI and power fail interrupts are always serviced, <b>spl6()</b> has the same effect as <b>spl7()</b> on NeXT computers.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Interrupt Level</b></font></td>
+
+<td><font face="Helvetica"><b>Interrupts at This Level</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">7</font></td>
+
+<td><font face="Times">NMI (non-maskable interrupt) key sequence</font><br>
+<font face="Times">Power-fail interrupt (non-maskable)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">6</font></td>
+
+<td><font face="Times">System-clock timeout interrupt</font><br>
+<font face="Times">All DMA-completion interrupts except video out</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">5</font></td>
+
+<td><font face="Times">RS-422 (serial) device interrupt</font><br>
+<font face="Times">NeXTbus interrupts</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">4</font></td>
+
+<td><font face="Times">DSP-device interrupt</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">3</font></td>
+
+<td><font face="Times">Disk-device interrupt</font><br>
+<font face="Times">SCSI-device interrupt</font><br>
+<font face="Times">Laser-printer device interrupt</font><br>
+<font face="Times">Ethernet transmit/receive device interrupts (not DMA)</font><br>
+<font face="Times">Sound-out underrun or sound-in overrun</font><br>
+<font face="Times">Video-out DMA completion interrupt</font><br>
+<font face="Times">Monitor-control interrupt</font><br>
+<font face="Times">Keyboard or mouse event</font><br>
+<font face="Times">Power-on switch</font><br>
+<font face="Times">Network-device interrupts</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">2</font></td>
+
+<td><font face="Times">Network-related software interrupts</font><br>
+<font face="Times">Software interrupt 1</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=44 height=1><font face="Times">1</font></td>
+
+<td><font face="Times">Software clock interrupts (timeouts)</font><br>
+<font face="Times">Software interrupt 0</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">#define spl_NB()&nbsp; spl5() /* NeXTbus interrupt level */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">int s;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">s = spl_NB();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Lock out all NeXTbus interrupts. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Do something that requires that we not be interrupted. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">splx(s);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Return to the previous interrupt level */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>curipl()</b>, <b>splx()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>splx()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Reset the CPU interrupt level</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/</b><i>architecture</i><b>/spl.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>splx(</b>int <i>priority</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>priority</i>:&nbsp; The value returned from the previous call to <b>spl<i>n</i>()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This macro returns the hardware priority interrupt level to the level that it was before issuing the last <b>spl<i>n</i>()</b> command.&nbsp; You must set <i>priority</i> to the value returned from the previous call to <b>spl<i>n</i>()</b>; setting it to anything else doesn't work.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">#define spl_NB()&nbsp; spl5()&nbsp; /* NeXTbus interrupt level */</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">int&nbsp; s;</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">s = spl_NB();&nbsp;&nbsp; /* Lock out all NeXTbus interrupts. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">/* Do something that requires that we not be interrupted. */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">splx(s);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Return to the previous interrupt level */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>curipl()</b>, <b>spl<i>n</i>()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>sprintf()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Put characters into a string</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>sprintf(</b>char *<i>string</i>, char *<i>format</i>, <i>arg</i>, ...<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>string</i>:&nbsp; The string that you want to put the characters in.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>format</i>:&nbsp; The format string.&nbsp; It's just like the C library <b>printf()</b> function's format string, except that the only conversions available are <b>%s</b>, <b>%c</b>, <b>%x</b>, <b>%d</b>, and <b>%o</b>.&nbsp; (<b>%X</b>, <b>%D</b>, <b>%u</b>, and <b>%O</b> are recognized but are treated like <b>%x</b>, <b>%d</b>, <b>%d</b>, and <b>%o</b>, respectively.)</font>
+
+<p><font face="Times"><i>arg</i>, <i>...</i>:&nbsp; Optional arguments, to be formatted according to the <i>format</i> string.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This works like the C library function <b>sprintf()</b>, except that it handles only the formats allowed by the kernel <b>printf()</b> function.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>printf()</b>, <b>strcat()</b>, <b>strcpy()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>strcat()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Concatenate two strings</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">char *<b>strcat(</b>char *<i>string1</i>, char *<i>string2</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>string1</i>:&nbsp; The string to add the second string to.&nbsp; It must have enough space for <i>string2</i> plus a null character.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>string2</i>:&nbsp; The string to copy to the end of <i>string1</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This acts the same as the <b>strcat()</b> C library function.&nbsp; It returns a pointer to <i>string1</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>sprintf()</b>, <b>strcpy()</b>, <b>strlen()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>strcmp(), strncmp()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Compare two strings</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>strcmp(</b>char *<i>string1</i>, char *<i>string2</i><b>)</b></font><br>
+<font face="Times">int <b>strncmp(</b>char *<i>string1</i>, char *<i>string2</i>, unsigned long <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>string1</i>:&nbsp; The string to be compared to <i>string2</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>string2</i>:&nbsp; The string being compared against.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; The number of characters to compare.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions act the same as the <b>strcmp()</b> and <b>strncmp()</b> C library functions.&nbsp; They return an integer greater than, equal to, or less than 0, depending on whether <i>string1</i> is lexicographically greater than, equal to, or less than <i>string2</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>strlen()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>strcpy(), strncpy()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Copy one string to another</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">char *<b>strcpy(</b>char *<i>to</i>, char *<i>from</i><b>)</b></font><br>
+<font face="Times">char *<b>strncpy(</b>char *<i>to</i>, char *<i>from</i>, unsigned long <i>length</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>to</i>:&nbsp; The string to copy <i>from</i> to.&nbsp; For <b>strcpy()</b>, it must have enough space to hold all of <i>from</i>, including the null character.&nbsp; For <b>strncpy()</b>, it must be able to hold <i>length</i> + 1 characters.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>from</i>:&nbsp; The string to copy to <i>to</i>.</font>
+
+<p><font face="Times"><i>length</i>:&nbsp; The number of characters to copy.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions act the same as the <b>strcpy()</b> and <b>strncpy()</b> C library functions.&nbsp; They return a pointer to <i>to</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>sprintf()</b>, <b>strcat()</b>, <b>strlen()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>strlen()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the length of a string</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>strlen(</b>char *<i>string</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>string</i>:&nbsp; The string you want the length of.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This acts the same as the <b>strlen()</b> C library function.&nbsp; It returns the number of non-null characters in <i>string</i>.</font>
+
+<p><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>strcmp()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>suser()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Check whether the user is the superuser</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>suser(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function is valid only for UNIX-style servers because message-based servers don't have access to user process information.&nbsp; If the user is the superuser, this returns 1 and sets a flag bit indicating that the process has used superuser privileges.&nbsp; Otherwise, it returns 0 and sets <b>u.u_error</b> to EPERM.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_block()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Put the current thread to sleep</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>thread_block(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function blocks the current thread from execution.&nbsp; You must call <b>assert_wait()</b> before calling <b>thread_block()</b>.&nbsp; This thread can be waked up by a timeout (set using <b>thread_set_timeout()</b>), by a call to <b>clear_wait()</b>, or by a call to <b>thread_wakeup()</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">extern&nbsp; hz;</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">splx(s);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">assert_wait(0, FALSE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_set_timeout(hz/2);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_block();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>assert_wait()</b>, <b>clear_wait()</b>, <b>thread_set_timeout()</b>, <b>thread_sleep()</b>, <b>thread_wakeup()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_halt_self()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Stop the current thread</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>thread_halt_self(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This makes the current thread stop running.&nbsp; You must first call <b>thread_terminate()</b> on the current thread.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">thread_terminate(current_thread());</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_halt_self();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>thread_terminate()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_set_timeout()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set a timer before calling <b>thread_block()</b></font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>thread_set_timeout(</b>int <i>ticks</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>ticks</i>:&nbsp; The number of ticks to wait for.&nbsp; To wait for <i>n</i> seconds, this value should be <i>n</i> multiplied by the external variable <b>hz</b>.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function sets a timer for the current thread.&nbsp; If you use it, you must call it between <b>assert_wait()</b> and <b>thread_block()</b>.&nbsp; Use the external variable <b>hz</b> (ticks per second) to convert from seconds into ticks.&nbsp; The thread will be waked up in <i>ticks</i>/<b>hz</b> seconds with a value of THREAD_TIMED_OUT as its wait result (obtained by calling <b>thread</b></font><sub><img src="../../../Images/c5F.gif" width=7 height=4></sub><font face="Times"><b>wait_result()</b>).</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">splx(s);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">assert_wait(0, FALSE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_set_timeout(hz*2); /* set the timer to 2 seconds */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_block();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>thread_block()</b>, <b>thread_wait_result()</b>, <b>us_timeout()</b>, <b>us_abs_timeout()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_sleep()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Sleep until the specified event occurs</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">void <b>thread_sleep(</b>int <i>event</i>, simple_lock_t <i>lock</i>, boolean_t <i>interruptible</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>event</i>:&nbsp; The event to wait for.&nbsp; This should be a unique integer, such as the address of a buffer.&nbsp; If event is zero, then <b>thread_wakeup()</b> won't work on the thread; only <b>clear_wait()</b> and <b>thread_set_timeout()</b> will be able to wake it up.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>lock</i>:&nbsp; The simple lock to unlock before calling <b>thread_block()</b>.</font>
+
+<p><font face="Times"><i>interruptible</i>:&nbsp; Used by <b>clear_wait()</b>.&nbsp; If <i>interruptible</i> is false and the <i>interrupt_only</i> argument to a later call to <b>clear_wait()</b> is true, then this thread won't be waked up by that call to <b>clear_wait()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This is a convenient way to sleep without manually calling <b>assert_wait()</b>.&nbsp; This function causes the current thread to wait until the specified event occurs.&nbsp; The specified lock is unlocked before releasing the CPU.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function is equivalent to:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">assert_wait(event, interruptible);&nbsp; /* assert event */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">simple_unlock(lock);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* release the lock */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">thread_block();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* block ourselves */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">extern void&nbsp;&nbsp;&nbsp;&nbsp; thread_wakeup();</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">struct timeval&nbsp; tv = {1, 0};</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">s = splmine();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock(data.slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (SOME_CONDITION) {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* wait */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">us_timeout(thread_wakeup, (int)&amp;data, &amp;tv, CALLOUT_PRI_SOFTINT0);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread_sleep((int)&amp;data, data.slock, TRUE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_unlock(data.slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">splx(s);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>assert_wait()</b>, <b>simple_unlock()</b>, <b>thread_block()</b>, <b>thread_wakeup()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_wait_result()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the wait result of the current thread</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>#import &lt;kernserv/sched_prim.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>thread_wait_result(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">A thread that wakes up for any reason has a result in its thread structure; <b>thread_wait_result()</b> returns this result.&nbsp; Possible return values are defined in the header file <b>kernserv/sched_prim.h</b> as THREAD_AWAKENED, THREAD_TIMED_OUT, THREAD_INTERRUPTED, THREAD_SHOULD_TERMINATE, and THREAD_RESTART.</font>
+
+<p><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">assert_wait(&amp;data, FALSE);</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">thread_block();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">printf(&#34;Wait result:&nbsp; %d\n&#34;, thread_wait_result());</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>thread_set_timeout()</b>, <b>thread_wakeup()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>thread_wakeup()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Wake up all threads that are waiting for the specified event</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">void <b>thread_wakeup(</b>int <i>event</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>event</i>:&nbsp; The event that was specified in the matching <b>assert_wait()</b> or <b>thread_sleep()</b> call.&nbsp; This should not be zero, since this function can't wake up threads that were put to sleep with an event of zero.</font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The threads that this macro wakes up have THREAD_AWAKENED in their wait result (obtainable by calling <b>thread_wait_result()</b>).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Warning:</b></font>&nbsp; <font face="Times">This function must be called at an interrupt level of IPLSCHED or below.&nbsp; You can use <b>curipl()</b> to determine what the interrupt level is.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">extern void&nbsp;&nbsp;&nbsp;&nbsp; thread_wakeup();</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">struct timeval&nbsp; tv = {1, 0};&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* 1-second timeout */</font>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">s = splmine();</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_lock(data.slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">if (SOME_CONDITION) {</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* wait */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">us_timeout(thread_wakeup, (int)&amp;data, &amp;tv, CALLOUT_PRI_SOFTINT0);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">thread_sleep((int)&amp;data, data.slock, TRUE);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">simple_unlock(data.slock);</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">splx(s);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In an interrupt handler for a NeXTbus driver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( (sp-&gt;flags &amp; SERVER_THREAD_PAUSED) != 0 )</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_serv_callout( &amp;instance, thread_wakeup,</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">(void *)&amp;sp-&gt;server_thread );</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>assert_wait()</b>, <b>thread_sleep()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>uninstall_polled_intr()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Remove an interrupt handler for a polled device</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><b>#import &lt;kernserv/prototypes.h&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>uninstall_polled_intr(</b>int <i>which</i>, int (*<i>my_intr</i>)()<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>ARGUMENTS </b></font><font face="Times"><i>which:</i>&nbsp; Specifies the device and interrupt level.&nbsp; For devices attached through the NeXTbus interface, this should be the constant I_BUS, which is defined in the header file <b>architecture/m68k/intr.h</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>my_intr</i>:&nbsp; The function in your server that handles this interrupt.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function removes <i>my_intr</i> from the list of functions that are called when an interrupt occurs at interrupt level <i>which</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function returns 0 if the call is successful.&nbsp; It returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if the interrupt level specified by <i>which</i> isn't capable of interrupt polling, or if <i>my_intr</i> isn't found.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>EXAMPLE </b></font><font face="Courier" size="-1">device_cleanup()</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">uninstall_polled_intr(I_BUS, device_interrupt);</font><br>
+<img src="../../../Images/sp.gif" width=133 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../../Images/sp.gif" width=105 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>install_polled_intr()</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

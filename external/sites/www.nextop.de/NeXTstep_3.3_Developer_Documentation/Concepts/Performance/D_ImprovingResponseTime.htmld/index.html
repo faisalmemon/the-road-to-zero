@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/D_ImprovingResponseTime.rtf -->
+<!-- Date: Sun Jun 28 19:36:59 1998 -->
+<head>
+<title>D_ImprovingResponseTime</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Improving Response Time</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Users are very sensitive to response time.&nbsp; Even a slight delay in providing users with feedback to their actions will give the impression of sluggishness regardless of how &quot;fast&quot; your application really is.&nbsp; Therefore, it's worth paying attention to response time and looking for ways to improve it.&nbsp; The discussion that follows provides a few techniques for improving real and perceived response time.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Optimal Panel and Menu Updating</b></font>
+
+<p><font face="Times">It's often the case that you must update the state of items contained within menus and panels to reflect the user actions within the application.&nbsp; This may need to be done after every event.&nbsp; How you perform this update can have an important impact on the responsiveness of your application.&nbsp; The key is to avoid unnecessary drawing, particularly in menus and panels that aren't visible to the user.&nbsp; After all, why update a menu or panel that isn't visible?&nbsp; The Application Kit has a built-in mechanism for allowing you to handle updates efficiently.&nbsp; We encourage you to take advantage of it.</font>
+
+<p><font face="Times">The key idea is that windows and menus have an <b>update</b> method that's responsible for handling updates.&nbsp; This method is invoked in the following situations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Automatically when a window is about to be brought on-screen.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whenever the <b>updateWindows</b> message is sent to NXApp, <b>updateWindows</b> will send the <b>update</b> message to every on-screen window.&nbsp; If you send a <b>setAutoupdate:YES</b> message to NXApp, <b>updateWindows</b> will be sent after every event.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whenever a Command-key event is processed, the <b>update</b> message is sent to each panel and menu before the panel or window sends the <b>performKeyEquivalent:</b> message down its view hierarchy.&nbsp; Note that in this case the panel or menu may not be visible, but the update is necessary so you can disable or enable things that may respond to the key equivalent.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">While the default <b>update</b> method of Window and Panel does nothing but return <b>self</b>, the <b>update</b> method of Menu has been implemented to allow you to easily update menu items in response to an <b>update</b> message.&nbsp; To take advantage of this, you must do two things:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <b>setUpdateAction:forMenu:</b> message needs to be sent to each menu item that will need to be updated, passing the method you want invoked when the menu containing the menu item receives an <b>update</b> message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NXApp or the delegate of the menu must implement the method specified above.&nbsp; The method must take a single argument which is the <b>id</b> of the menu cell, and return YES if the cell needs to be redisplayed, or NO if not.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Here's a simple example of an <b>updateAction</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-updateIt:(id)menucell</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">if([menucell isEnabled]!=enabledFlag){</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">[menucell setEnabled:enabledFlag];</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">} else</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">return NO;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When the menu's <b>update</b> method is invoked, it first disables <b>flushWindow</b>, and then goes through its item list.&nbsp; For each menu cell for which an <b>updateAction</b> has been specified, it disables <b>display</b>, invokes the update action, and if the update action returns YES, <b>display</b> is reenabled and the cell is redrawn.&nbsp; If at least one menu cell has been redrawn, the menu is flushed.&nbsp; It also does a number of other things to ensure optimal redraw.</font>
+
+<p><font face="Times">Since a menu's <b>update</b> method is invoked only when the menu is visible, is about to become visible, or is about to process a key equivalent, you can be assured that the menu item is updated only when absolutely necessary, and in the most efficient manner possible.&nbsp; Once again, this is an example of taking a lazy approach.</font>
+
+<p><font face="Times">The documentation also discusses a means of disabling display while updating either multiple views or multiple items within a view.&nbsp; This can be convenient when you want to update a bunch of controls or other views with new values, and then redisplay the ones that have been changed.&nbsp; See the Window's <b>disableDisplay</b> and <b>displayIfNeeded </b>methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Optimal Window Flushing</b></font>
+
+<p><font face="Times">When using buffered windows, you may want to think about your strategy for flushing the window.&nbsp; All drawing in a buffered window is done off-screen in the backing store for the window.&nbsp; The Window Server maintains a &quot;dirty rect&quot; that represents a rectangle which encompasses all the bits that have been touched in backing store since the last time the window was flushed.&nbsp; Only the area of the window contained in the dirty rect is flushed when the window is asked to flush itself.&nbsp; It's only when the dirty rect is flushed on-screen that the user sees the new drawing.&nbsp; Flushing is performed automatically once a view and its subviews have been drawn, if you use the <b>display</b>/<b>drawSelf::</b> mechanism provided by the View class.&nbsp; However, if you use <b>lockFocus</b> and <b>unlockFocus</b>, you must explicitly flush the window. In either case, here are some things to think about in determining your flush strategy.</font>
+
+<p><font face="Times">It may be desirable to flush the window at intermediate points if drawing the view (or the views) is going to take some time.&nbsp; For example, if you're doing a page layout system and are paginating a page, you may want to flush the window after every line, rather than wait until the entire page is done.&nbsp; While the overall time may be no faster, the users' perception will be that it's faster, because they can see that things are happening.&nbsp; This can be a very powerful technique for enhancing perceived performance.</font>
+
+<p><font face="Times">You may also want to do intermediate flushes if you're doing localized drawing in opposite corners of your window.&nbsp; If you're doing localized drawing in widely different places in the window, the dirty rect will encompass many bits that haven't changed and don't need to be flushed.&nbsp; In this case, you might be better off doing intermediate flushes, rather than waiting and doing a single flush at the end of all your drawing.</font>
+
+<p><font face="Times">However, if you're updating several views within a window, and they aren't in the same branch of the hierarchy <i>and </i>you don't want the user to see intermediate results (one view updated, another not), then you should send the enclosing window the <b>disableFlushWindow</b> message before drawing.&nbsp; At the end of drawing, send it the <b>reenableFlushWindow</b> and <b>flushWindow</b> messages to actually flush the window.&nbsp; The advantage of this approach is that the user doesn't see intermediate results.&nbsp; The disadvantage is that if the draw time is significant, users may be waiting for a period of time to see the results of their actions.</font>
+
+<p><font face="Times">As an alternative to intermediate flushes, you can also use the <b>setwindowtype</b> PostScript operator to temporarily change the window from a buffered to a retained window.&nbsp; This will allow the user to see the progress of the drawing as it happens.&nbsp; Afterwards, change the window type back to buffered so that controls and title bars don't draw with ugly flashing.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Coalescing Key Events</b></font>
+
+<p><font face="Times">Generally speaking, the Text object should be used for handling and drawing text, but if you're responding to key-down events yourself and doing drawing in response, it's a good idea to coalesce key events as the Text object does automatically.&nbsp; By this, we mean that when you respond to key-down events, check whether there are any more such events in the queue, and if there are, pull them off before responding to the event so you can process them all at the same time.&nbsp; The Draw demo application does this with the arrow keys (that is, if Draw can't keep up with the rate at which you're moving the selection via the arrow keys, it'll combine as many of the moves as it can into one, bigger move).&nbsp; Note that the system does this for you in the case of mouse-dragged events.</font>
+
+<p><font face="Times">A related idea is to periodically check within your drawing code to see whether another event has come in.&nbsp; For example, if the user types a character in the middle of a line that causes the rest of the paragraph to be rewrapped, then as the program goes off to rewrap that text, it can periodically check to see whether the user has typed another character, at which point the program can abort rewrapping and start wrapping from the insertion point again.</font>
+
+<p><font face="Times">Both of these techniques can contribute to the user's perception of a more responsive application, even if the absolute performance for an individual redraw isn't changed.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>PSobscurecursor()</b></font>
+
+<p><font face="Times">If you are doing your own text processing, when the user begins typing use <b>PSobscurecursor()</b> to hide the cursor rather than <b>PShidecursor()</b> and <b>PSshowcursor()</b>.&nbsp; The response latency of will be better, since the Window Server will make the cursor appear the moment the user moves the mouse, without requiring the intervention of the application.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>NXPing()</b></font>
+
+<p><font face="Times">Communication between the Window Server and the application is buffered at both ends.&nbsp; While this is done for efficiency reasons, it can cause unwanted latency, particularly when PostScript code is sent to the Server at a faster rate than the Server can consume it.&nbsp; <b>NXPing()</b> can be used to flush the buffers on both sides of the connection. Specifically, <b>NXPing()</b> waits until all PostScript code thus far generated has been executed.&nbsp; Since <b>NXPing()</b> involves a round trip to the Server, its use lowers overall throughput, but in certain cases its use can reduce latency and thus improve perceived performance.&nbsp; If you're doing a minimal operation in a tracking loop, like rubber-banding out a rectangle in response to a mouse-dragged event, <b>NXPing()</b> is unnecessary, as the Server can keep up with the volume of PostScript code being sent to it on each iteration.&nbsp; However, if you're generating a lot of PostScript code on each iteration, the Server may still be working on the PostScript code from the last iteration when the application starts sending it PostScript code from the next iteration.&nbsp; Using <b>NXPing()</b> in this case can help keep the application and the Server in synch.&nbsp; Note that any operator that involves a round trip to the Server will have the same effect as <b>NXPing()</b>.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

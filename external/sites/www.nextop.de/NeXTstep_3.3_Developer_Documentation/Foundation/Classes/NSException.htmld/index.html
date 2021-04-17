@@ -1,0 +1,726 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSException.rtfd -->
+<!-- Date: Sun Jun 28 19:56:01 1998 -->
+<head>
+<title>NSException</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSException</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCoding</font><br>
+<font face="Times">NSCopying</font><br>
+<font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSException.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">An exceptional condition is one that interrupts the normal flow of program execution. Each application can interpret different types of conditions as exceptional. For example, one application might view as exceptional the attempt to save a file in a directory that's write-protected. In this sense, an exceptional condition can be equivalent to an error. Another application might interpret the user's keypress as an exceptional condition: an indication that a long-running process should be aborted.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Raising an Exception</b></font>
+
+<p><font face="Times">Once an exceptional condition is detected, it must be propagated to the routine or routines that will handle it, a process referred to as &quot;raising an exception.&quot; In the NeXT exception handling system, exceptions are raised by instantiating an exception object and sending it a <b>raise</b> message.</font>
+
+<p><font face="Times">Exception objects provide:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">a name - a short NSString that is used to uniquely identify the exception</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">a reason - a longer NSString that contains a &quot;human-readable&quot; reason for the exception. This reason object is printed when you print an exception object using the &quot;%@&quot; format.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">userInfo - an NSDictionary object that you can use to supply application-specific data to the exception handler. For example, if a function's return value caused the exception to be raised, you could pass the return value to the exception handler through UserInfo. Or, if the exception handler displays a panel in response to the exception, userInfo could contain the text string to be displayed in the panel.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Handling an Exception</b></font>
+
+<p><font face="Times">Sending a <b>raise</b> message to an exception object initiates the propagation of the exception and passes data about it. Where and how the exception is handled depends on where you send the message from.</font>
+
+<p><font face="Times">In general, a <b>raise</b> message is sent to an exception object within the domain of an exception handler. An exception handler is a control structure created by the macros NS_DURING, NS_HANDLER, and NS_ENDHANDLER, as shown in the following illustration.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><img src="EPS0.gif" width=242 height=247></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The section of code between NS_DURING and NS_HANDLER is the <i>exception handling domain</i>; the section between NS_HANDLER and NS_ENDHANDLER is the <i>local exception handler</i>. The normal flow of program execution is marked by the gray arrow; the code within the local exception handler is executed only if an exception is raised. Sending a <b>raise</b> message to an exception object causes program control to jump to the first executable line following NS_HANDLER.</font>
+
+<p><font face="Times">Although you can raise an exception directly within the exception handling domain, it is more often called indirectly within one of the procedures called from the domain. No matter how deeply in a call sequence the an exception is raised, execution jumps to the local exception handler (assuming there are no intervening exception handlers, as discussed in the next section). In this way, exceptions raised at a low level can be caught at a high level.</font>
+
+<p><font face="Times">Besides transferring execution to the local exception handler, sending a <b>raise</b> message to an exception object initializes the variable &quot;exception&quot; (of type NSException *), as defined in <b>NSException.h</b>. This variable is defined only within the local exception handler and holds the raised exception object.</font>
+
+<p><font face="Times">Raising another exception is one way for program execution to leave the exception-handling domain; three other ways are permitted:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">&quot;Falling off the end&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Calling <b>NS_VALRETURN()</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Calling <b>NS_VOIDRETURN</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">A simple return from the exception-handling domain is not permitted.</font>
+
+<p><font face="Times">&quot;Falling off the end&quot; is simply the normal execution pathway introduced above. After all appropriate statements within the domain are executed (and no exception is raised), execution continues on the line following NS_ENDHANDLER. Alternatively, you can return control to the caller from within the domain by calling <b>NS_VALRETURN()</b> or <b>NS_VOIDRETURN</b>, depending on whether you need to return a value.</font>
+
+<p><font face="Times">You can't use <b>goto</b> or <b>return()</b> to exit an exception handling domain--errors will result. Nor can you use <b>setjmp()</b> and <b>longjmp()</b> if the jump entails crossing an NS_DURING statement. Since in many cases you won't know if the NEXTSTEP code that your program calls has exception handling domains within it, it's generally not recommended that you use <b>setjmp()</b> and <b>longjmp()</b> in your application.</font>
+
+<p><font face="Times">If an exception is raised and execution begins within the local exception handler, it either continues until all appropriate statements are executed (falling off the end of the local exception handler), or the exception is raised again to invoke the services of an encompassing exception handler, as described in the next section.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Nested Exception Handlers</b></font>
+
+<p><font face="Times">Exception handlers can be nested so that an exception raised in an inner domain can be treated by the local exception handler and any number of encompassing exception handlers. The following diagram illustrates the use of nested exception handlers, and is discussed in the text that follows.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><img src="EPS1.gif" width=481 height=303></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">An exception raised within Function3's domain causes execution to jump to its local exception handler. In a typical application, this exception handler checks the local variable &quot;exception&quot; (of type NSException *, as defined in <b>NSException.h</b>) to determine the nature of the exception. For exception types that it recognizes, the local handler responds and then sends a <b>raise</b> message to the local exception object to pass notification of the exception to the handler above it (in this case, the handler in Function2). Function2's exception handler does the same and then re-raises the exception to Function1's handler. Finally, Function1's handler re-raises the exception. Since there's no exception handling domain above Function1, the exception is transferred to the default top-level error handler.</font>
+
+<p><font face="Times">An exception that's re-raised appears to the next higher handler just as if the initial exception had been raised within its own exception handling domain.</font>
+
+<p><font face="Times">For applications based on the Application Kit, exceptions that are re-raised within the highest-level local exception handler are sent to <b>NXDefaultTopLevelErrorHandler()</b>, which prints a message about the exception. If an application's connection to the Window Server becomes corrupt or dies, or if the application is unable to form a connection to the Server, <b>NXDefaultTopLevelErrorHandler()</b> terminates the application by calling <b>exit()</b> with a status code of -1.</font>
+
+<p><font face="Times"><b>NXSetTopLevelErrorHandler()</b> lets you change the function used as the top-level handler; <b>NXTopLevelErrorHandler()</b> returns a pointer to the current top-level handler. If you substitute your own function for <b>NXDefaultTopLevelErrorHandler()</b>, you should probably call <b>NXDefaultTopLevelErrorHandler()</b> as part of its implementation. In this way, your function can give special handling to certain exceptions, passing all others to <b>NXDefaultTopLevelErrorHandler()</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Raising an Exception Outside of an Exception Handler</b></font>
+
+<p><font face="Times">If an exception is raised outside of any exception handler, it's intercepted by the uncaught exception handler, a function set by <b>NSSetUncaughtExceptionHandler()</b> and returned by <b>NSGetUncaughtExceptionHandler()</b>. The default uncaught exception handler for Application Kit programs writes the message &quot;An uncaught exception was raised&quot; to the Workspace Manager's console window (if the application was launched by the Workspace Manager) or to a Shell or Terminal window (if the application was launched from either of those applications). It then calls the top-level exception handler, passing it the NSException object that originally received the <b>raise</b> message.</font>
+
+<p><font face="Times">You can change the way uncaught exceptions are handled by using <b>NSSetUncaughtExceptionHandler()</b> to establish a different procedure as the handler. However, because of the design of the Application Kit, it's rare for an exception to be raised outside of an exception handling domain. The Application object's event loop itself is within an exception handling domain. On each cycle of the loop, the Application object retrieves an event and sends an event message to the appropriate object in the application. Thus, the code you write for custom objects (as well as the code for Application Kit objects) is executed within the context of the event loop's exception handler. To customize the Application Kit's highest-level response to exceptions, modify the top-level exception handler.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Predefined Exceptions</b></font>
+
+<p><font face="Times">NEXTSTEP predefines a number of exception names. These exceptions are defined in NSException.h; for example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern NSString *NSGenericException;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern NSString *NSRangeException;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern NSString *NSInvalidArgumentException;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">You can catch any of these exceptions from within your exception handler by comparing the exception's name with these predefined exception names.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCoding</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeWithCoder:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCoder:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copyWithZone:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSObject</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqual:object</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">hash</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">superclass</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">class</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">self</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">zone</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:withObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">perform:withObject:withObject:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isProxy</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isKindOfClass:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isMemberOfClass:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">conformsToProtocol:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">respondsToSelector:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">retain</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">release</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">autorelease</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">retainCount</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating and Raising Exceptions</font></td>
+
+<td><font face="Times">+ exceptionWithName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ raise:format:</font><br>
+<font face="Times">+ raise:format:arguments:</font><br>
+<font face="Times">- initWithName:reason:userInfo:</font><br>
+<font face="Times">- raise</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Querying Exceptions</font></td>
+
+<td><font face="Times">- exceptionName</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">- exceptionReason</font><br>
+<font face="Times">- exceptionUserInfo</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>exceptionWithName:reason:userInfo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSException *)<b>exceptionWithName:</b>(NSString *)<i>name</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>reason:</b>(NSString *)<i>reason</i> <b>userInfo:</b>(NSDictionary *)<i>userInfo</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates an autoreleased exception object using a predefined <i>name, a</i> human-readable <i>reason</i>, and arbitrary <i>userInfo</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>raise:format:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (volatile void)<b>raise:</b>(NSString *)<i>name</i> <b>format:</b>(NSString *)<i>format,...</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">A convenience method that creates and raises an exception with name <i>name</i> and a reason constructed from <i>format</i> and the arguments that follow in the manner of <b>printf()</b>. The user-defined information is <b>nil</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>raise:format:arguments:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (volatile void)<b>raise:</b>(NSString *)<i>name</i> <b>format:</b>(NSString *)<i>format</i> <b>arguments:</b>(va_list)<i>argList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and raises an exception with name <i>name</i> and a reason constructed from <i>format</i> and the arguments in <i>argList</i>, in the manner of <b>vprintf()</b>. The user-defined information is <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>exceptionName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>exceptionName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the short NSString that is used to uniquely identify the exception.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>exceptionWithName:reason:userInfo:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>exceptionReason</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>exceptionReason</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the longer NSString that contains a &quot;human-readable&quot; reason for the exception.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>exceptionWithName:reason:userInfo:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>exceptionUserInfo</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSDictionary *)<b>exceptionUserInfo</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSDictionary object that contains application-specific data for the exception. Returns <b>nil</b> if no application-specific data exists for the exception. As an example, if a function's return value caused the exception to be raised, the return value might be passed to the exception handler through UserInfo. Or, if the exception handler is to display a panel in response to the exception, userInfo might contain the text string to be displayed in the panel.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times"><b>exceptionWithName:reason:userInfo:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithName:reason:userInfo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithName:</b>(NSString *)<i>name</i> <b>reason:</b>(NSString *)<i>reason</i> <b>userInfo:</b>(NSDictionary *)<i>userInfo</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated exception object using the predefined <i>name,</i> human-readable <i>reason,</i> and user-defined <i>userInfo</i>. This is the designated initializer.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>raise</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(volatile void)<b>raise</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Raises the exception, causing program flow to jump to the enclosing error handler.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">All methods that raise use this method, so this is the place to set a breakpoint if you are monitoring exceptions in the debugger.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

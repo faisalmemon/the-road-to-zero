@@ -1,0 +1,540 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSAutoreleasePool.rtf -->
+<!-- Date: Sun Jun 28 19:55:41 1998 -->
+<head>
+<title>NSAutoreleasePool</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSAutoreleasePool</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSAutoreleasePool.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The Foundation Kit uses the NSAutoreleasePool class to implement NSObject's <b>autorelease</b> method.&nbsp; An autorelease pool simply contains other objects, and when deallocated sends a <b>release</b> message to each of those objects.&nbsp; An object can be put into the same pool several times, and receives a <b>release</b> message for each time it was put into the pool. This class specification presents information on fine-tuning your application's handling of autorelease pools; see &quot;Object Ownership and Automatic Disposal&quot; in the introduction to the Foundation Kit for basic information on using the autorelease feature.</font>
+
+<p><font face="Times">You use autorelease pools to limit the time an object remains valid after it's been autoreleased (that is, after it's been sent an <b>autorelease</b> message or has otherwise been added to an autorelease pool).&nbsp; You create an autorelease pool with the usual <b>alloc</b> and <b>init</b> messages, and dispose of it with <b>release</b>.&nbsp; An autorelease pool should always be released in the same context (invocation of a method or function, or body of a loop) that it was created.&nbsp; You should never send <b>retain</b> or <b>autorelease</b> to an autorelease pool.</font>
+
+<p><font face="Times">Autorelease pools are automatically created and destroyed in NEXTSTEP applications, so your code normally doesn't have to worry about them.&nbsp; There are two cases, though, where you should explicitly create and destroy your own autorelease pools.&nbsp; If you're writing a program that's not based on the Application Kit, such as a UNIX tool, there's no built-in support for autorelease pools; you must create and destroy them yourself.&nbsp; Also, if you need to write a loop that creates many temporary objects, you should create an autorelease pool in the loop to prevent too long a delay in the disposal of those objects.</font>
+
+<p><font face="Times">Enabling the autorelease feature in a program that's not based on the Application Kit is fairly easy.&nbsp; Many programs have a top-level loop where they do most of their work.&nbsp; To enable the autorelease feature you create an autorelease pool at the beginning of this loop and release it at the end.&nbsp; An <b>autorelease</b> message sent in the body of the loop automatically puts its receiver into this pool.&nbsp; Your <b>main()</b> function might look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int main(int argc, char *argv[])</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int i;</font>
+
+<p><img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">/* Do whatever setup is needed. */</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (i = 0; i &lt; argc; i++) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSAutoreleasePool *pool;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSString *fileContents;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSString *fileName;</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">pool = [[NSAutoreleasePool alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">fileName = [NSString stringWithCString:argv[i]];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">fileContents = [[[NSString alloc]</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">initWithContentsOfFile:fileName] autorelease];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">processFile(fileContents);</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[pool release];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Do whatever cleanup is needed. */</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(EXIT_SUCCESS);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Any object autoreleased inside the <b>for</b> loop, such as the <b>fileContents</b> string object, is added to <b>pool</b>, and when <b>pool</b> is released at the end of the loop those objects are also released.</font>
+
+<p><font face="Times">Note that autoreleasing doesn't work outside of the loop.&nbsp; This isn't a problem, since the program terminates shortly after the loop ends, and memory leaks aren't usually serious at that stage of execution.&nbsp; Your cleanup code shouldn't refer to any objects created inside the loop, though, since they may be autoreleased in the loop and therefore released as soon as it ends.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Nesting Autorelease Pools</b></font>
+
+<p><font face="Times">You may need to manually create and destroy autorelease pools even in a NEXTSTEP application if you write loops that create many temporary objects.&nbsp; For example, if you write a loop that iterates 1000 times and invokes a method that creates 15 temporary objects, those 15,000 objects will remain until the application's autorelease pool is deallocated, well after they're no longer needed.</font>
+
+<p><font face="Times">You can create your own autorelease pools within the loop to prevent these unwanted objects from remaining around. Autorelease pools nest themselves on a per-thread basis, so that if you create your own pool, it adds itself to the application's default pool, forming a stack of autorelease pools.&nbsp; Likewise, if you create another pool (within a nested loop, perhaps), it adds itself to the first pool you created.&nbsp; <b>autorelease</b> automatically adds its receiver to the last pool created, creating a nesting of autorelease contexts.&nbsp; The implications of this are described below.</font>
+
+<p><font face="Times">A method that creates autorelease pools looks much like the <b>main()</b> function given above:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (void)processString:(NSString *)aString</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int i;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (i = 0; i &lt; 1000; i++) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSAutoreleasePool *subpool = [[NSAutoreleasePool alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSString *thisLine;</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">thisLine = [self getLineNumbered:i fromString:aString];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Do some work with thisLine. */</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[subpool release];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If you assume that <b>getLineNumbered:fromString:</b> returns a string object that's been autoreleased while <b>subpool</b> is in effect, that object is released with <b>subpool</b> at the end of the loop.&nbsp; The work involving <b>thisLine</b> may create other temporary objects, which are also released at the end of the loop.&nbsp; None of these objects remains outside of this loop or the <b>processString:</b> method (unless they've been retained).</font>
+
+<p><font face="Times">Note that because an autorelease pool adds itself to the previous pool when created, it doesn't cause a memory leak in the face of an exception or other sudden transfer out of the current context.&nbsp; If an exception occurs in the above loop, or if the work in the loop involves immediately returning or breaking out of the loop, the sub-pool is released by the application's default pool (or whatever pool was in effect before the sub-pool was created),&nbsp; &quot;unwinding&quot; the autorelease-pool stack up to the one that's supposed to be active.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Guaranteeing the Foundation Ownership Policy</b></font>
+
+<p><font face="Times">By manually creating an autorelease pool, you reduce the potential lifetime of temporary objects to the lifetime of that pool.&nbsp; After an autorelease pool is deallocated, you should regard as &quot;disposed of&quot; any object that was autoreleased while that pool was effective, and not send a message to that object or return it to the invoker of your method.&nbsp; This method, for example, is incorrect:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font size="-1"><img src="../../Images/c2D-1.gif" width=7 height=4></font> <font face="Courier" size="-1">findMatchingObject:anObject</font><br>
+<font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=28 height=1><font face="Courier" size="-1">id match;</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">match = nil;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (match == nil) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSAutoreleasePool *subpool = [[NSAutoreleasePool alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">* Do some searching that creates a lot of temporary objects.</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">match = [self expensiveSearchForObject:anObject];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[subpool release];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[match setIsMatch:YES forObject:anObject];</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return match;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>expensiveSearchForObject:</b> is invoked while <b>subpool</b> is in effect, which means that <b>match</b>, which may have been autoreleased, is released at the bottom of the loop.&nbsp; Sending <b>setIsMatch:forObject:</b> after the loop could cause the application to crash.&nbsp; Similarly, returning <b>match</b> allows the sender of <b>findMatchingObject:</b> to send a message to it, also causing your application to crash.</font>
+
+<p><font face="Times">If you must pull a temporary object out of a nested autorelease context, you can do so by retaining the object within the context and then autoreleasing it after the pool has been released. Here's a correct implementation of <b>findMatchingObject:</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font size="-1"><img src="../../Images/c2D-1.gif" width=7 height=4></font> <font face="Courier" size="-1">findMatchingObject:anObject</font><br>
+<font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=28 height=1><font face="Courier" size="-1">id match;</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">match = nil;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (match == nil) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NSAutoreleasePool *subpool = [[NSAutoreleasePool alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Do a search that creates a lot of temporary objects. */</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">match = [self expensiveSearchForObject:anObject];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (match != nil) [match retain]; /* Keep match around. */</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[subpool release];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[match setIsMatch:YES forObject:anObject];</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [match autorelease];&nbsp;&nbsp; /* Let match go and return it. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">By retaining <b>match</b> while <b>subpool</b> is in effect and autoreleasing it after the <b>subpool</b> has been released, <b>match</b> is effectively moved from <b>subpool</b> to the pool that was previously in effect.&nbsp; This gives it a longer lifetime and allows it to be sent messages outside the loop and to be returned to the invoker of <b>findMatchingObject:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adding an object to the current pool</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td><font face="Times">+ addObject:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adding an object to a pool</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">addObject:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Debugging an autorelease pool</font></td>
+
+<td><font face="Times">+ enableDoubleReleaseCheck:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ enableRelease:</font><br>
+<font face="Times">+ setPoolCountThreshold:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addObject</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>addObject:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds <i>anObject</i> to the active autorelease pool in the current thread, so that it will be sent a <b>release</b> message when the pool itself is deallocated.&nbsp; The same object may be added several times to the active pool, and will receive a <b>release </b>message for each time it was added.&nbsp; <i>anObject</i> must not be <b>nil</b>.&nbsp; This method is equivalent to:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[<i>anObject</i> autorelease];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>enableDoubleReleaseCheck:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>enableDoubleReleaseCheck:</b>(BOOL)<i>enable</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When enabled, <b>release</b> and <b>autorelease</b> invocation checks to see if this object has been released too many times.&nbsp; This check is performed by searching all pools, and makes programs run very slowly. By default, <b>enableDoubleReleaseCheck:</b> is set to NO.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>enableRelease:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>enableRelease:</b>(BOOL)<i>enable</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">By setting <b>enableRelease:</b> to NO, <b>release</b> and <b>autorelease</b> messages are effectively ignored, allowing all objects to remain in memory. Note that this will cause your use of memory to increas. By default, <b>enableRelease:</b> is set to YES.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>setPoolCountThreshold:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>setPoolCountThreshhold:</b>(unsigned)<i>trash</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This method aids in debugging autorelease pools; when the pool size reaches a multiple of <i>trash</i>, this method will call a well-known method (indicated in the console). You can then set a breakpoint on that method in the debugger.</font>
+
+<p><font face="Times">To disable <b>setPoolCountThreshold:</b> (it is disabled by default), set <i>trash</i> to 0.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>addObject:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds <i>anObject</i> to the receiver, so that it will be sent a <b>release</b> message when the pool itself is deallocated. The same object may be added several times to the same pool, and will receive a <b>release</b> message for each time it was added. <i>anObject</i> must not be <b>nil</b>.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

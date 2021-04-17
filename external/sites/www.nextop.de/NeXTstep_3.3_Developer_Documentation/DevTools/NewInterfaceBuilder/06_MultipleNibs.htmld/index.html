@@ -1,0 +1,1082 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/DevTools/NewInterfaceBuilder/06_MultipleNibs.rtfd -->
+<!-- Date: Sun Jun 28 19:52:42 1998 -->
+<head>
+<title>06_MultipleNibs</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" size="-1"><i>Most applications have nib files in addition to the main nib file. These auxiliary nib files serve some special purpose. Some nib files, like those for Info panels, are loaded once when first required. Other nib files hold documents, which are loaded as often as requested. This chapter describes how to create and manage multiple nib files.</i></font>
+
+<p><font face="Helvetica"><b>Working with Interface Builder</b></font></td></tr>
+
+</table>
+
+<p><br><br><br><br>
+
+<p><font face="Helvetica" size="+4" color="#006811"><b>6</b></font>
+
+<p><font face="Times" size="+2"><b>Working With Multiple Nib Files</b></font>
+
+<p><br><br><br><br>
+
+<p><font face="Helvetica" size="-1" color="#006811"><b>Loading nib files dynamically: an Info panel</b></font>
+
+<p><font face="Helvetica" size="-1" color="#006811"><b>Displaying attention panels</b></font>
+
+<p><font face="Helvetica" size="-1" color="#006811"><b>Creating a multi-document application</b></font>
+
+<p><font face="Helvetica" size="-1" color="#006811"><b>Managing documents through delegation.</b></font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">...to divide is not to take away.</font><br>
+<img src="../../Images/sp.gif" width=72 height=1><font face="Times">Percy Bysshe Shelly</font>
+
+<p><br><br>
+
+<p><font face="Times">Choosing each stone, and poising every weight,</font><br>
+<font face="Times">Trying the measures of the breadth and height;</font><br>
+<font face="Times">Here pulling down, and there erecting new,</font><br>
+<font face="Times">Founding a firm state by proportions true.</font><br>
+<img src="../../Images/sp.gif" width=72 height=1><font face="Times">Matthew Arnold</font>
+
+<p><br><br>
+
+<p><font face="Times">How many things I can do without!</font><br>
+<img src="../../Images/sp.gif" width=72 height=1><font face="Times">Socrates</font>
+
+<p><br><br><br><br>
+
+<p><img src="../../Images/F53.gif" width=580 height=10 vspace=3>
+
+<p><font face="Helvetica"><b>Multiple Nib Files: Good Things in Small Pieces</b></font>
+
+<p><font face="Times">Why have multiple nib files in an application? Why not put everything in the main nib file? The answer is simple: Because multiple nib files enhance the performance of the application.</font>
+
+<p><font face="Times">You can strategically store the resources of an application (including pieces of the interface) in several nib files. When the application needs a resource, it loads the nib file containing it. This technique of deferred allocation benefits an application greatly. By conserving memory, it improves program efficiency. It also speeds up the time it takes to launch the application.</font>
+
+<p><font face="Times">When many sophisticated applications start up, they load only a minimum of resources in the main nib file--the main menu and perhaps a window. They display other windows (and load other nib files) only when users request it or when conditions warrant it.</font>
+
+<p><font face="Helvetica" size="-1"><b>Types of Auxiliary Nib Files</b></font>
+
+<p><font face="Times">Nib files other than an application's main nib file are sometimes called <i>auxiliary nib files</i>. There are two general types of auxiliary nib files: special-use and document.</font>
+
+<p><font face="Times">Special-use nib files contain objects (and other resources) that <i>might</i> be used in the normal operation of the application (like a Preferences panel). Document nib files contain objects that represent some repeatable entity, such as a word-processor document. A document nib file functions as a template for documents: it contains the UI objects and other resources needed to make a document.</font>
+
+<p><font face="Times">Each type of nib file requires a different kind of object to load and manage its resources. For special-use nib files, the application-controller object usually suffices. But a document nib file needs its own controller, one that is tightly bound to the document.</font>
+
+<p><font face="Helvetica" size="-1"><b>File's Owner</b></font>
+
+<p><font face="Times">The object that loads a nib file is usually the object that owns it. A nib file's owner must be external to the file. Objects unarchived from the nib file communicate with other objects in the application only through the owner.</font>
+
+<p><font face="Times">In Interface Builder, the File's Owner icon represents this external object. The File's Owner is typically the application controller for special-use nib files, and the document controller for document nib files. The File's Owner object is not really appearing twice; it's created in one file and referenced in the other.</font>
+
+<p><font face="Times">The File's Owner object dynamically loads a nib file and makes itself the owner of that file by sending <b>loadNibSection:owner:</b> to NXApp, the global application object.</font>
+
+<p><font face="Helvetica" size="-1"><b>How Multiple Documents are Created and Managed</b></font>
+
+<p><font face="Times">You can think of a document as the objects and resources unarchived from a nib file and the controller object that loads and manages these things. In managing a document, the controller makes itself the delegate of its window and its &quot;content&quot; objects. It responds to delegation messages to track edited status, handle window-close events, and respond to other conditions.</font>
+
+<p><font face="Times">When users choose the New (or equivalent) command, a method is invoked in the application's controller object. In this method, the application controller creates a document-controller object, which loads the document nib file in the course of initializing itself. A document thus remains independent of the application's &quot;core&quot; objects, storing state data in the document controller. If the application needs information about a document's state, it can query the document controller.</font>
+
+<p><img src="DocCreationSeq_RTF.gif" width=584 height=275>
+
+<p><br><br>
+
+<p><img src="../../Images/F54.gif" width=580 height=10 vspace=3></td></tr>
+
+</table>
+
+<p><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=9></td>
+
+<td><font face="Helvetica"><b>LOADING NIB FILES DYNAMICALLY: AN INFO PANEL</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">1</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Create the Info panel in Interface Builder.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">2</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Specify an outlet for the panel and an action method for the application controller.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">3</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Connect the Info command to the controller object.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">4</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Assign the contoller object to File's Owner.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">5</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Connect File's Owner to the outlet for the panel.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">6</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Implement an action method that loads the Info panel's nib file.</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">Many applications display some of their windows and panels only when users request them or when they are needed. An application loads and displays an Info panel, for instance, in response to a user request; it displays attention panels, on the other hand, when some internal condition in the application makes it necessary. By loading these auxiliary nib files only when they are needed, you can reduce memory usage and speed up the time it takes for your application to launch.</font>
+
+<p><font face="Times">The steps you follow to create, load, and manage an Info panel are typical for special-use nib files. To make the panel in Interface Builder, choose the New Info Panel command from the New Modules menu (the New Modules menu is listed on the Document menu). Interface Builder displays a template panel and creates an UNTITLED nib file to contain it. Be sure to save the file (as, for instance, <b>InfoPanel.nib</b>).</font>
+
+<p><img src="InfoPanel1.gif" width=579 height=143>
+
+<p><font face="Times">The custom object that you create to control an application is typically the object that loads and manages an Info panel. You define the class of this object in the Classes display of the main nib file. When you do, specify the necessary outlet and action.</font>
+
+<p><img src="InfoPanel2.gif" width=544 height=232>
+
+<p><font face="Times" color="#006811">Chapter 4, &quot;Creating a Class,&quot; describes how to add outlets and actions to your custom class, and shows how to connect them to instances of your class.</font>
+
+<p><font face="Times">After you make an instance of the controller class, connect the action to the menu command.</font>
+
+<p><img src="InfoPanel3.gif" width=614 height=390>
+
+<p><font face="Times">You cannot connect the Info panel and the controller object in the main nib file because the panel is in the auxiliary nib file you created earlier. You must assign the controller class to File's Owner in the auxiliary nib file and then make the outlet connection between File's Owner and the panel. The first step in this direction is to insert the class definition of the controller class into the auxiliary nib file.</font>
+
+<p><img src="InfoPanel4.gif" width=600 height=420>
+
+<p><font face="Times">Next, assign the controller class to File's Owner.</font>
+
+<p><img src="InfoPanel5.gif" width=583 height=386>
+
+<p><font face="Times">Now make a connection in Interface Builder between File's Owner and the title bar of the panel. Select the outlet in the Connections display and click Connect.</font>
+
+<p><font face="Times">The final step is to write the code (in the <b>.m</b> file of the controller class) that implements the action method invoked by the Info Panel command.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- showInfoPanel:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (!infoPanel)</font>
+
+<p><img src="../../Images/sp.gif" width=54 height=1><font face="Courier" size="-1">[NXApp loadNibSection:&#34;InfoPanel.nib&#34; owner:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[infoPanel makeKeyAndOrderFront:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> Once an Info panel is loaded, it is typically kept in memory until the user quits the application. The code tests the infoPanel outlet to determine if the auxiliary nib file containing the panel has already been loaded. If it hasn't, it loads it with <b>loadNibSection:owner:</b>. It is important to specify <b>self</b> as owner (<b>self</b> being the object that implements the method). After ensuring the panel is loaded, display&nbsp; the panel by sending it the <b>makeKeyAndOrderFront:</b> message</font><font face="Times" color="#0000FF">.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=9></td>
+
+<td><font face="Helvetica"><b>DISPLAYING AN ATTENTION PANEL</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=21></td>
+
+<td width=29><img src="../../Images/F55.gif" width=23 height=7 vspace=3></td>
+
+<td><font face="Helvetica" size="-1"><b>Call NXRunAlertPanel().</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Helvetica" size="-1"><i>Or</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=21></td>
+
+<td width=29><img src="../../Images/F55.gif" width=23 height=7 vspace=3></td>
+
+<td><font face="Helvetica" size="-1"><b>Create an attention panel in Interface Builder and load it dynamically.</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">When you can accomplish an end programmatically or in Interface Builder, the recommended course is almost always Interface Builder. A notable exception is displaying attention panels. You display attention panels to tell the user something about the current context (such as error that occurred), to clarify or complete an action the user is taking, or to give the user a chance to take corrective steps.</font>
+
+<p><font face="Times"><b><sup>Displaying Attention Panels Programmatically</sup></b></font><br>
+<font face="Times">For most situations requiring attention panels, the easiest and most appropriate thing to do is call a function: <b>NXRunAlertPanel()</b>. In the following example, the application informs users that, because of hardware incompatibility, it cannot proceed:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=43 height=1><font face="Courier" size="-1">if(![NXLiveVideoView doesWindowSupportVideo:bufWindow</font>
+
+<p><img src="../../Images/sp.gif" width=169 height=1><font face="Courier" size="-1">standard:&amp;type size:&amp;vidSize])</font>
+
+<p><img src="../../Images/sp.gif" width=50 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">NXRunAlertPanel(&#34;No Video Present&#34;,&#34;This machine is not \</font>
+
+<p><img src="../../Images/sp.gif" width=68 height=1><font face="Courier" size="-1">capable of running video applications.Since this program \</font>
+
+<p><img src="../../Images/sp.gif" width=68 height=1><font face="Courier" size="-1">is exclusively for Video,It will now exit&#34;,&#34;OK&#34;,NULL,NULL);</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[self terminate:self];</font>
+
+<p><img src="../../Images/sp.gif" width=50 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Helvetica" size="-1" color="#006811"><b>Notes on the code:</b></font> <font face="Times" color="#006811">The arguments of <b>NXRunAlertPanel()</b> determine what appears on the panel. The first argument is the heading (above the dividing line) and the second is the text (below the line). The next three arguments are the titles of the buttons that appear across the bottom of the panel. The first of these titles goes to the default button, which has a carriage return associated with it. You can remove a button by giving NULL as its title, but you must specify something for all three buttons The declaration of <b>NXRunAlertPanel()</b> permits a variable number of arguments, so you can have <b>printf()</b>-style format specifiers in the panel heading and text and variables following the third button argument.</font>
+
+<p><font face="Times">The call to <b>NXRunAlertPanel()</b> in the example above creates the following panel:</font>
+
+<p><img src="DisplayAttn1.gif" width=364 height=203>
+
+<p><br><br>
+
+<p><font face="Times"><b><sup>Loading Attention Panels Created in Interface Builder</sup></b></font><br>
+<font face="Times">The panel created by <b>NXRunAlertPanel()</b> might not be adequate for certain situations. For example, you might want to display an attention panel that has a special View object, say one that shows the progress of some lengthy process (such as a progress bar for loading or copying files). And you want to give the user the options of aborting or pausing that process. You'd want something like this attention panel:</font>
+
+<p><img src="AttentionPanel1.gif" width=546 height=197>
+
+<p><font face="Times">To implement a custom attention panel, start by choosing Document&nbsp; New Modules&nbsp; New Attention Panel. The remaining procedure is almost identical to the procedure for creating an Info</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Compose the text, graphics, and other UI elements of the panel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Pick a custom class, typically the application's controller, to manage the panel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Specify the necessary actions and outlets for the controller class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Connect these outlets and actions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Drag the controller's header or implementation file onto the panel's nib file window.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Assign the controller class to File's Owner.</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Load the attention panel's nib file with <b>loadNibSection:owner:.</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">There are some important differences between attention panels and Info panels. With attention panels, you typically load the nib file not as the result of a user action (for instance, clicking an Info Panel command), but because of internal conditions in your code. Also, you dismiss an Info panel by clicking its close box; you usually dismiss an attention panel by clicking a button on the panel. This means that, for custom attention panels, you will have to define and implement action methods for the buttons on the panels. (This is something <b>NXRunAlertPanel()</b> simulates by returning a code indicating the button clicked.)</font>
+
+<p><font face="Times" color="#006811">The Application Kit defines two functions related to <b>NXRunAlertPanel()</b>: <b>NXRunLocalizedAlertPanel()</b>and <b>NXGetAlertPanel()</b>. For more information on all three functions, see the &quot;Functions&quot; section of Chapter 2, &quot;Application Kit,&quot; in the <i>NEXTSTEP General Reference</i>.</font>
+
+<p><font face="Times" color="#006811">Attention panels in NEXTSTEP should conform to the conventions described in &quot;Implementing Attention Panels&quot; in Chapter 5 of the <i>NEXTSTEP User Interface Guidelines</i>.</font></td></tr>
+
+</table>
+
+<p><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=9></td>
+
+<td><font face="Helvetica"><b>CREATING A MULTI-DOCUMENT APPLICATION</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">1</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Add actions for creating and managing a document.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">2</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Define a document controller class.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">3</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Compose the document interface.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">4</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Assign the document-controller class to File's Owner of the document nib file.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">5</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Implement the document-creation method.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">6</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Initialize the document controller.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=35 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=35></td>
+
+<td nowrap><font face="Helvetica" size="-1">7</font></td>
+
+<td><font face="Helvetica" size="-1"><b>Implement methods for opening, saving, and closing documents.</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">Many applications have the notion of a document, a template interface that users can create as often as they want. Users can also modify the contents of the document, save the document, and open it again later. Edit is a good example of a multi-document application. Creating an application with multiple documents requires a mix of Interface Builder tasks and code writing.</font>
+
+<p><font face="Times"><b><sup>Adding Actions for Creating and Managing Documents</sup></b></font><br>
+<font face="Times">In typical multi-document applications, the main nib file doesn't contain any windows other than the application's menu. So the first thing you might want to do is delete all windows or panels from the main nib file. Then, select the Menus palette, drag the Document cell to the application's menu and insert it (usually between the Info and Edit cells). The Document menu holds menu commands for creating, opening, saving, and closing documents. Delete the cells that don't apply to your documents from the Document menu.</font>
+
+<p><font face="Times">The object that responds to user choices in the Document menu should serve some general-purpose role for the application. In the Classes display, locate the class of the application controller--the object that manages the application. To this class, add action methods that the commands in the Document menu will invoke when users choose them.</font>
+
+<p><img src="MultiDoc1.gif" width=555 height=252>
+
+<p><font face="Times">As in the example above, it might be useful to add an outlet to identify the active document controller (<b>document</b> in the example). This outlet object is associated with the current main window.</font>
+
+<p><font face="Times">After you add all required actions, connect the menu commands to the application-controller object in the Instances view.</font>
+
+<p><font face="Times" size="-1"><b>Tip:</b></font> <font face="Times">The object that invokes a document-related action doesn't have to be a menu command. It can be a button, a text field, a browser--any Control object.</font>
+
+<p><font face="Times"><b><sup>Defining a Document Controller Class</sup></b></font><br>
+<font face="Times">Another custom controller object--a document controller--loads and manages each document. The document controller also owns the nib file that contains the interface objects and other resources of the document. Since this object is the owner of the document nib file, it must be external to it. A good place to define and instantiate the document controller in Interface Builder is in the main nib file.</font>
+
+<p><font face="Times">Define in Interface Builder a subclass of the root class (Object in the following example), naming it something like DocController. A typical document controller would do some of the following things:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">load the document nib file during initialization</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">activate its document when requested by the application controller</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">respond to delegation messages from the document's window</font></td></tr>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">if the document includes text, become the delegate of the Text object</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">When you define the class, add at least two outlets to it. One outlet identifies a document's window (<b>window</b> in the example below) and the other identifies its content (<b>text</b> in the example).</font>
+
+<p><img src="MultiDoc2.gif" width=531 height=220>
+
+<p><br><br>
+
+<p><font face="Times"><b><sup>Creating the Document Interface</sup></b></font><br>
+<font face="Times">To create your document interface, start by choosing the New Empty command (that is, Document New Module&nbsp; New Empty). This command creates a nib file for your documents. Select the Windows palette and drag and drop a window over the screen. Interface Builder adds the window to the nib file.</font>
+
+<p><font face="Times">The contents of documents can be anything: text, graphics, forms, database tables. For our example, we'll create a text document. Drag a ScrollView object from the TextViews palette and size and position it to fit just inside the borders of the window.</font>
+
+<p><img src="MultiDoc3.gif" width=543 height=311>
+
+<p><font face="Times" size="-1"><b>Tip:</b></font> <font face="Times">If you want to have multiple fonts (including boldface and italics) in your document's text, drag the Font cell from the Menus palette and insert it in the application's menu. You must also select the Multiple fonts allowed option in the ScrollView's Attributes Inspector.</font>
+
+<p><font face="Times"><b><sup>Assigning the Document-Controller Class to File's Owner</sup></b></font><br>
+<font face="Times">You cannot connect the document controller to the document's Window and Text objects from the main nib file because the interface objects are in a different nib file. To enable connection of the window and text outlets, you must assign the DocController class to File's Owner in the document nib file.</font>
+
+<p><font face="Times">Begin by dragging the header or implementation file of the document-controller class into the document nib file. You can drag the files from Project Builder or from the Workspace Manager's File Viewer. This step adds the class definition to the nib file. Next, assign the class to File's Owner.</font>
+
+<p><img src="MultiDoc4.gif" width=582 height=387>
+
+<p><font face="Times">File's Owner now represents an instance of the document controller. Drag a connection line from File's Owner to the window's title bar; establish a connection through the <b>window</b> outlet. Drag other connection lines to the objects representing the window's content and establish connections (in our example, this is the Text object inside the ScrollView, which is identified by the <b>text</b> outlet). Also, drag a connection line from the window to File's Owner and make a connection through the <b>delegate </b>outlet. This connection makes the document controller a delegate of the window. Later, you will see how this connection makes it possible for the application to locate the controller of the currently active document.</font>
+
+<p><font face="Times"><b><sup>Implementing the Document-Creation Method</sup></b></font><br>
+<font face="Times">This step and the next describe what to do to <i>create</i> a document. In the example, when a user chooses the New command from the Document menu, the <b>new</b> method in the application controller is invoked. In that method, the application controller begins the document-creation sequence by creating the document controller.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">// In AppController.m</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- new:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">document = [[DocController alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[document activateDoc];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> The application controller creates a document controller--and in the process a document--by allocating an instance of the DocController class and sending <b>init</b> to it. It stores the object as an instance variable. It also ensures that the newly-created document is the currently active one by sending the document controller an <b>activateDoc</b> message. This message makes the window key, orders it front, inserts the cursor, and sets the document controller to be the delegate of the document's Text object.</font>
+
+<p><font face="Times"><b><sup>Initializing the Document Controller</sup></b></font><br>
+<font face="Times">When the application creates a document controller in the code example above, the document controller's <b>init</b> method is invoked. In initializing itself, the document-controller object loads the nib file containing the document's interface objects and designates itself as owner of these objects. At this point, the document is fully created.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">// In DocController.m</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- init</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[super init];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[NXApp loadNibSection:&#34;Document.nib&#34; owner:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[text setDelegate:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> Given the file name in <b>loadNibSection:owner:</b>, the Application object looks for the nib file in the application bundle. When the interface objects are unarchived from the nib file, the controller's connections with its outlets (<b>window</b> and <b>text</b>) are established. Before it returns <b>self</b>, the document controller makes itself the delegate of the Text object (<b>text</b>) to receive notifications of editing.</font>
+
+<p><font face="Times"><b><sup>Activating the Document</sup></b></font><br>
+<font face="Times">When users click among the windows of a multi-document application, the currently selected window automatically becomes the active document: The window is made the key window, it appears in front of all windows, and the cursor appears where you last left it. When you create or open a document, that document should be the active one, but this doesn't happen automatically. You have to write code to do it. The following is a typical method that activates a document.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- activateDoc</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[text setSel:0 :0];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[window makeKeyAndOrderFront:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> The message to the Text object (<b>setSel::</b>) puts the cursor at the beginning of the text (the arguments specify a range of character positions). This is appropriate for both new and opened documents. You could do other things within this method, such as setting delegates and attributes.</font>
+
+<p><font face="Times"><b><sup>Closing, Saving, and Opening Documents</sup></b></font><br>
+<font face="Times">When users create a document, they want to put content into it and eventually save it. Later, they can open the document, edit it, and save it, or close it without saving the changes. Since most users have these expectations of documents, you should try to implement these operations in your code. The following examples of save, open, and close methods are suggestions; there are other ways of implementing these operations.</font>
+
+<p><font face="Times">The <b>close</b> method below is invoked when the user clicks the Close command of the Document menu. This method simulates a click in the close box of the window.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- close:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">document = [[NXApp mainWindow] delegate];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (document == nil) return nil;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[document window] performClose:self];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> The <b>performClose:</b> message is sent to the window of the currently active document, simulating a mouse click in the close box.</font>
+
+<p><font face="Times">Notice the messag<b>e [[NXApp mainWindow] delegate],</b> which returns the document controller (the delegate) of the current key (main) window. This message is important because it enables the application controller to send messages to the controller of the currently active document.</font>
+
+<p><font face="Times">Below are example implementations of methods that open and save documents. The <b>save</b> method uses the SavePanel object to allow the user to save the document under a specific file name. The <b>open</b> method uses the OpenPanel object to let the user select the file to read into the document's content.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- save:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">int successful;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">document = [[NXApp mainWindow] delegate];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (document == nil) return nil;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[SavePanel new] setRequiredFileType:&#34;rtfd&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">successful = [[SavePanel new] runModal];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (!successful) return nil;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[document text] saveRTFDTo:[[SavePanel new] filename]</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">removeBackup:YES</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">errorHandler:nil];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[document window] setTitleAsFilename:</font>
+
+<p><img src="../../Images/sp.gif" width=197 height=1><font face="Courier" size="-1">[[SavePanel new] filename]];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- open:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">int successful;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">static&nbsp; const char *const types[] = {&#34;rtfd&#34;, NULL};</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">successful = [[OpenPanel new] runModalForTypes:types];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (!successful) return nil;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">document = [[DocController alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[document text] openRTFDFrom:[[OpenPanel new] filename]];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[[document window] setTitleAsFilename:</font>
+
+<p><img src="../../Images/sp.gif" width=197 height=1><font face="Courier" size="-1">[[OpenPanel new] filename]];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[document activateDoc];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811">The task &quot;Loading nib files dynamically: an Info panel,&quot; which appears earlier in this chapter, illustrates how to add a class definition to a nib file.</font>
+
+<p><font face="Times" color="#006811">See the next task, &quot;Managing Documents Through Delegation&quot; for details on tracking edited status as a delegate of a Text object, and for how to use the window's delegate and status to locate a document's controller</font><font face="Times" color="#0000FF">.</font></td></tr>
+
+</table>
+
+<p><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=9></td>
+
+<td><font face="Helvetica"><b>MANAGING DOCUMENTS THROUGH DELEGATION</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=21></td>
+
+<td width=29><img src="../../Images/F55.gif" width=23 height=7 vspace=3></td>
+
+<td><font face="Helvetica" size="-1"><b>As delegate of Text object:</b></font><br>
+<font face="Helvetica" size="-1"><b>Track document's edited status.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=21 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=21></td>
+
+<td width=29><img src="../../Images/F55.gif" width=23 height=7 vspace=3></td>
+
+<td><font face="Helvetica" size="-1"><b>As delegate of window:</b></font><br>
+<font face="Helvetica" size="-1"><b>Respond to window-close events.</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=21 height=15></td></tr>
+
+<tr valign=top>
+
+<td width=21></td>
+
+<td width=29><img src="../../Images/F55.gif" width=23 height=7 vspace=3></td>
+
+<td><font face="Helvetica" size="-1"><b>As delegate of NXApp:</b></font><br>
+<font face="Helvetica" size="-1"><b>Handle application termination and the opening of documents in the Workspace.</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times">You can make your controller objects--both application and document controllers--delegates of certain Application Kit objects. Windows and Text objects, as well the Application object (globally identified as NXApp) send your designated delegates messages at critical junctures of processing. If your objects responded to these messages appropriately, they can affect the way your application handles documents.</font>
+
+<p><font face="Times"><b><sup>Tracking Edited Status (Text)</sup></b></font><br>
+<font face="Times">Delegates of Text objects (and, by extension, TextField and Matrix objects) receive a series of messages, among them <b>textDidGetKeys:isEmpty:</b>. This message informs the delegate that typing just occurred in the interface object. In your implementation of this message, set the edited status of the window containing the Text object.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- textDidGetKeys:sender isEmpty:(BOOL)flag</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if ([window isDocEdited] == NO) [window setDocEdited:YES];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> The <b>setDocEdited:</b> message marks the window as having saved or unsaved content and modifies the close-box icon to indicate this.</font>
+
+<p><img src="ManageDelegate1.gif" width=545 height=39>
+
+<p><font face="Times">If your document's information is in objects other than Text objects (including text fields and the cells of a matrix), you must determine another way to track edited status.</font>
+
+<p><font face="Times" size="-1"><b>Tip:</b></font> <font face="Times">You can programmatically set your document controller to be the delegate of a Text, TextField, or Matrix object by sending <b>setTextDelegate:</b> to the object.</font>
+
+<p><font face="Times"><b><sup>When Windows Are Closed</sup></b></font><br>
+<font face="Times">When users click a window's close box, the Window object sends <b>windowWillClose:</b> to its delegate, informing it that the window is about to be closed. Set your document controller object to be the delegate of the document window. In your implementation of the <b>windowWillClose:</b> method, display an attention panel to the user that asks whether the document should be saved.</font>
+
+<p><font face="Times">The following example shows the a typical implementation.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- windowWillClose:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">int result;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">// test for edited status first</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if ([window isDocEdited] == NO) return self;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">result = NXRunAlertPanel(&#34;Close&#34;,</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">&#34;Doc has been edited. Save changes before closing?&#34;,</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">&#34;Save then Close&#34;, &#34;Close&#34;, &#34;Cancel Close&#34;);</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">switch (result) {</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">case NX_ALERTDEFAULT: {</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">[self saveDoc]; // save the doc here</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">case NX_ALERTALTERNATE: {</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">return self; // close without saving</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">case NX_ALERTOTHER: {</font>
+
+<p><img src="../../Images/sp.gif" width=120 height=1><font face="Courier" size="-1">return nil; // cancel close</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> This method first checks to see if the document has <i>not</i> been edited; if this is the case, there's no need to save the document, so it returns <b>self</b> to tell the window to proceed with closing. It then displays an attention panel with <b>NXRunAlertPanel()</b>. Based on the button the user clicks, it saves the document (another method in this controller object), signals that closing should proceed without saving, or cancels the close operation by returning <b>nil</b>.</font>
+
+<p><font face="Times"><b><sup>Application Delegation for Document Management</sup></b></font><br>
+<font face="Times">Your application controller can play an important role in document management by acting as the delegate to the global Application object. The Application object sends many messages to its delegate, and a couple of these are particularly relevant to documents.</font>
+
+<p><font face="Times">When users double-click an icon representing your document file (one saved earlier by your multi-document application), two successive messages may get sent to your application's delegate. The first message, <b>appAcceptsAnotherFile</b>, requests if your application wants to open the double-clicked file. Respond by returning YES. The Application object then sends you <b>app:openFile:type:</b>, giving you the information necessary to open the file.</font>
+
+<p><font face="Times">The following code example suggests one way of implementing these methods:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- (BOOL)appAcceptsAnotherFile:sender</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return YES;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- (int)app:sender openFile:(const char *)path</font>
+
+<p><img src="../../Images/sp.gif" width=85 height=1><font face="Courier" size="-1">type:(const char *)type</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if (strcmp(type, FILETYPE)) {</font>
+
+<p><img src="../../Images/sp.gif" width=92 height=1><font face="Courier" size="-1">return FALSE; // not the same file type</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">[self open:path];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return TRUE;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811"><b>Notes on the code:</b> The implementation of <b>app:openFile:type:</b> determines first if the extension (the file type) of the double-clicked file is the document file type. It only opens the file if the file type is compatible.</font>
+
+<p><font face="Times">You can easily register a document icon and file type in Project Builder. Drag an icon representing your document into the Document Icons and Extensions section of your application's Attributes display.</font>
+
+<p><img src="ManageDelegate2.gif" width=603 height=380><br>
+<font face="Times">If you share a document file type with other NEXTSTEP applications, your document might not be given the first chance to open a double-clicked document file. The Workspace Manager first checks the applications in the Application dock, then in your <b>/Apps</b> directory, then in <b>/LocalApps</b>, and finally in <b>/NextApps</b>. So if you have a file type of &quot;rtf,&quot; it's likely that Edit will open the file instead of your application.</font>
+
+<p><font face="Times">The Application object will also send its delegate (your application controller) messages when the application is about to quit. It sends <b>appWillTerminate:</b> when the user chooses Quit from the main menu; it sends the delegate the <b>app:PowerOffIn:andSave:</b> message when the Workspace Manager receives a power-off event. In either event, the Application delegate should check all of its documents and save or explicitly discard each edited one.</font>
+
+<p><font face="Times">This example shows how one Application delegate handles a power-off event.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">- app:sender powerOffIn:(int)ms andSave:(int)aFlag</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">{</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">poweringOff = YES;</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">if ([self hasUnsavedDocs]) [self reviewUnsavedDocs];</font>
+
+<p><img src="../../Images/sp.gif" width=64 height=1><font face="Courier" size="-1">return self;</font>
+
+<p><img src="../../Images/sp.gif" width=36 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times" color="#006811">The object that ultimately sends delegation messages to the text delegate is the field editor, which is the Text object used to draw text in all Views of a Window that can hold text. For more information, see the specifications for the above-named classes in Chapter 2 of the <i>NEXTSTEP General Reference</i>.</font>
+
+<p><font face="Times" color="#006811">See Chapter 2 of <i>NEXTSTEP Development Tools and Techniques</i> for further information on registering icons and file types in Project Builder.</font>
+
+<p><font face="Times" color="#006811">See the Application class specification in Chapter 2 of the <i>NEXTSTEP General Reference</i> for details on <b>appWillTerminate:</b> and <b>app:powerOffIn:andSave:</b>.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

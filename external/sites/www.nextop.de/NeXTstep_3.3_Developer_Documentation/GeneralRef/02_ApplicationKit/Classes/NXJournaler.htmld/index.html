@@ -1,0 +1,719 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXJournaler.rtf -->
+<!-- Date: Sun Jun 28 20:01:09 1998 -->
+<head>
+<title>NXJournaler</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXJournaler"></a><font face="Helvetica" size="+2"><b>NXJournaler</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXJournaler.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXJournaler class defines an object that lets an application record and play back events and sounds, a process called <i>journaling</i>.&nbsp; By using an NXJournaler object, an application can journal events flowing to one or more applications--including itself.&nbsp; Optionally, sound can be recorded synchronously with the events.&nbsp; Later, the recorded events and sound can be played back, reenacting the activities as they occurred during the recording.&nbsp; With journaling, you can implement event-based macros or complete self-running demonstrations for your application.</font>
+
+<p><font face="Times">Journaling is initiated by creating a new NXJournaler object and sending it a <b>setEventStatus:soundStatus:eventStream:soundfile:</b> message.&nbsp; The status arguments may have the values NX_STOPPED, NX_PLAYING, and NX_RECORDING.&nbsp; The event stream argument is a stream to record to or play back from.&nbsp; If you're recording, any data in the stream will be overwritten.&nbsp; It's not currently possible to add to the end of an existing event stream. The sound file argument is the name of a sound file to record to or play back from.</font>
+
+<p><font face="Times">The new NXJournaler object becomes the application's master journaler, only one of which can exist in a given application. When recording begins for the first time, slave journalers are automatically created in the other NEXTSTEP application that are currently running (and that allow journaling, see below).&nbsp; The slave journalers work at the master's behest, either sending it copies of the events they receive (assuming the master is recording events) or playing back events that they receive from the master (assuming the master is playing back a prerecorded event stream).&nbsp; The master and slave journalers can be accessed by using the Application class's <b>masterJournaler</b> and <b>slaveJournaler</b> methods.&nbsp; The <b>masterJournaler</b> method provides a convenient way for you to access this journaler to start and stop recording.&nbsp; The <b>slaveJournaler</b> method is rarely needed, unless your application needs to respond differently when it's a part of a journaling session.&nbsp; If so, you can query the slave journaler to discover if a journaling session is under way and react accordingly.</font>
+
+<p><font face="Times">When recording, by default all events going to any application are captured.&nbsp; Sometimes, you may not want certain applications to be recorded.&nbsp; For example, you might want to prevent the application that's recording the journal from being recorded.&nbsp; There are two ways to control this:&nbsp; with the defaults system and by sending a <b>setJournalable:</b> message to the Application object.&nbsp; Of the two, the defaults system is the more general.</font>
+
+<p><font face="Times">To use the defaults system to control journaling, add this code to the <b>initialize</b> method of the object that will be controlling the journaling:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">static NXDefaultsVector myDefaults = {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">{&#34;NXAllowJournaling&#34;, &#34;NO&#34;},</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">{NULL}};</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXRegisterDefaults([NXApp appName], myDefaults);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This will prevent the application that contains the object from being journaled unless a user overrides the default for that application in the user's default database.</font>
+
+<p><font face="Times">A user can also disallow journaling of any given application by adding an entry to the defaults database for that application. This would be done by entering the following command line in a Terminal window:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">dwrite <i>applicationName</i> NXAllowJournaling NO</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A less common way of allowing or disallowing journaling in an application is to send a <b>setJournalable:</b> message to the Application object.&nbsp; This allows more precise run-time control over journaling in that application.</font>
+
+<p><font face="Times">Event recording may be aborted by clicking the right mouse button while holding down the Alternate key.&nbsp; (Note:&nbsp; For this to work, you must have the right mouse button enabled in the Preferences application.)&nbsp; Event playback can be aborted by typing a character with any key on the keyboard.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing and freeing an NXJournaler</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Controlling journaling</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEventStatus:soundStatus:eventStream:soundfile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getEventStatus:soundStatus:eventStream:soundfile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRecordDevice:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordDevice</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Identifying associated objects</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">speaker</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">listener</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-delegate%5D"></a><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXJournaler's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the NXJournaler.&nbsp; Send this message to an NXJournaler after you're completely done with it.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-getEventStatus:soundStatus:eventStream:soundfile:%5D"></a><font face="Helvetica"><b>getEventStatus:soundStatus:eventStream:soundfile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getEventStatus:</b>(int *)<i>eventStatusPtr</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>soundStatus:</b>(int *)<i>soundStatusPtr</i></font><br>
+<font face="Times"><b>eventStream:</b>(NXStream **) <i>streamPtr</i></font><br>
+<font face="Times"><b>soundfile:</b>(char **)<i>soundfilePtr</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Provides status information about the NXJournaler.&nbsp; Values returned at <i>eventStatusPtr</i> and <i>soundStatusPtr</i> can be NX_PLAYING, NX_RECORDING, or NX_STOPPED.&nbsp; <i>streamPtr</i> is the address of a pointer to the event stream.&nbsp; <i>soundfilePtr </i>is the address of a pointer to the name of the sound file.&nbsp; Any of the arguments may be NULL if you don't want that piece of information.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEventStatus:soundStatus:eventStream:soundfile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated NXJournaler object.&nbsp; The delegate of the new object is <b>nil</b>.&nbsp; This is the designated initializer for an NXJournaler object.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-listener%5D"></a><font face="Helvetica"><b>listener</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>listener</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the listener used by the NXJournaler to communicate with other applications.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>speaker</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-recordDevice%5D"></a><font face="Helvetica"><b>recordDevice</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>recordDevice</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns whether sound is recorded from the CODEC microphone or from the DSP.&nbsp; The return value is either NX_CODEC or NX_DSP.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordDevice:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-setDelegate:%5D"></a><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the delegate used by the NXJournaler.&nbsp; The delegate is sent the method <b>journalerDidEnd:</b> when either playing or recording the journal finishes.&nbsp; If the journal was aborted, the delegate will first receive the message <b>journalerDidUserAbort:</b>. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-setEventStatus:soundStatus:eventStream:soundfile:%5D"></a><font face="Helvetica"><b>setEventStatus:soundStatus:eventStream:soundfile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEventStatus:</b>(int)<i>eventStatus</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>soundStatus:</b>(int)<i>soundStatus</i></font><br>
+<font face="Times"><b>eventStream:</b>(NXStream *)<i>stream</i></font><br>
+<font face="Times"><b>soundfile:</b>(const char *)<i>soundfile</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Controls the recording and playback of events and sounds.&nbsp; This is the main control point of the NXJournaler.&nbsp; The arguments <i>eventStatus</i> and <i>soundStatus</i> may be independently set to NX_STOPPED, NX_PLAYING, NX_RECORDING.&nbsp; By setting <i>eventStatus</i> to NX_RECORDING and <i>soundStatus</i> to NX_STOPPED, it's possible to record events without the sound.&nbsp; By setting <i>eventStatus</i> to NX_PLAYING and <i>soundStatus</i> to NX_RECORDING, it's possible to dub new sound over an existing event track.</font>
+
+<p><font face="Times">The <i>stream</i> argument is the stream to record events to or playback events from.&nbsp; When recording, any preexisting data in the stream will be overwritten.&nbsp; It's not currently possible to record onto the end of an existing event stream.</font>
+
+<p><font face="Times">The <i>soundfile</i> argument is the name of the file to record sound to or playback sound from.</font>
+
+<p><font face="Times">If you logically OR NX_NONABORTABLEMASK into <i>eventStatus</i>, journaling will be made nonabortable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getEventStatus:soundStatus:eventStream:soundfile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-setRecordDevice:%5D"></a><font face="Helvetica"><b>setRecordDevice:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordDevice:</b>(int)<i>device</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether sound is recorded from the CODEC microphone (the default device) or from the DSP.&nbsp; The constants NX_CODEC and NX_DSP can be used to specify the device.&nbsp; The recording from the DSP assumes that a peripheral is sending CD-quality data (stereo,16-bit linear, 44.1 kHz) to the DSP port.&nbsp; However, to save space, the data is reduced to a 22.05-kHz, mono sound.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordDevice</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-speaker%5D"></a><font face="Helvetica"><b>speaker</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>speaker</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the speaker used by the NXJournaler to communicate with the other applications.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>listener</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented By The Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-journalerDidEnd:%5D"></a><font face="Helvetica"><b>journalerDidEnd:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>journalerDidEnd:</b><i>journaler</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Responds to a message informing the delegate that recording or playback of the journal is finished or has been aborted.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>journalerDidUserAbort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXJournaler-journalerDidUserAbort:%5D"></a><font face="Helvetica"><b>journalerDidUserAbort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>journalerDidUserAbort:</b><i>journaler</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Responds to a message informing the delegate that the user has aborted the recording or playback session.&nbsp; A <b>journalerDidUserAbort:</b> message is sent when the NXJournaler in the controlling application receives notice from one of the controlled applications that the user has generated an abort event during recording or playback.&nbsp; The delegate receives this message just before the NXJournaler stops the recording or playback.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>journalerDidEnd:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

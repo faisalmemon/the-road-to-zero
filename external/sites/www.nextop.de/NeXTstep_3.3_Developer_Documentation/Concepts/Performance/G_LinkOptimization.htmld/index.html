@@ -1,0 +1,916 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/G_LinkOptimization.rtf -->
+<!-- Date: Sun Jun 28 19:37:01 1998 -->
+<head>
+<title>G_LinkOptimization</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Link Optimization</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This section describes two techniques for improving application performance by optimizing the link order of the Mach-O executable file.&nbsp;&nbsp; These techniques--object file reordering and procedure reordering--both work to improve your application's locality of reference.&nbsp; Either technique can improve an application's response time and memory use. Procedure reordering provides finer granularity and greater optimization, but requires profiling and relinking the application after it is already working.&nbsp; While the two techniques are compatible, procedure reordering takes precedence over object file reordering.</font>
+
+<p><font face="Times">Object file reordering is an Project Builder feature that lets you change the order in which object files are linked. Using this technique, you can position source files used most frequently by your application so that they are linked into the executable first; you can also position files that refer to one another contiguously in the executable.</font>
+
+<p><font face="Times">Procedure reordering is done by specifying to the link editor an exact ordering of the routines in your program.&nbsp; The technique for procedure reordering is discussed in detail in the remainder of this section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Procedure Reordering</b></font>
+
+<p><font face="Times">Reordering the procedures in your executable can boost your application's performance substantially, by reducing average memory use and paging activity.&nbsp; Procedure reordering places the blocks of code for individual methods or functions in an optimized order, independent of the source file they came from or their position in the source file.&nbsp; When procedures are reordered, the operating system can generally keep an active application's most frequently called code paged into active memory.&nbsp; You can also use procedure reordering to place all procedures for discrete tasks into contiguous sequences of the executable.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Procedure reordering is generally performed only after an application is debugged and essentially ready to use, since further development (i.e., adding new routines or changing which routines call what other routines) can affect the optimal procedure order.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Segments, Sections, and Procedure Order</b></font>
+
+<p><font face="Times">Mach-O executables are organized by segments of memory.&nbsp; Each segment can contain one or more sections. Segments are always page aligned.&nbsp; The sections of your executable are created from object files by the link editor.</font>
+
+<p><font face="Times">There are several standard segments defined by the Mach-O file format (described in <i>NeXT Development Tools</i>).&nbsp; The <b>__TEXT</b> segment holds the actual code and other read-only portions of your program.&nbsp; The link editor places code from your &quot;.o&quot; files in the <b>__text</b> section of the <b>__TEXT</b> segment.&nbsp; As your program runs, pages from the <b>__text</b> section are loaded into memory on demand, as routines on these pages are used.&nbsp; Code is linked into the <b>__text</b> section in the order in which it appears in the source file, and source files are linked in the order in which they are listed on the link editor command line (or in Project Builder's Files display, if you use Project Builder's object-file reordering feature).&nbsp; Thus, code from the first &quot;.o&quot; file is linked from start to finish, followed by code from the second and subsequent files.</font>
+
+<p><font face="Times">However, this is rarely the optimal order.&nbsp; For example, say that certain methods or functions in your code are invoked repeatedly, while others are seldom used.&nbsp; Reordering the procedures to place high hit-rate code at the beginning of the <b>__text</b> section minimizes the average number of pages that your application uses, and reduces paging activity.&nbsp; As another example, say that all the objects defined by your Objective C code are initialized at the same time.&nbsp; Because the <b>initialize</b> method for each class is defined in a separate source file, the initialization code is ordinarily distributed across the <b>__text</b> section.&nbsp; By reordering initialization code for all classes to place it contiguously, you enhance initialization performance:&nbsp; The application requires just the small number of pages containing initialization code, rather than a larger number of pages, each containing a small piece of initialization code.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Basic Reordering Process</b></font>
+
+<p><font face="Times">Depending on the size and complexity of your application, there are different strategies you can pursue for finding a procedure ordering that improves your performance.&nbsp; Like most performance tuning, the more time you spend measuring and re-tuning your procedure ordering, the more memory you will save.&nbsp; A good first cut ordering can be easily obtained by running your application and sorting the routines by call frequency.&nbsp; The steps for this simple strategy are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">1.</font></td>
+
+<td><font face="Times">Compile source files with the <b>-pg</b> and <b>-g</b> options.&nbsp; This generates an executable containing symbols used in profiling and reordering procedures.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">2.</font></td>
+
+<td><font face="Times">Run and use the application to create a set of profile data.&nbsp; Perform a series of functional tests, or have someone use the program for a test period.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">3.</font></td>
+
+<td><font face="Times">Run <b>gprof</b> with the <b>-S</b> option to create order files, listing procedures in optimized order.&nbsp; Order files are used by the link editor to reorder procedures in the executable.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">4.</font></td>
+
+<td><font face="Times">Run the link editor using the <b>-sectorder</b> option and the order file.&nbsp; This creates an executable with procedures linked into the <b>__text</b> section as specified in the order file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">These steps for this basic ordering are described in detail in the following sections.&nbsp; Afterwards, some more advanced strategies are discussed.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Step 1: Compile and Link the Source Files</b></font>
+
+<p><font face="Times">Compile and link your program using the <b>-pg</b> and <b>-g</b> options.&nbsp; The <b>-pg</b> option adds hooks for profiling the application and for listing procedure calls in the order file (step 2).&nbsp; The <b>-g</b> option creates symbol tables with source file references for use with the debugger; this option is used by the <b>gprof -S</b> option to add source file names to the order file (step 3).</font>
+
+<p><font face="Times">The easiest way to do this is to make &#34;clean&#34; and then make &#34;profile&#34; from Project Builder's &#34;Build&#34; panel.</font>
+
+<p><font face="Times">If you want to reorder library procedures along with those in object files, use the link editor's <b>whatsloaded</b> option to create a file of all loaded procedures in the project directory.&nbsp; This option is described below in the section &quot;Creating a Default Order File.&quot;</font>
+
+<p><font face="Times">If your application contains assembly language code, there are some additional contraints to how you may reorder your code.&nbsp;&nbsp; See the appendix at the end of this document for more information.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Step 2: Run and Use the Application</b></font>
+
+<p><font face="Times">By running and using the application, you can generate a profile of procedures called during use.&nbsp; The profiling data is placed in a file named <b>gmon.out</b> automatically, each time you run the program.&nbsp; Note that each time you stop the program it creates a new <b>gmon.out</b> file, overwriting the old file.&nbsp; Thus you should rename the file before restarting the program for the next pass of profiling.</font>
+
+<p><font face="Times">The simplest way to profile is an application is to exercise it through a test suite, or to let a user put the program to use on a daily basis for a few days.&nbsp; These techniques will generate large sets of profile data that will be used to generate an procedure ordering file.&nbsp; In more advanced strategies (see below), you might profile particular operations to get many profile data sets, generate a number of procedure orderings from these sets, and then combine those orderings into a final ordering.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Step 3: Run gprof to Create Order Files</b></font>
+
+<p><font face="Times">An order file contains an ordered sequence of lines, made up of a source file name and a symbol name, separated by a colon (&quot;:&quot;) with no other whitespace; this format should be followed exactly for the link editor to process the file correctly.&nbsp;&nbsp; If the object file <i>name</i>:<i>symbol</i> name pair is not exactly the name seen by the link editor, it will try its best to match up the names with the sources being edited.&nbsp; Each line represents a block to be placed in a section of the executable.</font>
+
+<p><font face="Times">The lines in an order file for procedure reordering consist of an object file name and procedure name (function, method, or other symbol). The sequence in which procedures are listed in the order file represents the sequence in which they will be linked into the <b>__text</b> section of the executable.</font>
+
+<p><font face="Times">To create an order file from the profiling data generated by using a program, run <b>gprof</b> using the <b>-S</b> option.&nbsp; For example,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">gprof -S MyApp.profile/MyApp gmon.out</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Ths -S option produces two order files:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">gmon.order</font></td>
+
+<td><font face="Times">ordering based on a &quot;closest is best&quot; analysis of the profiling call graph.</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">callf.order</font></td>
+
+<td><font face="Times">ordering based on call frequency.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">You may want to try using each of these order files, to see if either provides a performance improvement.&nbsp; See the discussion of <b>filemem</b> below for measuring the results of the ordering.</font>
+
+<p><font face="Times">These order files contain only those procedures which were used during profiling.&nbsp; However, the link editor keeps track of missing procedures and links them in their default order after those listed in the order file.&nbsp;&nbsp; Library functions are included only if the project directory contains a file generated by the link editor's <b>whatsloaded</b> option; use of this option is described later in this section, under the topic &quot;Creating a Default Order File.&quot;</font>
+
+<p><font face="Times">The order file will be missing filenames for files not compiled with the <b>-g</b> option, assembly files, and stripped executable files.&nbsp; If your order file contains such references, you must either edit the file to add the filenames or delete the references so the procedures can be linked in default order.</font>
+
+<p><font face="Times">Note that the <b>gprof -S</b> option doesn't work with executables that have already been reordered.</font>
+
+<p><font face="Times"><b>Linking a Whole Source File.</b>&nbsp; If you don't want to reorder the procedures in a source file, you can link the file as a whole with a simple edit of the order file, replacing all references to the source file with a single entry using the special symbol <b>.section_all</b>.&nbsp; For example, if the object file <b>foo.o</b> comes from assembly source and you want to be link it as a whole, then delete all references to blocks in <b>foo.o</b> and insert the following line in the order file :</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">foo.o:.section_all</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This option is useful for object files compiled from assembly source, or for which you don't have the source.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Step 4: Relink the Program</b></font>
+
+<p><font face="Times">Once you've generated an order file, you can relink the program using the <b>-sectorder</b> and <b>-e start</b> options:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">cc -o <i>outputfile inputfile.o</i> ... -sectorder __TEXT __text <i>orderfile</i> -e start</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If any <i>inputfile</i> is a library (rather than an object file), you may need to edit the order file before linking to replace all references to the object file with references to the appropriate library file.&nbsp;&nbsp; Again, the link editor does its best to match names in the order file with the sources it is editing.</font>
+
+<p><font face="Times">With these options, the link editor constructs the executable file <i>outputfile</i> so that the contents of&nbsp; the <b>__TEXT </b>segment's <b>__text</b> section is constructed from blocks of the input files' <b>__text</b> sections.&nbsp; The link editor arranges the routines in the input files in the order listed in <i>orderfile</i>.</font>
+
+<p><font face="Times">As the <i>orderfile</i> is processed, procedures whose object-file/symbol-name pair isn't listed in <i>orderfile</i> are placed last in <i>outputfile</i>'s <b>__text</b> section.&nbsp; These symbols are linked in the default order.&nbsp; Object-file/symbol-name pairs listed more than once always generate a warning, and the first occurrence of the pair is used.</font>
+
+<p><font face="Times">By default, the link editor prints a summary of&nbsp; the number of symbol names in the linked objects not in orderfile, the number of symbol names in orderfile not in the linked objects, and the number of symbol names that it tried to match that were ambiguous, if such entries exist.&nbsp; To produce a detailed list of these symbols, use the <b>-sectorder_detail </b>option.</font>
+
+<p><font face="Times">The <b>ld</b> option <b>-e start</b> preserves the executable's entry point.&nbsp; The symbol start (no leading &quot;_&quot;) is defined in <b>crt0.o</b>; it represents the first text address in your program when you link normally.&nbsp; When you reorder, you have to use this option to fix the entry point.&nbsp; Another way to do so is to put the line <b>/lib/crt0.o:start</b> or <b>/lib/crt0.o:section_all</b> as the first line in your order file.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>More Advanced Reordering Strategies</b></font>
+
+<p><font face="Times">For many applications, the ordering generated by the steps above are a substantial improvement over doing no ordering at all.&nbsp; For a simple application with few features, such an ordering represents most of the gains to be had by procedure reordering.&nbsp; However, larger applications will often benefit greatly from some additional analysis.&nbsp; While the orderings based on call frequency or the call graph are a good start, your knowledge of the structure of your application and the way that it is used can further reduce the working set of your application.</font>
+
+<p><br><br>
+
+<p><font face="Times"><b>Creating a Default Order File</b></font>
+
+<p><font face="Times">If you want to reorder an application's procedures using techniques other than those described above, you may want to skip the profiling steps and just start with a default order file that lists all the routines of your application.&nbsp; Once you have a list of the routines in suitable form, you can then rearrange the entries by hand or with a sorting technique of your choice.&nbsp;&nbsp; You can use the resulting order file with the link editor's <b>-sectorder</b> option as described in Step 4 above.</font>
+
+<p><font face="Times">To create a default order file, first run the link editor with the <b>-whatsloaded</b> option:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">cc -o <i>outputfile inputfile</i>.o -whatsloaded &gt; <i>loadedfile</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This creates a file, <i>loadedfile</i>, listing the object files loaded in the executable, including any in libraries (the <b>whatsloaded</b> option can also be used to make sure that order files generated by <b>gprof -S</b> include library procedures).</font>
+
+<p><font face="Times">Using the <i>loadedfile</i>, you can run <b>nm</b> with the <b>-onjls</b> options and the <b>__TEXT __text</b> argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">nm -onjls __TEXT __text `cat <i>loadedfile</i>` &gt; <i>orderfile</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The contents of the file <i>orderfile</i> is the symbol table for the text section.&nbsp; Procedures are listed in the symbol table in their default link order.&nbsp; You can rearrange entries in this file to change the order in which you want procedures to be linked, then run the link editor as described in Step 4 above.</font>
+
+<p><br><br>
+
+<p><font face="Times"><b>Using filemem and pageSymbols</b></font>
+
+<p><font face="Times">As with any performance tuning, the real work is performed in a cycle:&nbsp; make a change, measure the result, make a change, measure the result.</font>
+
+<p><font face="Times">The two programs <b>filemem</b> and <b>pageSymbols</b> help you measure the effectiveness of your procedure ordering.&nbsp;&nbsp; These tools provide a way to learn which pages of the executable file are loaded in memory at a given time.&nbsp; This section briefly describes using these tools; for more information, see their UNIX manual pages.</font>
+
+<p><font face="Times"><b>Note:</b>&nbsp; These utilities work only with single architecture executable files; they don't work with multi-architecture (&#34;fat&#34;) files.&nbsp;&nbsp; See the Project Builder documentation and the UNIX manual for <b>lipo</b> for more information.</font>
+
+<p><font face="Times"><b>filemem</b> prints the number of resident pages that are paged into memory from a specific file, which of course if the number we are trying to minimize.&nbsp; In addition, the program prints a list of page offsets (from the beginning of the file) that are currently resident.&nbsp; filemem is used as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">filemem <i>filename</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>filename</i> represents the name of any file in memory; an executable, in this case.&nbsp; The output will be a list of text page numbers that are currently resident in memory from <i>filename</i>.&nbsp; <b>filemem</b> has one restriction: it won't work on files that are paged over an NFS file system.&nbsp; If this limitation creates a problem, simply copy the file to your local disk and run it again.</font>
+
+<p><font face="Times">To make the data from <b>filemem</b> more useful, the program <b>pageSymbols</b> prints out the symbols on a particular page of executable text.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">pageSymbols <i>filename pagenumber</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The output of <b>pageSymbols</b> is a list of procedures contained in <i>filename</i> on <i>pagenumber</i>.&nbsp; You can use the output from this program to determine if each page associated with the file in memory is optimized.&nbsp; If it isn't, you may rearrange entries in the order file and relink the executable to maximize performance gains, for example, by moving two procedures that are called together so they are linked on the same page.&nbsp; This may require several cycles of linking and tuning to get just right.</font>
+
+<p><br><br>
+
+<p><font face="Times"><b>Profiling Specific Operations</b></font>
+
+<p><font face="Times">For reasons described in the next section, it can be useful to gather profiling information for the duration of a specific routine.&nbsp; This provides a list of all routines used during that operation.&nbsp; The easiest way to do this is with <b>perfctrl</b>, a little utility program whose source is at the end of this document.&nbsp; <b>perfctrl</b> lets you interactively send messages to your application to start and stop profiling, to write out the accumulated profiling data and to reset the buffer of profiling data.</font>
+
+<p><font face="Times">As an example, let's say you wanted to gather the list of routines used in your application named &#34;MyApp&#34; during printing.&nbsp; You would run the application, get ready to print, and then start profiling with the shell command</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">perfctrl MyApp start</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Next, you would do the print operation.&nbsp; After the application is finished, you execute</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">perfctrl MyApp stop</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">perfctrl MyApp write /tmp/myProfilingData</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">perfctrl MyApp reset</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">These commands stop profiling, and write the profiling data out to the named file.&nbsp; The reset clears the profiling data that's accumulated so the next operation you measure starts from a clean slate.</font>
+
+<p><br><br>
+
+<p><font face="Times"><b>Combining Order Files</b></font>
+
+<p><font face="Times">Why generate profile data for individual operations of your application?&nbsp; The strategy is based on the assumption that a large application will have three general groups of routines:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">&#34;Hot&#34; routines -&#160;These routines are used during almost all uses of the application.&nbsp; They are often primitive routines that provide a foundation for the application's features (e.g., routines for accessing a document's data structure) or routines that implement the bread and butter of your application (e.g., routines that implement typing in a word processor).&nbsp; Almost any time a user is in the application, these routines will be used.&nbsp; Therefore we want them clustered on pages together, undiluted by less important routines.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">&#34;Warm&#34; routines -&#160;These routines are used during only specific uses of the application.&nbsp; They are usually associated with particular features that user perform occasionally in the application (e.g., launching, printing, or importing graphics).&nbsp; Since user's do sometimes use these routines, we want them to be packed together on a small set of pages so we can get them loaded quickly.&nbsp; However, since there will be large stretches of time when user's aren't accessing this functionality, we want these routines out of the &#34;hot&#34; category, so they can page out as a group as well as page in together.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">&#34;Cold&#34; routines -&#160;These routines are are rarely used in the application.&nbsp; They implement obscure features or cover boundary or error cases.&nbsp; We want these routines all together so that they stay paged out, and do not become dead-wood wasting space on a hot page.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The summary is that at any given time, we expect to have most of the hot pages resident, we would like to have the warm pages resident for the features that the user is using, and only very rarely should a cold page be brought in.</font>
+
+<p><font face="Times">To achieve this order, you must gather a number of profile data sets.&nbsp; The first one to gather is a list of the &#34;hot&#34; routines.&nbsp; As described above, compile the application for profiling, launch it, and force most &#34;initialization&#34; to happen (e.g., bring up all the panels that are commonly used, cause any lazy data structures to be created, open a couple ofaverage documents).&nbsp; Now you're ready to gather data on common use.&nbsp; Turn profiling on with <b>profctrl,</b> use the common features of the application, and dump out the resulting profile data.&nbsp; Generate a frequency sorted order file from this data called <b>hot.order</b> using <b>gprof -S</b>.</font>
+
+<p><font face="Times">Using the same technique, you then create order files for the various features that users occasionally use.&nbsp; An important example of this is application launch.&nbsp; Printing, opening documents, importing images and using various panels and tools are other examples of features that users use occasionally but not continually, and are good candidates for having their own order files.&nbsp; Call these files <b><i>feature</i>.order</b> for each feature measured.</font>
+
+<p><font face="Times">Lastly, you generate a &#34;default&#34; order file <b>default.order</b> (as described above) to get a listing of all routines.</font>
+
+<p><font face="Times">Once you have these order files, they are combined with a utility named <b>unique</b>, whose source is included in Appendix C.&nbsp; This program simply combines files by removing duplicate lines, retaining the ordering of the original data.&nbsp; In our example you would generate your final order file with</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=162 height=1><font face="Courier" size="-1">unique hot.order feature1.order ... featureN.order default.order &gt; final.order</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Of course, the real test of the ordering is how many pages it saves.&nbsp; Run your application and use different features, and use <b>filemem</b> to examine how well your ordering file is performing under different conditions.</font>
+
+<p><br><br>
+
+<p><font face="Times"><b>Final Tuning - Finding that one last hot routine</b></font>
+
+<p><font face="Times">Usually after reordering you will have a region of pages with &#34;cold&#34; routines that you expect to be rarely used, often at the end of your text ordering.&nbsp; However, sometimes one or two &#34;hot&#34; routines will slip through the cracks and land in this cold section.&nbsp; This is a costly mistake, because using one of these hot routines now requires an entire page to be resident, a page that is otherwise filled with cold routines that are not likely to be used.</font>
+
+<p><font face="Times">Use <b>filemem</b> to check that the cold pages of your executable are not being paged in unexpectedly.&nbsp; Look for pages that are resident with high page offsets, in the cold region of your application's text segment.&nbsp; If there is an unwanted page, you need to find out what routine on that page is being called.&nbsp; One way to do this is to profile during the particular operation that is touching that page, and grep the routines from the profile for routines that reside on that page. Alternatively, a quick way to identify where a page is being touched is to run the application under <b>gdb</b> and use the Mach call&nbsp; <b>vm_protect</b> to disallow all access to that page:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=162 height=1><font face="Courier" size="-1">(gdb) p vm_protect(task_self(), <i>startpage</i>, vm_page_size, FALSE, 0);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">After clearing the page protections, any access to that page will cause a memory fault, which will break the program in <b>gdb</b>.&nbsp; At this point you can simply look at the stack backtrace to learn why the routine was being called.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reordering Other Sections</b></font>
+
+<p><font face="Times">The <b>-sectorder</b> link editor option can be used to order blocks in any section of the executable.&nbsp; Sections that may occasionally benefit from reordering are literal sections, such as the <b>__TEXT</b> segment's <b>__cstring</b> section, and the <b>__DATA</b> segment's <b>__data</b> section.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reordering Literal Sections</b></font>
+
+<p><font face="Times">The lines in the <i>orderfile</i> for literal sections can most easily be produced with with <b>ld</b>(1) and <b>otool</b>(1).&nbsp; For literal sections, <b>otool</b> creates a specific type of <i>orderfile</i> for each type of literal section:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For C string literal sections, the <i>orderfile</i> format is one literal C string per line (with ANSI C escape sequences allowed in the C string).&nbsp; For example, a line might look like:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">Hello world\n</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For 4-byte literal sections, the <i>orderfile</i> format is one 32-bit hex number with a leading 0x per line with the rest of the line treated as a comment.&nbsp; For example, a line might look like:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">0x3f8ccccd (1.10000002384185790000e+00)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For 8-byte literal sections, the <i>orderfile</i> is two 32-bit hexadecimal numbers per line separated by white space each with a leading 0x, with the rest of the line treated as a comment.&nbsp; For example, a line might look like:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">0x3ff00000 0x00000000 (1.00000000000000000000e+00)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For literal pointer sections, the format of the <i>orderfile</i> are lines representing the pointers one per line.&nbsp; A literal pointer is represented by the segment name, section name of the literal pointer, and then the literal itself.&nbsp; These are separated by a colon with no extra white space.&nbsp; For example, a line might look like:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">__OBJC:__selector_strs:new</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For all the literal sections, each line in the the <i>orderfile</i> is simply entered into the literal section and will appear in the output file in the order of the order file.&nbsp; There is no check to see if the literal is in the loaded objects.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To reorder a literal section, first create a <i>whatsloaded</i> file using the <b>ld -whatsloaded</b> option as described earlier.&nbsp; Then, run <b>otool</b> with the appropriate options, segment/section names, and filenames.&nbsp; The output of <b>otool</b> is a default order file for the specified section.&nbsp; For example, the following command line produces an order file listing the default load order for the <b>__TEXT</b> segment's <b>__cstring</b> section in the file <b>cstring_order</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/sp.gif" width=3 height=1><font face="Times">otool -X -v -s __TEXT __cstring `cat whatsloaded` &gt; cstring_order</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Once you've created the file <b>cstring_order</b>, you can edit the file and rearrange its entries to optimize locality of reference.&nbsp; For example, you can place literal strings used most frequently by your program (such as labels that appear in your user interface) at the beginning of the file.&nbsp; To produce the desired load order in the executable, use the following command:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">cc -o hello hello.o -sectorder __TEXT __cstring&nbsp; cstring_order</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Reordering Data Sections</b></font>
+
+<p><font face="Times">There are currently no tools to measure references to data symbol usage.&nbsp; However you may know a program's data use patterns, and may be able to get some savings by separating data for seldom used features from other data.&nbsp; One way to approach <b>__data</b> section reordering is to sort the data by size so that small data items end up on as few pages as possible.&nbsp; For example, if a larger data item is placed across two pages with two small items sharing each of these pages, the larger item must be paged in to access the smaller items; reordering the data by size can minimize this sort of ineffeciency.&nbsp; Since this data is private per-process and would have to be written to the swap file, this could be a major savings in some programs.</font>
+
+<p><font face="Times">To reorder the <b>__data</b> section, first create an order file listing source files and symbols in the order in which you want them linked (order file entries are described at the beginning of Step 3 above).&nbsp; Then, relink the program using the <b>-sectorder</b> command line option:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">cc -o <i>outputfile inputfile</i>.o -sectorder __DATA __data <i>orderfile</i> -e start</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Appendix A: Reordering Assembly Language Code</b></font>
+
+<p><font face="Times">There are a few extra things to keep in mind when reordering routines coded in assembly language:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Relocation Entries and Existing Object Files</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Starting with Release 2.0, the NeXT compiler for the Objective C language creates a new type of relocation entry. Before reordering your executable, any object files that were compiled under Release 1.0 must be recompiled.&nbsp; If you attempt to reorder procedures from an object file compiled using the 1.0 compiler, the link editor doesn't detect the problem.&nbsp; The result will be a program that won't execute.&nbsp; By the same token, object files compiled by the current compiler aren't backward compatible with pre-2.0 releases of the link editor.&nbsp; If such an object file were linked using an earlier version of the link editor, the result would be an error message such as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">ld: hello.o r_address (0xa000005e) field of relocation entry 4 in</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">section (__TEXT,__text) out of range</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">The key here is that the high bit of the <b>r_address</b> field, bit 0x80000000, is set, meaning it is one of the new relocation entries.&nbsp; For more on these relocation entries, see the comments in the file <b>/NextDeveloper/Headers/mach-o/reloc.h</b>.</font>
+
+<p><font face="Times"><b>Note:</b>&nbsp; You can avoid problems with previously compiled object files by linking them whole, without reordering. The technique for doing so is described in Step 3 below.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Temporary Labels in Assembly Code</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Within hand-coded assembly code, be careful of branches to temporary labels that branch over a non-temporary label.&nbsp; For example, if you use a label that starts with &quot;L&quot; or a <i>d</i> label (where <i>d</i> is a digit), as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">foo: bra 1f</font><br>
+<img src="../../Images/sp.gif" width=191 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">bar: ...</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">1:&nbsp;&nbsp; ...</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">the resulting program won't link or execute correctly, because only the symbols <b>foo</b> and <b>bar</b> make it into the object file's symbol table.&nbsp; References to the temporary label <b>1</b> are compiled as offsets; as a result, no relocation entry is generated for the instruction <b>bra 1f</b>.&nbsp; If the link editor does not place the block associated with the symbol bar directly after that associated with <b>foo</b>, the branch to <b>1f</b> will not go to the correct place; since there is no relocation entry, the link editor doesn't know to fix up the branch.&nbsp; The source code change to fix this problem is to change the label <b>1</b> to a non-temporary label (<b>bar1</b> for example).</font>
+
+<p><font face="Times"><b>Note:</b>&nbsp; You can avoid problems with object files containing hand-coded assembly code by linking them whole, without reordering.&nbsp; The technique for doing so is described in Step 3 below.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Pseudo-Symbol <b>.section_start</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">If the specified section in any input file has a non-zero size and there is not a symbol with the value of the beginning of its section, the pseudo symbol <b>.section_start</b> is used by the link editor as the symbol name it associates with the first block in the section.&nbsp;&nbsp; This should never be needed with the 2.0 and later compilers for C code.&nbsp; The main reason for this symbol was to deal with literal constants whose symbols did not persist into the object&nbsp; file. Since literal strings and floating-point constants are now in literal sections this is no longer a problem.&nbsp; For assembly source code and non-NeXT compilers this symbol might be used.&nbsp; However, it is suggested that such code not be reordered and that the file instead be linked whole, without reordering.&nbsp; The technique for doing so is described in Step 3 below.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Appendix B: Source Code for perfctrl</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">perfctrl</font>
+
+<p><img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">A utility for interactively controling profiling.&nbsp; Compile with:</font>
+
+<p><img src="../../Images/sp.gif" width=240 height=1><font face="Courier" size="-1">cc -o perfctrl profctrl.m -lNeXT_s</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">*/</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">#import &lt;appkit/appkit.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">#import &lt;stdlib.h&gt;</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">void Usage() {</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">printf (&#34;Usage: perfctrl appname on|off|reset|write [filename]\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">exit (5);</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">enum { ON, OFF, RESET, WRITE };</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">void main(int argc, char *argv[]) {</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">port_t port;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id speaker;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int cmd = 0;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int retVal = -1;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (argc &lt; 3) Usage();</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (!strcmp(argv[2], &#34;on&#34;) &amp;&amp; argc == 3) cmd = ON;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else if (!strcmp(argv[2], &#34;off&#34;) &amp;&amp; argc == 3) cmd = OFF;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else if (!strcmp(argv[2], &#34;reset&#34;) &amp;&amp; argc == 3) cmd = RESET;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else if (!strcmp(argv[2], &#34;write&#34;) &amp;&amp; argc == 4) cmd = WRITE;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else Usage();</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ((port = NXPortFromName (argv[1], NULL)) == PORT_NULL) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">printf (&#34;Couldn't contact application %s\n&#34;, argv[1]);</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">Usage();</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[(speaker = [[Speaker alloc] init]) setSendPort:port];</font>
+
+<p><img src="../../Images/sp.gif" width=110 height=1><font face="Courier" size="-1">/* NOTE: these Listener messages are for debugging only! */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (cmd == ON) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">retVal = [speaker selectorRPC:&#34;appStartProfiling&#34; paramTypes:&#34;&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else if (cmd == OFF) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">retVal = [speaker selectorRPC:&#34;appStopProfiling&#34; paramTypes:&#34;&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else if (cmd == RESET) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">retVal = [speaker selectorRPC:&#34;appResetProfiling&#34; paramTypes:&#34;&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else if (cmd == WRITE) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">retVal = [speaker selectorRPC:&#34;appWriteProfilingData:&#34; paramTypes:&#34;c&#34;, argv[3]];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (retVal != 0) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">printf (&#34;Could not perform operation\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">exit (5);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">exit (0);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Appendix C: Source Code for unique</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">unique</font>
+
+<p><img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">A utility for interactively combining files while removing</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">duplicate lines.&nbsp; Compile with:</font>
+
+<p><img src="../../Images/sp.gif" width=192 height=1><font face="Courier" size="-1">cc -O -o unique unique.c</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">*/</font>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">#import &lt;stdio.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">#import &lt;objc/hashtable.h&gt;</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">#define MAX_LINE 8*1024</font>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">void doFile(FILE *fp) {</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char buf[MAX_LINE];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static NXHashTable *table = NULL;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (!table) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">table = NXCreateHashTable(NXStrPrototype, 0, NULL);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while (fgets(buf, MAX_LINE, fp)) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">if (!NXHashInsert(table, NXCopyStringBuffer(buf))) {</font><br>
+<img src="../../Images/sp.gif" width=174 height=1><font face="Courier" size="-1">fputs(buf, stdout);</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">void main(int argc, char *argv[]) {</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int i;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">FILE *fp;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (argc &gt; 1) {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">for (i = 1; i &lt; argc; i++) {</font><br>
+<img src="../../Images/sp.gif" width=174 height=1><font face="Courier" size="-1">if (fp = fopen(argv[i], &#34;r&#34;)) {</font><br>
+<img src="../../Images/sp.gif" width=192 height=1><font face="Courier" size="-1">doFile(fp);</font><br>
+<img src="../../Images/sp.gif" width=192 height=1><font face="Courier" size="-1">fclose(fp);</font><br>
+<img src="../../Images/sp.gif" width=174 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../Images/sp.gif" width=192 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;Could not open %s\n&#34;, argv[i]);</font><br>
+<img src="../../Images/sp.gif" width=174 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../Images/sp.gif" width=146 height=1><font face="Courier" size="-1">doFile(stdin);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=96 height=1><font face="Courier" size="-1">}</font>
+
+
+
+<p>
+
+</body>
+</html>

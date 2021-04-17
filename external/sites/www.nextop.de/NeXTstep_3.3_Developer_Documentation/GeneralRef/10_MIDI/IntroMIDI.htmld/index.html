@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/10_MIDI/IntroMIDI.rtf -->
+<!-- Date: Sun Jun 28 20:06:30 1998 -->
+<head>
+<title>IntroMIDI</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>10</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>MIDI Driver API</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Library:</b></font></td>
+
+<td><font face="Times">libsys_s.a</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Header File Directory:</b></font></td>
+
+<td><font face="Times">/NextDeveloper/Headers/mididriver</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Introduction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter describes NEXTSTEP's MIDI driver C functions and supporting header files for MIDI applications.&nbsp; This introduction contains conceptual discussions of the MIDI interface and its implementation on NeXT computers.</font>
+
+<p><font face="Times">The sections &quot;What Is MIDI?&quot; and &quot;Connecting MIDI Devices&quot; provide general information on MIDI on the NeXT.&nbsp; The section &quot;MIDI Driver Overview&quot; outlines how to structure the MIDI support section of an application that uses the MIDI driver functions.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>What Is MIDI?</b></font>
+
+<p><font face="Times">MIDI, the Musical Instrument Digital Interface, defines a software format and a hardware standard for exchanging information among electronic musical instruments (such as synthesizers, samplers, digital pianos, and guitar or wind controllers) as well as other devices (such as computers, sequencers, mixers, signal processors, and even stage lighting).&nbsp; Originally designed to capture the performance gestures of a keyboard player, MIDI normally transmits keyboard-oriented information, such as which key the performer depressed and with what velocity, or which button or slider was adjusted on a synthesizer's control panel. This sort of data is much more compact and more easily edited than the data in a digital audio recording of the same performance.&nbsp; Unlike audio data, MIDI data can easily be used to control other instruments or to create a printed score (using a music notation application).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Connecting MIDI Devices</b></font>
+
+<p><font face="Times">You can connect MIDI instruments to either of a NeXT computer's serial ports, using an external device known as a MIDI interface.&nbsp; The instruments connect to the MIDI interface (or to each other) with standard MIDI cables, available at most music stores.&nbsp; The MIDI interface adapts these cables' unidirectional 5-pin DIN connectors to the serial port's bidirectional mini-DIN connector.&nbsp; Any number of instruments can be connected to a serial port through the interface, and the two ports can be used simultaneously by a single application.&nbsp; A single serial port can receive and transmit MIDI data at the same time.</font>
+
+<p><font face="Times">The musical instrument must be set up correctly for MIDI communication to work as expected.&nbsp; Because MIDI is a unidirectional protocol, there's no means for an application to verify that the external device is receiving the MIDI data that the application sends.&nbsp; Thus the user is responsible for ensuring that the configuration is correct.&nbsp; For instructions on setting up the MIDI device, see the owner's manual for that device.</font>
+
+<p><font face="Times">In particular, note that most MIDI commands are sent on specific &quot;channels.&quot;&nbsp; Unlike the left and right channels of analog audio signals, MIDI channels don't use separate cables, but instead are encoded in the MIDI data itself.&nbsp; The sixteen MIDI channels are used for sending separate streams of commands to different synthesizers on a single MIDI network, or to the distinct sound-generating units within a single multi-timbral synthesizer.&nbsp; There's no MIDI command that asks a device to start using a certain MIDI channel.&nbsp; Instead, the user must manually set the MIDI device to transmit and receive on the channels expected by the software.&nbsp; A typical default is to transmit and receive on channel 1.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The NeXT MIDI Device Driver</b></font>
+
+<p><font face="Times">The MIDI driver is a loadable Mach device driver that controls the flow of MIDI data to and from the serial ports.&nbsp; The MIDI device driver API contains C functions for direct control of the MIDI driver, giving you control over the buffering and timing of MIDI data.&nbsp; The functions also provide other features--for example, you can manage the size of the MIDI data queue, manipulate the driver's timer, and filter out a few more kinds of MIDI commands--but you'll rarely need these features.</font>
+
+<p><font face="Times">The rest of this document contains information that's useful for programming with the MIDI driver C functions.&nbsp; The sample C programs in <b>/NextDeveloper/Examples/SoundAndMusic/Drivers/MidiDriver</b> illustrate some of the functions documented here.&nbsp; Information can also be gleaned from the header files in <b>NextDeveloper/Headers/mididriver</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The MIDI Data Format</b></font>
+
+<p><font face="Times">If you use the MIDI driver functions, you'll be examining MIDI data as hexadecimal values, so you'll need to understand the MIDI data format.&nbsp; Read this section for a synopsis of the data format, if you're not already familiar with the MIDI specification.</font>
+
+<p><font face="Times">MIDI data consists of commands sent in an asynchronous serial stream at 31.25 kBaud.&nbsp; The data is transmitted in ten-bit bytes, but the first and last bits of each byte are start and stop bits, added by the transmitting device and stripped off by the receiving device.&nbsp; Thus, MIDI commands are considered to consist of eight-bit bytes.&nbsp; A typical MIDI command contains:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">One Status byte (whose most significant bit is set to 1).&nbsp; The Status byte defines a type of command, such as Note On or Pitch Bend.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Zero, one, or two Data bytes (each having its most significant bit set to 0).&nbsp; Data bytes contain values applied by the command, such as &quot;key number&quot; and &quot;velocity,&quot; or &quot;amount of pitch bend.&quot;&nbsp; The type of command, specified by the preceding Status byte, determines how many Data bytes are expected.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There are two exceptions to the above pattern:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Status byte may be omitted, in which case the type of command is given by the most recent Status byte.&nbsp; This condition is called Running Status.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Status byte F0 (hexadecimal) is the special System Exclusive command, which is followed by a Data byte identifying a particular manufacturer, and any number of subsequent Data bytes whose meaning the manufacturer is free to determine. Only that manufacturer's instruments are expected to respond to the System Exclusive command.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Status bytes with hexadecimal values from 80 to EF are &quot;channel commands.&quot;&nbsp; These MIDI commands are sent on specific MIDI channels, as determined by the rightmost four bits of the Status byte.&nbsp; Most MIDI devices can be configured to respond only to certain channels, making it possible for a single MIDI data stream to deliver different musical information to different devices simultaneously.</font>
+
+<p><font face="Times">Note that although MIDI bytes are classified as Status bytes or Data bytes, the term &quot;MIDI data&quot; refers generically to everything in a stream of MIDI commands, both Status bytes and Data bytes.</font>
+
+<p><font face="Times">The file <b>mididriver/midi_spec.h</b> includes a list of Status bytes and other standard MIDI definitions.&nbsp; You can obtain the complete MIDI specification from the International MIDI Association at 11857 Hartsook St., North Hollywood, CA&nbsp; 91607, U.S.A.&nbsp; For an introduction to the MIDI specification, including a summary of commands, see Gareth Loy's article &quot;Musicians Make a Standard:&nbsp; The MIDI Phenomenon&quot; in <i>Computer Music Journal</i> Vol. 9, No. 4 (Winter 1985).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>MIDI Driver Overview</b></font>
+
+<p><font face="Times">The MIDI driver is a loadable server residing within the Mach kernel.&nbsp; (For more on loadable servers, see <i>NEXTSTEP Operating System Software</i>.)&nbsp; For each serial port, the MIDI driver maintains an input queue (containing MIDI data received from external instruments) and an output queue (for data received from an application).&nbsp; The MIDI driver C functions let you retrieve data from the input queue, place data in the output queue, and perform numerous other operations.</font>
+
+<p><font face="Times">Instead of using a direct message-passing mechanism for forwarding received MIDI data, the driver uses a request/reply interface.&nbsp; This means that data received from a serial port is queued within the driver until the application requests the data. Then the driver asynchronously sends Mach messages containing all the MIDI data that it's received since the last time the application requested data.&nbsp; The application must supply functions that perform the actual work of manipulating the incoming MIDI data in whatever manner is desired.&nbsp; The reply handler acts as a dispatcher by examining each incoming Mach message and routing it in a suitable format to the appropriate one of these application-supplied functions.&nbsp; When the application is ready for the next set of MIDI data, it must make another request for data from the driver.</font>
+
+<p><font face="Times">Output is managed similarly.&nbsp; In addition to the asynchronous messages that contain incoming MIDI data, the driver sends the application a message whenever the output queue has space available for more outgoing data.&nbsp; The reply handler passes these notifications to another application-supplied function, which typically responds by sending more data to the driver.</font>
+
+<p><font face="Times">A stream of MIDI bytes coming in real time from an external instrument doesn't necessarily contain any information about <i>when </i>each MIDI command was received.&nbsp; However, to make musical sense of recorded MIDI data, timing information is essential. Thus the driver always timestamps MIDI commands on input.&nbsp; A timer service, included with the driver, serves this purpose.&nbsp; It also schedules each outgoing MIDI command.&nbsp; Additionally, an application can ask this timer service to notify it at a certain time, and the application can stop and restart the timer--or even make it run backwards.&nbsp; The MIDI library has a separate reply handler for messages from the timer service, analogous to the reply handler that manages MIDI input and output.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

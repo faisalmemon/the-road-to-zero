@@ -1,0 +1,742 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Reference/Classes/IOSCSIController.rtf -->
+<!-- Date: Sun Jun 28 20:11:39 1998 -->
+<head>
+<title>IOSCSIController</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IOSCSIController</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">IODirectDevice : IODevice : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IOSCSIControllerExported</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">driverkit/IOSCSIController.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IOSCSIController is an abstract class for managing SCSI controllers. It provides a framework for making SCSI requests and providing standard statistics. It also provides an I/O thread.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Implementing a Subclass</b></font>
+
+<p><font face="Times">To write a driver for a SCSI controller, you create a subclass of IOSCSIController. Your subclass must do the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement <b>probe:</b> (as documented in IODevice) and <b>initFromDeviceDescription:</b>. These let your driver create instances of itself.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement <b>executeRequest:buffer:client:</b> and <b>resetSCSIBus</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement timeouts, as described in &quot;Implementing Timeouts,&quot; below.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implement <b>interruptOccurred</b>, as documented in IODirectDevice.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To support standard statistics, you should implement <b>sumQueueLengths</b>, <b>maxQueueLength</b>, <b>numQueueSamples</b>, and <b>resetStats</b>, as described in &quot;Supporting Standard Statistics,&quot; below.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Implementing Timeouts</b></font>
+
+<p><font face="Times">To implement timeouts, you need to implement the <b>timeoutOccurred:</b> method (as documented in IODirectDevice) and make sure that your driver sends a timeout message whenever a request has taken too much time. To do the latter, your <b>executeRequest:buffer:client:</b> method should use <b>IOScheduleFunc()</b> to schedule a function; the method should then start I/O. If the I/O finishes before the function has executed, <b>executeRequest:buffer:client:</b> should unschedule the function. Otherwise, the function should send a timeout message (one with a <b>msg_id</b> field set to IO_TIMEOUT_MSG) to the instance's interrupt port.&nbsp;&nbsp; An example is below. Italicized text delineated in angle brackets, that is &lt;&lt; &gt;&gt;, is to be filled in with device-specific code.</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"><i>In executeRequest:buffer:client:</i></font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&lt;&lt; <i>...Construct a device-dependent command buffer &quot;ccb&quot;...</i></font><br>
+<img src="../../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1"><i>Since the function we schedule won't be called from the I/O</i></font><br>
+<img src="../../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1"><i>task, it must use msg_send_from_kernel.&nbsp; This means that we</i></font><br>
+<img src="../../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1"><i>must convert the interrupt port from the I/O task space to one</i></font><br>
+<img src="../../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1"><i>that's valid in the regular kernel space.&nbsp; We do this in</i></font><br>
+<img src="../../../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1"><i>initFromDeviceDescription: as follows:</i></font><br>
+<img src="../../../../Images/sp.gif" width=229 height=1><font face="Courier" size="-1"><i>interruptPortKern = IOConvertPort([self interruptPort],</i></font><br>
+<img src="../../../../Images/sp.gif" width=229 height=1><font face="Courier" size="-1"><i>IO_KernelIOTask,&nbsp; IO_Kernel);</i> &gt;&gt;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">ccb-&gt;timeoutPort = interruptPortKern;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IOScheduleFunc(myTimeout, ccb, scsiRequest-&gt;timeoutLength);</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&lt;&lt; <i>...Start the I/O and wait for it to finish...</i> &gt;&gt;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">(void) IOUnscheduleFunc(myTimeout, ccb);</font>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* This method just logs a warning and sends a timeout message. */</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static void myTimeout(void *arg)</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct ccb&nbsp;&nbsp;&nbsp; *ccb = arg;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msg_header_t&nbsp;&nbsp; msg;</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(!ccb-&gt;in_use) {</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Race condition - this CCB got completed another way. */</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msg.msg_remote_port = ccb-&gt;timeoutPort;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msg.msg_id = IO_TIMEOUT_MSG;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IOLog(&#34;mySCSIController timeout\n&#34;);</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">(void) msg_send_from_kernel(&amp;msg, MSG_OPTION_NONE, 0);</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Supporting Standard Statistics</b></font>
+
+<p><font face="Times">Subclasses of IOSCSIController can provide information used by the <b>iostat</b> command and any other statistics-gathering modules. To provide this information, the IOSCSIController must look at the number of requests in its queue of I/O requests, keeping track of the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The total number of requests detected in the queue. The IOSCSIController should implement <b>sumQueueLengths</b> so that it returns this value.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The highest number of requests in the queue at one time. This value should be returned by <b>maxQueueLength</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The number of times the driver has looked at the queue. The <b>numQueueSamples</b> method should return this value.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, assume the IOSCSIController has looked at its list of outstanding I/O requests three times, and found 1 request the first time, 5 the second, and 2 the third. At this point, <b>sumQueueLengths</b> should return 8, <b>maxQueueLength</b> should return 5, and <b>numQueueSamples</b> should return 3. The average number of requests in the list is <b>sumQueueLengths</b> divided by <b>numQueueSamples</b>.</font>
+
+<p><font face="Times">The IOSCSIController should reset all these values to 0 whenever it receives a <b>resetStats</b> message.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IOSCSIControllerExported</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">allocateBufferOfLength:actualStart:actualLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">executeRequest:buffer:client:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getDMAAlignment:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">maxTransfer</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">releaseTarget:lun:forOwner:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">reserveTarget:lun:forOwner:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">resetSCSIBus</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">returnFromScStatus:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing a newly allocated IOSCSIController</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromDeviceDescription:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Reserving target/lun pairs</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">numReserved</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting and setting parameters</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntValues:forParameter:count:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntValues:forParameter:count:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Collecting statistics</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">maxQueueLength</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">numQueueSamples</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">sumQueueLengths</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">resetStats</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>getIntValues:</b>(unsigned int *)<i>parameterArray</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameterName</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int *)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Handles the two parameters specific to SCSI controllers--IO_SCSI_CONTROLLER_STATS and IO_IS_A_SCSI_CONTROLLER--and forwards the handling of all other parameters to <b>super</b>. The array of values returned for IO_SCSI_CONTROLLER_STATS is set to the numbers returned by <b>maxQueueLength</b>, <b>numQueueSamples</b>, and <b>sumQueueLengths</b>. No array is returned for IO_IS_A_SCSI_CONTROLLER; only IO_R_SUCCESS is returned, to indicate that this IODevice is indeed a SCSI controller.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromDeviceDescription:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b><i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new IOSCSIController instance. After invoking IODirectDevice's version of <b>initFromDeviceDescription:</b>, this method starts an I/O thread (with <b>startIOThread</b>) and sets its unit, name, and device kind. Each IOSCSIController has its own unit number. The first instance's unit is 0, the second is 1, and so on. The name is the concatenation of &quot;sc&quot; and the unit (for example, &quot;sc0&quot;), and the device kind is &quot;sc&quot;.</font>
+
+<p><font face="Times">This method also determines the alignment restrictions for the hardware, using the <b>getDMAAlignment:</b> method. The alignment restrictions are used by the method <b>allocateBufferOfLength:actualStart:actualLength:</b>.</font>
+
+<p><font face="Times">This method returns <b>nil</b> and frees the instance if initialization failed; otherwise, it returns <b>self</b>.</font>
+
+<p><font face="Times">You should implement this method to invoke IOSCSIController's version and to then perform any driver-dependent initialization, including initializing the hardware and (at the very end) invoking <b>registerDevice</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>maxQueueLength</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>maxQueueLength</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns zero. Subclasses that support standard statistics should implement this method so that it returns the highest number of requests queued since this instance was initialized or <b>resetStats</b> was last called. See the class description for more information on supporting standard statistics.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>numQueueSamples</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>numQueueSamples</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns zero. Subclasses that support standard statistics should implement this method so that it returns the number of times the instance has collected information about its queue of I/O requests. This number should be reset to 0 when this instance is initialized and when <b>resetStats</b> is called. See the class description for more information on supporting standard statistics.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>numReserved</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>numReserved</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of target/lun pairs that are reserved. Each pair corresponds to an active device on the SCSI bus that this instance controls.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reserveTarget:lun:forOwner:</b> and</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>releaseTarget:lun:forOwner:</b> (IOSCSIControllerExported protocol)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resetStats</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>resetStats</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing. Subclasses that support standard statistics should implement this method so that it resets to zero the numbers that are returned by <b>maxQueueLength</b>, <b>numQueueSamples</b>, and <b>sumQueueLengths</b>. See the class description for more information on supporting standard statistics.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>setIntValues:</b>(unsigned int *)<i>parameterArray</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameterName</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Handles the IO_SCSI_CONTROLLER_STATS parameter, forwarding the handling of all other parameters to <b>super</b>. The IO_SCSI_CONTROLLER_STATS parameter resets (using <b>resetStats</b>) the standard statistical data kept by this instance.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sumQueueLengths</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>sumQueueLengths</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns zero. Subclasses that support standard statistics should implement this method so that it returns the total number of requests detected in its queue of I/O requests. This number should be reset to 0 when this instance is initialized and when <b>resetStats</b> is called. See the class description for more information on supporting standard statistics.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

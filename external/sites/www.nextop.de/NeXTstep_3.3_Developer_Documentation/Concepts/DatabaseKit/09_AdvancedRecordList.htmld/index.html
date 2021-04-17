@@ -1,0 +1,1612 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/09_AdvancedRecordList.rtfd -->
+<!-- Date: Sun Jun 28 19:36:04 1998 -->
+<head>
+<title>09_AdvancedRecordList</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>9</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Advanced Record List Techniques</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBRecordList objects that were used in the previous chapter were intentionally simple.&nbsp; This simplicity was concentrated in three areas:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Their property lists contained only &quot;natural&quot; properties; in other words, properties that were gotten directly from DBEntities objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">When the DBRecordLists were told to fetch, <i>all</i> corresponding records were retrieved.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The source entities, as passed as the second argument to the <b>setProperties:ofSource:</b>, were all simple DBEntities objects.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The values were retrieved for each record that lies in the table that corresponds to the DBRecordList's source entity.&nbsp; The property list, record range, and source, in this scenario, are unnecessarily restrictive.&nbsp; In reality, all are more flexible:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The property list can contain objects other than those that are found in a database model.&nbsp; Specifically, you can create your own DBExpression objects and add them to a DBRecordList's property list.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You can restrict, or &quot;qualify,&quot; the range of records that are retrieved by employing a DBQualifier object when you tell a DBRecordList to fetch.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By setting the source of one DBRecordList to a value retrieved by another, you can create a master-detail correspondence between the two objects.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following sections examine the DBExpression and DBQualifier classes and show how to create a master-detail set-up using DBRecordList objects.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>DBExpression</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A DBExpression object encapsulates an expression that, when evaluated, represents a column of data that's stored in a DBRecordList.&nbsp; This may sound a lot like the agenda of the database property objects that you get by sending a <b>getProperties: </b>message to an entity object--these, too, represent columns of data.&nbsp; The similarity isn't mere coincidence:&nbsp; The DBExpression class adopts the DBProperties protocol, thus a DBExpression object <i>is</i> a property.&nbsp; Anywhere a property object is called for--most notably in DBRecordList's <b>setProperties:ofSource:</b> and the <b>set/getValue:forProperty:at:</b> methods--you can use a DBExpression object.</font>
+
+<p><font face="Times">Given that &quot;natural&quot; database properties (in other words, property objects that are gotten through <b>getProperties:</b>) and DBExpression objects are similar, why, then should you bother with creating the latter, when you can so easily get the former from the model?&nbsp; Because DBExpression objects can do things that natural properties can't.&nbsp; A DBExpression object can do the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Create a join through a to-one relationship.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Specify data that's derived from the manipulation of other properties.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Change the data type of a property.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can also use a DBExpression to encapsulate, or &quot;cover&quot; an existing property.&nbsp; This is mostly a matter of consistency, as it doesn't admit any new functionality.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Traversing To-One Relationships (Joining Tables)</b></font>
+
+<p><font face="Times">Perhaps the most important facet of a DBExpression object is that it allows you to store, in the same DBRecordList, properties from entities that are related through a to-one relationship.&nbsp; You must use a DBExpression for this, as opposed to simply setting (in a DBRecordList) the desired properties from the related entities.&nbsp; For example, consider the model shown in Figure 77.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F6.gif" width=226 height=67></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 77</b></font><font face="Times">.&nbsp; A Simple Model</font>
+
+<p><br><br>
+
+<p><font face="Times">By first asking the</font> <font face="Helvetica">Book</font> <font face="Times">entity for its properties, and then asking the destination entity of the</font> <font face="Helvetica">toAuthor</font> <font face="Times">relationship for its properties, you come up with the following lists of property objects (shown here by name and categorized by entity):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Book</b></font></td>
+
+<td><font face="Helvetica"><b>Author</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">title</font></td>
+
+<td><font face="Times">name</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">authorID</font></td>
+
+<td><font face="Times">address</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">publisher</font></td>
+
+<td><font face="Times">birthdate</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">bookID</font></td>
+
+<td><font face="Times">authorID</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">toAuthor</font></td>
+
+<td></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can't pluck properties from these two lists and set them in the same DBRecordList object because you wouldn't be able to provide a single entity object as the source argument to the <b>setProperties:ofSource:</b> method.&nbsp; However, since the</font> <font face="Helvetica">Book</font> <font face="Times">and </font><font face="Helvetica">Author</font> <font face="Times">entities are related through a to-one relationship, it's not unreasonable to expect to be able to use a single DBRecordList to hold records that contain, for example, a book's title and the name of the book's author.</font>
+
+<p><font face="Times">This is where a DBExpression object comes in.&nbsp; To create a DBExpression for the</font> <font face="Helvetica">Author.name</font> <font face="Times">attribute that's gotten through the</font> <font face="Helvetica">toAuthor</font> <font face="Times">relationship, you describe the author's name attribute as</font> <font face="Helvetica">toAuthor.name</font> <font face="Times">rooted at</font> <font face="Helvetica">Book</font><font face="Times">.&nbsp; This is performed through the DBExpression's <b>initForEntity:fromDescription:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* The database object is assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id bookEntity = [database entityNamed:&#34;Book&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *authorName = [[DBExpression alloc]</font> &nbsp;&nbsp;&nbsp; initForEntity:bookEntity &nbsp;&nbsp;&nbsp; fromDescription:&#34;toAuthor.name&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first argument is an entity object; the second (the object's &quot;description&quot;) is a string that gives a model path that's rooted at the first-argument entity, and that ends at a named property in a related entity (see &quot;The DBExpressionValues Protocol,&quot; below, for other ways to format this string).&nbsp; The object as a whole represents the</font> <font face="Helvetica">Book.toAuthor.name</font> <font face="Times">attribute.</font>
+
+<p><font face="Times">The <b>authorName</b> DBExpression object and the natural book properties can then be placed in the same DBRecordList:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *aList = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *bookRecordList = [[DBRecordList alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Add the previously created DBExpression object to the list. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aList addObject:authorName];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Add a natural book property to the list. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aList addObject:[bookEntity propertyNamed:&#34;title&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[bookRecordList setProperties:aList ofSource:bookEntity];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When you tell the DBRecordList to fetch, the records that are retrieved will contain the title and author of each book that's represented in the database.&nbsp; The correspondence between titles and authors is correctly enforced--you'll get the right author for a given title.&nbsp; Put technically, the source and destination attributes for the</font> <font face="Helvetica">toAuthor</font> <font face="Times">relationship are automatically applied to create this correspondence.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Nested Relationships</b></font>
+
+<p><font face="Times">A DBExpression can traverse nested to-one relationships.&nbsp; For example, the following message initializes a DBExpression to represent the address of the union to which the author of a particular book belongs.&nbsp; The model upon which this is based is shown in Figure 78.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* bookEntity is assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *unionName =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:bookEntity &nbsp; fromDescription:&#34;toAuthor.toUnion.address&#34;];
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F8.gif" width=357 height=77></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 78</b></font><font face="Times">.&nbsp; Nested Relationship Model</font>
+
+<p><br><br>
+
+<p><font face="Times">The <b>unionName</b> object, as defined here, can also be added to the <b>bookRecordList</b> object:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aList addObject:unionName];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aList addObject:authorName];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aList addObject:[bookEntity propertyNamed:&#34;title&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[bookRecordList setProperties:aList ofSource:bookEntity];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Property Facets</b></font>
+
+<p><font face="Times">Since the DBExpression class conforms to the DBProperties protocol, you can send a DBExpression object any of the messages that are defined by that protocol.&nbsp; In particular, you can ask a DBExpression for its entity, name, property type, and so on.&nbsp; The responses that a relationship-traversing DBExpression gives to these messages are described below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Method</b></font></td>
+
+<td><font face="Helvetica"><b>Response</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>name</b></font></td>
+
+<td><font face="Times">The object's name is its description.&nbsp; For example, the name of the <b>authorName</b> DBExpression is </font><font face="Helvetica">toAuthor.name</font><font face="Times">.&nbsp; There's an important distinction between a natural property's name and that of a DBExpression object:&nbsp; The natural property's name is global, the DBExpression's isn't.&nbsp; Because of this, you can't use the DBEntities method <b>propertyNamed:</b> to find a DBExpression.&nbsp; If you asked the <b>bookEntity</b> object for the property named</font> <font face="Helvetica">toAuthor.name</font><font face="Times">, the <b>propertyNamed:</b> method would return <b>nil</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>entity</b></font></td>
+
+<td><font face="Times">The entity is that at which the DBExpression is rooted; in other words, it's the object that you used as the first argument to the <b>initForEntity:fromDescription:</b> method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The responses to the other messages are gotten by forwarding the message to the &quot;foreign&quot; property--in other words, the object that naturally represents the property in the related entity.&nbsp; However, some of these responses can't be taken literally, as described below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Method</b></font></td>
+
+<td><font face="Helvetica"><b>Response</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>propertyType</b></font></td>
+
+<td><font face="Times">The property type object of a relationship-traversing DBExpression is (accurately) retrieved from the foreign property.&nbsp; For example, the property type of the <b>authorName</b> object used above is the same as the property type of the</font> <font face="Helvetica">Author.name</font> <font face="Times">attribute.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>isSingular</b></font></td>
+
+<td><font face="Times">The response to this message is also accurately retrieved from the foreign property.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>isReadOnly</b></font></td>
+
+<td><font face="Times">The response to this message doesn't matter:&nbsp; You can't alter the values that are held for a relationship-traversing DBExpression.&nbsp; Such objects are, in practice, read-only.&nbsp; The reason for this is explained in the next section.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>isKey</b></font></td>
+
+<td><font face="Times">Here, too, the response doesn't matter.&nbsp; A relationship-traversing DBExpression <i>can't</i> represent a primary key of the root entity since it doesn't represent a property that naturally resides in that entity. (Where the relationship is reflexive the discussion tends to the philosophical.&nbsp; We'll leave it to the theorists.)&nbsp; The important point here is that the automatic key-adding mechanism defined by DBRecordList's <b>setProperties:ofSource:</b> method isn't fooled by the response:&nbsp; If you add a related attribute that's declared to be a primary key (for its natural entity), it won't be added to the DBRecordList's list of key properties.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Specifying Derived Data</b></font>
+
+<p><font face="Times">The second use of DBExpression objects lets you create properties that represent derived data, or values that are created by manipulating the values for other properties.&nbsp; For example, consider a simple</font> <font face="Helvetica">Box</font> <font face="Times">entity that contains the attributes</font> <font face="Helvetica">height</font><font face="Times">, </font><font face="Helvetica">width</font><font face="Times">, and</font> <font face="Helvetica">depth</font><font face="Times">.&nbsp; Furthermore, for each box record, you want to compute the volume and store it as a separate property.&nbsp; To do so you describe a DBExpression thus:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *volume =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;height * width * depth&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As shown here, the description string isn't just a simple model path that's rooted at the entity argument; the format of the description shown here is explained in the following sections.</font>
+
+<p><font face="Times">The DBExpression that you've created can be set in a DBRecordList's property list (along with other properties that are rooted at <b>boxEntity</b>).&nbsp; When the DBRecordList fetches data, the volume computation is automatically performed using the values for the</font> <font face="Helvetica">height</font><font face="Times">,</font> <font face="Helvetica">width</font><font face="Times">, and</font> <font face="Helvetica">depth</font> <font face="Times">properties of each record.&nbsp; You can then use the <b>volume</b> DBExpression object as a property to retrieve the volume value of individual records:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; boxRecordList is the DBRecordList that fetched box records.</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">val is a DBValue that's assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[boxRecordList getValue:val forProperty:volume at:n]</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Description String Evaluation</b></font>
+
+<p><font face="Times">To understand how a derived data DBExpression works, you need to understand the mechanics by which the object's description string is evaluated.&nbsp; (The outline given below actually applies to all DBExpression objects, although its complexity is only discovered when you create derived data.)</font>
+
+<p><font face="Times">When you fetch data into a DBRecordList that contains a DBExpression, the string that describes the DBExpression is parsed and evaluated to form a statement in the server's</font><br>
+<font face="Times">query language:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Parsing a description string simply means that the individual components are identified and separated; for example, the components used in the previous example are &quot;height&quot;, &quot;*&quot;, &quot;width&quot;, &quot;*&quot;, and &quot;depth&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Next, the substitution symbols (if any) are replaced by the corresponding arguments.&nbsp; This is explained in the next section (the DBExpression used in the example above contained no substitution symbols).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The components are then evaluated by the Database Kit.&nbsp; It looks at a component, decides if it recognizes it as an object and, if it does, sends that object an <b>expressionValue</b> or <b>stringValue</b> message.&nbsp; The latter is sent if the object doesn't respond to the former; the significance of these messages is examined later.&nbsp; This message retrieves, from the receiving object, an expression or symbol that's assumed to be valid in the server's query language.&nbsp; For example, the expression value of a property object that's retrieved from a database model is the internal name of the property as set through the DBModeler application.&nbsp; Anything the Database Kit doesn't recognize is left unevaluated.&nbsp; In the example above, the Database Kit would recognize and evaluate the property names, but not the &quot;*&quot; symbols.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Finally, the string is sent to the adaptor, which applies the parsed and Kit-evaluated description to each record that's involved in the transaction.&nbsp; This creates a value that's sent back to your application and stored (in the DBRecordList) for the DBExpression object that started all of this.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">During its evaluation, the Database Kit performs a second task:&nbsp; It decides whether the DBExpression represents derived data, as opposed to a traversed relationship or, as explained later, whether it's being used to type-cast or cover a property.&nbsp; The rule for determining the intent of a DBExpression is fairly simple:&nbsp; If the description string contains anything other than references to property objects, the DBExpression is assumed to represent derived data.</font>
+
+<p><font face="Times">This determination is important because it regulates the data type of the DBExpression object and determines whether values that are retrieved for the object are read-only:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The data type of DBExpression object that represents derived data is always a string, even if the computation naturally results in numeric data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Derived-data DBExpressions are read-only.&nbsp; You can't write derived-data back to the server.&nbsp; (This should be obvious since the DBExpression, in this case, doesn't represent an actual &quot;column&quot; of data on the server.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Description String Format</b></font>
+
+<p><font face="Times">The format of a DBExpression's description argument is similar to <b>printf</b>-type statements:&nbsp; It consists of a quoted string containing the property names, operators, and substitution symbols needed to construct the desired expression, followed by values to be substituted for the symbols.&nbsp; The following substitution symbols may occur within the description string:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>Symbol</b></font></td>
+
+<td><font face="Times"><b>Value</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">%s</font></td>
+
+<td><font face="Times">A constant string (<b>const char *</b>).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td nowrap><font face="Times">%p</font></td>
+
+<td><font face="Times">A string that names one of the entity's properties.</font></td></tr>
+
+<tr valign=top>
+
+<td nowrap><font face="Times">%d</font></td>
+
+<td><font face="Times">An <b>int</b>.</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td nowrap><font face="Times">%f</font></td>
+
+<td><font face="Times">A <b>double</b> or <b>float</b>.</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td nowrap><font face="Times">%@</font></td>
+
+<td><font face="Times">An object that conforms to the DBExpressionValues protocol or that implements the <b>stringValue</b> method (see below).</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td nowrap><font face="Times">%%</font></td>
+
+<td><font face="Times">No value--this passes a single `%' literally.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, the following description creates a DBExpression that adds 2.5 to the value of the</font> <font face="Helvetica">height</font> <font face="Times">property:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float higher = 2.5;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *newHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%p + %f&#34;, &#34;height&#34;, higher];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After parsing and evaluating, the Database Kit converts this string into the expression</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">HEIGHT + 2.5</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(where &quot;HEIGHT&quot; is assumed to be the private name of the</font> <font face="Helvetica">height</font> <font face="Times">property) and sends the expression to the adaptor.</font>
+
+<p><font face="Times">Actual values, whether numbers or strings, are passed literally to the adaptor.&nbsp; To protect a string values from being evaluated by the Database Kit, the value that replaces the &quot;%s&quot; substitution symbol is placed in single quotes.&nbsp; For example, the evaluation of the DBExpression defined as</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float higher = 2.5;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *calcHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%p %s %f %s %p + %f&#34;, &nbsp; &#34;height&#34;, &#34; plus &#34;, higher, &#34; equals &#34;, &nbsp; &#34;height&#34;, higher];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">produces an expression that appears as</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">HEIGHT ' plus ' 2.5 ' equals ' HEIGHT + 2.5</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This expression is evaluated for each record that's fetched.&nbsp; Given a record that contains the value 4.3 for its</font> <font face="Helvetica">height</font> <font face="Times">property, the value at <b>calcHeight</b> would be</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">4.3 plus 2.5 equals 6.8</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(Since derived data is always cast as a string, the prosaic nature of the value doesn't pose a problem.)</font>
+
+<p><font face="Times">You can insert string values directly into the description string, but you must quote them yourself, as shown in the following example.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *newHeight =</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">initForEntity:boxEntity</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">fromDescription:&#34;%p ' plus ' %f ' equals ' %p + %f&#34;,</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">&#34;height&#34;, higher, &#34;height&#34;, higher];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>The DBExpressionValues Protocol</b></font>
+
+<p><font face="Times">The DBExpressionValues protocol, which declares the <b>expressionValue</b> method, is conformed to by DBValue and DBExpression objects, and by the entity and property objects that are retrieved from a database model.&nbsp; Any of these objects, therefore, can be used in a DBExpression object's description as the replacement value for the &quot;%@&quot; symbol.</font>
+
+<p><font face="Times">There are two uses of&nbsp; DBExpressionValues-conforming objects in the description string that deserve special mention:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Nested DBExpressions</b>.&nbsp; DBExpression is one of the classes that conforms to the DBExpressionValues protocol; this means that you can created &quot;nested&quot; DBExpression objects.&nbsp; For example, an even higher height property can be derived by nesting the previous example's <b>newHeight</b> object in another DBExpression:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">float evenHigher = 3.6;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBExpression *higherHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font>  initForEntity:boxEntity  fromDescription:&#34;%@ + %f&#34;, newHeight, evenHigher]
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Constructing a relationship-traversal string.</b>&nbsp; By relying on the DBExpressionValues conformity of database entity and property objects, you can programmatically construct a string that traverses a relationship.&nbsp; Below, the &quot;toAuthor.name&quot; string is constructed through substitution.&nbsp; In its evaluation of the string, the Database Kit understands the embedded period to denote a model path delimiter; thus, the example <i>doesn't</i> create derived data (and so the DBExpression isn't declared read-only, and its data type isn't, of necessity, string):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; bookEntity is assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id toAuthorRel = [bookEntity propertyNamed:&#34;toAuthor&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Get the desired attribute from the relationship's destination</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">entity. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id authorName = [[toAuthorRel propertyValue] propertyNamed:&#34;name&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Now construct a relationship-traversing DBExpression from these</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">objects. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBExpression *authorName =</font>  [[DBExpression alloc] &nbsp;&nbsp; initForEntity:bookEntity &nbsp;&nbsp; fromDescription:&#34;%@.%@&#34;, &nbsp;&nbsp; toAuthorRel, authorName];
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Using Other Objects in your DBExpression</b></font>
+
+<p><font face="Times">If the object that's substituted for the &quot;%@&quot; symbol doesn't conform to the DBExpressionValues protocol, then it's evaluated by the Database Kit through the <b>stringValue</b> method.&nbsp; This is a handy way to get the value from a user interface object, such as a Slider or a TextField, into a DBExpression.&nbsp; Here, the value of a Slider is added to the</font> <font face="Helvetica">height</font> <font face="Times">property:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* aSlider is assumed to exist as part of the user interface. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *newestHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%p + %@&#34;, &#34;height&#34;, aSlider];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Of course, Sliders don't naturally yield string values, so this example may seem a bit odd.&nbsp; However, when the <b>newestHeight </b>object is evaluated, the value of <b>aSlider</b>, converted to a string by <b>stringValue</b>, is placed (unquoted) in the statement that's passed to the adaptor.&nbsp; In other words, the query language statement will look the same whether the Slider's value is entered into the description as a string or as a number.&nbsp; Thus, the above example produces the same expression as the following:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *newestHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%p + %f&#34;, &nbsp; &#34;height&#34;, [aSlider floatValue];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expression itself for either of these examples, given a Slider value of, say, 2.5, would be:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">HEIGHT + 2.5</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, don't let the Database Kit's invocation of <b>stringValue</b> lead you to think that you can get the same result by invoking the method yourself and placing the retrieved value in the description as a string.&nbsp; If you do this, the value will appear quoted in the expression, causing the adaptor to think that it really <i>is</i> a string.&nbsp; To demonstrate this, we rewrite the preceding example to invoke <b>stringValue</b> directly:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *newestHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%p + %s&#34;, &nbsp; &#34;height&#34;, [aSlider stringValue];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This produces the following expression:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">HEIGHT + '2.5'</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Conversely, you may really want to pass a string value as a quoted string, in which case this last example is the way to do it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Casting a Property's Data Type</b></font>
+
+<p><font face="Times">The property objects that you retrieve from a database model have a data type that can't be changed.&nbsp; If, for example, the</font> <font face="Helvetica">height </font><font face="Times">property represents <b>float</b> values, it will always represent <b>float</b> values--you can't tell the property to represent <b>double</b>s or <b>int</b>s. While you can't change a property's data type, you can recast it by placing the property in a DBExpression.&nbsp; This is done through the <b>initForEntity:fromName:usingType:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *doubleHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp;&nbsp; initForEntity:boxEntity &nbsp;&nbsp; fromName:&#34;height&#34; &nbsp;&nbsp; usingType:&#34;d&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two arguments identify, by entity object and property name, the property that you want to cast.&nbsp; Note well that the second argument is always a property name (possibly of a related entity, as formed through the &quot;<i>relationship.attribute</i>&quot; format)--it can't be constructed in the fashion of a description string.&nbsp; Furthermore, the string must identify a naturally occurring model path rooted at the given entity--you can't use this method to recast the data type of a DBExpression object.</font>
+
+<p><font face="Times">The final argument uses the data type string cconventiononvention that should be familiar from the Chapter 6 discussion of DBTypes objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Covering a Property</b></font>
+
+<p><font face="Times">Finally, you can use DBExpression objects to represent natural properties.&nbsp; For example, the</font> <font face="Helvetica">Box.height</font> <font face="Times">property can be covered by a DBExpression object thus:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *boxHeight =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp;&nbsp; initForEntity:boxEntity &nbsp;&nbsp; fromDescription:&#34;height&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This use of a DBExpression doesn't provide any new functionality--there's no significant difference between the covered property and the DBExpression that covers it.&nbsp; However, you may find it beneficially consistent to store, in a DBRecordList, <i>only</i> DBExpression objects.&nbsp; Having created DBExpressions for traversing relationships, to represent derived data, and to recast property types, you may want to go ahead and cover all the other properties that you're interested in.</font>
+
+<p><font face="Times">Notice that the description string in the example above doesn't contain anything that the Database Kit can't evaluate.&nbsp; Thus, covering a property won't recast the object's data type to string, or automatically declare it as read-only.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>DBQualifier</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">DBQualifier objects let you define the range of records that are retrieved during a fetch based on a formula that compares, at each record, the values for various properties.&nbsp; For example, let's say you want to retrieve employee records for all employees that make more than $5000 a month.&nbsp; The DBQualifier object that represents this restriction would look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id emp = [db entityNamed:&#34;Employee&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *fiveGEmps =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc] initForEntity:emp</font> &nbsp; fromDescription:&#34;salary &gt; 5000&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Any properties that are named in the description string are assumed to be rooted at the entity given by the first argument.&nbsp; In the example,</font> <font face="Helvetica">salary</font> <font face="Times">must be rooted at the entity represented by <b>emp</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Description Format</b></font>
+
+<p><font face="Times">A DBQualifier's description string obeys the same formatting rules laid out for DBExpression objects.&nbsp; The DBQualifier in the above example could, therefore, be initialized thus:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id emp = [db entityNamed:&#34;Employee&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id salary = [empEntity propertyNamed:&#34;salary&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int bucksAMonth = 5000;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *fiveGEmps =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc] initForEntity:emp</font> &nbsp;&nbsp; fromDescription:&#34;%@ &gt; %d&#34;, &nbsp;&nbsp; salary, bucksAMonth];
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Multiple Qualifications</b></font>
+
+<p><font face="Times">A DBQualifier's description can contain more than one qualification, provided the query language defines symbols that perform logical operations such as union and intersection.&nbsp; Here, the &quot;OR&quot; symbol is presumed to create the union of two qualification expressions; the parentheses, used for grouping, must also be defined by the query language:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id emp = [db entityNamed:&#34;Employee&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id salary = [emp propertyNamed:&#34;salary&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id commission = [emp propertyNamed:&#34;commission&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int bucksAMonth = 5000;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float commissionRate = 25.0;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *fiveGEmps =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc] initForEntity:emp</font> &nbsp; fromDescription:&#34;(%@ &gt; %d) OR (%@ &gt; %f)&#34;, &nbsp; salary, bucksAMonth, &nbsp; commission, commissionRate];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">By applying this DBQualifier to a fetch, you would retrieve the records of those employees that make more than $5000 a month or that have a commission exceeding 25%.</font>
+
+<p><font face="Times">You can build a multiple-qualification DBQualifier object through successive invocations of the <b>addDescription:</b> method.&nbsp; The description string that's passed as the argument to this method is added to the description that it already holds.&nbsp; The following example builds a DBQualifier from separate descriptions (using the variables declared in the previous examples):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* We start with an empty description. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *fiveGEmps =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc]</font> &nbsp; initForEntity:empEntity &nbsp; fromDescription:&#34;&#34;];
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Now add the desired qualifiers. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[fiveGEmps addDescription:&#34;(%@ &gt; %d)&#34;, salary, bucksAMonth];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[fiveGEmps addDescription:&#34; OR &#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[fiveGEmps addDescription:&#34;(%@ &gt; %d)&#34;, commission, commissionRate];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As implied by the example, the concatenation of descriptions doesn't automatically interpose a logical operator or even whitespace, so you must take care when building a DBQualifier in this manner.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Applying a DBQualifier</b></font>
+
+<p><font face="Times">There's only one thing you can do with a DBQualifier:&nbsp; Use it as the argument to a fetch message, as shown below:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *employeeList = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *propList = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id emp = [db entityNamed:&#34;Employee&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *fiveGEmps =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc] initForEntity:emp</font> &nbsp; fromDescription:&#34;salary &gt; 5000&#34;];
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Configure the DBRecordList. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:[emp propertyNamed:&#34;name&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:[emp propertyNamed:&#34;salary&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employeeList setProperties:propList ofSource:emp];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Fetch data while applying the DBQualifier. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employeeList fetchUsingQualifier:fiveGEmps];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Given an employee table on the server, as depicted in Figure 79, the fetch would retrieve only the records shown in Figure 80. As always, the primary key (</font><font face="Helvetica">empID</font><font face="Times">) is fetched automatically.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=130 height=107></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 79</b></font><font face="Times">.&nbsp; The Server's Employee Table</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F4.gif" width=130 height=62></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 80</b></font><font face="Times">.&nbsp; The Result of the Qualified Fetch</font>
+
+<p><br><br>
+
+<p><font face="Times">In regard to the correspondence between a DBQualifier and a DBRecordList, you should note the following rules:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For a qualified fetch to work, the DBQualifier's entity must match the entity of the DBRecordList that's doing the fetching.&nbsp; If they don't match, the fetch will fail.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The property objects that are used in a DBQualifier's description needn't be present in the DBRecordList's list of properties. This is shown in the examples in the following sections.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Qualifying Across a Relationship</b></font>
+
+<p><font face="Times">The properties that are used in a DBQualifier needn't all be directly contained in the object's root entity:&nbsp; A DBQualifier can compare values that are gotten through to-one relationships.&nbsp; To do this, you simply identify the related property in the object's description string as you would in the description of a DBExpression.&nbsp; Specifically, you can identify the property directly:</font>
+
+<p><img src="../../Images/sp.gif" width=18 height=1><font face="Times">&quot;<i>toEntity.attribute</i> &gt; <i>someValue</i>&quot;</font>
+
+<p><font face="Times">or through substitution:</font>
+
+<p><img src="../../Images/sp.gif" width=18 height=1><font face="Times">&quot;%@ &gt; <i>someValue</i>&quot;, <i>relatedPropertyObject</i></font>
+
+<p><font face="Times">In the example below, a DBQualifier is created that compares each employee's department name to &quot;SALES&quot;, where the department name is gotten through the</font> <font face="Helvetica">toDepartment</font> <font face="Times">relationship (and notice that the DBRecordList that applies the DBQualifier doesn't itself include the department name property):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *employeeList = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *propList = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id emp = [db entityNamed:&#34;Employee&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Create an object for the &#34;toDepartment.name&#34; attribute. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id deptName =</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[[[emp propertyNamed:&#34;toDepartment&#34;]</font> &nbsp;&nbsp; propertyValue] &nbsp;&nbsp;&nbsp; propertyNamed:&#34;name&#34;];
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* The qualification compares the related attribute to the given</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">string value. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *salesFolk =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc] initForEntity:emp</font> &nbsp; fromDescription:&#34;%@ LIKE 'SALES'&#34;, &nbsp; deptName];
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Configure the DBRecordList. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:[emp propertyNamed:&#34;name&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:[emp propertyNamed:&#34;salary&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employeeList setProperties:propList ofSource:emp];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Fetch data while applying the DBQualifier. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employeeList fetchUsingQualifier:salesFolk];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To illustrate the result, first consider the model and server tables built from it as depicted in Figure 81.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=265 height=197></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 81</b></font><font face="Times">.&nbsp; A Model and Tables</font>
+
+<p><br><br>
+
+<p><font face="Times">The DBQualifier causes the fetch operation to join the two tables, and then select data from the records that have the requested department name value.&nbsp; The resulting table (as stored in the DBRecordList) is shown in Figure 82.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=130 height=58></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 82</b></font><font face="Times">.&nbsp; Result of the Relationship-traversing DBQualifier</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>DBExpressions in a DBQualifier</b></font>
+
+<p><font face="Times">A DBQualifier can use DBExpression objects in its description string.&nbsp; When a fetch is performed, the DBExpression's description is evaluated first, and then the DBQualifier is applied.&nbsp; For example, recall the <b>volume</b> DBExpression that was created earlier:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBExpression *volume =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBExpression alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;height * width * depth&#34;];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The object is placed in a DBQualifier:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBQualifier *roomy =</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">[[DBQualifier alloc]</font> &nbsp; initForEntity:boxEntity &nbsp; fromDescription:&#34;%@ &gt; 150.0&#34;, volume];
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">During a fetch that's qualified by <b>roomy</b>, the enclosed <b>volume</b> DBExpression is evaluated and its result is used in <b>roomy</b>'s qualification formula.&nbsp; The entities of all three objects--the DBExpression, DBQualifier, and the fetching DBRecordList (which isn't shown in the example)--must be the same.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Master-Detail Record Tables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To create a master-detail set-up you need two DBRecordList objects--one to act as master and the other as detail--and a DBValue object.&nbsp; Assembly proceeds thus:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">1.</font></td>
+
+<td><font face="Times">Set the master DBRecordList's property list.&nbsp; One of the properties that it must include, for it to be a master, is a relationship.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">2.</font></td>
+
+<td><font face="Times">Prepare the detail property list, but don't set it yet.&nbsp; In other words, create and fill the List object that you'll pass to <b>setProperties:ofSource:</b>, but don't invoke the method.&nbsp; The properties that you add to the List object must be gotten from the entity that's retrieved by sending <b>propertyValue</b> to the master's relationship.&nbsp; Recall that sending this message retrieves the relationship's destination entity; thus, the detail property list will contain properties of an entity that's related to the master's entity through a to-many relationship.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">3.</font></td>
+
+<td><font face="Times">Tell the master DBRecordList to fetch.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">4.</font></td>
+
+<td><font face="Times">Get a value for the master's relationship through the <b>getValue:forProperty:at:</b> method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">5.</font></td>
+
+<td><font face="Times">Send <b>setProperties:ofSource:</b> to the detail DBRecordList object, passing the List object that was prepared in step 2 as the property list argument, and the DBValue that was gotten in step 4 as the source.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">6.</font></td>
+
+<td><font face="Times">Tell the detail DBRecordList to fetch.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">7.</font></td>
+
+<td><font face="Times">Repeat steps 4-6 for each set of detail records that you want you to store in the detail DBRecordList.&nbsp; Obviously, if you want to store each detail in a separate DBRecordList you'll need to create more DBRecordList objects, but otherwise the steps are the same.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, consider a model for the</font> <font face="Helvetica">Department</font> <font face="Times">and</font> <font face="Helvetica">Employee</font> <font face="Times">entities shown in Figure 83.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=240 height=79></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 83</b></font><font face="Times">.&nbsp; A Model for a Master-Detail Set-up</font>
+
+<p><br><br>
+
+<p><font face="Times">In real terms, more than one employee may work in a department.&nbsp; To store information for all employees that work in a given department, you need a master-detail configuration:&nbsp; The master DBRecordList will contain</font> <font face="Helvetica">Department</font> <font face="Times">properties--most significantly, it must contain the</font> <font face="Helvetica">toEmployee</font> <font face="Times">relationship--and the detail DBRecordList will contain properties of</font> <font face="Helvetica">Employee</font><font face="Times">.</font>
+
+<p><font face="Times">Demonstrated in code, the configuration looks like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Create two DBRecordLists, a List object for setting properties,</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">and a DBValue to be used after the master has fetched.&nbsp; */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *masterDept = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *detailEmp = [[DBRecordList alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *props = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBValue *toEmpVal = [[DBValue alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Create objects to store the desired entity and properties.</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">We'll assume that db, a DBDatabase object, exists.*/</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id dept = [db entityNamed:&#34;Department&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id deptName = [dept propertyNamed:&#34;name&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id toEmp = [dept propertyNamed:&#34;toEmployee&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Configure the master DBRecordList. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:deptName];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:toEmp];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[masterDept setProperties:props ofSource:nil];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Empty the List object and reuse it to hold the detail properties. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props empty];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:[[toEmp propertyValue] propertyNamed:&#34;name&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[props addObject:[[toEmp propertyValue] propertyNamed:&#34;salary&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Fetch the master records. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[masterDept fetchUsingQualifier:nil];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Get the first record's value for the relationship. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[masterDept getValue:toEmpVal forProperty:toEmp at:0];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Set the detail DBRecordList and fetch. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[detailEmp setProperties:props ofSource:toEmpVal];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[detailEmp fetchUsingQualifier:nil];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To get the employee records for another department (in other words, for the department that's represented by another record in the master DBRecordList), you simply move the cursor, ask for the value of <b>toEmp</b> in the current record, and reset the properties in the detail DBRecordList and tell it to fetch.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

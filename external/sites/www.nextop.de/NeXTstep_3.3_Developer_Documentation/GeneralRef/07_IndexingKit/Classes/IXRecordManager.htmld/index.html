@@ -1,0 +1,1592 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXRecordManager.rtf -->
+<!-- Date: Sun Jun 28 20:05:41 1998 -->
+<head>
+<title>IXRecordManager</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXRecordManager</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IXBlockAndStoreAccess</font><br>
+<font face="Times">IXNameAndFileAccess</font><br>
+<font face="Times">IXRecordWriting</font><br>
+<font face="Times">IXTransientAccess</font><br>
+<font face="Times">IXTransientMessaging</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">indexing/IXRecordManager.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IXRecordManager is a record manager based on the Objective C run-time system; it stores objects in an IXStore, and maintains indexes on programmer-defined attributes.&nbsp; Attributes are defined in terms of the return values of messages sent to the stored objects.&nbsp; The stored objects can be retrieved by persistent identifiers, by their attribute values, or by posing a question with IXAttributeQuery, a class that defines a declarative query language for IXRecordManager and other Indexing Kit classes.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Storing Records</b></font>
+
+<p><font face="Times">IXRecordManager archives, or <i>passivates</i>, an object by writing its data into an IXBTree record.&nbsp; Two archiving mechanisms are provided: Objective C archiving, as performed by the standard <b>read:</b> and <b>write:</b> methods, and serialization, a very fast transcription mechanism that writes or reads an object's instance variables directly into or out of storage.&nbsp; An object will be serialized instead of archived if it conforms to the IXRecordTranscription protocol.&nbsp; For the purpose of serialization, a data type can be serialized if its length can be unambiguously determined from its type declaration and its physical representation; this includes all scalar ANSI C data types, pointers to character strings (which are assumed to be null-terminated), and fixed length arrays of the preceding kinds of data types.</font>
+
+<p><font face="Times">IXRecordManager defines a mechanism for storing and retrieving amorphous data items, called <i>blobs</i>, that aren't susceptible to structural serialization due to unknown length or complexity.&nbsp; Some examples of blobs are compressed sounds, serialized graph structures, and relocatable code modules.&nbsp; Before serializing an object that conforms to the IXRecordTranscription protocol, IXRecordManager sends it a <b>source:willWriteRecord:</b> message, giving the object an opportunity to prepare itself for passivation, or to request the IXRecordManager to write its unserializable data as <i>blobs</i>.&nbsp; When a record is deserialized, or <i>activated</i>, the IXRecordManager sends <b>source:didReadRecord:</b> to it.</font>
+
+<p><font face="Times">Blobs are identified by name and record handle.&nbsp; This provides a means of maintaining lists of named properties on behalf of transcribed records.&nbsp; There is no way of iterating over the property names or of getting a list of all blob names for an object, so objects should store their own such lists in a well-known blob if the list membership can't be determined statically.</font>
+
+<p><font face="Times">The IXRecordManager interface allows a record to be added, discarded, removed, or replaced by another record.&nbsp; Discarded records are treated as though they don't exist--they can't be read, for example.&nbsp; They will either be physically removed when the repository is cleaned, or explicitly reclaimed by the caller.&nbsp; The facility for discarding records is designed to support lazy index maintenance; references to discarded records may safely be allowed to remain in the inversions until the repository is cleaned.&nbsp; Record discarding also provides a form of disaster recovery when add and discard operations are used instead of replacement.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Indexing Records</b></font>
+
+<p><font face="Times">IXRecordManager allows attributes to be defined by name and method, such as &quot;EmployeeName&quot; with the method given by <b>@selector(empName)</b>.&nbsp; The value of an attribute for a given record is the value returned when the attribute's message is sent to that record.&nbsp; If a record doesn't respond to the message, then the attribute isn't defined for that record.&nbsp; By default, an attribute is defined for every record that responds to its message; its scope may be further restricted to those records that are instances of a specific class or subclasses of that class.</font>
+
+<p><font face="Times">Here's an example of setting up an attribute for employees by full name (with a method <b>empName</b> that returns a character string), and restricting it to instances of MyEmployeeRecord and its subclasses:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordManager addAttributeNamed:&#34;EmployeeName&#34;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">forSelector:@selector(empName)];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordManager setTargetClass:[MyEmployeeRecord class]</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">forAttributeNamed:&#34;EmployeeName&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IXRecordManager maintains an index for each of its attributes; the index is an inversion of the attribute's value over all of the records for which it's defined.&nbsp; An attribute index is an IXBTree managed by an IXPostingCursor; IXRecordManager determines the comparator for the IXBTree by examining the return type of the attribute's selector.&nbsp; The default comparator can be overridden (as would be necessary for methods that returned structures or unions) with the <b>setComparator:andContext:forAttributeNamed:</b> or <b>setComparisonFormat:andContext:forAttributeNamed:</b> methods.&nbsp; In the example given above, the default comparator would be IXCompareStrings, since <b>empName</b> is defined as returning a string. For more information on comparators, see the IXComparatorSetting and IXComparisonSetting protocol specifications.</font>
+
+<p><font face="Times">The IXAttributeParser class can be used to index string-valued attributes under each of the separate <i>lexemes</i> (words or other useful units of text) in a string, instead of using the entire string as the value.&nbsp; The <b>setParser:forAttributeNamed:</b> message assigns a parser that will break the selector's return value into its constituent words.&nbsp; If the attribute in the example above were based on a method that returns a text string containing unstructured, miscellaneous notes, then assigning a parser might be appropriate.&nbsp; Using the default parser configuration for English, an employee record with the note &quot;Has three kids named Bobby, Judy and Sam&quot; would be recorded in the index under the values &quot;Has,&quot; &quot;three,&quot; &quot;kid,&quot; &quot;named,&quot; &quot;Bobby,&quot; &quot;Judy,&quot; and &quot;Sam.&quot; Note that &quot;and,&quot; being considered a noise word in English, isn't included, and that the plural &quot;kids&quot; was reduced to &quot;kid.&quot;&nbsp; See the IXAttributeParser and IXAttributeReader class specifications for more information on parsers.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Retrieving Records</b></font>
+
+<p><font face="Times">References to records are stored as postings in the attribute indexes.&nbsp; A <i>posting</i> is a reference identifier plus its weight (a measure of its frequency or importance in the index). Any index can be examined through an IXPostingCursor returned by <b>cursorForAttributeNamed:</b>.&nbsp; A new copy of the cursor is returned for each invocation of this method, so the sender should free each copy when it's no longer needed.&nbsp; The basic cursoring techniques described in the IXCursorPositioning protocol specification can be used to locate references to all of the records having a given value for the attribute, or to iterate over the set of existing values for the attribute.&nbsp; As described in the IXPostingSet class specification, an IXPostingSet can be used to retrieve sets of postings directly from the IXPostingCursor, and can combine those sets in various ways.&nbsp; References to records for a range of attribute values can&nbsp; be collected using one IXPostingCursor and one IXPostingSet.&nbsp; See the IXPostingSet class specification for an example.</font>
+
+<p><font face="Times">IXPostingSets built against different attributes can be combined to resolve multi-attribute queries.&nbsp; For example, all employees with a last name of &quot;Draper&quot; and a salary of at least $60,000 could be found by collecting the appropriate postings from the EmployeeName and Salary attributes into two separate IXPostingSets, and intersecting the results.&nbsp; Another Indexing Kit class, IXAttributeQuery, resolves declarative queries expressed in a functional&nbsp; language against instances of IXRecordManager and other classes using these techniques.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXBlockAndStoreAccess</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initInStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromBlock:inStore:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromBlock:inStore:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getBlock:andStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXNameAndFileAccess</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithName:inFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromName:inFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromName:inFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getName:andFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXRecordWriting</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">replaceRecord:with:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">empty</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">count</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">readRecord:fromZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXTransientAccess</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getOpaqueValue:ofIvar:forRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntValue:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getFloatValue:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getDoubleValue:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStringValue:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStringValue:inLength:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getObjectValue:ofIvar:forRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXTransientMessaging</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getOpaqueValue:ofMessage:forRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntValue:ofMessage:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getFloatValue:ofMessage:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getDoubleValue:ofMessage:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStringValue:ofMessage:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStringValue:inMessage:ofIvar:forRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getObjectValue:ofMessage:forRecord:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adding and removing attributes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addAttributeNamed:forSelector:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">hasAttributeNamed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeAttributeNamed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">attributeCount</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Key comparison</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setComparisonFormat:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">comparisonFormatForAttributeNamed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setComparator:andContext:forAttributeNamed:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getComparator:andContext:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting attribute targets</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTargetClass:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getTargetName:andVersion:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing attributes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cursorForAttributeNamed:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting attribute information</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectorForAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">attributeNames</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing classes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">classNames</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">attributeNamesForClass:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordsForClass:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Discarding records</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">discardRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reclaimRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">discards</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clean</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting attribute descriptions</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDescription:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getDescription:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting parsers</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setParser:forAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">parserForAttributeNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Writing blobs</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setValue:andLength:ofBlob:forRecord:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getValue:andLength:ofBlob:forRecord:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addAttributeNamed:forSelector:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAttributeNamed:</b>(const char *)<i>aName</i> <b>forSelector:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates an attribute for records that respond to <i>aSelector</i>, associates it with name <i>aName</i>, and builds an index for that attribute. Note that records already passivated by the IXRecordManager that respond to <i>aSelector</i> are <i>not</i> added to the new index automatically.&nbsp; This may change in a future release.&nbsp; If an attribute already exists with name <i>aName</i>, returns <b>nil</b>; otherwise returns non-<b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectorForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>attributeCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>attributeCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number attributes defined for the IXRecordManager.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>count</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>attributeNames</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(char *)<b>attributeNames</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a newline-separated list of the names of all attributes in the IXRecordManager.&nbsp; The sender of this message is responsible for freeing the string returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAttributeNamed:forSelector:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>attributeNamesForClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(char *)<b>attributeNamesForClass:</b><i>aClass</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a newline-separated list of the names of all of the attributes maintained by the IXRecordManager that are defined for instances of <i>aClass</i>.&nbsp; This includes all of the attributes whose selectors are recognized by instances of <i>aClass</i>, and whose target class is <i>aClass</i> or one of its superclasses.&nbsp; The sender of this message is responsible for freeing the string returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTargetClass:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>classNames</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(char *)<b>classNames</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a newline-separated list of the names of all the classes that have instances stored in the IXRecordManager.&nbsp; The sender of this message is responsible for freeing the string returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>clean</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clean</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes all discarded records from the receiver.&nbsp; Those records will no longer be reclaimable.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discardRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reclaimRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>empty</b> (IXRecordReading protocol)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>comparisonFormatForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>comparisonFormatForAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a string defining the comparison format of keys in the index named <i>aName</i>, or NULL if one hasn't been set.&nbsp; This is a string encoding the Objective C data types that comprise the key; for example, &quot;[3i]&quot; describes an array of 3 integers.&nbsp; An IXBTree uses this format to determine how to compare keys.&nbsp; For more information on comparison formats, see the IXComparisonSetting protocol specification.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparisonFormat:forAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getComparator:andContext:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>count</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>count</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of records stored in the IXRecordManager, plus the number of attributes defined.&nbsp; To get just the number of records, subtract the return value of <b>attributeCount</b> from the return value of this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>attributeCount</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>count</b> (IXRecordWriting protocol)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>cursorForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXPostingCursor *)<b>cursorForAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an IXPostingCursor that addresses the index for the attribute named <i>aName</i>.&nbsp; This cursor can be used to find references to records having a given value for the attribute.&nbsp; For more information on using cursors, see the IXCursorPositioning protocol specification, and the IXPostingCursor class specification.</font>
+
+<p><font face="Times">This method returns a copy of a private cursor each time it's invoked, so your code should free the copy when it's no longer needed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>discardRecord:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discardRecord:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Discards the record identified by <i>aHandle</i>, so that the record can't be read, removed or replaced.&nbsp; <b>reclaimRecord:</b> retrieves discarded records, and <b>clean</b> removes all discarded records.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reclaimRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clean</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discards</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRecord:</b> (IXRecordWriting)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>discards</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXPostingList *)<b>discards</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an IXPostingList containing all records that have been discarded (by sending <b>discardRecord:</b> to the IXRecordManager).&nbsp; This IXPostingList can be used to reclaim the discarded records with <b>reclaimRecord:</b>.</font>
+
+<p><font face="Times">If the IXRecordManager is asked to read a discarded record (with the IXRecordReading protocol's <b>readRecord:FromZone: </b>method), the result will be <b>nil</b>; for most purposes the record no longer exists.&nbsp; However, discarded records will still have references in the IXRecordManager's attribute indexes.&nbsp; If your code doesn't deal gracefully with <b>nil</b> records, you can filter posting sets before using them by subtracting the discards from them.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discardRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reclaimRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clean</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getComparator:andContext:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getComparator:</b>(IXComparator **)<i>aComparator</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andContext:</b>(const void **)<i>aContext</i></font><br>
+<font face="Times"><b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the function used to compare attribute values, and the context associated with that function, for the attribute named <i>aName</i>.&nbsp; If the attribute has a comparison format set instead, the comparator and context will be NULL.&nbsp; A comparator function takes two data items and returns an answer indicating whether the first is less than, equal to, or greater than the second.&nbsp; The context is arbitrary data for use by that function.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">For more information on comparators, see the IXComparatorSetting protocol specification and the IXBTree class specification.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparator:andContext:forAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>comparisonFormat:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getDescription:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getDescription:</b>(char **)<i>aDescription</i> <b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the description for the attribute named <i>aName</i>.&nbsp; The description can be used to record extra information pertaining to the attribute.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDescription:forAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAttributeNamed:forSelector:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getTargetName:andVersion:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTargetName:</b>(const char **)<i>aName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andVersion:</b>(unsigned int *)<i>targetVersion</i></font><br>
+<font face="Times"><b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the name and version of the class that the attribute named <i>aName</i> is defined for, or NULL and 0 if none has been set.&nbsp; If an attribute has a target class set, it will be defined only for records of that class or a subclass.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTargetClass:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getValue:andLength:ofBlob:forRecord:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>getValue:</b>(void **)<i>aValue</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andLength:</b>(unsigned int *)<i>aLength</i></font><br>
+<font face="Times"><b>ofBlob:</b>(const char *)<i>blobName</i></font><br>
+<font face="Times"><b>forRecord:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the value and length of <i>blobName</i> for the record identified by <i>aHandle</i>.&nbsp; Returns YES if the blob is successfully retrieved, NO if it isn't.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function to convert the byte-order of the retrieved blob data to that of the machine it's running on.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setValue:andLength:ofBlob:forRecord:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>hasAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>hasAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the IXRecordManager has an attribute named <i>aName</i>, NO if it doesn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>parserForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXAttributeParser *)<b>parserForAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the parser, if any, assigned to the attribute named <i>aName</i>.&nbsp; The parser will break the return value of the attribute's selector into separate words when the attribute is evaluated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setParser:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>reclaimRecord:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reclaimRecord:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reclaims a record previously discarded with <b>discardRecord:</b>.&nbsp; <i>aHandle</i> is the identifier of the discarded record.&nbsp; A discarded record must be reclaimed in order to access it or remove it completely from the archive (although <b>clean</b> removes all discarded records at once).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discardRecord:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discards</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clean</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordsForClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXPostingList *)<b>recordsForClass:</b><i>aClass</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an IXPostingList containing all of the records in the IXRecordManager that are direct instances of <i>aClass</i> (and not of any subclasses of <i>aClass</i>).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the attribute named <i>aName</i> from the IXRecordManager.&nbsp; Records referenced by the attribute's index aren't affected. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAttributeNamed:forSelector:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectorForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>selectorForAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the selector for the message that defines the attribute named <i>aName</i>.&nbsp; Unless the attribute is restricted to a specific class, this message is sent to any record that responds to it in order to evaluate the attribute.&nbsp; Otherwise it's only sent to records of the attribute's target class (or a subclass of the target class).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAttributeNamed:forSelector:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setComparator:andContext:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparator:</b>(IXComparator *)<i>aComparator</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andContext:</b>(const void *)<i>aContext</i></font><br>
+<font face="Times"><b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the function used to compare attribute values, and the context associated with that function, for the attribute named <i>aName</i>. A comparator function should accept two data items and return an answer indicating whether the first is less than, equal to, or greater than the second.&nbsp; The context is arbitrary data for use by that function.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">For more information on comparators, see the IXComparatorSetting protocol specification and the IXBTree class specification.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getComparator:andContext:forAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparisonFormat:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=109></td>
+
+<td><font face="Helvetica"><b>setComparisonFormat:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparisonFormat:</b>(const char *)<i>aFormat</i> <b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Installs a string defining the comparison format of keys in the index named <i>aName</i>.&nbsp; This is a string encoding the Objective C data types that comprise the key; for example, &quot;[3i]&quot; describes an array of 3 integers (although the length is currently ignored). An IXBTree uses this format to determine how to compare keys.&nbsp; For more information on comparison formats, see the IXComparisonSetting protocol specification.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>comparisonFormat:forAttributeNamed:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setComparator:andContext:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDescription:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDescription:</b>(const char *)<i>aDescription</i> <b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the description for the attribute named <i>aName</i> to <i>aDescription</i>.&nbsp; The description can be used to record extra information pertaining to the attribute.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getDescription:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setParser:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setParser:</b>(IXAttributeParser *)<i>aParser</i> <b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Assigns the parser <i>aParser</i> to the attribute named <i>aName</i>.&nbsp; The parser will break the return value of the attribute's selector into separate words when the attribute is evaluated.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parserForAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setTargetClass:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTargetClass:</b><i>aClass</i> <b>forAttributeNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the target class for the attribute named <i>aName</i> to <i>aClass</i>.&nbsp; The attribute will be defined only for instances of class <i>aClass</i> or any of its subclasses.&nbsp; Your code should set the target class before any records have been added to the IXRecordManager; otherwise, the index for the named attribute may collect references to instances of other classes before the restriction is imposed.&nbsp; This behavior may change in a future release, so that records that aren't of <i>aClass</i> are removed from the index when the target class is set.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTargetName:andVersion:forAttributeNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setValue:andLength:ofBlob:forRecord:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setValue:</b>(const void *)<i>aValue</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andLength:</b>(unsigned int)<i>aLength</i></font><br>
+<font face="Times"><b>ofBlob:</b>(const char *)<i>blobName</i></font><br>
+<font face="Times"><b>forRecord:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Stores the value and length of a blob for the record identified by <i>aHandle</i>, associating it with the name <i>blobName</i>.&nbsp; Returns YES if the blob is successfully stored, NO if it wasn't.</font>
+
+<p><font face="Times">If <i>aLength</i> is 0, the blob won't be stored, and this method will return NO.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function before invoking this method, to convert the byte-order of the key to big-endian (the standard byte-order for the Indexing Kit).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getValue:andLength:ofBlob:forRecord:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

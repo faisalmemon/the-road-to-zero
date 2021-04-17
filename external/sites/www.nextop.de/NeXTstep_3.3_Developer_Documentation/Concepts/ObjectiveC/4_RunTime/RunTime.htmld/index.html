@@ -1,0 +1,2137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/ObjectiveC/4_RunTime/RunTime.rtfd -->
+<!-- Date: Sun Jun 28 19:36:41 1998 -->
+<head>
+<title>RunTime</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>4</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>The Run-Time System</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Objective C language defers as many decisions as it can from compile time and link time to run time.&nbsp; Whenever possible, it does things dynamically.&nbsp; This means that the language requires not just a compiler, but also a run-time system to execute the compiled code.&nbsp; The run-time system acts as a kind of operating system for the Objective C language; it's what makes the language work.</font>
+
+<p><font face="Times">Objective C programs interact with the run-time system at three distinct levels:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Through Objective C source code.&nbsp; For the most part, the run-time system works automatically and behind the scenes.&nbsp; You use it just by writing and compiling Objective C source code.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">It's up to the compiler to produce the data structures that the run-time system requires and to arrange the run-time function calls that carry out language instructions.&nbsp; The data structures capture information found in class and category definitions and in protocol declarations; they include the class and protocol objects discussed earlier, as well as method selectors, instance variable templates, and other information distilled from source code.&nbsp; The principal run-time function is the one that sends messages, as described under &quot;How Messaging Works&quot; in Chapter 2.&nbsp; It's invoked by source-code message expressions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Through a method interface defined in the Object class.&nbsp; Every object inherits from the Object class, so every object has access to the methods it defines.&nbsp; Most Object methods interact with the run-time system.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Some of these methods simply query the system for information.&nbsp; The preceding chapters, for example, mentioned the <b>class </b>method, which asks an object to identify its class, <b>isKindOf:</b> and <b>isMemberOf:</b>, which test an object's position in the inheritance hierarchy, <b>respondsTo:</b>, which checks whether an object can accept a particular message, <b>conformsTo:</b>, which checks whether it conforms to a protocol, and <b>methodFor:</b>, which asks for the address of a method implementation. Methods like these give an object the ability to introspect about itself.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Other methods set the run-time system in motion.&nbsp; For example, <b>perform:</b> and its companions initiate messages, and <b>alloc </b>produces a new object properly connected to its class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">All these methods were mentioned in previous chapters and are described in detail in Appendix C, &quot;The Object Class.&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Through direct calls to run-time functions.&nbsp; The run-time system has a public interface, consisting mainly of a set of functions.&nbsp; Many are functions that duplicate what you get automatically by writing Objective C code or what the Object class provides with a method interface.&nbsp; Others manipulate low-level run-time processes and data structures.&nbsp; These functions make it possible to develop other interfaces to the run-time system and produce tools that augment the development environment; they're not needed when programming in Objective C.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">However, a few of the run-time functions might on occasion be useful when writing an Objective C program.&nbsp; These functions--such as <b>sel_getUid()</b>, which returns a method selector for a method name, and <b>objc_lookUpClass()</b>, which returns a class object for a class name--are described at various places in the text of this manual.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">All the run-time functions are fully documented in the <i>NEXTSTEP General Reference</i> manual.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Because the Object class is at the root of all inheritance hierarchies, the methods it defines are inherited by all classes.&nbsp; Its methods therefore establish behaviors that are inherent to every instance and every class object.&nbsp; However, in a few cases, the Object class merely defines a framework for how something should be done; it doesn't provide all the necessary code itself.</font>
+
+<p><font face="Times">For example, the Object class defines a <b>name</b> method that should return a character string associated with the receiver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( !strcmp([anObject name], &#34;Connochaetes taurinus&#34;) )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you define a class of named objects, you must implement a <b>name</b> method to return the specific character string associated with the receiver.&nbsp; Object's version of the method can't know what that name will be, so it merely returns the class name as a default.</font>
+
+<p><font face="Times">This chapter looks at five areas where the Object class provides a framework and defines conventions, but where you may need to write code to fill in the details:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Allocating and initializing new instances of a class</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Deallocating instances when they're no longer needed</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Forwarding messages to another object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Dynamically loading new modules into a running program</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Archiving objects--for example, storing them in a file on disk</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Other conventions of the Object class are described in Appendix C.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Allocation and Initialization</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It takes two steps to create an object in Objective C.&nbsp; You must both:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Dynamically allocate memory for the new object, and</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Initialize the newly allocated memory to appropriate values.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An object isn't fully functional until both steps have been completed.&nbsp; As discussed in Chapter 2, each step is accomplished by a separate method, but typically in a single line of code:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject = [[Matrix alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Separating allocation from initialization gives you individual control over each step so that each can be modified independently of the other.&nbsp; The following sections look first at allocation and then at initialization, and discuss how they are in fact controlled and modified.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Allocating Memory for Objects</b></font>
+
+<p><font face="Times">In Objective C, memory for new objects is allocated using class methods defined in the Object class.&nbsp; Object defines two principal methods for this purpose, <b>alloc</b> and <b>allocFromZone:</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ alloc;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ allocFromZone:(NXZone *)zone;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These methods allocate enough memory to hold all the instance variables for an object belonging to the receiving class.&nbsp; They don't need to be overridden and modified in subclasses.</font>
+
+<p><font face="Times">The argument passed to <b>allocFromZone:</b> determines where the new object will be located in memory.&nbsp; It permits you to group related objects into the same region of memory for better performance.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Zones</b></font>
+
+<p><font face="Times">In a multitasking environment like NEXTSTEP, users typically run several applications at once.&nbsp; These applications can easily require more memory than will physically fit on the user's system.</font>
+
+<p><font face="Times">To solve this problem, NEXTSTEP, like most modern systems, makes use of virtual memory--a system for addressing more information than can actually be accommodated in main memory.&nbsp; Whenever an application references some information, the system determines whether the memory page containing that information resides in main memory.&nbsp; If it doesn't, the page with the requested information must be read in.&nbsp; If there's no room for the new page, a page of resident memory must be stored to the disk to make room.</font>
+
+<p><font face="Times">This swapping of pages in and out of main memory, to and from the disk, is much slower than a direct memory reference.&nbsp; It slows the execution of applications, and, in a multitasking environment, can degrade the overall responsiveness of the system. Reducing swapping to a minimum can greatly increase system performance.</font>
+
+<p><font face="Times">One way to reduce swapping is to improve <i>locality of reference</i>, the chance that the next piece of information the system needs to reference will be located close to the last piece of information referenced, perhaps on the same page, or at least on a page recently referenced and so still in main memory.&nbsp; The idea is to minimize the number of pages that must be resident for a given operation by putting related information on the same page (or the same few pages) and keeping unrelated, or rarely used, information on other pages.</font>
+
+<p><font face="Times">To this end, NEXTSTEP lets you partition dynamic memory into <i>zones</i> and direct which zone objects (and other data structures) should be allocated from.</font>
+
+<p><font face="Times">Zones are recorded in NXZone structures, one per zone.&nbsp; These structures are provided by the system; you don't have to allocate memory for them or make copies.&nbsp; You also don't need to look inside the structure or manipulate its fields.&nbsp; You can simply regard pointers to the structures as zone identifiers.</font>
+
+<p><font face="Times">The system creates one default zone for each application, which is returned by <b>NXDefaultMallocZone()</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXZone *defaultZone = NXDefaultMallocZone();</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Other zones can be created by the <b>NXCreateZone()</b> function.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXZone *newZone = NXCreateZone(vm_page_size * 2, vm_page_size, YES);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function takes three arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The initial size of the zone in bytes.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The granularity of the zone (how much it should grow or shrink by).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whether it's possible to free memory from the zone.&nbsp; For most zones, this normally is YES.&nbsp; However, it can be NO if a zone is to be used temporarily, then destroyed (with <b>NXDestroyZone()</b>).&nbsp; Destroying a zone effectively deallocates all the memory within it.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The initial size of a zone and its granularity should be set to small multiples of a page size, since a page is the smallest amount of memory handled by the virtual memory system.&nbsp; The size of a page can vary from installation to installation; its current value is stored in the <b>vm_page_size</b> global variable declared in <b>mach/mach_init.h</b>.</font>
+
+<p><font face="Times">Ideally, zones should be moderate in size.&nbsp; Large zones may fail to group related data onto a small number of pages; they're prone to the same problem that zone allocation is meant to correct: the fragmentation of data across many pages.</font>
+
+<p><font face="Times">It's also not a good idea to have a large number of zones with very little information in them.&nbsp; The free space in one zone won't be available for allocation from other zones, so an application could end up using more memory than it should.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Allocating from a Zone</b></font>
+
+<p><font face="Times">The <b>allocFromZone:</b> method permits you to cluster related objects (such as a Matrix and its Cells) in the same region of memory.&nbsp; It takes a pointer to a zone as its argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXZone *matrixZone = NXCreateZone(vm_page_size, vm_page_size, YES);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id newObject = [[Matrix allocFromZone:matrixZone] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>zone</b> method returns the zone of the receiver and can be used to make sure one object is allocated from the same zone as another object.&nbsp; For example, a Matrix could be allocated from the same zone as the Window it will be displayed in:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id aMatrix = [[Matrix allocFromZone:[myWindow zone]] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>NXZoneMalloc()</b> function lets you specify a zone when dynamically allocating memory for data structures that aren't objects.&nbsp; It's arguments are a zone and the number of bytes to be allocated:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float *points = (float *)NXZoneMalloc(NXDefaultMallocZone(),</font><br>
+<img src="../../../Images/sp.gif" width=425 height=1><font face="Courier" size="-1">sizeof(float) * numPoints);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Allocation methods and functions that don't specify a zone, such as the <b>alloc</b> method, take memory from the default zone.&nbsp; The standard C <b>malloc()</b> function allocates from the default zone, or from memory outside any zone.</font>
+
+<p><font face="Times">Objects that are commonly used together should be kept together in the same zone, along with any related data structures the objects use.&nbsp; For example, all the objects that contribute to a particular document and its display (the Window object, View objects, text data structures, and so on) could be kept together in the same zone, one created just for the document.&nbsp; When the document isn't open, none of the pages in the zone will clutter main memory.</font>
+
+<p><font face="Times">It's equally important to keep rarely used objects separate from those that are used more frequently.&nbsp; For example, users only occasionally refer to an application's information panel (usually only when first becoming familiar with the application).&nbsp; If the objects that contribute to the panel share pages with objects that are used regularly, they will take up space in main memory even when they're not needed.</font>
+
+<p><font face="Times">If your application often both allocates and frees a certain type of object, there are a couple of considerations to keep in mind. First, freeing tends to fragment memory.&nbsp; It might be best to keep all these objects in the same zone to prevent the fragmentation of other zones.&nbsp; Second, freeing takes a bit of time, because newly freed memory must be coalesced with memory already free. Rather than free each object individually, you might locate them all in a temporary zone that can't free memory, then destroy the whole zone at once (through a call to <b>NXDestroyZone()</b>).&nbsp; Such a zone can allocate memory quickly, but can only grow in size, so you should use this technique only if you will soon destroy the zone.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Initializing New Objects</b></font>
+
+<p><font face="Times">The <b>alloc</b> and <b>allocFromZone:</b> methods initialize a new object's <b>isa</b> instance variable so that it points to the object's class (the class object).&nbsp; All other instance variables are set to 0.&nbsp; Usually, an object needs to be more specifically initialized before it can be safely used.</font>
+
+<p><font face="Times">This initialization is the responsibility of class-specific instance methods that, by convention, begin with the abbreviation &quot;init&quot;. If the method takes no arguments, the method name is just those four letters, <b>init</b>.&nbsp; If it takes arguments, labels for the arguments follow the &quot;init&quot; prefix.&nbsp; For example, a View can be initialized with an <b>initFrame:</b> method.</font>
+
+<p><font face="Times">Every class that declares instance variables must provide an <b>init</b>... method to initialize them.&nbsp; The Object class declares the <b>isa </b>variable and defines an <b>init</b> method.&nbsp; However, since <b>isa</b> is initialized when memory for a new object is allocated, all Object's <b>init</b> method does is return <b>self</b>.&nbsp; Object declares the method mainly to establish the naming convention described above.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Object Returned</b></font>
+
+<p><font face="Times">An <b>init</b>... method normally initializes the instance variables of the receiver, then returns it.&nbsp; It's the responsibility of the method to return an object that can be used without error.</font>
+
+<p><font face="Times">However, in some cases, this responsibility can mean returning a different object than the receiver.&nbsp; For example, if a class keeps a list of named objects, it might provide an <b>initName:</b> method to initialize new instances.&nbsp; If there can be no more than one object per name<b>, initName:</b> might refuse to assign the same name to two objects.&nbsp; When asked to assign a new instance a name that's already being used by another object, it might free the newly allocated instance and return the other object--thus ensuring the uniqueness of the name while at the same time providing what was asked for, an instance with the requested name.</font>
+
+<p><font face="Times">In a few cases, it might be impossible for an <b>init</b>... method to do what it's asked to do.&nbsp; For example, an <b>initFromFile:</b> method might get the data it needs from a file passed as an argument.&nbsp; If the file name it's passed doesn't correspond to an actual file, it won't be able to complete the initialization.&nbsp; In such a case, the <b>init</b>... method could free the receiver and return <b>nil</b>, indicating that the requested object can't be created.</font>
+
+<p><font face="Times">Because an <b>init</b>... method might return an object other than the newly allocated receiver, or even return <b>nil</b>, it's important that programs use the value returned by the initialization method, not just that returned by <b>alloc</b> or <b>allocFromZone:</b>.&nbsp; The following code is very dangerous, since it ignores the return of <b>init</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject = [SomeClass alloc];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject someOtherMessage];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It's recommended that you combine allocation and initialization messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject = [[SomeClass alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject someOtherMessage];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there's a chance that the <b>init...</b> method might return <b>nil</b>, the return value should be checked before proceeding:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject = [[SomeClass alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( anObject )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[anObject someOtherMessage];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Arguments</b></font>
+
+<p><font face="Times">An <b>init</b>... method must ensure that all of an object's instance variables have reasonable values.&nbsp; This doesn't mean that it needs to provide an argument for each variable.&nbsp; It can set some to default values or depend on the fact that (except for <b>isa</b>) all bits of memory allocated for a new object are set to 0.&nbsp; For example, if a class requires its instances to have a name and a data source, it might provide an <b>initName:fromFile:</b> method, but set nonessential instance variables to arbitrary values or allow them to have the null values set by default.&nbsp; It could then rely on methods like <b>setEnabled:</b>, <b>setFriend:</b>, and <b>setDimensions:</b> to modify default values after the initialization phase had been completed.</font>
+
+<p><font face="Times">Any <b>init</b>... method that takes arguments must be prepared to handle cases where an inappropriate value is passed.&nbsp; One option is to substitute a default value, and to let a null argument explicitly evoke the default.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Coordinating Classes</b></font>
+
+<p><font face="Times">Every class that declares instance variables must provide an <b>init</b>... method to initialize them (unless the variables require no initialization).&nbsp; The <b>init</b>... methods the class defines initialize only those variables declared in the class.&nbsp; Inherited instance variables are initialized by sending a message to <b>super</b> to perform an initialization method defined somewhere farther up the inheritance hierarchy:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initName:(char *)string</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( self = [super init] ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">name = (char *)NXZoneMalloc([self zone], strlen(string) + 1);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">strcpy(name, string);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return nil;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The message to <b>super</b> chains together initialization methods in all inherited classes.&nbsp; Because it comes first, it ensures that superclass variables are initialized before those declared in subclasses.&nbsp; For example, a Matrix object must be initialized as an Object, a Responder, a View, and a Control before it's initialized as a Matrix.&nbsp; (See Figure 7 in Chapter 2 for the Matrix inheritance hierarchy.)</font>
+
+<p><font face="Times">The connection between the <b>initName:</b> method illustrated above and the inherited <b>init</b> method it incorporates is diagrammed in the figure below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F4.gif" width=201 height=251></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 15</b></font><font face="Times">.&nbsp; Incorporating an Inherited Initialization Method</font>
+
+<p><br><br>
+
+<p><font face="Times">A class must also make sure that all inherited initialization methods work.&nbsp; For example, if class A defines an <b>init</b> method and its subclass B defines an <b>initName:</b> method, as shown in the figure above, B must also make sure that an <b>init</b> message will successfully initialize B instances.&nbsp; The easiest way to do that is to replace the inherited <b>init</b> method with a version that invokes <b>initName:</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- init</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initName:&#34;default&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>initName:</b> method would, in turn, invoke the inherited method, as was shown in the example and figure above.&nbsp; That figure can be modified to include B's version of <b>init</b>.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=214 height=251></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 16</b></font><font face="Times">.&nbsp; Covering an Inherited Initialization Method</font>
+
+<p><br><br>
+
+<p><font face="Times">Covering inherited initialization methods makes the class you define more portable to other applications.&nbsp; If you leave an inherited method uncovered, someone else may use it to produce incorrectly initialized instances of your class.</font>
+
+<p><font face="Times">In the example above, <b>initName:</b> would be the <i>designated initializer</i> for its class (class B).&nbsp; The designated initializer is the method in each class that guarantees inherited instance variables are initialized (by sending a message to <b>super</b> to perform an inherited method).&nbsp; It's also the method that does most of the work, and the one that other initialization methods in the same class invoke.&nbsp; It's a NEXTSTEP convention that the designated initializer is always the method that allows the most freedom to determine the character of a new instance (the one with the most arguments).</font>
+
+<p><font face="Times">It's important to know the designated initializer when defining a subclass.&nbsp; For example, suppose we define class C, a subclass of B, and implement an <b>initName:fromFile:</b> method.&nbsp; In addition to this method, we have to make sure that the inherited <b>init </b>and <b>initName:</b> methods also work for instances of C.&nbsp; This can be done just by covering B's <b>initName:</b> with a version that invokes <b>initName:fromFile:</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initName:(char *)string</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [self initName:string fromFile:NULL];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For an instance of the C class, the inherited <b>init</b> method will invoke this new version of <b>initName:</b> which will invoke <b>initName:fromFile:</b>.&nbsp; The relationship between these methods is diagrammed below.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F6.gif" width=220 height=251></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17</b></font><font face="Times">.&nbsp; Covering the Designated Initializer</font>
+
+<p><br><br>
+
+<p><font face="Times">This figure omits an important detail.&nbsp; The <b>initName:fromFile:</b> method, being the designated initializer for the C class, will send a message to <b>super</b> to invoke an inherited initialization method.&nbsp; But which of&nbsp; B's methods should it invoke, <b>init</b> or <b>initName:</b>?&nbsp; It can't invoke <b>init</b>, for two reasons:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Circularity would result (<b>init</b> invokes C's <b>initName:</b>, which invokes <b>initName:fromFile:</b>, which invokes <b>init</b> again).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It won't be able to take advantage of the initialization code in B's version of <b>initName:</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Therefore, <b>initName:fromFile:</b> must invoke <b>initName:</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initName:(char *)string fromFile:(char *)pathname</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( self = [super initName:string] )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The general principle is this:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><i>The designated initializer in one class must, through a message to <b>super</b>, invoke the designated initializer in an inherited class.</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Designated initializers are chained to each other through messages to <b>super</b>, while other initialization methods are chained to designated initializers through messages to <b>self</b>.</font>
+
+<p><font face="Times">The figure below shows how all the initialization methods in classes A, B, and C are linked.&nbsp; Messages to <b>self</b> are shown on the left and messages to <b>super</b> are shown on the right.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=216 height=377></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 18</b></font><font face="Times">. Initialization Chain</font>
+
+<p><br><br>
+
+<p><font face="Times">Note that B's version of <b>init</b> sends a message to <b>self</b> to invoke the <b>initName:</b> method.&nbsp; Therefore, when the receiver is an instance of the B class, it will invoke B's version of <b>initName:</b>, and when the receiver is an instance of the C class, it will invoke C's version.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Combining Allocation and Initialization</b></font>
+
+<p><font face="Times">The Object class defines a <b>new</b> method that combines the two steps of allocating and initializing a new object.&nbsp; Just as you can define <b>init</b>... methods with arguments, you can also define <b>new</b>... methods that take similar arguments.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newName:(char *)string</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initName:string];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, there's little point in implementing a <b>new</b>... method like this that simply covers for other allocation and initialization methods.</font>
+
+<p><font face="Times">On the other hand, a <b>new</b>... method does make sense if the allocation must somehow be informed by the initialization.&nbsp; For example, if the data for the initialization is taken from a file, and the file might contain enough data to initialize more than one object, it would be impossible to know how many objects to allocate until the file is opened.&nbsp; In this case, you might implement a <b>newListFromFile:</b> method that takes the name of the file as an argument.&nbsp; It would open the file, see how many objects to allocate, and create a List object large enough to hold all the new objects.&nbsp; It would then allocate and initialize the objects from data in the file, put them in the List, and finally return the List.</font>
+
+<p><font face="Times">It also makes sense to combine allocation and initialization in a single method if you want to avoid the step of blindly allocating memory for a new object that you might not use.&nbsp; As mentioned under &quot;The Object Returned&quot; above, an <b>init</b>... method might sometimes substitute another object for the receiver.&nbsp; For example, when <b>initName:</b> is passed a name that's already taken, it might free the receiver and in its place return the object that was previously assigned the name.&nbsp; This means, of course, that an object is allocated and freed immediately without ever being used.</font>
+
+<p><font face="Times">If the code that checks whether the receiver should be initialized is placed inside the method that does the allocation instead of inside <b>init</b>..., you can avoid the step of allocating a new instance when one isn't needed and therefore would not have to free it.</font>
+
+<p><font face="Times">In the following example, the <b>soloist</b> method ensures that there's no more than one instance of the Soloist class.&nbsp; It allocates and initializes an instance only once:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ soloist</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">static Soloist *instance = nil;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( instance == nil )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">instance = [[self alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return instance;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that this method is not named &quot;new&quot; since it rarely returns a new object.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Deallocation</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Object class defines a <b>free</b> method that releases the memory that was originally allocated for an object.&nbsp; Because objects are created dynamically at run time, the memory they occupy must be freed when they've outlived their usefulness.&nbsp; This is accomplished by telling the object to free itself:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject free];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The point of a <b>free</b> message is to deallocate all the memory occupied by the receiver.&nbsp; Object's version of the method deallocates the receiver's instance variables, but doesn't follow any variable that points to other memory.&nbsp; If the receiver allocated any additional memory--to store a character string or an array of structures, for example--that memory must also be freed (unless it's shared by other objects).&nbsp; Similarly, if the receiver is served by another object that would be rendered useless in its absence, that object must also be freed.</font>
+
+<p><font face="Times">Therefore, it's necessary to override Object's version of <b>free</b> and implement a version that deallocates all the other memory the object occupies.&nbsp; Every class that has its objects allocate additional memory must have its own <b>free</b> method.&nbsp; Each version of <b>free</b> ends with a message to <b>super</b> to perform an inherited version of the method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- free</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">free(buffer);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( vmMemory )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">vm_deallocate(task_self(), vmMemory, memorySize);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[servant free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super free];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">By working its way up the inheritance hierarchy, every <b>free</b> message eventually invokes Object's version of the of the method.</font>
+
+<p><font face="Times">Object's version of <b>free</b> returns <b>nil</b>.&nbsp; If for some reason a <b>free</b> method is unable to free the receiver, it should avoid the message to <b>super</b> and return <b>self</b> instead.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Although <b>free</b> returns <b>nil</b>, it doesn't automatically change the receiver's <b>id</b> to <b>nil</b>; it merely makes the <b>id</b> invalid.&nbsp; Any further messages sent to the object will produce errors.&nbsp; To be safe, you can assign <b>free</b>'s return value to the variable that stores the <b>id</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myObject = [myObject free];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Forwarding</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It's an error to send a message to an object that can't respond to it.&nbsp; However, before announcing the error, the run-time system gives the receiving object a second chance to handle the message.&nbsp; It sends the object a <b>forward::</b> message with two arguments--the method selector in the original message and a pointer to the arguments that were passed with it.&nbsp; These two arguments fully specify the message the receiver was unable to respond to.</font>
+
+<p><font face="Times">A <b>forward::</b> method can be implemented to give a default response to the message, or to avoid the error in some other way.&nbsp; As its name implies, <b>forward::</b> is commonly used to forward the message to another object.</font>
+
+<p><font face="Times">To see the scope and intent of forwarding, imagine the following scenarios:&nbsp; Suppose, first, that you're designing an object that can respond to a <b>negotiate</b> message, and you want its response to include the response of another kind of object.&nbsp; You could accomplish this easily by passing a <b>negotiate</b> message to the other object somewhere in the body of the <b>negotiate</b> method you implement.</font>
+
+<p><font face="Times">Take this a step further, and suppose that you want your object's response to a <b>negotiate</b> message to be exactly the response implemented in another class.&nbsp; One way to accomplish this would be to make your class inherit the method from the other class. However, it might not be possible to arrange things this way.&nbsp; There may be good reasons why your class and the class that implements <b>negotiate</b> are in different branches of the inheritance hierarchy.</font>
+
+<p><font face="Times">Even if your class can't inherit the <b>negotiate</b> method, you can still &quot;borrow&quot; it by implementing a version of the method that simply passes the message on to an instance of the other class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- negotiate</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [someOtherObject respondsTo:@selector(negotiate)] )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return [someOtherObject negotiate];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This way of doing things could get a little cumbersome, especially if there were a number of messages you wanted your object to pass on to the other object.&nbsp; You'd have to implement one method to cover each method you wanted to borrow from the other class.&nbsp; Moreover, it would be impossible to handle cases where you didn't know, at the time you wrote the code, the full set of messages that you might want to forward.&nbsp; That set might depend on events at run time, and it might change as new methods and classes are implemented in the future.</font>
+
+<p><font face="Times">The second chance offered by a <b>forward::</b> message provides a less ad hoc solution to this problem, and one that's dynamic rather than static.&nbsp; It works like this:&nbsp; When an object can't respond to a message because it doesn't have a method matching the selector in the message, the run-time system informs the object by sending it a <b>forward::</b> message.&nbsp; Every object inherits a <b>forward::</b> method from the Object class.&nbsp; However, Object's version of the method simply generates a run-time error due to the unrecognized message.&nbsp; By overriding Object's version and implementing your own, you can take advantage of the opportunity that the <b>forward::</b> message provides to forward messages to other objects.</font>
+
+<p><font face="Times">To forward a message, all a <b>forward::</b> method needs to do is:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Determine where the message should go, and</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Send it there with its original arguments.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The message can be sent with the <b>performv::</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- forward:(SEL)aSelector :(marg_list)argFrame</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [someOtherObject respondsTo:aSelector] )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return [someOtherObject performv:aSelector :argFrame];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The original message will return whatever value <b>forward::</b> returns.&nbsp; The return type should be <b>id</b>.</font>
+
+<p><font face="Times">The <b>forward::</b> method's two arguments are the selector in the unrecognized message and the stack frame containing the arguments that were passed in the message.&nbsp; (Even methods like <b>negotiate</b> that declare no outward arguments are implemented with the two hidden arguments, <b>self</b> and <b>_cmd</b>, so the stack frame won't be empty.)&nbsp; Note that <b>forward::</b>'s arguments are passed unchanged to <b>performv::</b>.</font>
+
+<p><font face="Times">A <b>forward::</b> method can act as a distribution center for unrecognized messages, parceling them out to different receivers.&nbsp; Or it can be a transfer station, sending all messages to the same destination.&nbsp; It can translate one message into another, or simply &quot;swallow&quot; some messages so there's no response and no error.&nbsp; A <b>forward::</b> method can also consolidate several messages into a single response.&nbsp; What <b>forward::</b> does is up to the implementor.&nbsp; However, the opportunity it provides for linking objects in a forwarding chain opens up possibilities for program design.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The <b>forward::</b> method gets to handle messages only if they don't invoke an existing method in the nominal receiver.&nbsp; If, for example, you want your object to forward <b>negotiate</b> messages to another object, it can't have a <b>negotiate</b> method of its own. If it does, the message will never reach <b>forward::</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Forwarding and Multiple Inheritance</b></font>
+
+<p><font face="Times">Forwarding mimics inheritance, and can be used to lend some of the effects of multiple inheritance to Objective C programs. As shown in Figure 19 below, an object that responds to a message by forwarding it appears to borrow or &quot;inherit&quot; a method implementation defined in another class.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=349 height=200></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 19</b></font><font face="Times">.&nbsp; Forwarding</font>
+
+<p><br><br>
+
+<p><font face="Times">In this illustration, an instance of the Warrior class forwards a <b>negotiate</b> message to an instance of the Diplomat class.&nbsp; The Warrior will appear to negotiate like a Diplomat.&nbsp; It will seem to respond to the <b>negotiate</b> message, and for all practical purposes it does respond (although it's really a Diplomat that's doing the work).</font>
+
+<p><font face="Times">The object that forwards a message thus &quot;inherits&quot; methods from two branches of the inheritance hierarchy--its own branch and that of the object that responds to the message.&nbsp; In the example above, it will appear as if the Warrior class inherits from Diplomat as well as its own superclass.</font>
+
+<p><font face="Times">Forwarding addresses most needs that lead programmers to value multiple inheritance.&nbsp; However, there's an important difference between the two:&nbsp; Multiple inheritance combines different capabilities in a single object.&nbsp; It tends toward large, multifaceted objects.&nbsp; Forwarding, on the other hand, assigns separate responsibilities to separate objects.&nbsp; It decomposes problems into smaller objects, but associates those objects in a way that's transparent to the message sender.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Surrogate Objects</b></font>
+
+<p><font face="Times">Forwarding not only mimics multiple inheritance, it also makes it possible to develop lightweight objects that represent or &quot;cover&quot; more substantial objects.&nbsp; The surrogate stands in for the other object and funnels messages to it.</font>
+
+<p><font face="Times">The proxy discussed under &quot;Remote Messaging&quot; in Chapter 3 is such an object.&nbsp; A proxy takes care of the administrative details of forwarding messages to a remote receiver, making sure argument values are copied and retrieved across the connection, and so on.&nbsp; But it doesn't attempt to do much else; it doesn't duplicate the functionality of the remote object but simply gives the remote object a local address, a place where it can receive messages in another application.</font>
+
+<p><font face="Times">Other kinds of surrogate objects are also possible.&nbsp; Suppose, for example, that you have an object that manipulates a lot of data--perhaps it creates a complicated image or reads the contents of a file on disk.&nbsp; Setting this object up could be time-consuming, so you prefer to do it lazily--when it's really needed or when system resources are temporarily idle.&nbsp; At the same time, you need at least a placeholder for this object in order for the other objects in the application to function properly.</font>
+
+<p><font face="Times">In this circumstance, you could initially create, not the full-fledged object, but a lightweight surrogate for it.&nbsp; This object could do some things on its own, such as answer questions about the data, but mostly it would just hold a place for the larger object and, when the time came, forward messages to it.&nbsp; When the surrogate's <b>forward::</b> method first receives a message destined for the other object, it would check to be sure that the object existed and would create it if it didn't&nbsp; All messages for the larger object go through the surrogate, so as far as the rest of the program is concerned, the surrogate and the larger object would be the same.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Making Forwarding Transparent</b></font>
+
+<p><font face="Times">Although forwarding mimics inheritance, the Object class never confuses the two.&nbsp; Methods like <b>respondsTo:</b> and <b>isKindOf: </b>look only at the inheritance hierarchy, never at the forwarding chain.&nbsp; If, for example, a Warrior object is asked whether it responds to a <b>negotiate</b> message,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [aWarrior respondsTo:@selector(negotiate)] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the answer will be NO, even though it can receive <b>negotiate</b> messages without error and respond to them, in a sense, by forwarding them to a Diplomat.&nbsp; (See Figure 19 above.)</font>
+
+<p><font face="Times">In many cases, NO is the right answer.&nbsp; But it may not be.&nbsp; If you use forwarding to set up a surrogate object or to extend the capabilities of a class, the forwarding mechanism should probably be as transparent as inheritance.&nbsp; If you want your objects to act as if they truly inherited the behavior of the objects they forward messages to, you'll need to reimplement the <b>respondsTo: </b>and <b>isKindOf:</b> methods to include your forwarding algorithm:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- respondsTo:(SEL)aSelector</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [super respondsTo:aSelector] )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* <i>Here, test whether the</i> aSelector <i>message can be</i>&nbsp;&nbsp;&nbsp;&nbsp; *</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* <i>forwarded to another object and whether that object</i> *</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* <i>can respond to it.&nbsp; Return YES if it can.</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return NO;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition to <b>respondsTo:</b> and <b>isKindOf:</b>, the <b>instancesRespondTo:</b> and <b>isKindOfClassNamed:</b> methods should also mirror the forwarding algorithm.&nbsp; These two methods round out the set.&nbsp; If protocols are used, the <b>conformsTo:</b> methods should likewise be added to the list.&nbsp; Similarly, if an object forwards any remote messages it receives, it should have versions of two other methods, <b>descriptionForMethod:</b> and <b>descriptionForInstanceMethod:</b>, that can return accurate descriptions of the methods that ultimately respond to the forwarded messages.</font>
+
+<p><font face="Times">You might consider putting the forwarding algorithm somewhere in private code and have all these methods, <b>forward:: </b>included, call it.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">All the methods mentioned above are described in Appendix C, &quot;The Object Class.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Dynamic Loading</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An Objective C program can load and link new classes and categories while it's running.&nbsp; The new code is incorporated into the program and treated identically to classes and categories loaded at the start.</font>
+
+<p><font face="Times">Dynamic loading can be used to do a lot of different things.&nbsp; For example, device drivers written with the NEXTSTEP Device Driver Kit</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">(a Release 3.1 addition) are dynamically loaded into the kernel.&nbsp; Adaptors for database servers are dynamically loaded by the Database Kit.</font>
+
+<p><font face="Times">In the NEXTSTEP environment, dynamic loading currently finds its favored use in customizing applications.&nbsp; You can allow others to write modules that your program will load at run time--much as the NEXTSTEP Interface Builder loads custom palettes, the Preferences application loads custom displays, and the Workspace Manager loads data inspectors.&nbsp; The loadable modules extend what your application can do.&nbsp; They contribute to it in ways that you permit, but could not have anticipated or defined yourself.&nbsp; You provide the framework, but others provide the code.</font>
+
+<p><font face="Times">Dynamically loaded modules that customize an application generally come with their own user interface--perhaps their own windows, but more likely objects that draw in windows you provide.&nbsp; When the code is loaded and objects are instantiated or unarchived, the interface to the custom portion of the application is presented on-screen along with the rest of the user interface.</font>
+
+<p><font face="Times">The Preferences application, for example, has a window with a scrollable list of buttons along the top, plus a display area beneath the buttons.&nbsp; Each button controls the presentation of a different set of options within the display area; clicking a button causes its options to be displayed.&nbsp; Each dynamically loadable module provides a display that can be presented in the window, along with an image for the button and the code to handle user actions and set preferences.&nbsp; The Preferences window illustrated below shows the localization button highlighted and, beneath it, the display of localization options.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F7.gif" width=480 height=321></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 20</b></font><font face="Times">.&nbsp; The Preferences Application</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Bundles</b></font>
+
+<p><font face="Times">Classes and categories are dynamically loaded and linked by calling the <b>objc_loadModules()</b> function.&nbsp; They can be unlinked and unloaded again by calling <b>objc_unloadModules()</b>.&nbsp; However, once code is loaded, it typically remains in place; there's little reason to unload it.</font>
+
+<p><font face="Times">These two functions are part of the Objective C run-time system and provide the basic methodology for dynamic loading and unloading.&nbsp; They're documented in the <i>NEXTSTEP General Reference</i> manual.&nbsp; However, the NEXTSTEP environment also provides another, more convenient interface for dynamic loading--one that's object-oriented and integrated with related services.&nbsp; The loading task can be assigned to an NXBundle object.</font>
+
+<p><font face="Times">NXBundles correspond to directories where programs store resources they'll refer to at run time.&nbsp; Each object manages one directory.&nbsp; The directory &quot;bundles&quot; the resources and makes them available to the NXBundle object and, through the object, to the program.&nbsp; The directory might contain image data, sound files, objects that were archived into so-called &quot;nib files&quot; by Interface Builder, tables of character strings, and other resources.&nbsp; It can also contain a file of executable code.</font>
+
+<p><font face="Times">An NXBundle object is initialized to a bundle directory with the <b>initForDirectory:</b> method as shown below (though, of course, you'd rarely use a hard-wired path like this):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *path = &#34;/LocalLibrary/Preferences/Music.preferences&#34;;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXBundle *myBundle = [[NXBundle alloc] initForDirectory:path];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXBundle can do two things with the information stored in the bundle directory:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Dynamically load the executable code and return class objects for the newly loaded classes</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Find resources that match the user's language preference and make them available to the application</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These two things go together; the whole point of an NXBundle is to combine them in a single facility.&nbsp; Dynamically loaded code doesn't stand on its own.&nbsp; It typically requires the support of various resource files--archived instances of the bundled classes, character strings that the code displays to users, bitmap images to place within the display, and so on.&nbsp; Code and resources are grouped together in the same directory and are managed together by the same NXBundle object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Localized Resources</b></font>
+
+<p><font face="Times">Typically, a bundle directory packages a file of loadable code with all the resources that the code requires.&nbsp; Some resources in the bundle might occur in various alternative forms &quot;localized&quot; to a particular language or region of the world.&nbsp; For example, the English string &quot;Select All&quot; might have counterparts in Spanish (&quot;Seleccionar todo&quot;), German (&quot;Alles ausw&auml;hlen&quot;), French (&quot;Tout s&eacute;lectionner&quot;), Swedish (&quot;Markera allt&quot;), and other languages.</font>
+
+<p><font face="Times">Localized resources are kept in subdirectories of the bundle directory.&nbsp; Each subdirectory is named after a language and carries a &quot;.lproj&quot; extension (for &quot;language project&quot;).&nbsp; For example, there might be <b>Swedish.lproj</b>, <b>English.lproj</b>, and <b>Tagalog.lproj </b>subdirectories.&nbsp; Each subdirectory has a matched set of files.&nbsp; If the user sets the language preference to Swedish, the application will use the files in <b>Swedish.lproj</b>.&nbsp; If the preference is set to English, <b>English.lproj</b> files will be used.&nbsp; When asked for a resource, an NXBundle looks in the subdirectory that matches the current preference.</font>
+
+<p><font face="Times">The figure below illustrates the layout of a possible bundle for the Preferences application.&nbsp; The <b>Music</b> file holds the loadable code and <b>Music.tiff</b> holds the bitmap image (in Tag Image File Format) that will be displayed on the button at the top of the window.&nbsp; The rest of the files are localized and located in &quot;.lproj&quot; subdirectories.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F8.gif" width=299 height=209></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 21</b></font><font face="Times">.&nbsp; A Bundle Directory</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Language preferences are set using the Preferences application, as shown above in Figure 20.&nbsp; The application not only sets the preference, it is itself localized and reflects the current choice.&nbsp; In the figure, the language preference is set to Spanish and, accordingly, Spanish is displayed in the window.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Loadable Code</b></font>
+
+<p><font face="Times">The loadable code in a bundle directory must be in a file with the same name as the directory (minus any extension on the directory name) and it must contain nothing but compiled class and category definitions.</font>
+
+<p><font face="Times">Bundled code is not localized.&nbsp; Rather, it's kept free of any content that would vary depending on the language or location where the software is used.&nbsp; This content is extracted from the code and put in resource files within the &quot;.lproj&quot; subdirectories.&nbsp; The same NXBundle object that loads the executable code can find the required resources at run time.</font>
+
+<p><font face="Times">Dynamic loading therefore should not be seen as the isolated task of loading and linking class and category code.&nbsp; It also includes loading the objects, images, strings, sounds, and other resources that are required at run time.&nbsp; The decision of which resources to load must be dynamic for it depends on information available only at run time--the user's language preference.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Loading Bundled Code</b></font>
+
+<p><font face="Times">When requested, an NXBundle returns class objects for the classes bundled within its directory.&nbsp; It waits until it receives the first request to load the bundled code.&nbsp; This message, for example, asks an NXBundle for the Mozart class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Class composer = [myBundle classNamed:&#34;Mozart&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the executable code stored in the bundle had not yet been loaded, this message would load it.&nbsp; All bundled classes are located in one file and are loaded at the same time.&nbsp; If the file doesn't contain the requested class, <b>classNamed:</b> returns <b>nil</b>.</font>
+
+<p><font face="Times">The <b>classNamed:</b> method finds a specific class within the bundle, one that you request by name.&nbsp; Typically, however, an application needs to find only one class from the dynamically loaded file (at least initially), and it won't know or care what the class is named.&nbsp; The <b>principalClass</b> method returns this class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Class head = [myBundle principalClass];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like <b>classNamed:</b>, <b>principalClass</b> dynamically loads the bundled code if it hasn't already been loaded.</font>
+
+<p><font face="Times">A set of bundled classes often supports a small subnetwork of objects that can be attached to the larger object network already in place.&nbsp; The connection is established through just one object, an instance of the principal class.&nbsp; That object might have methods to return other objects that the application can talk to, but typically all messages from the application to the subnetwork are funneled through the one instance.</font>
+
+<p><font face="Times">The NXBundle expects the principal class to be the first one encountered in the executable file.&nbsp; When several classes are linked into a dynamically loadable file, the principal class should be the first one listed on the <b>ld</b> command line.&nbsp; For example, this command makes DiscJockey the principal class in the Music bundle:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ld -o Music -r DiscJockey.o Bach.o Mozart.o Coltrane.o . . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Each application has a choice to make regarding when to load bundled code.&nbsp; It can load the code at start-up before the interaction with the user begins, or it can wait until the user requests it.&nbsp; There are benefits to waiting.&nbsp; For example, when it encounters a bundle of loadable code, the Preferences application immediately creates a button for it and puts the button in the scrollable list at the top of the window.&nbsp; It takes the image for the button from the bundle directory (<b>Music.tiff</b> in Figure 21 above).&nbsp; However, it doesn't dynamically load the bundled code (the <b>Music</b> file Figure 21) until the user clicks the button.&nbsp; Code that isn't used isn't loaded.</font>
+
+<p><font face="Times">For some applications, the user's request can be even more explicit.&nbsp; For example, you might present the user with a panel that displays file icons for each bundle containing dynamically loadable code.&nbsp; The panel might even display some information about each bundle, information supplied by the customizer in the bundle directory.&nbsp; When the user double-clicks an icon, the application would load it and display its user interface on-screen.</font>
+
+<p><font face="Times">No matter what triggers dynamic loading, when your application is ready to start using the bundled code, the <b>principalClass </b>method will load it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Organizing for Customization</b></font>
+
+<p><font face="Times">To allow others to customize your application, you need to set up a framework for finding, loading, and executing their code.&nbsp; So that customizers can prepare their code to work within your framework, you'll need to let them know what the framework is and what you expect of them.</font>
+
+<p><font face="Times">You are, in effect, entering into a contract of sorts with the customizer.&nbsp; The framework lets you carry out your end of the bargain; the information you provide lets them carry out theirs.&nbsp; You need to furnish customizers with at least the following information:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The path where your application will search for their code</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The naming conventions you expect their bundle directories to follow</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A protocol that they should implement so that your objects can talk to one of theirs</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A protocol that you implement so that their objects can talk to one of yours</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The interface their code can be linked against when it's loaded</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following sections discuss these matters in more detail.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Search Path</b></font>
+
+<p><font face="Times">Code must be located before it can be loaded.&nbsp; If you're setting up a framework that lets others add to your application, the first requirement is to publish the places where the application will look for bundles with dynamically loadable code.&nbsp; This usually takes the form of a search path.&nbsp; For example, the Preferences application looks for bundles inside a Preferences subdirectory located in one of the &quot;Library&quot; directories.&nbsp; It looks in this order:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">First, in the user's home directory, <b>~/Library/Preferences</b>,</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Next, in the site-specific library, <b>/LocalLibrary/Preferences</b>,</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Then, in the NeXT-supplied library, <b>/NextLibrary/Preferences</b>, and</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Finally, in the application file package itself, <b>/NextApps/Preferences.app</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This kind of path prefers the user version of a bundle over the site version, and the site version over one supplied by NeXT.&nbsp; If two or more bundles have the same name, the one that's encountered first is the one that's chosen, and those encountered afterward ignored.</font>
+
+<p><font face="Times">Preferences includes its own file package in the search path because all of the buttons and preference options it displays are loaded from bundles at run time.&nbsp; The file package stores the bundles that come with the application.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The fact that Preferences dynamically loads its own code has benefits both for the user and for the programmer.&nbsp; For the user, it means reduced launch times.&nbsp; For the programmer, it means faster link times.&nbsp; It also means that Preferences can have a simpler design--a single paradigm is used for interacting with all preference modules.&nbsp; Moreover, the customization framework is thoroughly tested in Preferences' own development.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Bundle Name</b></font>
+
+<p><font face="Times">In addition to the search path, you'll also need to publish any constraints you impose on the name of the bundle directory. Preferences expects its bundles to carry a specific extension (&quot;.preferences&quot;), but doesn't restrict the rest of the name.&nbsp; This seems like a good precedent to follow.&nbsp; The name shouldn't be so constrained that it limits the number of loadable modules, but it must be recognizable as being intended for a particular application.</font>
+
+<p><font face="Times">If you register the extension as one that denotes documents belonging to your application, the Workspace Manager will treat the bundle directory as a file package; it will display the directory as if it were a file.&nbsp; Just as users don't look inside files, they don't normally look inside file packages.&nbsp; This hides the contents of the bundle directory, simplifies its interface, and ensures its integrity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Communication Protocols</b></font>
+
+<p><font face="Times">Bundled code is loaded simply by asking the NXBundle for the principal class, as mentioned above.&nbsp; But getting the principal class is just the first step.&nbsp; Once your program has the class, it needs to create an instance and talk to it.</font>
+
+<p><font face="Times">To be able to write code that can communicate with an instance of a dynamically loaded class, you need to know what messages the new instance will respond to.&nbsp; To arrange this communication, you'll need to publish a protocol of methods that you expect customizers to implement in the principal class.&nbsp; This protocol should include an initialization method, so that your code can properly initialize a new instance.</font>
+
+<p><font face="Times">If you want the dynamically loaded code to be able to talk to your objects (often a good idea), you'll also need to publish another protocol, one that's implemented by an object in your program.&nbsp; One of the first things your code should do is pass this object to the new instance of the principal class.</font>
+
+<p><font face="Times">For example, if the protocol you implement is called ApplicationResponsibilities,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol ApplicationResponsibilities</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the protocol you expect the principal class to implement could include an <b>initContact:</b> method that would both (a) initialize a new instance of the principal class and (b) pass that instance an object that conforms to the ApplicationResponsibilities protocol:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol CustomizerResponsibilities</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initContact:(id &lt;ApplicationResponsibilities&gt;)anObject;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Both protocols would be declared in a header file that you make available to potential customizers.</font>
+
+<p><font face="Times">Before your application begins interacting with the customizer's code, it's a good idea to check whether the principal class conforms to the expected protocol:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [[theBundle principalClass]</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">conformsTo:@protocol(CustomizerResponsibilites)] ) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If it does conform, you can create an instance of the principal class and begin talking to it:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id adjunct = [[[theBundle principalClass] alloc] initContact:myAgent];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( adjunct )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The object passed as <b>initContact:</b>'s argument is, in a sense, a counterpart to the new instance of the principal class.&nbsp; It receives messages from dynamically loaded code, just as the new instance receives messages sent from application code.</font>
+
+<p><font face="Times">As an alternative to the two protocols, you could provide an interface to an abstract class that developers should subclass.&nbsp; The abstract class would declare methods--equivalent to the CustomizerResponsibilites protocol--that customizers should implement in their subclasses.&nbsp; It could also implement methods--equivalent to the ApplicationResponsibilities protocol--that customizers could use in their code to communicate with your application.&nbsp; The abstract class would reside in your application, rather than in a library.&nbsp; The superclass-subclass relationship is resolved when the customizer's subclass is loaded and linked dynamically.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Preferences and other applications that come with NEXTSTEP choose an abstract class over the two protocols.&nbsp; The class gives them the opportunity to lighten the customizer's burden by providing, through inheritance, part of the customization code.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Development Interfaces</b></font>
+
+<p><font face="Times">Most NEXTSTEP software resides in shared libraries, principally <b>libNeXT_s</b> and <b>libsys_s</b>.&nbsp; Linking to a shared library gives an application access to library code, but it doesn't actually incorporate the code into the application.&nbsp; At run time, one copy of the code is shared by all applications linked to the library.</font>
+
+<p><font face="Times">An application can be linked to a shared library, but the code it dynamically loads can't be.&nbsp; Bundled code must be self-contained; any unresolved symbols within it must be resolved by symbols found within the application it's dynamically linked to.&nbsp; It can't maintain an independent connection to a shared library.&nbsp; Therefore, if others are to customize your application, you'll need to inform them of the interface they can link against.</font>
+
+<p><font face="Times">Normally, dynamically loaded code can link against any program symbols that are global to the application or any shared library symbols the application actually references.&nbsp; It can't use facilities in the shared library that the application itself doesn't use. However, if you link your application to shared libraries with the</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times"><b>ObjC</b> flag (the Project Builder default), all classes in the libraries will be available to customizers, whether or not the application also uses them.&nbsp; In addition, if you list the names of shared libraries after the</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times"><b>u</b> option,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ld -o myApp -ObjC -u libNeXT_s -u libsys_s . . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">all symbols defined in the listed libraries will be available to dynamically loaded code.</font>
+
+<p><font face="Times">The <b>strip</b> utility can be used to remove extraneous symbols from the final version of your application.&nbsp; You should be careful to leave symbols that might be needed by dynamically loaded code.&nbsp; The</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times"><b>A</b> option leaves all global symbols from a shared library and all Objective C class symbols:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">strip -s appSymbolsToSave -A myApp</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In summary, it's important to let customizers know what programming interface they can rely on when developing dynamically loadable code, including:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whether your application defines a programming interface that they can use,</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Which libraries the application is linked against, and</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Which part of the library interface is available to them.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Archiving</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NEXTSTEPsoftware and the Object class support <i>archiving</i>, copying an object's data structure from dynamic memory to some other location.&nbsp; The other location can be a file where the object is stored until it's later reactivated, another application that will use the copy in its own way, the pasteboard, a port, or some other destination.&nbsp; Archiving permits objects to persist between sessions of the same application, and to be passed from one application to another.</font>
+
+<p><font face="Times">Only the object data structure is archived (only its instance variables), not any of the class code that includes the object's methods and other information it needs to function properly.&nbsp; For an object to be of any use once it's read from the archive, the program that reads it must have access to this code.&nbsp; The class must have been loaded, either at startup or dynamically later on, before the object is unarchived.</font>
+
+<p><font face="Times">Interface Builder is perhaps the most dramatic example of how archiving can be used.&nbsp; It permits you to design an application on-screen using graphical tools.&nbsp; You choose objects from a palette, manipulate them graphically to initialize them, and connect them to each other to form a program network.&nbsp; Interface Builder archives these objects in a file; they can then be unarchived as part of your application, or again in Interface Builder to further modify the design.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Typed Streams</b></font>
+
+<p><font face="Times">Objects are archived by writing them to a special kind of data stream, a <i>typed stream</i>, that accepts not only the object's data but also information about what type of data it is and what class the object belongs to.&nbsp; The class information is needed to reconnect the object to its class when it's unarchived.</font>
+
+<p><font face="Times">Data written to the stream might go to a file, to the pasteboard, to memory somewhere, or to some other destination.&nbsp; It doesn't matter; the archiving mechanism doesn't distinguish among destinations.&nbsp; (In this discussion, it will be assumed that the stream is connected to a file.)</font>
+
+<p><font face="Times">Objects are unarchived in similar fashion by reading them from a typed stream.&nbsp; Again, the mechanism is oblivious to the source of the data.&nbsp; The stream might be connected to a file, to memory, to the pasteboard or a port, or to some other source.&nbsp; However, typed streams impose a format on the data in the archive.&nbsp; Therefore, you can read data using a typed stream only if the data was previously written using a typed stream.</font>
+
+<p><font face="Times">Because the archiving mechanism is independent of the destination or source of the data, the same code can be reused in a variety of situations.&nbsp; Unarchiving an object from an Interface Builder file, for example, uses the same code as retrieving it from the pasteboard or receiving it as an argument in a remote message.</font>
+
+<p><font face="Times">Typed streams are recorded in NXTypedStream structures.&nbsp; The functions that open a stream for reading or writing return an NXTypedStream pointer.&nbsp; For example, <b>NXOpenTypedStreamForFile()</b> opens a typed stream on a file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXTypedStream *stream;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">stream = NXOpenTypedStreamForFile(&#34;/home/archive&#34;, NX_READWRITE);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The two arguments to <b>NXOpenTypedStreamForFile()</b> are a file name and a specification for how the stream will be used (NX_READWRITE, NX_READONLY, or NX_WRITEONLY).</font>
+
+<p><font face="Times">Like NXZone and FILE structures, you don't have to allocate memory for an NXTypedStream or look inside the structure; a pointer to the structure can be regarded as a stream identifier.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reading and Writing</b></font>
+
+<p><font face="Times">Archiving is initiated by calling a function that writes an object to a typed stream, typically <b>NXWriteRootObject()</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXWriteRootObject(stream, anObject);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This generates a <b>write:</b> message to the object, telling it to write its instance variables to the stream.&nbsp; (The &quot;root object&quot; in the function name refers not to the root of the inheritance hierarchy, but to the object passed as the argument.&nbsp; Since archiving this object might indirectly cause other objects to be archived, it's the one that &quot;roots&quot; (initiates) the archiving sequence.)</font>
+
+<p><font face="Times">Objects are unarchived by the inverse of this process, usually initiated by calling <b>NXReadObject()</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject = NXReadObject(stream);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function allocates memory for the object, reconnects it to its class, and generates a <b>read:</b> message to the object telling it to reinitialize its instance variables from the stream.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The write: and read: Methods</b></font>
+
+<p><font face="Times">The Object class defines default versions of the <b>write:</b> and <b>read:</b> methods.&nbsp; However, Object's versions can't know about instance variables declared in other classes.&nbsp; Thus, any class that declares instance variables must supply its own versions of <b>write:</b> and <b>read:</b> to archive and unarchive them.&nbsp; Every class has responsibility for reading and writing its own instance variables.</font>
+
+<p><font face="Times">So that <b>write:</b> and <b>read:</b> messages will archive or unarchive all of an object's instance variables, each version of either method should incorporate, through a message to <b>super</b>, the version it overrides:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- read:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super read:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Because the message to <b>super</b> comes first, instance variables are archived in the order of inheritance and unarchived in the same order.&nbsp; Those declared in a superclass are handled before those declared in a subclass.</font>
+
+<p><font face="Times">Every <b>write:</b> method must be matched by a <b>read:</b> method.&nbsp; The two methods are the inverse of each other; whatever <b>write: </b>writes, <b>read:</b> reads.</font>
+
+<p><font face="Times">However, <b>write:</b> and <b>read:</b> don't have to account for every instance variable.&nbsp; It's more efficient to skip over instance variables that fall into one of the following categories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Instance variables that are not essential to the character of the object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Those that would be invalid when the object is unarchived in a different context</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Those that can be recalculated from scratch when the object is unarchived</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, it would be better not to archive a variable that records a transitory state--one that changes often as the program runs (such as the current selection in a body of text).&nbsp; Rather, the variable could simply be set to an arbitrary initial value when the object is unarchived.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Archiving Functions</b></font>
+
+<p><font face="Times">After the message to <b>super</b>, a <b>write:</b> method must get down to the business of archiving a set of instance variables.&nbsp; A number of functions are provided for this purpose, the most general of them being <b>NXWriteType()</b>, which archives a single variable, possibly a structure, and <b>NXWriteTypes()</b>, which archives a series of variables, none of which can be structures.&nbsp; As their first argument, both functions take a pointer to the stream.&nbsp; As their second argument, both take a string of characters encoding all the types to be written, including all the types within a structure.&nbsp; These type codes are almost identical to those provided by the <b>@encode()</b> compiler directive.&nbsp; (Differences are explained in the <i>NEXTSTEP General Reference</i> manual.)&nbsp; Pointers to the data to be archived follow the type codes.</font>
+
+<p><font face="Times">For example, imagine a class that declares these six instance variables,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct key info;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double factor;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int mask;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int flags;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int state;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where the <b>key</b> structure consists of just an integer and a string:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct key {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int i;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *s;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It might archive the instance variables as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXWriteType(stream, &#34;{i*}&#34;, &amp;info);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXWriteTypes(stream, &#34;*dII&#34;, &amp;name, &amp;factor, &amp;mask, &amp;flags);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that this method ignores the <b>state</b> variable.</font>
+
+<p><font face="Times">The archiving functions follow a character pointer (coded `*') to archive the string it points to, and an object pointer (coded `@') to archive the object.&nbsp; However, they don't follow other kinds of pointers.&nbsp; You must explicitly archive any data that the object refers to but that resides in memory outside the object.</font>
+
+<p><font face="Times">The <b>NXReadType()</b> and <b>NXReadTypes()</b> functions read back what <b>NXWriteType()</b> and <b>NXWriteTypes()</b> write:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- read:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super read:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXReadType(stream, &#34;{*i}&#34;, &amp;info);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXReadTypes(stream, &#34;*dII&#34;, &amp;name, &amp;factor, &amp;mask, &amp;flags);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">state = 1;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A <b>read:</b> method might also reinitialize instance variables that were not archived.&nbsp; Here it resets <b>state</b> to 1;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Outlet Instance Variables</b></font>
+
+<p><font face="Times">Most objects have instance variables that point to other objects.&nbsp; As explained in Chapter 1, these <i>outlets</i> let an object keep track of the other objects it needs to communicate with.&nbsp; They serve to define the connections between objects in a program.</font>
+
+<p><font face="Times">Outlets raise a question for archiving:&nbsp; When one object is archived, should the objects that its outlets point to also be archived?</font>
+
+<p><font face="Times">The answer to this question can't be a universal &quot;yes.&quot;&nbsp; If it were, archiving one object might result in archiving a whole series of unwanted objects.&nbsp; Archiving a Matrix, for example, would also archive the Window object for the window where the matrix is drawn, along with every other object that draws in the window, all objects those objects are connected to, and so on.&nbsp; The answer also can't always be &quot;no.&quot;&nbsp; If it were, essential elements of an archived object might be missing when it was unarchived.&nbsp; You'd get back a Matrix without its Cells, for example.</font>
+
+<p><font face="Times">How an outlet instance variable is archived depends on the nature of the connection it represents.&nbsp; In NEXTSTEP, you have three options:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If an outlet object is the private servant of the object being archived and can be recreated from scratch without losing information, it doesn't need to be archived.&nbsp; The <b>write:</b> method can simply ignore the object and <b>read:</b> can produce a new one to take its place.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- read:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super read:stream];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">anOutlet = [[SomeClass alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If an outlet object is intrinsic to the object being archived, crucial to its character, or required for its operation, the <b>write: </b>method should archive it.&nbsp; For example, a Matrix archives its Cells.&nbsp; <b>write:</b> can archive an object by calling <b>NXWriteType()</b> or <b>NXWriteTypes()</b> and passing it the `@' type code that designates an object:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXWriteType(stream, &#34;@&#34;, &amp;anOutlet);</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">It's even simpler to use the shorthand <b>NXWriteObject()</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXWriteObject(stream, anOutlet);</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">These three functions have equivalent results; they each initiate a <b>write:</b> message to the outlet object.</font>
+
+<p><font face="Times"><b>NXWriteObject()</b> should be balanced by a call to <b>NXReadObject()</b> in the <b>read:</b> method.&nbsp; <b>NXWriteType()</b> is balanced by <b>NXReadType()</b> and <b>NXWriteTypes()</b> is balanced by <b>NXReadTypes()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If an outlet object is only peripherally connected to the object being archived, the <b>write:</b> method can call <b>NXWriteObjectReference()</b> to ask that a reference to it be maintained in case the object is archived for some other reason:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXWriteObjectReference(stream, anOutlet);</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This function doesn't archive the object.&nbsp; However, it's possible that the object will be archived anyway, perhaps because some other <b>write:</b> method requests it.&nbsp; If so, <b>NXWriteObjectReference()</b> guarantees that the outlet connection will be reestablished when the objects are unarchived.&nbsp; If not, it makes sure the outlet instance variable is set to <b>nil</b>.</font>
+
+<p><font face="Times">Like <b>NXWriteObject()</b>, <b>NXWriteObjectReference()</b> is balanced by calling <b>NXReadObject()</b> in the <b>read:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- read:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super read:stream];</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">anOutlet = NXReadObject(stream);</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">For example, a Matrix writes a reference to its Window object.&nbsp; If just the Matrix is archived, <b>NXReadObject()</b> will set the outlet that points to the Window to <b>nil</b>.&nbsp; However, if the entire Window is archived, the Matrix will also be archived and <b>NXReadObject()</b> will reestablish its connection to the Window.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition to being used inside a <b>write:</b> method, <b>NXWriteObject()</b> can be used instead of <b>NXWriteRootObject()</b> to initiate archiving.&nbsp; However, <b>NXWriteObject()</b> fails in this role if any object it seeks to archive calls <b>NXWriteObjectReference()</b>. Only <b>NXWriteRootObject()</b> knows how to write a reference to an object.&nbsp; It makes two passes over the network of objects being archived.&nbsp; On the first pass, it maps out the connections between objects, taking note of which ones are referred to and where.&nbsp; On the second pass, it archives the objects.&nbsp; (Therefore, all <b>write:</b> methods should be able to be invoked twice with no side effects.)</font>
+
+<p><font face="Times"><b>NXWriteRootObject()</b> can be used only to initiate archiving, never inside a <b>write:</b> method.</font>
+
+<p><font face="Times">Both <b>NXWriteRootObject()</b> and <b>NXWriteObject()</b> make sure that no object is archived more than once, no matter how may <b>write:</b> methods request that it be archived.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Final Steps</b></font>
+
+<p><font face="Times">Immediately after an object has been unarchived with the <b>read:</b> method, <b>NXReadObject()</b> sends it an <b>awake</b> message.&nbsp; The inherited version of <b>awake</b> defined in the Object class does nothing but return <b>self</b>.&nbsp; But a class can define an <b>awake</b> method of its own to reinitialize its instances and make sure they're in a usable state before they receive any other messages.</font>
+
+<p><font face="Times">Like <b>write:</b> and <b>read:</b> methods, <b>awake</b> methods should be chained together through messages to <b>super</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- awake</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super awake];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After the <b>awake</b> message, <b>NXReadObject()</b> sends each unarchived object that can respond a <b>finishUnarchiving</b> message. This message gives Objective C programs a chance to free the unarchived object and substitute another object for it.&nbsp; For example, if a class of named objects requires each name to be unique, and the newly unarchived object has a name that's already in use, <b>finishUnarchiving</b> might replace the new object with the existing one.</font>
+
+<p><font face="Times"><b>finishUnarchiving</b> should return <b>nil</b> if there's no substitution, and the replacement object if there is.&nbsp; The Object class declares a prototype for this method, but doesn't implement it.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

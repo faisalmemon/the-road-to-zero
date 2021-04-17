@@ -1,0 +1,374 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Protocols/DBEntities.rtf -->
+<!-- Date: Sun Jun 28 20:04:43 1998 -->
+<head>
+<title>DBEntities</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBEntities</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Adopted By:</b></font></td>
+
+<td><font face="Times">no NeXTSTEP classes</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Incorporates:</b></font></td>
+
+<td><font face="Times">DBTypes</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/entities.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocol Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBEntities protocol lets an object represent a database <i>entity</i>.&nbsp; An entity comprises a list of data categories, or <i>properties</i>. As data is read from a database for a particular entity, an &quot;instance&quot; of the entity (a <i>record</i>) is created and filled with data, one datum per property.</font>
+
+<p><font face="Times">It's tempting to speak of an entity as a database table.&nbsp; They're similar. You can think of a table as the corporealization of an entity.&nbsp; Put another way, an entity describes how a table organizes its data into columns (properties).&nbsp; However, you should keep in mind that an entity doesn't contain data (nor do the properties within the entity).&nbsp; Furthermore, neither entities nor properties are &quot;placeholders&quot; for data.&nbsp; Entities and properties neither store nor make room for data, they simply provide a description of the type and location of data so some other object (a record) can be created to adequately store this data.</font>
+
+<p><font face="Times">Typically, an application doesn't create entity objects directly, but, instead, reads them from a database model file.&nbsp; This is performed by creating a DBDatabase object and connecting it to the file (through methods described in the DBDatabase class specification).&nbsp; You can retrieve, in a List, the entity objects that the DBDatabase read from the model file by sending the DBDatabase a <b>getEntities:</b> message.&nbsp; Alternatively, you can retrieve a single entity object by name through <b>entityNamed:</b>. Both of these methods return private DBEntities-conforming objects that are created and owned by the Database Kit.</font>
+
+<p><font face="Times">Entity object are used as arguments in a handful of important methods.&nbsp; Most notable of these, you typically use an entity as the source in an invocation of DBRecordList's <b>setProperties:ofSource:</b>.&nbsp; In addition, an entity is required by the DBQualifier and DBExpression initialization methods.</font>
+
+<p><font face="Times">The DBEntities protocol incorporates the DBTypes protocol.&nbsp; It does this for one reason:&nbsp; the type of Objective C data described by a property that represents a relationship is a DBEntities object.&nbsp; Thus, if the <b>isEntity</b> message returns YES when sent to the value returned by sending <b>propertyType</b> to a property, then that property is a relationship.&nbsp; This is demonstrated in the following example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Get the properties from an entity.&nbsp; Check for relationships. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int counter;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *propList = [[List alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id prop;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anEntity getProperties:propList];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">for (counter = 0; counter &lt; [aList count]; counter++)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">prop=[aList objectAt:counter];</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if ([[prop propertyType] isEntity])</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">printf(&#34;Property named %s is a relationship.\n&#34;, [prop name]);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">You should never send the DBTypes messages <b>objcClassName</b> or <b>databaseType</b> to the private entity objects that are returned by the aforementioned DBDatabase methods.&nbsp; The private entity class implements these DBTypes methods to raise DB_UNIMPLEMENTED_ERROR exceptions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">It isn't anticipated that you should need to create your own class that adopts the DBEntities protocol.&nbsp; The entity objects returned by <b>getEntities:</b> and <b>entityNamed:</b> should be adequate for most applications.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Querying the object</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">database</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getProperties:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">propertyNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Comparing the object</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">matchesEntity:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>database</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBDatabase *)<b>database</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBDatabase object that created the entity.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProperties:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, in <i>aList</i>, a list of the entity's properties.&nbsp; Each object in the list conforms to the DBProperties protocol.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>matchesEntity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>matchesEntity:</b>(id &lt;DBEntities&gt;)<i>anEntity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES or NO if the receiving entity and <i>anEntity</i> were created from the same model file entity.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the entity's name.&nbsp; This is the same name as given to the entity in the model file from which it was read.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>propertyNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>propertyNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the property named <i>aName</i>.&nbsp; If the entity has no such property, <b>nil</b> is returned.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

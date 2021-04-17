@@ -1,0 +1,749 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/05_Overview/Overview.rtf -->
+<!-- Date: Sun Jun 28 20:10:11 1998 -->
+<head>
+<title>Overview</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>5</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Overview of Loadable Kernel Servers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter should help you decide whether you need to write a loadable kernel server, as well as give you the background information you need to begin writing one.&nbsp; A <i>loadable kernel server</i> is any code that's added to the NeXT</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">Mach kernel after the system has been booted.&nbsp; Loadable kernel servers are the only way to make third-party code execute within the kernel, as opposed to executing at <i>user level</i>.</font>
+
+<p><font face="Times">This chapter first discusses the advantages and disadvantages of loadable kernel servers, and then describes the types of loadable kernel servers that you can write.&nbsp; So that you don't unnecessarily write a loadable kernel server, a list of existing NeXT device drivers is presented.&nbsp; Next, this chapter describes in general how loadable kernel servers work.&nbsp; Finally, it describes the hardware and documentation that you'll need if you write a server.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Advantages and Disadvantages of Loadable Kernel Servers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Most of the code that runs on a NeXT computer executes at user level.&nbsp; For example, all NEXTSTEP</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">applications, such as Edit and Digital Librarian</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">, execute at user level, although they occasionally request services from the kernel.&nbsp; Command-line utilities, such as <b>make</b>, also execute at user level.&nbsp; Even system-wide resources such as the Window Server, with its Display PostScript</font><font size="-2"><sup>&reg;</sup></font><font face="Times">interpreter, run at user level.&nbsp; User-level programs have several advantages over kernel code:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Debugging them is much easier than debugging kernel code.&nbsp; For example, running a debugger on kernel code requires two computers and frequently freezes the operating system of the computer that's being debugged.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Errors in user-level code, unlike those in kernel code, don't cause the computer to <i>panic</i> (a state in which the operating system stops running; it can cause data loss and can be corrected only by rebooting).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">User-level programs usually don't decrease the overall performance of the system as much as if they were executed in the kernel.&nbsp; For example, code executed in the kernel causes the kernel to reserve more physical memory, reducing the memory that can be used for user-level programs.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, sometimes it's necessary to execute code in the kernel, especially when:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">User-level code just can't do the job.&nbsp; For example, the NeXT networking architecture currently requires that network protocols be executed inside the kernel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">User-level code can't do the job quickly enough.&nbsp; For example, if you have a NeXTbus</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">device, you can either write a user-level program that calls the slot driver (a driver provided in the NeXTbus Development Kit, NeXT product number N7002) or write your own loadable kernel server to control the device.&nbsp; The performance requirements of the device determine whether it's necessary to write your own loadable kernel server.&nbsp;&nbsp; The NeXTbus interface bus is discussed in Chapter 7, &quot;NeXTbus Device Drivers.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Supported Types of Loadable Kernel Servers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Currently, third parties can't write device drivers for non-NeXTbus interfaces, such as SCSI and serial ports.&nbsp; Third parties can write three types of loadable kernel servers:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Device drivers for NeXTbus boards</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Network protocols</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Network packet sniffers</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NeXT computers have several drivers that take care of most interface needs:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Driver</b></font></td>
+
+<td><font face="Helvetica"><b>Interface</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">audio</font></td>
+
+<td><font face="Times">Sound input and output</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">fd</font></td>
+
+<td><font face="Times">Internal floppy disk drive</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">MIDI</font></td>
+
+<td><font face="Times">Serial interfaces to MIDI devices</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">np</font></td>
+
+<td><font face="Times">NeXT laser printer</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">od</font></td>
+
+<td><font face="Times">Internal optical disk</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">sd</font></td>
+
+<td><font face="Times">SCSI disk drives of all kinds, including hard disks, floppy disks, and CD-ROMs</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">sg</font></td>
+
+<td><font face="Times">Concurrent access to up to four SCSI devices of any kind</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">slot</font></td>
+
+<td><font face="Times">NeXTbus devices (this driver is provided in the NeXTbus Development Kit)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">sound/DSP</font></td>
+
+<td><font face="Times">DSP56001 digital signal processor</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">st</font></td>
+
+<td><font face="Times">SCSI tape drives</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">zs</font></td>
+
+<td><font face="Times">Serial port devices</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The fd, np, od, sd, sg, st, and zs drivers are described in the UNIX manual pages, which are available through Digital Librarian. The MIDI and sound/DSP drivers are described in the <i>NEXTSTEP General Reference</i>, which is also available through Digital Librarian.&nbsp; The audio driver is accessible only indirectly, through Sound Kit</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">objects; these objects are described in the <i>General Reference</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>How Loadable Kernel Servers Work</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">One of the main features of loadable kernel servers is that they can be loaded into the kernel at any time after the computer has booted.&nbsp; This has several benefits.&nbsp; One is that you can add a server without recompiling the kernel.&nbsp; Another is that a server can be unloaded when it's no longer required, saving memory and other resources.&nbsp; You can also unload and reload a server, which speeds up development because you don't have to reboot every time you change the server.</font>
+
+<p><font face="Times">The <i>kernel-server loader</i> (<b>kern_loader</b>) is the task that loads and unloads loadable kernel servers.&nbsp; You can communicate with <b>kern_loader</b> either with the <i>kernel-server utility</i> (<b>kl_util</b>, which is described later), or by using the kernel-server loader functions, a group of user-level functions that are described in Chapter 3, &quot;Using Loadable Kernel Servers.&quot;</font>
+
+<p><font face="Times">Loadable kernel servers have three states:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Allocated--<b>kern_loader</b> has allocated space and resources for the loadable kernel server and is listening for messages to its ports.&nbsp; However, the server isn't currently running.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Loaded--The loadable kernel server is running.&nbsp; It runs as a thread in a non-kernel task, but with the kernel's address map.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Unallocated--<b>kern_loader</b> has no space or other resources allocated for the loadable kernel server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Loadable kernel servers can be built with or without Mach messages.&nbsp; A server that's based on messages has the advantage that it's easily loaded at the moment it's needed.&nbsp; This works because <b>kern_loader</b>, when it allocates resources for a server, creates the server's ports and advertises them with the Network Name Server.&nbsp; When a message is received on one of these advertised ports, <b>kern_loader</b> loads the allocated server into the kernel and forwards the advertised ports along with the received message to the now loaded and running server.</font>
+
+<p><font face="Times">Loadable kernel servers that don't use messages must be loaded into the system as soon as they're allocated in <b>kern_loader</b>. Like other loadable kernel servers, though, they can be allocated at any time and unloaded when they're no longer needed. Since newly loaded servers aren't known to the kernel, those that aren't message-based must add their entry points to the kernel.&nbsp; For example, a UNIX-style server (a server accessed with UNIX system calls) must insert pointers to its entry points into device switch tables.</font>
+
+<p><font face="Times">A loadable kernel server doesn't have to use messages if it's accessed only by table lookups.&nbsp; For example, UNIX-style servers and networking protocols can be implemented without messages.</font>
+
+<p><font face="Times">When started, <b>kern_loader</b> reads a configuration file (<b>/etc/kern_loader.conf</b>) and allocates the listed kernel servers.&nbsp; (Servers can also be allocated later, using <b>kl_util</b> or the kernel-server loader functions.)&nbsp; During allocation, <b>kern_loader</b> extracts the following information from the server's object file:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The name of the loadable kernel server</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The names of its ports, and whether they should be advertised with the Network Name Server</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Which function should be called when a message is received on a particular port</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whether the server should be loaded into the kernel immediately or wait for a received message</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whether the server should be <i>wired down</i> (made memory-resident in kernel virtual memory)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Initialization functions to call when the server is loaded</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Shutdown functions to call when the server is unloaded</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You specify some or all the information listed above to command scripts that are read by the kernel-server linker, <b>kl_ld</b>. Chapter 9, &quot;Building, Loading, and Debugging Loadable Kernel Servers,&quot; discusses how to compile and link loadable kernel servers; Appendix A, &quot;Utilities for Loadable Kernel Servers,&quot; gives details on <b>kl_ld</b> and the format of command scripts.</font>
+
+<p><font face="Times">When <b>kern_loader</b> allocates a server, it allocates memory within the Mach kernel and relocates the file against the running kernel's symbol table at the allocated address.&nbsp; The resulting code and data are directly copied into the kernel virtual address space when the server is loaded.&nbsp; While you're debugging your server, you need to specify that <b>kern_loader</b> should also save the relocated code and data into a <i>loadable object file</i>, which is used by the debugger.&nbsp; (The original object file--the one that <b>kern_loader</b> uses to create the loadable object file--is called the <i>relocatable object file</i>.)</font>
+
+<p><font face="Times">During the loading process, <b>kern_loader</b> not only loads the server but also initializes it.&nbsp; Initialization includes associating ports with functions and calling any initialization functions.&nbsp; The server is also wired down if requested.</font>
+
+<p><font face="Times">Before <b>kern_loader</b> deallocates a server, it calls the server's shutdown functions. The server is responsible for making sure that it has freed all the kernel resources that it requested (such as dynamically allocated memory).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Before You Start</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To write a loadable kernel server, you must be able to program in C.&nbsp; Depending on the kind of loadable kernel server you're writing, you probably don't need to be familiar with UNIX</font><font size="-2"><sup>&reg;</sup></font><font face="Times">internals.&nbsp; However, a general background in writing interrupt-driven device drivers or networking protocols is useful.</font>
+
+<p><font face="Times">If you've determined that you need to write a loadable kernel server, you'll need to gather some equipment and documentation.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Hardware You'll Need</b></font>
+
+<p><font face="Times">To write a server, you'll need the following equipment:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Two NeXT computers that are running the same major release of NEXTSTEP (for example, NEXTSTEP Release 3).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A working network connection for both computers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A NeXTbus Interface Chip (NBIC) on the CPU board of the test computer (only if you're writing a driver for a NeXTbus device).&nbsp; The NBIC is already installed in every NeXTcube</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">computer and 68040 Upgrade Board.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The hardware (if any) your server will control, installed in or connected to one of the computers.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">See Chapter 9 for more information on setting up the two computers.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Documentation You'll Need</b></font>
+
+<p><font face="Times">Depending on the type of server you're writing, you'll need some or all of the documentation listed in this section.&nbsp; You'll also need the server examples that are under <b>/NextLibrary/Documentation/NextDev/Examples/ServerVsHandler</b>.</font>
+
+<p><font face="Times">Part 1 of this manual, &quot;The Mach Operating System,&quot; is useful for its description of the NeXT Mach operating system and of Mach messaging, as well as documentation of Mach functions.</font>
+
+<p><font face="Times">You should also have <i>NEXTSTEP Development Tools</i>, which is part of the <i>NEXTSTEP Developer's Library</i>.&nbsp; It describes the compiler and debugger that you'll use.</font>
+
+<p><font face="Times">You might need to have the <i>NEXTSTEP Network and System Administration</i> manual on hand, especially when you're setting up your computers.</font>
+
+<p><font face="Times">If you're writing a driver for a NeXTbus board, you'll need the hardware specifications and installation guide.&nbsp; These are all part of the NeXTbus Development Kit.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>NeXTbus Interface Chip Specification</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>NeXTbus Specification</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>NeXTbus Development Kit Installation Guide</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following book has good information for any driver writer.&nbsp; It also has specific information on UNIX drivers.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><i>Writing a UNIX Device Driver</i>.&nbsp; Janet I. Egan and Thomas J. Teixeira. John Wiley &amp; Sons, Inc., 1988.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you're writing a server with a UNIX-style interface, you might need the information in the following book.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><i>The Design and Implementation of the 4.3BSD UNIX Operating System</i>.&nbsp; Samuel J. Leffler, Marshall Kirk McKusick, Michael J. Karels, and John S. Quarterman.&nbsp; Addison-Wesley, 1989.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

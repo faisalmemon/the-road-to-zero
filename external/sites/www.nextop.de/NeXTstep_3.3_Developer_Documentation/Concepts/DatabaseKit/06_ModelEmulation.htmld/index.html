@@ -1,0 +1,841 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/06_ModelEmulation.rtfd -->
+<!-- Date: Sun Jun 28 19:35:58 1998 -->
+<head>
+<title>06_ModelEmulation</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>6</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Model Emulation</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Database Kit modeling objects are created from a class and two protocols:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Instances of the DBDatabase class represent database models.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The DBEntities protocol provides methods that let you examine the entities in a model.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The DBProperties protocol does the same for the properties (attributes and relationships) in an entity.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The modeling objects are created and configured for you by the Database Kit, based on the design of a specific model file--you don't (normally) create instances of these objects yourself.&nbsp; Furthermore, you can't reasonably subclass DBDatabase nor create your own classes that adopt the DBEntities or DBProperties protocol.&nbsp; The story of the modeling objects is, primarily, a description of &quot;hard-wired&quot; Database Kit features.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>DBDatabase</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In its role as a modeling object, a DBDatabase provides the primary access to a database model:&nbsp; It reads a specified model file, and stores the entities (as DBEntities objects) that it finds there.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reading a Model</b></font>
+
+<p><font face="Times">To get a DBDatabase object, you ask the DBDatabase class to return an instance that corresponds to a particular database model.&nbsp; This is done through the <b>findDatabaseNamed:connect:</b> class method:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The method's first argument is a string that names the model.&nbsp; The model name is given without a directory path, and without a file extension.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The second argument is a boolean that determines whether an attempt is made to connect to the adaptor--and so to a database server--upon which the model is based, a subject that's dealt with in a later section.&nbsp; You should note that none of the modeling object manipulations described here require that the DBDatabase be connected to the server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The example below returns the DBDatabase object that corresponds to the &quot;OracleDemo&quot; model (but it doesn't connect to the server):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Find the DBDatabase object for the model &#34;OracleDemo&#34;. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBDatabase *db = [DBDatabase findDatabaseNamed:&#34;OracleDemo&#34;</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">connect:NO];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBDatabase class maintains a table of existing DBDatabase objects so that multiple invocations of <b>findDatabaseNamed:connect:</b> for the same model will return the same object.&nbsp; If you ask for an as-yet-unread model, the class searches for the model in the following directories (in this order):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>1.</b></font></td>
+
+<td><font face="Times">The path to your application's main bundle.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>2.</b></font></td>
+
+<td><font face="Times">~/Library/Databases</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>3.</b></font></td>
+
+<td><font face="Times">/LocalLibrary/Databases</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>4.</b></font></td>
+
+<td><font face="Times">/NextLibrary/Databases</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">DBDatabase objects can only read models that are in archive format, thus the class only looks for model files that have the &quot;.dbmodel&quot; extension.</font>
+
+<p><font face="Times">The <b>directory</b> method returns a string that gives the full pathname of the model that was found (including the model name and file extension).&nbsp; The <b>name</b> method returns the model name only.</font>
+
+<p><font face="Times">If the requested model isn't found, the <b>findDatabaseNamed:connect:</b> method returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Throughout the access layer, models are referred to as &quot;databases,&quot; as exemplified by the <b>findDatabaseNamed:connect:</b> method.&nbsp; This follows from the use of DBDatabase objects to represent database models.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Finding the Right Model</b></font>
+
+<p><font face="Times">There are two DBDatabase class methods that help you compile a list of candidate model names:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>databaseNamesForAdaptor:</b> takes, as an argument, the name of an adaptor and returns a NULL-terminated array of model names (strings) that are based upon that adaptor.&nbsp; The strings in the array are suitable for passing as the first argument to <b>findDatabaseNamed:connect:</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The available adaptor names are returned in an array by the <b>adaptorNames</b> method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The model names are searched for in the directories listed above.&nbsp; Adaptors are searched for in similar places:&nbsp; the main bundle, <b>~/Library/Adaptors</b>, <b>/LocalLibrary/Adaptors</b>, and <b>/NextLibrary/Adaptors</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Reading a Hidden Model</b></font>
+
+<p><font face="Times">Since the string that you pass to the <b>findDatabaseNamed:connect:</b> isn't a precise filename, you'll find it impossible to get a model that's &quot;hidden&quot; by an identically named model in a preceding directory (preceding in the sense of the directory search). One way to work around this is to use the <b>initFromFile:</b> method.&nbsp; This method takes a full pathname to a model and initializes (and returns) a new DBDatabase object for it.&nbsp; Matter-of-course use of this method is discouraged, however, since it can subvert the normal and natural one-to-one correspondence between DBDatabase objects and database models.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>DBEntities</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As it reads its database model, a DBDatabase object fashions a list of objects that represent the entities within the model.&nbsp; You can retrieve this list through the <b>getEntities:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Find the DBDatabase object. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBDatabase *db = [DBDatabase findDatabaseNamed:&#34;OracleDemo&#34;</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">connect:NO];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Allocate a List object to retrieve db's entities ... */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *entities = [[List alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; ... and retrieve them. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[db getEntities:entities];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The elements in the <b>entities</b> List are privately created, read-only objects that conform to the DBEntities protocol.&nbsp; You can't alter entity objects (because the DBEntities protocol doesn't provide any methods to do so), and you never free them yourself.</font>
+
+<p><font face="Times">Each entity object has a string name that's retrieved through the <b>name</b> method.&nbsp; This is the object's &quot;public&quot; name (using the term as it's defined in Chapter 3), not its &quot;internal&quot; name.&nbsp;&nbsp; You can retrieve an entity by name through DBDatabase's <b>entityNamed:</b> method.&nbsp; Given an entity, you can retrieve the DBDatabase that created it by send it a <b>database</b> message.</font>
+
+<p><font face="Times">More important than an entity's name or database is its list of properties, as explained in the next section.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>DBProperties</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Every entity object contains a list of objects that represent the entity's properties (in Entity-Relationship terms, its <i>attributes</i> and <i>relationships</i>).&nbsp; You retrieve this list through the DBEntities method <b>getProperties:</b>, as shown below:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Allocate a List object.. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *propList;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Get the properties from the first in our list of entities.&nbsp; */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[entities objectAt:0] getProperties:propList];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As with the entity objects themselves, these properties are created for you, they're read-only, and you never free them yourself.</font>
+
+<p><font face="Times">The DBProperties protocol, to which the property objects conform, is similar to the DBEntities protocol:&nbsp; It provides a <b>name </b>method that gives the property's public name, and an <b>entity</b> method that returns the property's progenitor.&nbsp; You can find a property by name within a particular entity object by sending a <b>propertyNamed:</b> message to the entity.&nbsp; In this example, the <b>entityNamed:</b> and&nbsp; <b>propertyNamed:</b> methods are nested to retrieve the property object for the Employee.name attribute:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; It's assumed that db was found for a model that contains the</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">requested entity and property. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id empName = [[db entityNamed:&#34;Employee&#34;] propertyNamed:&#34;name&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note well that only those properties that appear directly in an entity (its &quot;natural&quot; properties) can be gotten from the entity--you can't use the&nbsp; <b>propertyNamed:</b> method to traverse a relationship.&nbsp; For example, given the model shown in Figure 73, below, you can ask the</font> <font face="Helvetica">Book</font> <font face="Times">entity for the properties named</font> <font face="Helvetica">title</font><font face="Times">,</font> <font face="Helvetica">authorID</font><font face="Times">,</font> <font face="Helvetica">publisher</font><font face="Times">, and</font> <font face="Helvetica">bookID</font><font face="Times">, but you can't use the &quot;<i>relationship.attribute</i>&quot; format to ask for a property of the related</font> <font face="Helvetica">Author</font> <font face="Times">entity.&nbsp; Thus, the following message will fail and return <b>nil</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* WARNING: THIS WON'T WORK.&nbsp; */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id wasteOfTime = [[db entityNamed:&#34;Book&#34;]</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">propertyNamed:&#34;toAuthor.name&#34;];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=218 height=69></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 73</b></font><font face="Times">.&nbsp; An Example Model</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Primary Keys and Value Mutability</b></font>
+
+<p><font face="Times">The DBProperties protocol supplies boolean methods that further describe a property:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>isKey</b> tells whether a property is, or is part of, its entity's primary key.&nbsp; Note that the DBEntities protocol doesn't define a method that returns an entity's primary key(s); thus, the only way to get this information is to retrieve the entity's list of property objects and send <b>isKey</b> to each.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>isReadOnly</b> speaks of the mutability of the values that are stored for the property.&nbsp; If this message returns YES when sent to a property object, then the values that are retrieved for the property can't be altered.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Property Types</b></font>
+
+<p><font face="Times">Associated with each property is an object that conforms to the DBTypes protocol; you retrieve this object through the DBProperties method <b>propertyType</b>.&nbsp; A property's DBTypes object establishes the Objective C data type that's used to cast the values for the property.&nbsp; In other words, when data is fetched from the server, all the values in the &quot;column&quot; of data that corresponds to a particular property will be &quot;of the type&quot; denoted by the property's DBTypes object.</font>
+
+<p><font face="Times">A property's DBTypes object has one other important role:&nbsp; It's used to determine whether a property is an attribute or a relationship.&nbsp; This is done by sending the&nbsp; <b>isEntity</b> message to the property's DBTypes object.&nbsp; In the following example function, the properties of an entity are sorted into attribute and relationship lists:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Sort an entity's properties. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void sortProperties(id entity, List *attrs, List *rels)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *props = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int n;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id thisProp;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the entity's properties. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[entity getProperties:props];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Sort the properties into the two lists. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">for (n = 0; n &lt; [props count]; n++) {</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">thisProp = [props objectAt:n];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">if ([[thisProp propertyType] isEntity]) {</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">if (rels)</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">[rels addObject:thisProp]; }</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">if (attrs)</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">[attrs addObject:thisProp]; }</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[props free];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* For convenience, we define a couple of macros. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define getAttributes(ent,attrs) sortProperties(ent, attrs, nil)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define getRelationships(ent,rels) sortProperties(ent, nil, rels)</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Attribute Data Types</b></font>
+
+<p><font face="Times">Now that the properties are segregated, you can ask each attribute what its Objective C data type is, by sending the <b>objcType </b>message to the property's DBTypes object.&nbsp; The method returns a string that represents the data types according to the following convention:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Data type</b></font></td>
+
+<td><font face="Helvetica"><b>DBTypes objcType value</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">object</font></td>
+
+<td><font face="Times">&quot;@&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">string</font></td>
+
+<td><font face="Times">&quot;*&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">integer</font></td>
+
+<td><font face="Times">&quot;i&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">float</font></td>
+
+<td><font face="Times">&quot;f&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">double</font></td>
+
+<td><font face="Times">&quot;d&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the following example function, a message is printed stating the name and data type of each attribute in a given entity:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void printAttributes(id entity)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id thisAttr;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">int n;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">const char *ocType;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *attrs = [[List alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Call the previously created macro to get the attributes. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">getAttributes(entity, attrs);</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Walk down the attribute list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">for (n = 0; n &lt; [attrs count]; n++ ) {</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">thisAttr = [attrs objectAt:n];</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">ocType = [[thisAttr propertyType] objcType];</font>
+
+<p><img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">/*&nbsp; Switch on the ocType value.&nbsp; Since the data type strings are</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">all one character long, we can reliably use a simple</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">character comparison (rather than strcmp()). */</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">switch (*ocType) {</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">case '@':</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">printf(&#34;%s represents objects.\n&#34;, [thisAttr name]);</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">case '*':</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">printf(&#34;%s represents strings.\n&#34;, [thisAttr name]);</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">case 'i':</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">printf(&#34;%s represents integers.\n&#34;, [thisAttr name]);</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">case 'f':</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">printf(&#34;%s represents floats.\n&#34;, [thisAttr name]);</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">case 'd':</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">printf(&#34;%s represents doubles.\n&#34;, [thisAttr name]);</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[attrs free];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If a property's type is object, you can ask for the name of the object's class by sending the <b>objcClassName</b> message to the property's DBTypes object.&nbsp; Here, the first branch of the example above is modified to print the class name:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">case '@':</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">printf(&#34;%s represents %s objects.\n&#34;, [thisAttr name],</font> &nbsp; [ocType objcClassName]);<br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">break;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Keep in mind that <b>objcClassName</b> doesn't return the name of the property's class, but of the class that's used to create instances when data is fetched for the property.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Relationship Data Types</b></font>
+
+<p><font face="Times">Since a relationships doesn't &quot;categorize&quot; actual database data (as explained in Chapter 1), the notion of its data type is different from that of an attribute.&nbsp; In short, you never send a <b>objcType</b> or <b>objcClassName</b> message to the DBTypes object of a relationship (sending the latter message actually raises an exception).</font>
+
+<p><font face="Times">However, a relationship's DBTypes object does hold important information:&nbsp; The DBTypes object <i>is</i> the relationship's destination entity.&nbsp; The object that's returned when you send a <b>propertyType</b> message to a relationship is a DBEntities-conforming object that can be used like any other entity object.&nbsp; For example, you can ask for its properties, as shown in the following example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Given a relationship, create and returns a List of the</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">properties that are contained in the relationship's destination</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">entity. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *getDestinationProperties(id aRelationship)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">id propType = [aRelationship propertyType];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">List *props;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* First check to make sure that we have a relationship. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if (![propType isEntity])</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return nil;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/* Get the properties and return the list. */</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">props&nbsp; = [[List alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">[propType getProperties:props];</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">return props;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The notion that a DBTypes object should be an entity may seem curious, but if you consider the nature of a relationship, it makes sense.&nbsp; Just as an attribute categorizes &quot;atomic&quot; data of a certain type, so too does a relationship categorize data.&nbsp; Except that in the case of the relationship, the data values that are being categorized aren't simple atomic types but, rather, they're vectors of data, where the vector is described by the properties in a particular entity (the destination entity).&nbsp; The destination entity, therefore, supplies the data types for the data that's categorized by a relationship.&nbsp; Putting this more simply, the destination entity is the data type of a relationship.</font>
+
+<p><font face="Times">To make this work in the Database Kit, entity objects must conform to the DBTypes protocol.&nbsp; And, indeed, the entity objects that you retrieve from a database model are instances of a (private) class that adopts this protocol.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Relationship Degree</b></font>
+
+<p><font face="Times">The DBProperties protocol provides a boolean method, <b>isSingular</b>, that you can use to determine a relationship's degree:&nbsp; When sent the <b>isSingular</b> message, to-one relationships</font><br>
+<font face="Times">(and attributes) return YES; to-many relationships return NO.</font>
+
+<p><font face="Times">The following example defines a function that returns a constant which identifies the argument property as an attribute, a to-one relationship, or a to-many relationship:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef enum _propDegree  {</font><br>
+<img src="../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">attribute,</font><br>
+<img src="../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">toOneRelationship,</font><br>
+<img src="../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">toManyRelationship</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} propDegree;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">propDegree whatIsProperty(id aProp)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">if ([[aProp propertyType] isEntity])</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">if ([aProp isSingular])</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">return toOneRelationship;</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">return toManyRelationship;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return attribute;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following truth table can be deduced from the example:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>type</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>singular</b></font></td>
+
+<td><font face="Helvetica"><b>entity</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=22></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">attribute</font></td>
+
+<td nowrap><font face="Times">YES</font></td>
+
+<td><img src="../../Images/sp.gif" width=3 height=1><font face="Times">NO</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">to-one relationship</font></td>
+
+<td nowrap><font face="Times">YES</font></td>
+
+<td><img src="../../Images/sp.gif" width=3 height=1><font face="Times">YES</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">to-many relationship</font></td>
+
+<td nowrap><font face="Times">NO</font></td>
+
+<td><img src="../../Images/sp.gif" width=3 height=1><font face="Times">YES</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Modeling Object Tips</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There are a few things that you shouldn't--or simply can't--do with the modeling objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Setting a Property's Name</b></font>
+
+<p><font face="Times">It was stated above that properties are read-only objects; this isn't strictly true.&nbsp; There's one aspect of a property object that you can--but probably shouldn't--set:&nbsp; its name.&nbsp; The DBProperties protocol defines a <b>setName:</b> method that does what it says; the property objects that the Database Kit creates when it reads a model don't disallow invocations of this method.</font>
+
+<p><font face="Times">However, the <b>setName:</b> method is provided, principally, to help you define instances of the DBExpression class, which also conforms to the DBProperties protocol (as explained later in this chapter).&nbsp; It's strongly recommended that you never send <b>setName:</b> to a property object that's gotten from an entity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Hidden Entities and Properties</b></font>
+
+<p><font face="Times">The DBModeler application and ASCII model file format let you declare an entity or property as &quot;hidden.&quot;&nbsp; This state is used, as shown in Chapter 4, to determine whether a model element should be displayed in the Interface Builder model browser.</font>
+
+<p><font face="Times">The access layer objects that represent entities and properties don't discriminate between hidden and unhidden objects.&nbsp; When you ask a DBDatabase to return its list of entities, for example, you get all the entities that are declared in the associated model, hidden or not.&nbsp; Furthermore, the entity and property objects don't publicly carry their hidden state--you can't ask these objects if the model declares them as hidden.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Relationship Attributes</b></font>
+
+<p><font face="Times">Recall from Chapter 1, that a relationship is defined not only by its destination entity, but also by the equivalence between a source attribute and a destination attribute.&nbsp; A property object that represents a relationship hides the identities of its equivalent attributes--there are no methods for retrieving this information.</font>
+
+<p><font face="Times">In general, you shouldn't need to know the identities of a relationship's source and destination attributes.&nbsp; When these objects are needed--specifically, when you traverse a relationship, as described in Chapter 9--they're applied automatically.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

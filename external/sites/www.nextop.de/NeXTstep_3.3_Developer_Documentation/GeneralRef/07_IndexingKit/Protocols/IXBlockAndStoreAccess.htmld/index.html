@@ -1,0 +1,414 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Protocols/IXBlockAndStoreAccess.rtf -->
+<!-- Date: Sun Jun 28 20:05:57 1998 -->
+<head>
+<title>IXBlockAndStoreAccess</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXBlockAndStoreAccess</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Adopted By:</b></font></td>
+
+<td><font face="Times">IXBTree</font><br>
+<font face="Times">IXFileFinder</font><br>
+<font face="Times">IXRecordManager</font><br>
+<font face="Times">IXStoreBlock</font><br>
+<font face="Times">IXStoreDirectory</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">store/protocols.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocol Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The IXBlockAndStoreAccess protocol defines methods for initializing and freeing store clients.&nbsp; A <i>store client</i> is any object that uses data in an IXStore to provide higher level services.&nbsp; IXBlockAndStoreAccess defines methods based on IXStore block handles&nbsp; for creating store clients, for initializing store clients from existing data, and for destroying store clients.&nbsp; A related protocol, IXNameAndFileAccess, defines methods for accessing store clients by name instead of by handles.</font>
+
+<p><font face="Times">A store client is different from most Objective C objects in that it uses data which can outlive it, but which is considered an integral part of the store client itself.&nbsp; Unlike objects unarchived from an Interface Builder nib file, which retain no connection to that file, a store client uses its store to actively manage a persistent component of its state.</font>
+
+<p><font face="Times">A store client can be initialized from scratch, or it can be initialized from data created by a previous instance;&nbsp; the second type of initialization is called <i>reconstituting</i> or <i>opening</i> a store client.&nbsp; When a store client is freed, only its run-time state is destroyed;&nbsp; the data in the store remains intact, ready to be used by a later store client instance.&nbsp; A store client can also completely destroy itself by removing its data from the store in addition to freeing its run-time data.</font>
+
+<p><font face="Times">When a store client is initialized from scratch, it's given an IXStore in which to keep its persistent data.&nbsp; One of the first things it does is create a block in that IXStore.&nbsp; This &quot;boot block&quot; can contain the handles of other blocks, making it a single point of entry for reconstituting later instances.&nbsp; A later instance can use that single block to retrieve all of the persistent data created by the original instance.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Temporary Store Clients</b></font>
+
+<p><font face="Times">In addition to the methods in this protocol, you may find it convenient to implement a simple <b>init</b> method that initializes a store client for temporary use by creating an IXStore private to that instance, and which that instance will free when it receives a <b>free </b>message.&nbsp; In such a case, of course, the store client will essentially be like most other objects;&nbsp; its state won't be persistent, but will be freed when it is.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Closing a Store</b></font>
+
+<p><font face="Times">Before a store is closed (that is, before the IXStore object is sent a <b>free</b> message), all of the store clients should be properly cleaned up and freed.&nbsp; This involves freeing the store clients, sending either <b>abortTransaction</b> or <b>commitTransaction</b> if needed to the IXStore until all transactions are completed, and finally, freeing the IXStore object.</font>
+
+<p><font face="Times">It's important to complete all transactions before freeing the store, since a store client may actually be working with the store. If the store is actually an IXStoreFile, changes made since the store file was opened aren't flushed when the IXStoreFile is freed;&nbsp; pending transactions have to be explicitly completed beforehand, or they're all effectively aborted.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing a client</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initInStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromBlock:inStore:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeFromStore</font><br>
+<font face="Times">+ freeFromBlock:inStore:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Retrieving the block and store</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getBlock:andStore:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeFromBlock:andStore:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>freeFromBlock:</b>(unsigned int)<i>aHandle</i> <b>inStore:</b>(IXStore *)<i>aStore</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes from <i>aStore</i> all storage for the client whose boot block is identified by <i>aHandle</i>.&nbsp; Normally, your code would have to instantiate a client for the data in the block identified by <i>aHandle</i> and send it a <b>freeFromStore</b> message.&nbsp; This method provides a convenient way to remove an object from an IXStore without your code having to allocate and initialize it.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">One way to implement this method is to create an instance of the client class, reconstitute it from <i>aHandle</i>, and free it from the store.&nbsp; Here's a simple example, without any error handling:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ freeFromBlock:(unsigned int)aHandle inStore:(IXStore *)aStore</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[[[self alloc] initFromBlock:aHandle inStore:aStore]</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">freeFromStore];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Classes whose instances normally perform a lot of time-consuming initialization should implement a lightweight initialization method, which prepares the instance only to access its storage for efficient removal from its IXStore.</font>
+
+<p><font face="Times">If your store client class only creates a single block in its IXStore, you can implement this method by simply freeing that block:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ freeFromBlock:(unsigned int)aHandle inStore:(IXStore *)aStore</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[aStore freeBlock:aHandle];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeFromStore</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeFromStore</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeFromStore</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the receiver's storage from its IXStore and frees the run-time object.&nbsp; A store client's <b>free</b> method simply frees the run-time object without affecting any data in the IXStore.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>freeFromBlock:inStore:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getBlock:andStore:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBlock:</b>(unsigned int *)<i>aHandle</i> <b>andStore:</b>(IXStore **)<i>aStore</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the handle of the receiver's boot block, and its IXStore.&nbsp; Also returns <b>self</b>.</font>
+
+<p><font face="Times">Since a store client needs to record its boot block handle and its IXStore to function properly, implementing this method is simply a matter of putting those values into <i>aHandle</i> and <i>aStore</i>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Though note part of the IXBlockAndStoreAccess protocol, a <b>store</b> method is defined by many store clients, providing a convenient shorthand for sending transaction management messages to the client's store:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[aClient store] commitTransaction];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromBlock:inStore:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromBlock:</b>(unsigned int)<i>aHandle</i> <b>inStore:</b>(IXStore *)<i>aStore</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver using existing data from the boot block identified by <i>aHandle</i> in <i>aStore</i>.&nbsp; That block should have been created by a previous invocation of the <b>initInStore:</b> method on the original instance of the store client.&nbsp; The receiver isn't required to be of the same class as the original creator of the store data, but it must be able to make sense of that data.&nbsp; Returns <b>self</b> if successful, or <b>nil</b> if the receiver can't be initialized (for example, if <i>aHandle</i> doesn't exist in <i>aStore</i>).</font>
+
+<p><font face="Times">A block handle of zero should be interpreted as a request for the creation of a new store client.&nbsp; This allows the store client class' implementation of the <b>initInStore:</b> method to simply send <b>initFromBlock:inStore:</b> to <b>self</b> with a block handle of zero.</font>
+
+<p><font face="Times">To implement this method, simply access the data in <i>aHandle</i> to set up a usable state for the client instance.&nbsp; This may involve opening other blocks whose handles are stored in the boot block.&nbsp; For example IXBTree implements this method to read the block at <i>aHandle</i> and to check that the contents of that block form the root node of a BTree.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">While a store client instance exists, it's considered to own the associated state in the IXStore.&nbsp; Your code should never use this method a second time with a specific boot block unless it's known for certain that any previous instance using that data has been freed (or that both instances will be using the storage for read-only access).&nbsp; If a second store client is initialized from the same block as an active client, the data associated with it will probably be corrupted, since there is no means provided in the Indexing Kit for synchronizing changes made by the two instances.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initInStore:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initInStore:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initInStore:</b>(IXStore *)<i>aStore</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, creating a new boot block in <i>store</i>. After initialization, the boot block can be used to hold the receiver's data.&nbsp; That block's handle can be retrieved with <b>getBlock:andStore:</b>.&nbsp; Returns <b>self</b> if successful, or <b>nil</b> if the receiver can't initialize itself.</font>
+
+<p><font face="Times">To implement this method, simply create a block in <i>aStore</i>, record its handle as the boot block, and store whatever initialization values your client may need there.&nbsp; If your client needs to use several blocks within <i>aStore</i>, it can also create those, and store their handles in its boot block.&nbsp; This allows a later instance to retrieve those blocks when it receives an <b>initFromBlock:inStore:</b> message.&nbsp; For example, IXBTree implements this method by creating a block and formatting it as the root node of a BTree; it creates more blocks only as it needs them.</font>
+
+<p><font face="Times">This method is usually implemented to send <b>initFromBlock:inStore:</b> to <b>self</b> with a block handle of zero, since a block handle of zero is interpreted as a request to create a new store client.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromBlock:inStore:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

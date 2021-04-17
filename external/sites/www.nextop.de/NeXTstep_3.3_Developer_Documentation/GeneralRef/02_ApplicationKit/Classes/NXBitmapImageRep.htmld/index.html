@@ -1,0 +1,2632 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXBitmapImageRep.rtf -->
+<!-- Date: Sun Jun 28 20:00:26 1998 -->
+<head>
+<title>NXBitmapImageRep</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXBitmapImageRep"></a><font face="Helvetica" size="+2"><b>NXBitmapImageRep</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NXImageRep : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXBitmapImageRep.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXBitmapImageRep is an object that can render an image from bitmap data.&nbsp; The data can be in Tag Image File Format (TIFF), or it can be raw image data.&nbsp; If it's raw data, the object must be informed about the structure of the image--its size, the number of color components, the number of bits per sample, and so on--when it's first initialized.&nbsp; If it's TIFF data, the object can get this information from the various TIFF fields included with the data.</font>
+
+<p><font face="Times">Although NXBitmapImageReps are often used indirectly, through instances of the NXImage class, they can also be used directly--for example to manipulate the bits of an image as you might need to do in a paint program.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Setting Up an NXBitmapImageRep</b></font>
+
+<p><font face="Times">A new NXBitmapImageRep is passed bitmap data for an image--or told where to find it--when it's first initialized:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">TIFF data can be read from a stream, from a file, or from a section of the _ _TIFF segment of the application executable.&nbsp; If it's stored in a section or a separate file, the object will delay reading the data until it's needed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Raw bitmap data is placed in buffers, and pointers to the buffers are passed to the object.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXBitmapImageRep can also be created from bitmap data that's read from an existing (already rendered) image.&nbsp; The object created from this data is able to reproduce the image.</font>
+
+<p><font face="Times">Although the NXBitmapImageRep class inherits NXImageRep methods that set image attributes, these methods shouldn't be used.&nbsp; Instead, you should either allow the object to find out about the image from the TIFF fields or use methods defined in this class to supply this information when the object is initialized.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>TIFF Compression</b></font>
+
+<p><font face="Times">TIFF data can be read and rendered after it has been compressed using any one of the four schemes briefly described below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">LZW</font></td>
+
+<td><font face="Times">Compresses and decompresses without information loss, achieving compression ratios of anywhere from 2:1 to 3:1.&nbsp; It may be somewhat slower to compress and decompress than the PackBits scheme.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">PackBits</font></td>
+
+<td><font face="Times">Compresses and decompresses without information loss, but may not achieve the same compression ratios as LZW.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">JPEG</font></td>
+
+<td><font face="Times">Compresses and decompresses with some information loss, but can achieve compression ratios anywhere from 10:1 to 100:1.&nbsp; The ratio is determined by a user-settable factor ranging from 1.0 to 255.0, with higher factors yielding greater compression.&nbsp; More information is lost with greater compression, but 15:1 compression is safe for publication quality.&nbsp; Some images can be compressed even more.&nbsp; JPEG compression can be used only for images that specify at least 4 bits per sample.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">CCITTFAX</font></td>
+
+<td><font face="Times">Compresses and decompresses 1 bit grayscale images using international fax compression standards CCITT3 and CCITT4.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXBitmapImageRep can also produce compressed TIFF data for its image using any of these schemes.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing a new NXBitmapImageRep object</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromSection:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromStream:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initData:fromRect:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initData:pixelsWide:pixelsHigh:bitsPerSample:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=333></td>
+
+<td><font face="Times">samplesPerPixel:hasAlpha:isPlanar:colorSpace:</font><br>
+<font face="Times">bytesPerRow:bitsPerPixel:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initDataPlanes:pixelsWide:pixelsHigh:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=333></td>
+
+<td><font face="Times">bitsPerSample:samplesPerPixel:hasAlpha:</font><br>
+<font face="Times">isPlanar:colorSpace:bytesPerRow:bitsPerPixel:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating a List of NXBitmapImageReps</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><font face="Times">+ newListFromSection:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ newListFromSection:zone:</font><br>
+<font face="Times">+ newListFromFile:</font><br>
+<font face="Times">+ newListFromFile:zone:</font><br>
+<font face="Times">+ newListFromStream:</font><br>
+<font face="Times">+ newListFromStream:zone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Reading information from a rendered image</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><font face="Times">+ sizeImage:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ sizeImage:pixelsWide:pixelsHigh:bitsPerSample:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=333></td>
+
+<td><font face="Times">samplesPerPixel:hasAlpha:isPlanar:colorSpace:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copying and freeing an NXBitmapImageRep</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyFromZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting information about the image</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">bitsPerPixel</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">samplesPerPixel</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">bitsPerSample (NXImageRep)</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isPlanar</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">numPlanes</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">numColors (NXImageRep)</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">hasAlpha (NXImageRep)</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">bytesPerPlane</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">bytesPerRow</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">colorSpace</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pixelsWide (NXImageRep)</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pixelsHigh (NXImageRep)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting image data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">data</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getDataPlanes:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Drawing the image</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">draw</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawIn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawAt: (NXImageRep)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Producing a TIFF representation of the image</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeTIFF:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeTIFF:usingCompression:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeTIFF:usingCompression:andFactor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting/checking compression types</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><font face="Times">+ getTIFFCompressionTypes:count:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ localizedNameForTIFFCompressionType:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">canBeCompressedUsing:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCompression:andFactor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCompression:andFactor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Checking unpacked data handling</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><font face="Times">+ setUnpackedImageDataAcceptable:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ isUnpackedImageDataAcceptable</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-getTIFFCompressionTypes:count:%5D"></a><font face="Helvetica"><b>getTIFFCompressionTypes:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>getTIFFCompressionTypes:</b>(const int **)<i>list</i> <b>count:</b>(int *)<i>numTypes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference, an integer array representing all available compression types that can be used when writing a TIFF image.&nbsp; The number of elements in <i>list</i> is represented by <i>numTypes</i>.&nbsp; <i>list</i> belongs to the NXBitmapImageRep class; it shouldn't be freed or altered.</font>
+
+<p><font face="Times">The following compression types are supported:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Value</b></font></td>
+
+<td><font face="Helvetica"><b>Usage</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_NONE</font></td>
+
+<td nowrap><font face="Times">1</font></td>
+
+<td></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_CCITTFAX3</font></td>
+
+<td nowrap><font face="Times">3</font></td>
+
+<td><font face="Times">1 bps images only</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_CCITTFAX4</font></td>
+
+<td nowrap><font face="Times">4</font></td>
+
+<td><font face="Times">1 bps images only</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_LZW</font></td>
+
+<td nowrap><font face="Times">5</font></td>
+
+<td></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_JPEG</font></td>
+
+<td nowrap><font face="Times">6</font></td>
+
+<td></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_NEXT</font></td>
+
+<td nowrap><font face="Times">32766</font></td>
+
+<td><font face="Times">Input only</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_PACKBITS</font></td>
+
+<td nowrap><font face="Times">32773</font></td>
+
+<td></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_OLDJPEG</font></td>
+
+<td nowrap><font face="Times">32865</font></td>
+
+<td><font face="Times">Input only</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that not all compression types can be used for all images: NX_TIFF_COMPRESSION_NEXT can be used only to retrieve image data.&nbsp; Because future releases of NEXTSTEP may include other compression types, always use this method to get the available compression types--for example, when you implement a user interface for selecting compression types.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>localizedNameForTIFFCompressionType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>canBeCompressedUsing:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-isUnpackedImageDataAcceptable%5D"></a><font face="Helvetica"><b>isUnpackedImageDataAcceptable</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)</font><font face="Helvetica"><b>isUnpackedImageDataAcceptable</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXBitmapImageRep class can accept unpacked image data.&nbsp; You can&nbsp; set the value returned by this method through the <b>setUnpackedImageDataAcceptable:</b> class method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setUnpackedImageDataAcceptable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-localizedNameForTIFFCompressionType:%5D"></a><font face="Helvetica"><b>localizedNameForTIFFCompressionType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char *)<b>localizedNameForTIFFCompressionType:</b>(int)<i>compression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a string containing the localized name for the compression type represented by <i>compression</i>; returns NULL if <i>compression</i> is unrecognized.&nbsp; Compression types are listed in the <b>getTIFFCompressionTypes:count:</b> class method description.&nbsp; When implementing a user interface for selecting TIFF compression types, use the <b>getTIFF...</b> method to get the list of supported compression types, then use this method to get the localized names for each compression type.</font>
+
+<p><font face="Times">The returned string belongs to the NXBitmapImageRep class; don't attempt to alter or free it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>getTIFFCompressionTypes:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromFile:%5D"></a><font face="Helvetica"><b>newListFromFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates one new NXBitmapImageRep instance for each TIFF image specified in the <i>filename</i> file, and returns a List object containing all the objects created.&nbsp; If no NXBitmapImageReps can be created (for example, if <i>filename</i> doesn't exist or doesn't contain TIFF data), <b>nil</b> is returned.&nbsp; The List should be freed when it's no longer needed.</font>
+
+<p><font face="Times">Each new NXBitmapImageRep is initialized by the <b>initFromFile:</b> method, which reads information about the image from <i>filename</i>, but not the image data.&nbsp; The data will be read when it's needed to render the image.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromFile:zone:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromFile:zone:%5D"></a><font face="Helvetica"><b>newListFromFile:zone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromFile:</b>(const char *)<i>filename</i> <b>zone:</b>(NXZone *)<i>aZone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a List of new NXBitmapImageRep instances, just as <b>newListFromFile:</b> does, except that the List object and the NXBitmapImageReps are allocated from memory located in <i>aZone</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromSection:%5D"></a><font face="Helvetica"><b>newListFromSection:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromSection:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates one new NXBitmapImageRep instance for each TIFF image specified in the <i>name</i> section of the _ _TIFF segment in the executable file or in the <i>name</i> file in the application bundle, and returns a List object containing all the objects created.&nbsp; If not even one NXBitmapImageRep can be created (for example, if the <i>name</i> section doesn't exist or doesn't contain TIFF data), <b>nil</b> is returned.&nbsp; The List should be freed when it's no longer needed.</font>
+
+<p><font face="Times">Each new NXBitmapImageRep is initialized by the <b>initFromSection:</b> method, which reads information about the image from the section, but doesn't read image data.&nbsp; The data will be read when it's needed to render the image.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromSection:zone:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromSection:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromSection:zone:%5D"></a><font face="Helvetica"><b>newListFromSection:zone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromSection:</b>(const char *)<i>name</i> <b>zone:</b>(NXZone *)<i>aZone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a List of new NXBitmapImageRep instances, just as <b>newListFromSection:</b> does, except that the List object and the NXBitmapImageReps are allocated from memory located in <i>aZone</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromSection:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromSection:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromStream:%5D"></a><font face="Helvetica"><b>newListFromStream:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromStream:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates one new NXBitmapImageRep instance for each TIFF image that can be read from <i>stream</i>, and returns a List object containing all the objects created.&nbsp; If not even one NXBitmapImageRep can be created (for example, if the <i>stream</i> doesn't contain TIFF data), <b>nil</b> is returned.&nbsp; The List should be freed when it's no longer needed.</font>
+
+<p><font face="Times">The data is read and each new object initialized by the <b>initFromStream:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromStream:zone:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromStream:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-newListFromStream:zone:%5D"></a><font face="Helvetica"><b>newListFromStream:zone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">+ (List</font></td>
+
+<td><font face="Times">*)<b>newListFromStream:</b>(NXStream *)<i>stream</i> <b>zone:</b>(NXZone *)<i>aZone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a List of new NXBitmapImageRep instances, just as <b>newListFromStream:</b> does, except that the NXBitmapImageReps and the List object are allocated from memory located in <i>aZone</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromStream:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromStream:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-setUnpackedImageDataAcceptable:%5D"></a><font face="Helvetica"><b>setUnpackedImageDataAcceptable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>setUnpackedImageDataAcceptable:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the receiver to accept unpacked image data.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>isUnpackedImageDataAcceptable</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-sizeImage:%5D"></a><font face="Helvetica"><b>sizeImage:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>sizeImage:</b>(const NXRect *)<i>rect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of bytes that would be required to hold bitmap data for the rendered image bounded by the <i>rect</i> rectangle. The rectangle is located in the current window and is specified in the current coordinate system.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>sizeImage:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:</b></font><br>
+<font face="Times"><b>hasAlpha:isPlanar:colorSpace:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initData:fromRect:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-sizeImage:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:% 9%5D"></a><font face="Helvetica"><b>sizeImage:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>hasAlpha:isPlanar:colorSpace:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>sizeImage:</b>(const NXRect *)<i>rect</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>pixelsWide:</b>(int *)<i>width</i></font><br>
+<font face="Times"><b>pixelsHigh:</b>(int *)<i>height</i></font><br>
+<font face="Times"><b>bitsPerSample:</b>(int *)<i>bps</i></font><br>
+<font face="Times"><b>samplesPerPixel:</b>(int *)<i>spp</i></font><br>
+<font face="Times"><b>hasAlpha:</b>(BOOL *)<i>alpha</i></font><br>
+<font face="Times"><b>isPlanar:</b>(BOOL *)<i>config</i></font><br>
+<font face="Times"><b>colorSpace:</b>(NXColorSpace *)<i>space</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of bytes that would be required to hold bitmap data for the rendered image bounded by the <i>rect</i> rectangle. The rectangle is located in the current window and is specified in the current coordinate system.</font>
+
+<p><font face="Times">Every argument but <i>rect</i> is a pointer to a variable where the method will write information about the image.&nbsp; For an explanation of the information provided, see the description of the <b>initDataPlanes:...</b> method</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initDataPlanes:pixelsWide:pixelsHigh:bitsPerSample:</b></font><br>
+<font face="Times"><b>samplesPerPixel:hasAlpha:isPlanar:colorSpace:bytesPerRow:bitsPerPixel:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-bitsPerPixel%5D"></a><font face="Helvetica"><b>bitsPerPixel</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>bitsPerPixel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of bits allocated for each pixel in each plane of data.&nbsp; This is normally equal to the number of bits per sample or, if the data is in meshed configuration, the number of bits per sample times the number of samples per pixel.&nbsp; It can be explicitly set to another value (in the <b>initData:...</b> or <b>initDataPlanes:...</b> method) in case extra memory is allocated for each pixel. This may be the case, for example, if pixel data is aligned on byte boundaries.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-bytesPerPlane%5D"></a><font face="Helvetica"><b>bytesPerPlane</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>bytesPerPlane</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of bytes in each plane or channel of data.&nbsp; This will be figured from the number of bytes per row and the height of the image.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bytesPerRow</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-bytesPerRow%5D"></a><font face="Helvetica"><b>bytesPerRow</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>bytesPerRow</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the minimum number of bytes required to specify a scan line (a single row of pixels spanning the width of the image) in each data plane.&nbsp; If not explicitly set to another value (in the <b>initData:...</b> or <b>initDataPlanes:...</b> method), this will be figured from the width of the image, the number of bits per sample, and, if the data is in a meshed configuration, the number of samples per pixel.&nbsp; It can be set to another value to indicate that each row of data is aligned on word or other boundaries.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-canBeCompressedUsing:%5D"></a><font face="Helvetica"><b>canBeCompressedUsing:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>canBeCompressedUsing:</b>(int)<i>compression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Tests whether the receiver can be compressed by <i>compression</i> type.&nbsp; Compression types are defined in <b>appkit/tiff.h</b>.&nbsp; This method returns YES if the receiver's data matches <i>compression</i>; for example, if <i>compression</i> is NX_TIFF_COMPRESSION_CCITTFAX3, then the data must be one bit-per-sample and one sample-per-pixel.&nbsp; It returns NO if the data doesn't match <i>compression</i> or if <i>compression</i> is unsupported.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>getTIFFCompressionTypes:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-colorSpace%5D"></a><font face="Helvetica"><b>colorSpace</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXColorSpace)<b>colorSpace</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns one of the following enumerated values, which indicate how bitmap data is to be interpreted:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_OneIsBlackColorSpace</font></td>
+
+<td><font face="Times">A gray scale between 1 (black) and 0 (white)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_OneIsWhiteColorSpace</font></td>
+
+<td><font face="Times">A gray scale between 0 (black) and 1 (white)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RGBColorSpace</font></td>
+
+<td><font face="Times">Red, green, and blue color values</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_CMYKColorSpace</font></td>
+
+<td><font face="Times">Cyan, magenta, yellow, and black color values</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numColors</b> (NXImageRep)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-copyFromZone:%5D"></a><font face="Helvetica"><b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyFromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new NXBitmapImageRep instance that's an exact copy of the receiver.&nbsp; The new object is allocated from <i>zone</i>.&nbsp; It will have its own copy of the bitmap data, also allocated from <i>zone</i>, unless the receiver merely references the data.&nbsp; In that case, both objects will reference the same data.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copy</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-data%5D"></a><font face="Helvetica"><b>data</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned char *)<b>data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the bitmap data.&nbsp; If the data is in planar configuration, this pointer will be to the first plane.&nbsp; To get separate pointers to each plane, use the <b>getDataPlanes:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getDataPlanes:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-draw%5D"></a><font face="Helvetica"><b>draw</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>draw</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Renders the image at (0.0, 0.0) in the current coordinate system on the current device using the appropriate PostScript imaging operator.&nbsp; This method returns YES if successful in producing the image, and NO if not.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawAt:</b> (NXImageRep),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawIn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-drawIn:%5D"></a><font face="Helvetica"><b>drawIn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>drawIn:</b>(const NXRect *)<i>rect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Renders the image so that it fits inside the rectangle referred to by <i>rect</i>.&nbsp; The current coordinate system is translated and scaled so the image will appear at the right location and fit within the rectangle.&nbsp; The <b>draw</b> method is then invoked to render the image. This method passes through the return value of the <b>draw</b> method, which indicates whether the image was successfully drawn.</font>
+
+<p><font face="Times">The coordinate system is not restored after it has been altered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>draw</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawAt:</b> (NXImageRep)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deallocates the NXBitmapImageRep.&nbsp; This method will not free any bitmap data that the object merely references--that is, raw data that was passed to it in a <b>initData:...</b> or <b>initDataPlanes:...</b> message.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-getCompression:andFactor:%5D"></a><font face="Helvetica"><b>getCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCompression:</b>(int *)<i>compression</i> <b>andFactor:</b>(float *)<i>factor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the receiver's compression type and compression factor.&nbsp; Use this method to get information on the compression type for the source image data.&nbsp; <i>compression</i> represents the compression type used on the data, and corresponds to one of the values returned by the class method <b>getTIFFCompressionTypes:count:</b>.&nbsp; <i>factor</i> is usually a value between 0.0 and 255.0, with 0.0 representing no compression.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>getTIFFCompressionTypes:count:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-getDataPlanes:%5D"></a><font face="Helvetica"><b>getDataPlanes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getDataPlanes:</b>(unsigned char **)<i>thePlanes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Provides bitmap data for the image separated into planes.&nbsp; <i>thePlanes</i> should be an array of five character pointers.&nbsp; If the bitmap data is in planar configuration, each pointer will be initialized to point to one of the data planes.&nbsp; If there are less than five planes, the remaining pointers will be set to NULL.&nbsp; If the bitmap data is in meshed configuration, only the first pointer will be initialized; the others will be NULL.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Color components in planar configuration are arranged in the expected order--for example, red before green before blue for RGB color.&nbsp; All color planes precede the coverage plane.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>data</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isPlanar</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Generates an error message.&nbsp; This method cannot be used to initialize an NXBitmapImageRep.&nbsp; Instead, use one of the <b>initFrom...</b> or <b>initData...</b> methods.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromSection:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromStream:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initDataPlanes:...</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initData:...</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initData:fromRect:%5D"></a><font face="Helvetica"><b>initData:fromRect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initData:</b>(unsigned char *)<i>data</i> <b>fromRect:</b>(const NXRect *)<i>rect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, with bitmap data read from a rendered image.&nbsp; The image that's read is located in the current window and is bounded by the <i>rect</i> rectangle as specified in the current coordinate system.</font>
+
+<p><font face="Times">This method uses PostScript imaging operators to read the image data into the <i>data</i> buffer; the object is then created from that data.&nbsp; The object is initialized with information about the image obtained from the Window Server.</font>
+
+<p><font face="Times">If <i>data</i> is NULL, the NXBitmapImageRep will allocate enough memory to hold bitmap data for the image.&nbsp; In this case, the buffer will belong to the object and will be freed when the object is freed.&nbsp; This is the most efficient way to allocate memory for the bitmap.</font>
+
+<p><font face="Times">If <i>data</i> is not NULL, you must make sure the buffer is large enough to hold the image bitmap.&nbsp; You can determine how large it needs to be by sending a <b>sizeImage:</b> message for the same rectangle.&nbsp; The NXBitmapImageRep will only reference the data in the buffer; the buffer won't be freed when the object is freed.</font>
+
+<p><font face="Times">If for any reason the new object can't be initialized, this method frees it and returns <b>nil</b>.&nbsp; Otherwise, it returns the initialized object (<b>self</b>).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>sizeImage:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initData:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:% 9%5D"></a><font face="Helvetica"><b>initData:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>hasAlpha:isPlanar:colorSpace:bytesPerRow:bitsPerPixel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initData:</b>(unsigned char *)<i>data</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>pixelsWide:</b>(int)<i>width</i></font><br>
+<font face="Times"><b>pixelsHigh:</b>(int)<i>height</i></font><br>
+<font face="Times"><b>bitsPerSample:</b>(int)<i>bps</i></font><br>
+<font face="Times"><b>samplesPerPixel:</b>(int)<i>spp</i></font><br>
+<font face="Times"><b>hasAlpha:</b>(BOOL)<i>alpha</i></font><br>
+<font face="Times"><b>isPlanar:</b>(BOOL)<i>config</i></font><br>
+<font face="Times"><b>colorSpace:</b>(NXColorSpace)<i>space</i></font><br>
+<font face="Times"><b>bytesPerRow:</b>(int)<i>rowBytes</i></font><br>
+<font face="Times"><b>bitsPerPixel:</b>(int)<i>pixelBits</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, so that it can render the image specified in <i>data</i> and described by the other arguments.&nbsp; If the object can't be initialized, this method frees it and returns <b>nil</b>.&nbsp; Otherwise, it returns the object (<b>self</b>).</font>
+
+<p><font face="Times"><i>data</i> points to a buffer containing raw bitmap data.&nbsp; If the data is in planar configuration (<i>config</i> is YES), all the planes must follow each other in the same buffer.&nbsp; The <b>initDataPlanes:...</b> method can be used instead of this one if there are separate buffers for each plane.</font>
+
+<p><font face="Times">If <i>data</i> is NULL, this method allocates a data buffer large enough to hold the image described by the other arguments.&nbsp; You can then obtain a pointer to this buffer (with the <b>data</b> or <b>getDataPlanes:</b> method) and fill in the image data.&nbsp; In this case the buffer will belong to the object and will be freed when it's freed.</font>
+
+<p><font face="Times">If <i>data</i> is not NULL, the object will only reference the image data; it won't copy it.&nbsp; The buffer won't be freed when the object is freed.</font>
+
+<p><font face="Times">All the other arguments to this method are the same as those to <b>initDataPlanes:...</b>.&nbsp; See that method for descriptions.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initDataPlanes:pixelsWide:pixelsHigh:bitsPerSample:</b></font><br>
+<font face="Times"><b>samplesPerPixel:hasAlpha:isPlanar:colorSpace:bytesPerRow:bitsPerPixel:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initDataPlanes:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:% 9%5D"></a><font face="Helvetica"><b>initDataPlanes:pixelsWide:pixelsHigh:bitsPerSample:samplesPerPixel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>hasAlpha:isPlanar:colorSpace:bytesPerRow:bitsPerPixel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initDataPlanes:</b>(unsigned char **)<i>planes</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>pixelsWide:</b>(int)<i>width</i></font><br>
+<font face="Times"><b>pixelsHigh:</b>(int)<i>height</i></font><br>
+<font face="Times"><b>bitsPerSample:</b>(int)<i>bps</i></font><br>
+<font face="Times"><b>samplesPerPixel:</b>(int)<i>spp</i></font><br>
+<font face="Times"><b>hasAlpha:</b>(BOOL)<i>alpha</i></font><br>
+<font face="Times"><b>isPlanar:</b>(BOOL)<i>config</i></font><br>
+<font face="Times"><b>colorSpace:</b>(NXColorSpace)<i>space</i></font><br>
+<font face="Times"><b>bytesPerRow:</b>(int)<i>rowBytes</i></font><br>
+<font face="Times"><b>bitsPerPixel:</b>(int)<i>pixelBits</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, so that it can render the image specified in <i>planes</i> and described by the other arguments.&nbsp; If the object can't be initialized, this method frees it and returns <b>nil</b>.&nbsp; Otherwise, it returns the object (<b>self</b>).</font>
+
+<p><font face="Times"><i>planes</i> is an array of character pointers, each of which points to a buffer containing raw image data.&nbsp; If the data is in planar configuration, each buffer holds one component--one plane--of the data.&nbsp; Color planes are arranged in the standard order--for example, red before green before blue for RGB color.&nbsp; All color planes precede the coverage plane.</font>
+
+<p><font face="Times">If the data is in meshed configuration (<i>config</i> is NO), only the first buffer is read.&nbsp; The <b>initData:...</b> method can be used instead of this one for data in meshed configuration.</font>
+
+<p><font face="Times">If <i>planes</i> is NULL or if it's an array of NULL pointers, this method allocates enough memory to hold the image described by the other arguments.&nbsp; You can then obtain pointers to this memory (with the <b>getDataPlanes:</b> or <b>data</b> method) and fill in the image data.&nbsp; In this case, the allocated memory will belong to the object and will be freed when it's freed.</font>
+
+<p><font face="Times">If <i>planes</i> is not NULL and the array contains at least one data pointer, the object will only reference the image data; it won't copy it.&nbsp; The buffers won't be freed when the object is freed.</font>
+
+<p><font face="Times">Each of the other arguments (besides <i>planes</i>) informs the NXBitmapImageRep object about the image.&nbsp; They're explained below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>width</i> and <i>height</i> specify the size of the image in pixels.&nbsp; The size in each direction must be greater than 0.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>bps</i> (bits per sample) is the number of bits used to specify one pixel in a single component of the data.&nbsp; All components are assumed to&nbsp; have the same bits per sample.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>spp</i> (samples per pixel) is the number of data components.&nbsp; It includes both color components and the coverage component (alpha), if present.&nbsp; Meaningful values range from 1 through 5.&nbsp; An image with cyan, magenta, yellow, and black (CMYK) color components plus a coverage component would have an <i>spp</i> of 5; a gray-scale image that lacks a coverage component would have an <i>spp</i> of 1.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>alpha</i> should be YES if one of the components counted in the number of samples per pixel (<i>spp</i>) is a coverage component, and NO if there is no coverage component.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>config</i> should be YES if the data components are laid out in a series of separate &quot;planes&quot; or channels (&quot;planar configuration&quot;), and NO if component values are interwoven in a single channel (&quot;meshed configuration&quot;).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">For example, in meshed configuration, the red, green, blue, and coverage values for the first pixel of an image would precede the red, green, blue, and coverage values for the second pixel, and so on.&nbsp; In planar configuration, red values for all the pixels in the image would precede all green values, which would precede all blue values, which would precede all coverage values.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>space</i> indicates how data values are to be interpreted.&nbsp; It should be one of the following enumerated values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_OneIsBlackColorSpace</font></td>
+
+<td><font face="Times">A gray scale between 1 (black) and 0 (white)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_OneIsWhiteColorSpace</font></td>
+
+<td><font face="Times">A gray scale between 0 (black) and 1 (white)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_RGBColorSpace</font></td>
+
+<td><font face="Times">Red, green, and blue color values</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_CMYKColorSpace</font></td>
+
+<td><font face="Times">Cyan, magenta, yellow, and black color values</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>rowBytes</i> is the number of bytes that are allocated for each scan line in each plane of data.&nbsp; A scan line is a single row of pixels spanning the width of the image.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Normally, <i>rowBytes</i> can be figured from the <i>width</i> of the image, the number of bits per pixel in each sample (<i>bps</i>), and, if the data is in a meshed configuration, the number of samples per pixel (<i>spp</i>).&nbsp; However, if the data for each row is aligned on word or other boundaries, it may have been necessary to allocate more memory for each row than there is data to fill it. <i>rowBytes</i> lets the object know whether that's the case.&nbsp; If <i>rowBytes</i> is 0, the NXBitmapImageRep assumes that there's no empty space at the end of a row.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>pixelBits</i> informs the NXBitmapImageRep how many bits are actually allocated per pixel in each plane of data.&nbsp; If the data is in planar configuration, this normally equals <i>bps</i> (bits per sample).&nbsp; If the data is in meshed configuration, it normally equals <i>bps</i> times <i>spp</i> (samples per pixel).&nbsp; However, it's possible for a pixel specification to be followed by some meaningless bits (empty space), as may happen, for example, if pixel data is aligned on byte boundaries.&nbsp; Currently, an NXBitmapImageRep cannot render an image if this is the case.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">If <i>pixelBits</i> is 0, the object will interpret the number of bits per pixel to be the expected value, without any meaningless bits.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method is the designated initializer for NXBitmapImageReps that handle raw image data.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initData:pixelsWide:pixelsHigh:...</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initFromFile:%5D"></a><font face="Helvetica"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, with the TIFF image found in the&nbsp; <i>filename</i> file.&nbsp; This method reads some information about the image from <i>filename</i>, but not the image itself.&nbsp; Image data will be read when it's needed to render the image.</font>
+
+<p><font face="Times">If the new object can't be initialized for any reason (for example, <i>filename</i> doesn't exist or doesn't contain TIFF data), this method frees it and returns <b>nil</b>.&nbsp; Otherwise, it returns <b>self</b>.</font>
+
+<p><font face="Times">This method is the designated initializer for NXBitmapImageReps that read image data from a file.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromSection:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initFromSection:%5D"></a><font face="Helvetica"><b>initFromSection:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromSection:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, with the TIFF image found in the&nbsp; <i>name</i> section in the _ _TIFF segment of the application executable or the <i>name</i> file in the application bundle.&nbsp; This method reads some information about the image from the section, but not the image itself.&nbsp; Image data is read only when it's needed to render the image.</font>
+
+<p><font face="Times">If the new object can't be initialized for any reason (for example, the <i>name</i> section doesn't exist or doesn't contain TIFF data), this method frees it and returns <b>nil</b>.&nbsp; Otherwise, it returns <b>self</b>.</font>
+
+<p><font face="Times">This method is the designated initializer for NXBitmapImageReps that read image data from the application's executable file or bundle.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromSection:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-initFromStream:%5D"></a><font face="Helvetica"><b>initFromStream:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromStream:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NXBitmapImageRep object, with the TIFF image read from <i>stream</i>.&nbsp; If the new object can't be initialized for any reason (for example, <i>stream</i> doesn't contain TIFF data), this method frees it and returns <b>nil</b>. Otherwise, it returns <b>self</b>.</font>
+
+<p><font face="Times">This method is the designated initializer for NXBitmapImageReps that read image data from a stream.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newListFromStream:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-isPlanar%5D"></a><font face="Helvetica"><b>isPlanar</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isPlanar</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if image data is segregated into a separate plane for each color and coverage component (planar configuration), and NO if the data is integrated into a single plane (meshed configuration).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>samplesPerPixel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-numPlanes%5D"></a><font face="Helvetica"><b>numPlanes</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>numPlanes</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of separate planes that image data is organized into.&nbsp; This will be the number of samples per pixel if the data has a separate plane for each component (<b>isPlanar</b> returns YES) and 1 if the data is meshed (<b>isPlanar</b> returns NO).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isPlanar</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>samplesPerPixel</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hasAlpha</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numColors</b> (NXImageRep)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-read:%5D"></a><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the NXBitmapImageRep from the typed stream <i>stream</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-samplesPerPixel%5D"></a><font face="Helvetica"><b>samplesPerPixel</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>samplesPerPixel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of components in the data.&nbsp; It includes both color components and the coverage component, if present.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hasAlpha</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numColors</b> (NXImageRep)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-setCompression:andFactor:%5D"></a><font face="Helvetica"><b>setCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setCompression:</b>(int)<i>compression</i> <b>andFactor:</b>(float)<i>factor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's compression type and compression factor.&nbsp; <i>compression</i> is one of the supported compression types listed in the <b>getTiffCompressionTypes:count:</b> class method description.&nbsp; <i>factor</i> is a compression factor, usually between 0.0 (no compression) and 255.0 (maximum compression).</font>
+
+<p><font face="Times">When an NXBitmapImageRep is created, the instance stores the compression type and factor for the source data.&nbsp; When the data is subsequently saved, <b>writeTIFF:</b> tries to use the stored compression type and factor.&nbsp; Use this method to change the compression type and factor.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>getTiffCompressionTypes:count:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-write:%5D"></a><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the NXBitmapImageRep to the typed stream <i>stream</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-writeTIFF:%5D"></a><font face="Helvetica"><b>writeTIFF:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeTIFF:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes a TIFF representation of the image to <i>stream</i>.&nbsp; This method invokes <b>writeTIFF:usingCompression:andFactor:</b> using the stored compression type and factor retrieved from the initial image data or changed using <b>setCompression:andFactor:</b>.&nbsp; If the stored compression type isn't supported for writing TIFF data (for example, NX_TIFF_COMPRESSION_NEXT), the stored compression is changed to NX_TIFF_COMPRESSION_NONE and the compression factor to 0.0 before invoking <b>writeTIFF:usingCompression:andFactor:</b></font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCompression:andFactor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCompression:andFactor:</b>,&nbsp; <b>writeTIFF:usingCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-writeTIFF:usingCompression:%5D"></a><font face="Helvetica"><b>writeTIFF:usingCompression:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeTIFF:</b>(NXStream *)<i>stream</i> <b>usingCompression:</b>(int)<i>compression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes a TIFF representation of the image to <i>stream</i>, compressing the data according to the <i>compression</i> scheme.&nbsp; If <i>compression</i> is NX_TIFF_COMPRESSION_JPEG, the default compression factor is used.&nbsp; This and the other <i>compression </i>constants are listed under the next method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeTIFF:usingCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBitmapImageRep-writeTIFF:usingCompression:andFactor:%5D"></a><font face="Helvetica"><b>writeTIFF:usingCompression:andFactor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeTIFF:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>usingCompression:</b>(int)<i>compression</i></font><br>
+<font face="Times"><b>andFactor:</b>(float)<i>factor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes a TIFF representation of the image to <i>stream</i>.&nbsp; If the stream isn't currently positioned at location 0, this method assumes that it contains another TIFF image.&nbsp; It will try to append the TIFF representation it writes to that image.&nbsp; To do this, it must read the header of the image already in the stream.&nbsp; Therefore, the stream must be opened with NX_READWRITE permission.</font>
+
+<p><font face="Times">The second argument, <i>compression</i>, indicates the compression scheme to use.&nbsp; It should be one of the following constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_NONE</font></td>
+
+<td><font face="Times">No compression</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_LZW</font></td>
+
+<td><font face="Times">LZW compression</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_PACKBITS</font></td>
+
+<td><font face="Times">PackBits compression</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_JPEG</font></td>
+
+<td><font face="Times">JPEG compression</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_CCITTFAX3</font></td>
+
+<td><font face="Times">CCITT Level 3 fax (1 bps data only)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_TIFF_COMPRESSION_CCITTFAX4</font></td>
+
+<td><font face="Times">CCITT Level 4 fax (1 bps data only)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The third argument, <i>factor</i>, is used in the JPEG scheme to determine the degree of compression.&nbsp; If <i>factor</i> is 0.0, the default compression factor of 10.0 will be used.&nbsp; Otherwise, <i>factor</i> should fall within the range 1.0</font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">255.0, with higher values yielding greater compression but also greater information loss.</font>
+
+<p><font face="Times">The compression schemes are discussed briefly in the class description, above.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

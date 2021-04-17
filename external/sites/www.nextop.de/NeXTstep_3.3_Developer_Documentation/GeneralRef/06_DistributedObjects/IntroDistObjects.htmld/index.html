@@ -1,0 +1,624 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/06_DistributedObjects/IntroDistObjects.rtf -->
+<!-- Date: Sun Jun 28 20:05:23 1998 -->
+<head>
+<title>IntroDistObjects</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>6</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Distributed Objects</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Library:</b></font></td>
+
+<td><font face="Times">libsys_s.a</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Header File Directory:</b></font></td>
+
+<td><font face="Times">/NextDeveloper/Headers/remote</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Introduction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Distributed Objects system provides a relatively simple way for applications to communicate with one another by allowing them to share Objective C objects, even amongst applications running on different machines across a network.&nbsp; They are useful for implementing client-server and cooperative applications.&nbsp; The Distributed Objects system subsumes the network aspects of typical remote procedure call (RPC) programming, and allow an application to send messages to remote objects using ordinary Objective C syntax.</font>
+
+<p><font face="Times">The Distributed Objects system takes the form of two classes, NXConnection and NXProxy.&nbsp; NXConnection objects are primarily bookkeepers that manage resources passed between applications.&nbsp; NXProxy objects are local objects that represent remote objects.&nbsp; When a remote object is passed to your application, it is passed in the form of a proxy that stands in for the remote object; messages to the proxy are forwarded to the remote object, so for most intents and purposes the proxy can be treated as though it were the object itself.&nbsp; Note that direct access to instance variables of the remote object isn't available through the proxy.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Terminology</b></font>
+
+<p><font face="Times">In this document, the terms &quot;server&quot; and &quot;client&quot; are used loosely.&nbsp; Whenever an object in an application is returned to a remote application, the object effectively becomes a server, capable of responding to remote messages.&nbsp; For this document, &quot;client&quot; refers to the object originating a remote message, and &quot;server&quot; refers the remote object responding to the message.&nbsp; For example, if a database server sends a remote message to a database client, from the perspective of the Distributed Objects system the database server is the client of the message.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Making an Object Available</b></font>
+
+<p><font face="Times">The Distributed Objects system allows an application to send a message to an object that exists in another application.&nbsp; The message may include most data types (including objects) as arguments, and it may return most data types, again including objects.&nbsp; Clearly, no messages can be sent to a remote application until the local application has gotten a proxy to some object in the remote application.&nbsp; Therefore, in order to bootstrap the communication process, one or more objects must be made available by name using the Network Name Server.&nbsp; Such an object is known as a <i>root object</i>, and is available to any application that knows the registered name of the object.&nbsp; While it is possible to have multiple objects available by name, it is also common to have just one, and to get additional proxies to remote objects in response to messages (to both the root object and objects returned by the root object).</font>
+
+<p><font face="Times">Here is a simple example that shows how to make an instance of the MyServer class available to other applications:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myServer = [[MyServer alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id myConnection = [NXConnection registerRoot: myServer</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">withName:&#34;exampleServer&#34;];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myConnection run];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first line creates <b>myServer</b>, the object that is to be made available to other applications.&nbsp; The next line registers <b>myServer </b>as a root object, available to any application that asks for the object named &quot;exampleServer&quot;.&nbsp; This method returns an NXConnection object that will dispatch messages sent from remote objects and track resources (such as objects) vended to connecting applications.&nbsp; The last line tells the connection object to begin its process of waiting for messages and dispatching them to the proper receivers.&nbsp; The <b>run</b> method shown doesn't return, but there are variations that run the connection concurrently in another thread or pseudo-concurrently from the DPS client routines that dispatch events.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Establishing a Connection</b></font>
+
+<p><font face="Times">In the example above, an instance of MyServer is made available under the name &quot;exampleServer&quot;.&nbsp; Another application can get a proxy to the object like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id server = [NXConnection connectToName:&#34;exampleServer&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When this message is sent, a connection to the application that registered the MyServer object is established.&nbsp; The returned object, <b>server</b>, is a proxy to the remote MyServer object.&nbsp; Because <b>server</b> forwards messages across the connection to the MyServer object, it can generally be treated as though it were that object.</font>
+
+<p><font face="Times">Connections may also be formed automatically when proxies are passed between applications.&nbsp; For example, imagine that two client objects (call them client A and client B) have connected to a server object.&nbsp; If client B sends its <b>id</b> to the server, the server gets a proxy to client B.&nbsp; If client A then asks the server to return client B, the server does this by returning client B, which is actually its proxy.&nbsp; However, client A doesn't receive a proxy to the server's proxy.&nbsp; Instead, a new connection is established between client A and client B, and client A receives its own direct proxy (over the new connection) to client B.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Sending Data Between Applications</b></font>
+
+<p><font face="Times">The Distributed Objects system can use most data types as message arguments or return values.&nbsp; Here are some examples:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server aSimpleMessage];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // no parameters</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useAnInteger: 12];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // simple scalars</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useAnIntByReference: &amp;i];&nbsp; // sending a pointer</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useAString:&#34;hello&#34;];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // sending a string</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useAnId: self];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // send an arbitrary local object</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useAnotherId: server];&nbsp;&nbsp;&nbsp;&nbsp; // send back the shared object!</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In both the <b>useAnIntByReference:</b> and <b>useAString:</b> methods, a pointer is automatically dereferenced on the client side, and the resulting data is sent to the server.&nbsp; On the server side, space for the data is allocated, and a pointer to the local data is received.&nbsp; The server's allocated copy of the data is local in scope and will be freed by the system when the server's method returns.</font>
+
+<p><font face="Times">In the <b>useAnId:</b> method, the server is passed an <b>id</b> to a local object, and the server receives a proxy to that object.&nbsp; In the <b>useAnotherId:</b> method, the server is passed the client's proxy to the server.&nbsp; The Distributed Objects system makes sure that the correct object is returned; in this case the server receives the local <b>id</b> for itself rather than a proxy.</font>
+
+<p><font face="Times">The Distributed Objects system allows callbacks in the midst of a method implementation.&nbsp; For example, the server can send a message back to the client in the midst of its <b>useAnId:</b> implementation.&nbsp; Such a callback doesn't deadlock, and can be useful, but its ramifications must be carefully considered.&nbsp; Methods in the client can be invoked by the server before the client's invocation of the <b>useAnId:</b> method returns.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Structures</b></font>
+
+<p><font face="Times">The Distributed Objects system can utilize structures for both message arguments and as return values, but there are some important limitations.&nbsp; The following example demonstrates that complex structures can be passed as arguments in remote messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char aChar;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int anInt;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int bitfield:3;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">enum { red, green, blue } color;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id anObject;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *aString;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int array[2];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} exampleStruct;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">exampleStruct e = {'a',9,5,green,nil,&#34;Hello&#34;,{42,17}};</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useStructByValue:e];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[server useStructByReference:&amp;e];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In general, a structure to be used as a parameter for a remote message can't contain pointers.&nbsp; Pointers are only valid in one address space, so the Distributed Objects system would have to reconstruct the pointer's data on the remote end.&nbsp; The system can't know how deep to recurse when dereferencing pointers, so it implements the simple case and doesn't dereference pointers to most types, with two exceptions.&nbsp; Structures can contain pointers to objects (<b>id</b>s) and pointers to character strings.&nbsp; At the time a remote message is sent, these pointers must point to valid data or they must be null pointers, since the system may need to send the pointer's data across the connection in order to yield a valid pointer on the remote side.</font>
+
+<p><font face="Times">Structures can be passed both by value and by reference.&nbsp; In the current implementation, however, structures can only be returned by reference.&nbsp; In other words, a remote method can't return a structure, but it can return a pointer to a structure.&nbsp; If a method returns a structure by reference, memory for the structure is allocated on the caller's side, and the caller is responsible for freeing this memory.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Pointers to Data</b></font>
+
+<p><font face="Times">The Distributed Objects system can send data by reference as well as by value.&nbsp; Pointers used in remote messages must point to valid data or be null, since they may need to be dereferenced.&nbsp; By default, when you send most data types by reference, the data is copied across the connection so the server can receive a valid local pointer.&nbsp; The data then may or may not be modified, and is copied back across the connection so the client gets any modifications to the data.&nbsp; Needless copying of data is not efficient, so the Distributed Objects system adds three new Objective C keywords --for use in formal protocol declarations only--to determine how data passed by reference should be copied.&nbsp; The keywords are <b>in</b>, <b>out</b>, and <b>inout</b>.&nbsp; <b>In</b> arguments are copied from the client to the server, but not copied back.&nbsp; <b>Out</b> arguments are not sent the server, but are copied back to the client, presumably because the server filled in a value.&nbsp; <b>Inout</b> arguments are copied in both directions.&nbsp; By default, <b>const</b> pointer arguments are treated as <b>in</b> parameters, and all other pointer arguments are treated as <b>inout</b>.&nbsp; Here are some example definitions showing directionality of arguments:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- sendAnInt: (in int *)p;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- receiveAnInt: (out int *)p;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- sendAndReceiveAnInt: (inout int *)p;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The system can't tell whether a pointer points to a single data item or to an array; it assumes all <b>char</b> pointers point to null-terminated strings and that all other pointers point to single data elements.&nbsp; If you have arrays that must be passed by reference, you might consider encapsulating the data in a custom object or using a subclass of NXData.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Memory Allocation</b></font>
+
+<p><font face="Times">When you send <b>in</b> or <b>inout</b> pointer parameters to the server, the system must allocate space for the data on the server side (so that it can supply a pointer valid in the server's address space).&nbsp; This memory is owned by the system and is local to the scope of the server's method; it is freed automatically when the server's method returns.</font>
+
+<p><font face="Times">The Distributed Objects system can allocate client memory for string and structure parameters.&nbsp; To return strings or structures in this manner, you must pass a pointer to a <b>char</b> pointer or a pointer to a structure, so that the system can allocate the memory and make the pointer point to it.&nbsp; If the system allocates memory to return data to the client, the client is responsible for freeing this memory.&nbsp; You must be careful about returning data in this manner, because you receive a pointer to an allocated copy of the data if you send the message to a remote object (through a proxy) but you receive a pointer to the data itself (as with ordinary Objective C) if you send the message to a local object.&nbsp; Here is an example that gets a string by sending a <b>char</b> pointer by reference, and then frees the string only if it sent the message to a remote object:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *cp;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject getString:&amp;cp];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">printf(&#34;The string is %s&#34;,cp);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ([anObject isProxy]) free(cp);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Distributed Objects system also allocates memory in the client's address space in order to return a pointer to a structure as a method return value.&nbsp; Again, the client is responsible for freeing this memory.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Types That Don't Work</b></font>
+
+<p><font face="Times">The Distributed Objects system can't send the following data types:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Unions--The Distributed Objects system can't distinguish how to correctly encode the data to send it to the server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">void *--This is a generic pointer, and the system can't correctly dereference it and encode the data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Pointers in structures, other than those of type <b>char *</b> and <b>id</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition, remote methods can't return data of type <b>double</b> or <b>struct</b> (though pointers to structures work).&nbsp; These limitations may be lifted in future implementations.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Sharing Objects</b></font>
+
+<p><font face="Times">The most important data type that the Distributed Objects system can use in messages, both as arguments and as return values, is <b>id</b>.&nbsp; Objects are usually passed around as proxies, which forward messages to their corresponding real objects and thus appear to be those objects.</font>
+
+<p><font face="Times">Proxies (instances of the NXProxy class) are created automatically when an object is returned to a remote application.&nbsp; To give a client access to a remote object, two proxies are created, one on the server side and one on the client side.&nbsp; The proxy on the server side is known as a local proxy because it tracks a local resource (an object in the proxy's application).&nbsp; A local proxy is used for reference counting by the server's NXConnection object, and to send incoming messages to its corresponding real object.&nbsp; Local proxies are generally hidden from view in the Distributed Objects implementation, and most of their functionings are uninteresting to application developers.&nbsp; More interesting to developers are remote proxies, the objects returned to the client that can generally be treated as though they were the remote objects themselves.&nbsp; These objects receive messages from the client directed to the real object and forward the messages across the connection.</font>
+
+<p><font face="Times">Consider the following code in which a client needs to access a server's list of Widget objects:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *aList;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Widget *aWidget;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aList = [server widgetList];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aWidget = [aList objectAt:0];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the third line, the server returns its list of widgets to the client.&nbsp; The List object exists in the server application, and the client gets a proxy to that List object, which is assigned to <b>aList</b>.&nbsp; In the fourth line, the client sends a message to <b>aList</b>, and the message is forwarded by the proxy to the actual List object in the server.&nbsp; The List implementation in the server returns the first Widget object in the list.&nbsp; Again, the Widget object is local to the server, so the client receives a proxy to the Widget.</font>
+
+<p><font face="Times">The example above demonstrates that it is very easy to have proxies created.&nbsp; This is an important feature of the Distributed Objects system, but it has performance ramifications that must be considered.&nbsp; Consider the common case where a method in the server returns <b>self</b>.&nbsp; The system assumes that you actually intend to return a usable object to the client, so it will return a proxy for the server to the client.&nbsp; If the client's connection doesn't already have a proxy to the server, one will be created.&nbsp; This may or may not be what you intend.&nbsp; It makes most sense to return some non-object type (like <b>int</b>) from methods that will be called remotely, unless the object is really intended to be used.&nbsp; (Returning objects isn't horribly expensive, however, and an object is represented by only one proxy on a given connection, even if it is returned many times.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reference Counting</b></font>
+
+<p><font face="Times">With the Distributed Objects system, it is possible for an object to be shared by several applications.&nbsp; Since an object may be in use by many applications, a reference counting scheme may be necessary to insure that an object in use doesn't go away simply because a single application is done with it and frees it.&nbsp; The NXReference protocol is declared to allow objects to implement reference counting.&nbsp; Both the NXConnection and NXProxy classes conform to this protocol in order to know to what extent references are being held.&nbsp; You may wish to make your shared objects conform to this protocol;&nbsp; NXConnection will check if your object conforms to the NXReference protocol before it gives away references to it.&nbsp; If your object conforms to the protocol, a reference is added to the object the first time the object is seen on a connection.&nbsp; Note that a reference is <i>not</i> added every time an object is vended, only the first time it is seen on each connection.&nbsp; This works well if the object arrives only once per client application.&nbsp; In other cases, you can add a reference to an object every additional time you receive it, and eliminate the reference (by sending it the free message) every time you are finished with the object.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Object Copies vs. Proxies</b></font>
+
+<p><font face="Times">While it is often desirable to share an object through the use of proxies, you may occasionally want to pass a copy of an object rather than a proxy.&nbsp; For example, if you have an object that doesn't change over time, it may be more efficient to pass the object by copy rather than as a proxy; messages to the local copy will require much less overhead than remote messages over a connection.&nbsp; As another example, if an object will be sent many messages before it changes, it may be most efficient to send a copy of the object and send the messages to the copy.&nbsp; This is because sending one large remote message is often more efficient than sending many small remote messages; the overhead of the messaging process is typically much higher than the cost of data transmission.</font>
+
+<p><font face="Times">A new keyword, <b>bycopy</b>, has been added to the Objective C language (for use in formal protocol declarations only) to indicate that an object passed as a method parameter ought to be copied rather than passed as a proxy.&nbsp; (The default, without the <b>bycopy </b>keyword, is to pass the object as a proxy.)</font>
+
+<p><font face="Times">In the following method declarations, the first method copies the widget across the connection; messages to the copy of the widget will be fast, but changes to the original object will not be reflected in the copy (and vice versa).&nbsp; In the second method, a proxy to widget is given out.&nbsp; The message overhead for remote messages is higher than for messages to a local object, but the widget is truly shared by the applications.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- useCopiedWidget: (bycopy in id) widget;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- useSharedWidget: widget;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To copy an object over a connection, the receiving application must have a copy of the object's class implementation.&nbsp; This is necessary because the object must be instantiated on the receiving side.&nbsp; Also, an object that is to be copied over a connection must conform to the NXTransport protocol; this protocol defines how an object encodes and decodes itself across a connection. The protocol is as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol NXTransport</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeUsing:(id &lt;NXEncoding&gt;)portal;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decodeUsing:(id &lt;NXDecoding&gt;)portal;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeRemotelyFor:(NXConnection *)connection</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">freeAfterEncoding:(BOOL *)flagp isBycopy:(BOOL)isBycopy;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When an object is to encode itself, it is sent an <b>encodeUsing:</b> message where the <i>portal</i> argument is an object that conforms to the NXEncoding protocol and thus knows how to encode various data types across a connection.&nbsp; To create the copy of the object on the receiving side, the object is allocated and a <b>decodeUsing:</b> message is sent to it.&nbsp; The newly allocated object is <i>not </i>initialized, so the <b>decodeUsing:</b> implementation generally should invoke the object's designated initializer method.&nbsp; You may occasionally want to substitute another object instead of using the instance that the Distributed Objects system allocated.&nbsp; If you return the substitute object instead of <b>self</b>, the substitute object will be used and the system will free the initially allocated memory.</font>
+
+<p><font face="Times">As an example of copying objects, consider the List class, which implements the NXTransport protocol to copy a List object across the connection.&nbsp; The objects in the list are not copied, so the list copy will contain proxies to the objects the real list contains.&nbsp; This behavior may be necessary, because the contents of the list might not conform to the NXTransport protocol and therefore might not be able to be copied.&nbsp; However, if you know the list will only contain objects that conform to the protocol, it may be reasonable to use a list that can be copied, together with its contents, across a connection.&nbsp; The following subclass of List demonstrates exactly this, and shows how a newly allocated object is initialized in the <b>decodeUsing:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@implementation FullCopyList</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeUsing:(id &lt;NXEncoding&gt;)portal {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int i, n = [self count];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[portal encodeData:&amp;n ofType:&#34;i&#34;];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (i = 0; i &lt; n; i++)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[portal encodeObjectBycopy:[self objectAt:i]];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decodeUsing:(id &lt;NXDecoding&gt;)portal {</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int i, n;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[portal decodeData:&amp;n ofType:&#34;i&#34;];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self initCount:n];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (i = 0; i &lt; n; i++)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self addObject:[portal decodeObject]];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Determining the Object to Encode</b></font>
+
+<p><font face="Times">When an object is to be vended to a remote application, the <b>encodeRemotelyFor:freeAfterEncoding:isBycopy:</b> method determines what object gets encoded.&nbsp; The default behavior of this method, inherited from the Object class, is to return a local proxy to the object; when the local proxy is encoded, it's received as a remote proxy to the object.&nbsp; However, if this method returns <b>self</b>, the NXTransport methods for the object are invoked to copy the object over the connection.&nbsp; The implementation of this method should generally test the value of the <b>isBycopy</b> parameter to determine what object to encode:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeRemotelyFor:(NXConnection *)connection</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">freeAfterEncoding:(BOOL *)flagp</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">isBycopy:(BOOL)isBycopy</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (isBycopy) return self;&nbsp;&nbsp;&nbsp; // encode the object, copying it</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">// otherwise, super's behavior is to encode a proxy</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super encodeRemotelyFor:connection</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">freeAfterEncoding:flagp</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">isBycopy:isBycopy];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Moving an Object Between Applications</b></font>
+
+<p><font face="Times">It is occasionally useful to move an object from one application to another, and the <b>encodeRemotelyFor:freeAfterEncoding:isBycopy:</b> method shown above allows you to do this by setting a flag indicating that the original object is to be freed after encoding and then specifying that the object is to be encoded by copying it across the connection.&nbsp; Note, however, that when you move an object you must be very careful that other applications do not have problems due to the original object getting freed.&nbsp; The following example demonstrates an object that will move every time a reference is given to a remote application.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- encodeRemotelyFor:(NXConnection *)connection</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">freeAfterEncoding:(BOOL *)flagp</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">isBycopy:(BOOL)isBycopy</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*flagp = YES;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Asynchronous Messages</b></font>
+
+<p><font face="Times">By default, remote messages are performed synchronously; execution of the client code doesn't continue until the method in the server returns and the Distributed Objects system sends a reply back to the client (containing the return value if there is one). However, a new keyword for method return values, <b>oneway</b>, has been added to the Objective C language to specify asynchronous messages.&nbsp; Like the other new keywords, <b>oneway</b> may only be used in a formal protocol declaration.&nbsp; When a client sends an asynchronous message to the server, the method returns to the client immediately.&nbsp; <b>Oneway</b> messages implicitly return <b>void</b> since the client doesn't wait for a return value from the server.&nbsp; If a method doesn't need to return data and the client doesn't need to stay synchronized to the server, there can be several advantages to <b>oneway</b>, asynchronous messages.&nbsp; Because the client continues processing rather than waiting for the server, overall throughput may increase.&nbsp; Less obviously, <b>oneway </b>messages can provide the client with a measure of control over when the client is willing to receive messages back from the server.&nbsp; The server may send a message (like a callback) back to the client anytime the client's connection is running or the client awaits a reply from the server.&nbsp; Occasionally it's unacceptable to receive a callback from the server in the middle of a method implementation (an example might be where the callback is used to clean up and free objects in the client); in such a case you can use <b>oneway</b> messages to help insure that the connection is not running and the client won't receive messages until it's ready to do so.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Robust Usage</b></font>
+
+<p><font face="Times">Although the Distributed Objects system greatly simplifies the sharing of objects, applications that communicate with other applications (distributed applications) are inherently more complex than stand-alone applications.&nbsp; Issues regarding application deaths, communication problems, security, exception handling, and resource allocation must be considered.&nbsp; This section discusses some of the considerations for writing robust distributed applications.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Application Deaths</b></font>
+
+<p><font face="Times">Distributed applications generally need to know when cooperating applications die.&nbsp; For example, a server application should know when a client application dies (due to an application crash, a system crash, a signal, or other reason) so it can deallocate resources held on the client's behalf, and also avoid sending messages to a client that no longer exists.&nbsp; The Mach operating system tracks all resources held by a process, including the Mach ports used by the Distributed Objects system to send remote messages.&nbsp; The operating system notifies the Distributed Objects system of port deaths when an application dies.&nbsp; The Distributed Objects system, in turn, allows any number of objects to register for notification of the invalidation of the NXConnection object that is used to communicate over its port.</font>
+
+<p><font face="Times">An object must do two things to be notified of the death of a cooperating application:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It must register for notification of invalidation of the connection to the application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It must conform to the NXSenderIsInvalid protocol and take appropriate action when the connection is invalidated.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the application has no Application object, it must spawn a separate thread to disburse port death notifications.&nbsp; This can be done as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[NXPort worryAboutPortInvalidation];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that in this case, <b>senderIsInvalid:</b> messages will be sent from the resultant separate thread, so the receiving object should be thread-safe.</font>
+
+<p><font face="Times">Typically, a new connection is created to vend the first object from one application to another.&nbsp; When your application gets an object in this manner, it should use the returned proxy to get the connection over which the object is accessed, and register for invalidation notification to know when the object becomes inaccessible.&nbsp; The following code gets the proxy for a remote server object and registers for notification of when the server goes away:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">server = [NXConnection connectToName:REGISTERED_NAME onHost:&#34;*&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (server)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXConnection * myConnection = [server connectionForProxy];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[myConnection registerForInvalidationNotification:self];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[myConnection setDelegate:self];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In this example, the client also registered itself as the connection's delegate.&nbsp; In this way, the client can be informed (using the <b>connection:didConnect:</b> delegate method) when new connections are automatically created that share <b>myConnection</b>'s input port.&nbsp; New, direct connections are formed when proxies are handed between applications.&nbsp; (This eliminates the inefficiency of sending a message over a connection to a proxy that would then forward the message over another connection to the real object.)&nbsp; When a new connection is formed in this manner, the client then has a dependency on the application from which it received the new object, so it should similarly register for invalidation notification on the new connection and it should set the delegate of the new connection appropriately.</font>
+
+<p><font face="Times">If an object registered for a connection's invalidation notification, it receives a <b>senderIsInvalid:</b> message from the NXConnection object when the connection is broken (when the connection receives a port death notification indicating an application death, typically).&nbsp; Proper behavior in response to such a notification is nontrivial.&nbsp; The application can examine the NXConnection's list of remote objects (by the <b>remoteObjects</b> method) to determine what objects, presumably in use by the application, are no longer accessible.&nbsp; There is no single solution to dealing with application deaths, but a robust architecture is generally one that enables associating a resource to a connection and allows the application to deal with the implications of a broken connection with a cooperating application.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Exceptions</b></font>
+
+<p><font face="Times">The Distributed Objects system returns exceptions that are raised by method implementations.&nbsp; In other words, if a client sends a message to an object in the server and the implementation in the server raises an exception (see <b>NX_RAISE</b>), the exception is forwarded to the client.&nbsp; Also, the Distributed Objects system can raise exceptions in response to communication problems. For this reason, messages to remote objects should generally be bracketed by <b>NX_DURING</b>...<b>NX_ENDHANDLER</b> constructs. Keep in mind that control isn't returned to a method that doesn't catch an exception that gets raised; for programs using the Application Kit, unhandled exceptions are caught by the Application object's <b>run</b> method, which simply continues the event loop.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Memory Leaks</b></font>
+
+<p><font face="Times">For local messages, returning a pointer to data involves no memory allocation.&nbsp; However, for remote messages, the system must allocate memory to return data, which increases the opportunity to &quot;leak&quot; memory (in other words, to have allocated memory that has no pointer references, is essentially forgotten and will never be freed).&nbsp; Your application architecture should avoid sending data that needs to be allocated on the client side, or should make it as apparent as possible when data is coming from a remote source.&nbsp; There may still be situations where it isn't immediately obvious whether the recipient of a message is a remote object or not; in this case, if you receive a pointer to data you should check whether the object was a proxy, and if so, take responsibility for freeing the data when you are done.&nbsp; See &quot;Memory Allocation&quot; earlier in this chapter for an example.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using Protocols for Efficiency</b></font>
+
+<p><font face="Times">A message sent to a remote object through a proxy may require two round-trip messages.&nbsp; The first round trip is a request to the real object for its <i>method signature</i>, which specifies the types the method requires as arguments.&nbsp; This enables the proxy to encode the data that it has been passed and forward it to the real object.&nbsp; Note that a method signature is not cached; without the use of protocols, it will need to be fetched for every message.&nbsp; The second message (also a round-trip, unless it's a <b>oneway </b>message) is used to send the actual message including its encoded arguments, and to return the result.</font>
+
+<p><font face="Times">You can eliminate the need for the first round-trip message by specifying to the proxy the protocol that the corresponding real object conforms to.&nbsp; It's generally known in advance what messages a client will send to a server; the protocol could be as small as a single message a client uses to query the server or as large as every message the server responds to.&nbsp; When a protocol is specified, the proxy knows the types of the arguments for every message you anticipate sending to the server, and the initial (and somewhat expensive) round-trip message is avoided.&nbsp; If the client sends a message to the server that isn't in the protocol, nothing untoward happens, but an additional round-trip to retrieve the method signature is required.&nbsp; Here is an example of setting the protocol that a client will use to send messages to a server object:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol serverMethods</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)addClient:(id &lt;clientMethods&gt;)remoteClient;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getRecordForName:(char *)name</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">server = [NXConnection connectToName:REGISTERED_NAME onHost:&#34;*&#34;];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (server)</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[server setProtocolForProxy:@protocol(serverMethods)];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Restricting Messages</b></font>
+
+<p><font face="Times">A key feature of proxies is that they forward any message, including arguments, to the real, remote object.&nbsp; If you return a server object to a remote client, the client can send any message that the server responds to.&nbsp; In fact, the proxy returned to the client will forward any message, whether the server responds to it or not.&nbsp; For security considerations, you might limit the implementation of an object that is to be given out to only methods that the object is willing to receive from remote clients.&nbsp; This is often not practical, however.</font>
+
+<p><font face="Times">An alternative is to group the methods that an object is willing to receive from remote clients into a protocol.&nbsp; You can then use an NXProtocolChecker object (from the Mach Kit) to enforce the protocol.&nbsp; The NXProtocolChecker object forwards all messages in its assigned protocol, but raises an exception for other messages.&nbsp; When an object returns itself as a result of a message forwarded through a protocol checker, the checker substitutes its own <b>id</b> for the real object to prevent the sender from receiving an <b>id</b> that can receive unchecked messages.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Security</b></font>
+
+<p><font face="Times">When you register an object with the Network Name Server, it is available to any application that knows the object's name. Because an application must know the object's name, a modicum of security is provided; however, if security is an issue you should not make sensitive objects (or objects capable of providing sensitive objects) available through the Network Name Server.&nbsp; One possible solution is to register only a security validation object with the Network Name Server.&nbsp; This object could require clients to identify themselves as known secure objects before vending sensitive objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Multithreaded Applications</b></font>
+
+<p><font face="Times">The Distributed Objects system is thread-safe.&nbsp; This means that with the proper precautions, the Distributed Objects system can be used to write a multithreaded server.&nbsp; Perhaps more important to application writers is that you can write a server that runs in the main application thread but responds to messages coming from clients running in different threads.&nbsp; This is useful because many parts of the system are not thread-safe and therefore cannot be invoked by clients outside the main thread, but non-thread-safe tasks can be performed on the client's behalf by a server in the main thread.&nbsp; See the discussion of C threads in <i>NEXTSTEP Operating System Software</i> for information about which parts of the system are thread-safe.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Relationship to Speaker/Listener</b></font>
+
+<p><font face="Times">The Speaker and Listener classes in the Application Kit provide a subset of the functionality of the Distributed Objects system. The Distributed Objects system provides a more flexible and dynamic way of communicating between applications.&nbsp; Speaker and Listener are still used by applications to communicate with the Workspace Manager, and will continue to be provided in the near future for backwards compatibility.&nbsp; Nevertheless, the Distributed Objects system is a superior system and should be regarded as a move towards obsoleting the Speaker and Listener classes.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

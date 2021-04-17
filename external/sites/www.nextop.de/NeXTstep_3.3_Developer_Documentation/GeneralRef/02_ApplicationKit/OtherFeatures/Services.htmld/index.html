@@ -1,0 +1,612 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/OtherFeatures/Services.rtf -->
+<!-- Date: Sun Jun 28 20:03:11 1998 -->
+<head>
+<title>Services</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Services</b></font>
+
+<p><font face="Times">The NEXTSTEP services facility allows an application to make use of the services of other applications without knowing in advance what those services might be.&nbsp; For example, a text editing application lets the system know that it's willing to provide plain ASCII text or rich text (RTF) on the pasteboard any time there is a selection.&nbsp; Any service-providing application is then able to receive that text and act upon it.&nbsp; A service-providing application could thus provide such services as spell checking, grammar checking, encryption, reformatting, language translation, conversion to speech, or any number of useful functions. Service-providing applications can also place data back on the pasteboard to be received by the main application.&nbsp; In this way, data can be seamlessly exchanged between applications, and any application can extend the functionality of many others.&nbsp; This document provides a basic overview of the process of providing and using services.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Providing a Service</b></font>
+
+<p><font face="Times">In order to provide a service, an application must make known the data types it's willing to act upon, the messages it must receive to initiate action, the menu item to be placed in applications that can provide or accept such data, and the Mach port on which it can receive the messages it published.</font>
+
+<p><font face="Times">As an example, consider a service to reverse text.&nbsp; This service will accept ASCII text on the pasteboard, reverse it, and place the reversed ASCII text back on the pasteboard.&nbsp; Since the Text class supplied with NEXTSTEP knows how place and receive text on the pasteboard, all NEXTSTEP applications will be able to take advantage of the text reversal service to check palindromes or for simple encryption.&nbsp; Since the text will be automatically replaced in a Text object, it will be as though this feature were built in to every application.</font>
+
+<p><font face="Times">First, you must declare the important aspects of the Reverser service in a text file looking something like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Message: reverseData</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Port: Reverser</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Send Type: NXAsciiPboardType</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Return Type: NXAsciiPboardType</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Menu Item: Reverse It</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This is known as a service specification.&nbsp; (More than these five fields may be listed.&nbsp; The complete specification is described later.)&nbsp; For this example, we will call this file <b>services.text</b>.&nbsp; The <b>Send Type</b> field indicates that this service requires that data of NXAsciiPboardType be placed on the pasteboard.&nbsp; NXAsciiPboardType is a data type consisting of simple ASCII text. NEXTSTEP defines data types for simple and rich text, file names, encapsulated PostScript, TIFF image data and others.&nbsp; A service is free to request any data types it likes, including proprietary formats, but the service will only be enabled if the main application can supply data of that type.&nbsp; The <b>Return Type</b> field indicates that the service will return ASCII data on the pasteboard after manipulating the data.&nbsp; A return type isn't necessary; the service could simply act on the data it receives without returning anything to the main application.&nbsp; However, since this service returns data, the main application will wait for the service to provide data before it continues processing.&nbsp; (If the service doesn't return data, the service is invoked asynchronously and the main application doesn't wait.)&nbsp; Both the <b>Send Type</b> and <b>Return Type</b> fields are optional.&nbsp; A service may just accept data, it may just provide data, or it may modify data to be pasted back into the main application.&nbsp; A service may also list multiple send or return types indicating that it can accept any one of several types or that it will return many types; to indicate this, the <b>Send Type</b> or <b>Return Type</b> lines can be duplicated.</font>
+
+<p><font face="Times">The <b>Menu Item</b> field indicates that a <b>Reverse It</b> command should be added to the Services menu of every application that can (at least under some circumstances) send and receive ASCII text.&nbsp; This command will be enabled any time a text field has a selection that can be reversed.&nbsp; If the user chooses the enabled <b>Reverse It</b> command, the selection will be placed on the pasteboard and the message indicated in the <b>Message</b> field will be send to the port indicated in the <b>Port</b> field.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>How a Service Is Advertised</b></font>
+
+<p><font face="Times">NEXTSTEP uses the Mach-O executable file format, which effectively provides a simple directory structure to executable files.&nbsp; An executable thus contains multiple segments (akin to directories) each with a number of sections containing binary code, images, text, and other data.&nbsp; At run time, the system will look into the executable files in <b>~/Apps</b> and <b>/LocalApps</b>.&nbsp; If an executable contains a <b>_ _services</b> section in its <b>_ _ICON</b> segment, the services listed in the section will be made available to the appropriate applications.&nbsp; The following line must be added to the <b>Makefile.preamble</b> file (included by NEXTSTEP's standard makefile) to include the above <b>services.text</b> file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">LDFLAGS = -sectcreate _ _ICON _ _services services.text</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>How to Implement a Service</b></font>
+
+<p><font face="Times">The message line in the <b>services.text</b> file indicates that the system will send a <b>reverseData</b> message to the service-providing application when the user clicks its menu item.&nbsp; Before sending such a message, the system will ask the main application to put the selected data on the pasteboard in the format required by the service.&nbsp; (The service's menu item will only be enabled when the main application has confirmed that it will be able to provide the data; more on this later.)&nbsp; The actual message sent to the service provider contains parameters identifying the pasteboard, supplying optional information about which service is actually to be performed (since a single method can be used to perform multiple services), and a pointer allowing the service to return an error message.&nbsp; Here is a possible implementation of the service to reverse text:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- reverseData: (id)pasteboard</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">userData:(const char *)userData</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">error:(char **)msg</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">const char *types[1];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *buffer, *revBuffer, *data;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int length, i=0, j;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[pasteboard types];&nbsp;&nbsp;&nbsp; // pretend to check the pasteboard types</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">// read the ASCII data from the pasteboard</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ([pasteboard readType:NXAsciiPboardType data:&amp;data</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">length:&amp;length])</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">buffer = malloc(length+1);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">revBuffer = malloc(length+1);</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">strncpy(buffer,data,length);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">buffer[length]='\0';</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">revBuffer[length]='\0';</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">// Reverse the text into revBuffer</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">j = length - 1;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">while (j &gt;=0) revBuffer[i++] = buffer[j--];</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">// Write the reversed buffer back to the pasteboard</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">types[0] = NXAsciiPboardType;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[pasteboard declareTypes: types num: 1 owner:nil];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[pasteboard writeType: NXAsciiPboardType data:revBuffer</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">length:length];</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">free(buffer);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">free(revBuffer);</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else *msg = &#34;Error: couldn't reverse text.&#34;;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Every application has a Listener object to receive Objective C messages from external applications.&nbsp; This Listener registers its Mach port with the network name server under the application's name (Reverser, in this case), and it's used to receive messages from the Workspace Manager to open files or to receive notification that the system will shut down.&nbsp; This same Listener can also be used to receive messages from applications requesting services.</font>
+
+<p><font face="Times">The Listener must be told which object within the application implements the methods that respond to service requests.&nbsp; This object is referred to as the <i>services delegate</i>.&nbsp; For example, to inform the application's Listener object that <i>theServiceObject</i> is the services delegate, you'd send these messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id theListener = [NXApp appListener];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[theListener setServicesDelegate:theServiceObject];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Thereafter, the Reverser application will receive the <b>reverseData:userData:error:</b> message any time the user requests that the selected text be reversed.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Fields in a Service Specification</b></font>
+
+<p><font face="Times">The following fields must be included in a service specification:</font>
+
+<p><font face="Times"><b>Message:</b> <i>&lt;name of message&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This field identifies the method that will be invoked in the Listener's service delegate.&nbsp; In the example above, the message field is <b>reverseData</b>, so the delegate must implement a <b>reverseData:userData:error:</b> method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Port:</b> <i>&lt;name of a port&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The name of a port of a Listener that is listening for service messages.&nbsp; Since every NEXTSTEP application has, by default, a Listener port registered under the application's name, the sevice specification generally uses this port name.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Menu Item:</b> <i>&lt;string appearing in other app's Services Menu&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The menu item for the service.&nbsp; This string will appear in the Services menus of applications that can take advantage of the service.&nbsp; If this string contains a '/' character, that character will be used as a delimiter to specify a second level in the Service menu hierarchy.&nbsp; For example, a menu item of <b>Encrypt/Replace</b> will create a submenu <b>Encrypt</b> in the Services menu, with a <b>Replace</b> menu item in that submenu.&nbsp; Only one level of hierarchy is supported.</font>
+
+<p><font face="Times">The menu item field must be untranslated.&nbsp; Translated menu items can be achieved by including menu item fields preceded by the appropriate language; for example <b>French Menu Item</b>.&nbsp; Alternatively, the supplied string can be used as a key into a &quot;.strings&quot; file (see <b>NXStringTable()</b>) called <b><i>Language</i>.lproj/ServicesMenu.strings</b> found in the same directory as the executable containing the <b>_ _services</b> section</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition, the following fields may be included in a service specification:</font>
+
+<p><font face="Times"><b>User Data:</b> <i>&lt;any arbitrary string&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>User Data</b> field is for the service provider's use and is simply passed along as one of the parameters to the <b>someMessage:userData:error:</b> message.&nbsp; This parameter may be useful if multiple services are performed by a single method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Send Type:</b> <i>&lt;any valid pasteboard type&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>Send Type</b> field specifies the type of data the requesting application is expected to provide in making the request.&nbsp; You may have more than one <b>Send Type</b> field (implying that your request can operate on more than one type of data), but the requesting application is required only to place one of those types into the Pasteboard.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Return Type:</b> <i>&lt;any valid pasteboard type&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">If the <b>Return Type</b> field is specified, then the requesting application will expect you to place some data of that type back into the pasteboard object which you are passed.&nbsp; You may specify any number of return types, but you must place ALL of those types in the pasteboard as part of your implementation of your method (though, of course, you may provide some of them lazily--see the Pasteboard documentation's description of the <b>provideData:</b> method).&nbsp; Under normal circumstances, the requestor will use the returned data to replace the selection, though the requestor isn't required to do so.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Executable:</b> <i>&lt;a full path to an executable file&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The process which actually services a request need not be a full-fledged application with a user-interface, an icon, and Mach-O segments.&nbsp; The <b>Executable</b> field lets you specify the path to the program which should be launched before looking up the port.&nbsp; Note that you must still provide a normal application with a user-interface in whose Mach-O you can put the request information (even if the service is always provided by a lightweight program).&nbsp; This full-fledged application should at the very least give a short description of the provided service(s) as well as any copyright or usage information when the user double-clicks on it from the Workspace.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Timeout:</b> <i>&lt;some number of milliseconds&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>Timeout</b> field is used to determine how long a request might take to process.&nbsp; The default is 30000 milliseconds. Increasing this time allows time consuming services to be performed before the system assumes there was an error and continues.&nbsp; Decreasing this time for speedy services allows errors to be reported more quickly.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Host:</b> <i>&lt;the name of a network host&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>Host</b> field lets you specify a specific host on which the service provider should be run.&nbsp; This is done either by requesting the launch of that application from the Workspace Manager running on that host or by using <b>rsh</b>(1) to start up the application on the remote host (if it isn't a full-fledged application).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Key Equivalent:</b> <i>&lt;any character&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>Key Equivalent</b> field may be used to specify the key equivalent for the menu item that invokes the service.&nbsp; Like the Menu Item field, it may be localized by preceding it with a language.&nbsp; For example, a service could have the following entries in its service specification:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Menu Item: Hello</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">French Menu Item: Bonjour</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Key Equivalent: H</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">French Key Equivalent: B</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Specifying Services Dynamically</b></font>
+
+<p><font face="Times">Many services are known in advance, so the services specification is included in a Mach-O section of the executable file. Some services, however, can't be known until run-time.&nbsp; For example, when data is added to a Librarian bookshelf, Librarian can provide a service to look up information within that data.</font>
+
+<p><font face="Times">To facilitate such dynamic services, you must create a text file with a &quot;.services&quot; extension.&nbsp; Alternatively, you may create a directory with a <b>.services</b> extension, and a text file called <b>services</b> inside it.&nbsp; The format of this text file is exactly the same as the services specification detailed earlier.&nbsp; This file or directory must be placed in your normal application path or one of <b>/NextLibrary/Services</b>, <b>/LocalLibrary/Services</b> or <b>~/Library/Services</b>.&nbsp; After adding the file, call the function <b>NXUpdateDynamicServices()</b> to get the system to recognize your newly-added services.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using Services</b></font>
+
+<p><font face="Times">In order to take advantage of services, an application must have a Services menu, and it must contain Responder objects that register the data types that they may be willing to export and import.&nbsp; If the application's interface is generated with Interface Builder, you can simply drag the Services menu item into the application's menu from an Interface Builder palette.&nbsp; If the application's menu is created programmatically, you can specify the menu item that is to be the Services menu with Application's <b>setServicesMenu:</b> method.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Registering Types</b></font>
+
+<p><font face="Times">Responder objects (including subclasses of View, Window, and Application) should, at the time they are created, register all the data types that they can import and export by using Application's <b>registerServicesMenuSendTypes:andReturnTypes: </b>method.&nbsp; The lists of types provided to this method need not be balanced; it's perfectly reasonable for a Responder to handle one export type and three import types, for example.&nbsp; Some of the standard pasteboard data types are listed in <b>appkit/Pasteboard.h</b>. A Responder doesn't necessarily have to import or export common data types, but more service providers will be able to act on the common data types than on less common types.</font>
+
+<p><font face="Times">The types supplied to <b>registerServicesMenuSendTypes:andReturnTypes:</b> are used to determine which service provider commands are listed in the Services menu.&nbsp; Any service provider that can receive a data type provided by the application or that can supply data to the application should be allowed to have an item in the Services menu, so Responders should provide a complete list of the data they use under any circumstance.&nbsp; The item for an individual service provider will be dynamically enabled any time the application can supply or use the data required or supplied by the service.</font>
+
+<p><font face="Times">The following code could be used to register an object that is, at least in some state, able to export ASCII or RTF text and/or import ASCII text:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">const char *sendTypes[3];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">const char *returnTypes[2];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sendTypes[0] = NXAsciiPboardType;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sendTypes[1] = NXRTFPboardType;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sendTypes[2] = NULL;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">returnTypes[0] = NXAsciiPboardType;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">returnTypes[1] = NULL;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[NXApp registerServicesMenuSendTypes:sendTypes</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">andReturnTypes:returnTypes];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Validating Services Dynamically</b></font>
+
+<p><font face="Times">A Responder (or delegate) that can use services must validate the data types that it can import and export at any given time.&nbsp; It does this by implementing the <b>validRequestorForSendType:andReturnType:</b> method.&nbsp; This method is invoked for each service that the application might be able to make use of, with arguments for the data types the service requires.&nbsp; If the Responder can, in its current state, use both the specified send and receive data types (or they are <b>nil</b>) it should return <b>self</b> to indicate that the corresponding service can be enabled.&nbsp; If the responder can't make use of either the send type or the receive type, it should forward the message to its superclass's implementation; the default implementation will then forward the message up the responder chain, looking for a responder that can take advantage of the service.</font>
+
+<p><font face="Times">The <b>validRequestorForSendType:andReturnType:</b> method may be invoked frequently, typically many times per event to ensure that the menu items for all service providers reflect the state of the application.&nbsp; A Responder's implementation of this method must be&nbsp; fast so that event handling remains snappy.&nbsp; The arguments to this method are NXAtoms, so you can compare the arguments to standard pasteboard types by comparing pointers rather than comparing strings.</font>
+
+<p><font face="Times">The following example demonstrates an implementation of the <b>validRequestorForSendType:andReturnType:</b> method for an object that can send and receive ASCII text.&nbsp; Pseudocode is in italics.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- validRequestorForSendType:(NXAtom)typeSent</font><br>
+<img src="../../../Images/sp.gif" width=292 height=1><font face="Courier" size="-1">andReturnType:(NXAtom)typeReturned</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* First, check to make sure that the types are ones</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* that we can handle.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( (typeSent == NXAsciiPboardType || typeSent == NULL) &amp;&amp;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">(typeReturned == NXAsciiPboardType || typeReturned == NULL) )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* If so, return self if we can give the service</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* what it wants and accept what it gives back.</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if ( ((<i>there is a selection</i>) || typeSent == NULL) &amp;&amp;</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">((<i>the text is editable</i>) || typeReturned == NULL) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Otherwise, return the default.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super validRequestorForSendType:typeSent</font><br>
+<img src="../../../Images/sp.gif" width=376 height=1><font face="Courier" size="-1">andReturnType:typeReturned];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">While the application is running, the <b>validRequestorForSendType:andReturnType:</b> message is sent to objects in a limited Responder chain, consisting of the responder chain in the key window, the key window's delegate (only if it isn't a Responder), the Application object, and the Application object's delegate (only if it isn't a Responder).&nbsp; The delegates of the key window and Application object are excluded if they are Responders in order to keep the message from being sent down additional responder chains.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>How a Service Is Invoked</b></font>
+
+<p><font face="Times">A service's menu item is enabled any time the application returns a non-<b>nil</b> value to a <b>validRequestorForSendType:andReturnType:</b> message.&nbsp; If the user then clicks on the service's menu item, the service is invoked.&nbsp; If the service requires data but doesn't send any back (that is, if the service has a send type but no return type) then the service is invoked asynchronously; the application provides the data and continues to run without waiting on the service. However, if the service provides data (that is, the send type is non-NULL) then the service is invoked synchronously; the application won't continue until the service supplies the data or the service request times out.</font>
+
+<p><font face="Times">When the service is invoked, the system checks whether the service requires data.&nbsp; If so, the responder that returned <b>self</b> to the <b>validRequestorForSendType:andReturnType:</b> message is sent a <b>writeSelectionToPasteboard:</b> message to instruct the responder to provide the data it said it would be able to supply.&nbsp; The implementation of this method should put the data on the pasteboard using the <b>declareTypes:num:owner:</b> Pasteboard method.&nbsp; If a pasteboard owner is specified, the responder can wait to provide the actual data by implementing the <b>pasteboard:provideData:</b> method.&nbsp; (The owner must persist as long as the application is running.)&nbsp; If no owner is specified, the application should provide the data immediately using Pasteboard's <b>writeType:data:length:</b> method.</font>
+
+<p><font face="Times">The responder's implementation of <b>writeSelectionToPasteboard:</b> should return YES if the selection is successfully written to the Pasteboard, and NO if it fails to supply the data.&nbsp; However, if the responder correctly replies to <b>validRequestorForSendType:andReturnType:</b> queries, it should almost always be able to subsequently provide the data.</font>
+
+<p><font face="Times">If the service returns data (that is, has a non-NULL return type), the application will wait (up to the service's time-out period) for the service to provide the returned data.&nbsp; The service must do its processing work and put the data back on the pasteboard using Pasteboard's <b>declareTypes:num:owner:</b> method, as described earlier.&nbsp; The application will then receive a <b>readSelectionFromPasteboard:</b> message, and its implementation of that method should replace the selection (which could be empty, like a cursor marking an insertion point) with the data from the pasteboard.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Invoking a Service Programmatically</b></font>
+
+<p><font face="Times">Though services are usually invoked when the user clicks a service menu item, they may also be invoked programmatically with the following function:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL <b>NXPerformService</b>(const char *<i>itemName</i>, Pasteboard *<i>pboard</i>)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function returns YES if the service is successfully performed.&nbsp; <i>itemName</i> is a Services menu item in any language.&nbsp; Note that Services menu entries which are in subdirectories must include a slash wherever there is a subdirectory, for example, &#34;Mail/Selection&#34;.&nbsp; The <i>pboard</i> must contain whatever data the service requires, and will, upon return of the function, contain the resultant data provided by the service.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Examples of Services</b></font>
+
+<p><font face="Times">Here are a few examples of services that have already been implemented to give you an idea of what can be done with NEXTSTEP's services mechanism:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Optical character recognition--When a NEXTSTEP application receives a fax, it receives a bitmap that can't be edited as text.&nbsp; If the application is willing to place the image on the pasteboard as a TIFF image, then an optical character recognition service can convert the image to ASCII text and paste it back as editable data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Encryption--An encryption service can convert data to a more secure form.&nbsp; For example, Mail can place a mail message on the pasteboard as a standard Rich Text Format (RTF) document, and another application could encrypt the document and place it back into mail as unreadable ASCII text, or as a document to be opened only by another external decryption application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Encapsulated PostScript effects--Many applications support encapsulated PostScript (EPS) graphic images.&nbsp; An EPS effects service can take selected graphics from the pasteboard, rotate them, scale them, and add other effects before pasting them back.&nbsp; In this manner, consistent graphics editing is enabled, even in applications with minimal graphics support.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Database lookup--Selected topics can be looked up in a database.&nbsp; This is a good example of an asynchronous service that reads data from the pasteboard but doesn't send any data back to the main application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Document compression and mailing--One standard pasteboard type defines a complete file name, including its path. Services use this data to send the current file by Mail, and to compress the current document.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macro services--Not all services require data from an application.&nbsp; Some simply provide data on request.&nbsp; Examples include macro programs that insert commonly used data such as signatures and time stamps.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

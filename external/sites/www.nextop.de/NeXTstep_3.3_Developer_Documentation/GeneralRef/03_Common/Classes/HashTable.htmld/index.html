@@ -1,0 +1,1065 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/03_Common/Classes/HashTable.rtf -->
+<!-- Date: Sun Jun 28 20:03:38 1998 -->
+<head>
+<title>HashTable</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>HashTable</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">objc/HashTable.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The HashTable class defines objects that store associations of keys and values.&nbsp; You use a HashTable object when you need a convenient and efficient way to retrieve the data associated with an arbitrary key.&nbsp; Internally, a hash table locates the key and associated object according to the value returned by applying a <i>hashing</i> function to the key.&nbsp; However, the hashing operation is provided automatically by the HashTable's methods, so that the methods that add an association to a HashTable (or return an association, given its key) accept and return the key values directly, not their hashed forms.</font>
+
+<p><font face="Times">In a HashTable object, keys must be of the same type (so that the same hashing function can be applied to each of them), and associated values must be of the same type.&nbsp; The types of the keys and the values are established when the HashTable is initialized.&nbsp; The <b>initKeyDesc:valueDesc:...</b> methods take arguments that let you specify key type and value type independently.&nbsp; The <b>initKeyDesc:</b> method specifies the type of the keys but assumes that the associated values are <b>id</b>s. The <b>init </b>method assumes that both keys and associated values are of type <b>id</b> (object pointers).&nbsp; The following characters are used as HashTable descriptions (that is, as arguments to the <b>initKeyDesc:</b> or <b>initKeyDesc:valueDesc:</b> methods):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Character</b></font></td>
+
+<td><font face="Helvetica"><b>Type</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">@</font></td>
+
+<td><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">id</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">*</font></td>
+
+<td><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">char *</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">%</font></td>
+
+<td><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">NXAtom</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">i</font></td>
+
+<td><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">int</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">!</font></td>
+
+<td><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">other</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Hashing Algorithm and Tests for Equality</b></font>
+
+<p><font face="Times">The class uses three different algorithms, selected according to the description of the keys. For keys that are of type &quot;object&quot;, the HashTable sends itself a <b>hash</b> message (inherited from Object). For keys that are strings, it uses a string hashing function. For all other cases, it uses a generic integer hashing function.</font>
+
+<p><font face="Times">To test whether a proposed key is equal to a key already included in the HashTable, keys that are objects are compared using an <b>isEqual:</b> message. If two keys are equal in the sense of <b>isEqual:</b>, then their hashed values must be equal.</font>
+
+<p><font face="Times">Keys that are strings are compared using a string comparison.&nbsp; Note that the HashTable object keeps only a pointer to the string used as a key (without making a copy of the string), so the string to which it points must never change as long as the association remains in the table.</font>
+
+<p><font face="Times">If you're creating a HashTable whose keys are List or Storage objects, note that these classes have an <b>isEqual:</b> method but no <b>hash</b> method; you can either subclass or define a <b>hash</b> method.</font>
+
+<p><font face="Times">When freeing a HashTable, only object keys or object values are freed.</font>
+
+<p><font face="Times">When a HashTable is archived, data is archived according to its type description.&nbsp; For keys or values whose description is &quot;<b>%</b>&quot;, upon reading to reconstitute an archived HashTable, each such string is reconstructed by again calling the <b>NXUniqueString() </b>function to assure that it is unique in the new context.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Function Interface to Hash Tables</b></font>
+
+<p><font face="Times">When even greater efficiency of storage and access is required, consider using the C function interface to hash tables rather than the HashTable class (see <b>NXCreateHashTable()</b>).</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Related Classes</b></font>
+
+<p><font face="Times">Two other classes for storage and retrieval are NXStringTable and List.&nbsp; An NXStringTable object is a hash table specialized for the situation in which both keys and values are character strings.&nbsp; A List stores a sequential collection of objects; however, it stores the objects (that is, the pointers to them) without keys, so the time required to find a particular element in a List grows linearly with the number of elements.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">unsigned int <b>count</b>;</font>
+
+<p><font face="Times">const char <b>*keyDesc</b>;</font>
+
+<p><font face="Times">const char <b>*valueDesc</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">count</font></td>
+
+<td><font face="Times">Current number of associations</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">keyDesc</font></td>
+
+<td><font face="Times">Description (character representing the type) of keys</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">valueDesc</font></td>
+
+<td><font face="Times">Description (character representing the type) of values</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing and freeing a HashTable</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initKeyDesc:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initKeyDesc:valueDesc:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initKeyDesc:valueDesc:capacity:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeObjects</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeKeys:values:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">empty</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Copying a HashTable</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyFromZone:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating table associations</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">count</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isKey:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">valueForKey:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertKey:value:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeKey:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Iterating over all associations</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initState</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">nextState:key:value:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyFromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a new HashTable of the same size as the receiving object.&nbsp; Memory for the new HashTable is allocated from <i>zone</i>. Keys and values are copied.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>count</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>count</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of objects in the table.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>empty</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>empty</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Empties the HashTable but retains its capacity.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deallocates the HashTable (but not the objects that its associations point to).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeKeys:values:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeKeys:</b>(void (*)(void *))<i>keyFunc</i> <b>values:</b>(void (*)(void *))<i>valueFunc</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Conditionally deallocates the HashTable's associations but does not deallocate the table itself.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeObjects</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeObjects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deallocates every object in the HashTable, but not the HashTable itself.&nbsp; Strings are not recovered.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new HashTable to map keys of type &quot;object&quot; to values of type &quot;object.&quot;&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:key:value:capacity:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initKeyDesc:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:</b>(const char *)<i>aKeyDesc</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new HashTable to map keys as described by <i>aKeyDesc</i> to object values.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:key:value:capacity:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initKeyDesc:valueDesc:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:</b>(const char *)<i>aKeyDesc</i> <b>valueDesc:</b>(const char *)<i>aValueDesc</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new HashTable to map keys and values as described by <i>aKeyDesc</i> and <i>aValueDesc</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:key:value:capacity:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initKeyDesc:valueDesc:capacity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:</b>(const char *)<i>aKeyDesc</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>valueDesc:</b>(const char *)<i>aValueDesc</i></font><br>
+<font face="Times"><b>capacity:</b>(unsigned int)<i>aCapacity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new HashTable.&nbsp; This is the designated initializer for HashTable objects:&nbsp; If you subclass HashTable, your subclass's designated initializer must maintain the initializer chain by sending a message to <b>super</b> to invoke this method.&nbsp; See the introduction to the class specifications for more information.</font>
+
+<p><font face="Times">A HashTable initialized by this method maps keys and values as described by <i>aKeyDesc</i> and <i>aValueDesc</i>. The argument <i>aCapacity</i> is given only as a hint; you can use 0 to create a table of minimal size.&nbsp; As more space is needed, it will be allocated automatically, each time doubling the table's capacity.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initKeyDesc:key:value:capacity:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initState</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXHashState)<b>initState</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXHashState structure that's required when iterating through the HashTable.&nbsp; Iterating through all of a HashTable's associations involves setting up an iteration state, conceptually private to HashTable, and then progressing until all entries have been visited.&nbsp; Here's an example of visiting all the associations in a HashTable called <b>table</b> (and just counting them):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned int count = 0;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">const&nbsp;&nbsp; void&nbsp; *key;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">void&nbsp; *value;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXHashState&nbsp; state = [table initState];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ([table nextState: &amp;state key: &amp;key value: &amp;value])</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">count++;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextState:key:value:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>insertKey:value:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>insertKey:</b>(const void *)<i>aKey</i> <b>value:</b>(void *)<i>aValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds or updates a key and value pair, as specified by <i>aKey</i> and <i>aValue</i>.&nbsp; If <i>aKey</i> is already in the hash table, it's associated with <i>aValue</i> and its previously associated value is returned.&nbsp; Otherwise, <b>insertKey:value:</b> returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeKey:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isKey:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isKey:</b>(const void *)<i>aKey</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if <i>aKey</i> is in the table, otherwise NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>valueForKey:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>nextState:key:value:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>nextState:</b>(NXHashState *)<i>aState</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>key:</b>(const void **)<i>aKey</i></font><br>
+<font face="Times"><b>value:</b>(void **)<i>aValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Moves to the next entry in the HashTable and provides the addresses of pointers to its key/value pair.&nbsp; No <b>insertKey:</b> or <b>removeKey:</b> should be done while iterating through the table.&nbsp; Returns NO when there are no more entries in the table; otherwise, returns YES.&nbsp; If there are no more entries, <i>aKey</i> and <i>aValue</i> are set to NULL.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initState</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the HashTable from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeKey:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>removeKey:</b>(const void *)<i>aKey</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the hash table entry identified by <i>aKey</i>.&nbsp; Always returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertKey:value:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>valueForKey:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>valueForKey:</b>(const void *)<i>aKey</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the value mapped to <i>aKey</i>.&nbsp; Returns <b>nil</b> if <i>aKey</i> is not in the table.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isKey:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the HashTable to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

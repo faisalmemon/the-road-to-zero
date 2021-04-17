@@ -1,0 +1,605 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXStoreFile.rtf -->
+<!-- Date: Sun Jun 28 20:05:49 1998 -->
+<head>
+<title>IXStoreFile</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXStoreFile</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">IXStore : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">store/IXStoreFile.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IXStoreFile is a subclass of IXStore that keeps its storage in a file.&nbsp; Since a file can outlive processes, IXStoreFile can store persistent data.&nbsp; IXStoreFile also guarantees the integrity of stored data against process and system crashes when protected by transactions, provided that the physical media remains intact.</font>
+
+<p><font face="Times">IXStoreFile can open files for reading and writing, or for reading only, and it locks them with the <b>flock()</b> UNIX system call for exclusive or shared access, accordingly.&nbsp; This locking is advisory only, but effectively prevents cache conflict between instances residing in separate processes on the same host.&nbsp; Note, however, that the advisory locks aren't visible over the network, due to limitations of <b>flock()</b>; responsibility for managing cache conflicts when sharing files over the network falls to the program using the IXStoreFile.&nbsp; The suggested approach is to build a server with NEXTSTEP Distributed Objects that mediates access to files among client processes.</font>
+
+<p><font face="Times">To support the use of preconfigured files, an IXStoreFile opened for reading only may be modified freely by the process using it; all modified pages are reflected only in the address space of that process.&nbsp; The modifications are never written to the file, and are discarded when the IXStoreFile is freed.</font>
+
+<p><font face="Times">IXStoreFile is extremely efficient with respect to paging.&nbsp; When pages would be forced from memory by the virtual memory system, IXStoreFile writes them directly back to the storage file instead of allowing them to go through the swap file.&nbsp; The transaction management architecture takes advantage of this, ensuring the minimum number of page faults per transaction.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">This write-back mapping isn't currently supported by <b>vm_copy()</b>.&nbsp; If you use this function to copy into an IXStoreFile, you risk causing your application to hang or crash.&nbsp; If your code doesn't guarantee the actual class of a store, be sure to check it (using <b>isMemberOf:</b> instead of <b>isKindOf:</b>) before writing into a block with <b>vm_copy()</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Portability Issues</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The Indexing Kit's higher-level components expect all data in a storage file to be big-endian, so you should always use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function when reading data in an IXStoreFile, and the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function when writing data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">See <b>/NextLibrary/Documentation/NextDev/Concepts/PortabilityGuide.rtf</b> for more information.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">int <b>descriptor</b>;</font>
+
+<p><font face="Times">const char *<b>filename</b>;</font>
+
+<p><font face="Times">struct {</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>needsClose</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>isCreating</b>:1;</font>
+
+<p><font face="Times">} <b>fileStatus</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">descriptor</font></td>
+
+<td><font face="Times">The file descriptor for the storage file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">filename</font></td>
+
+<td><font face="Times">The name of the storage file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">fileStatus.needsClose</font></td>
+
+<td><font face="Times">True if the storage file was opened by this IXStoreFile.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">fileStatus.isCreating</font></td>
+
+<td><font face="Times">True if the storage file was created by this IXStoreFile.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing instances</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromFile:forWriting:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Limiting the file mapping size</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSizeLimit:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeLimit</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting file information</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">descriptor</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">filename</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descriptor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>descriptor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the file descriptor for the IXStoreFile's storage file.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>filename</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>filename</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>filename</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the IXStoreFile's storage file.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Unlocks and closes the storage file and frees the IXStoreFile.&nbsp; The file isn't removed from the file system, even if it was a temporary file created by the <b>init</b> method.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Times">This method aborts any pending modifications.&nbsp; Your code should always send <b>commitTransaction</b> until the transaction nesting level is 0 before closing an IXStoreFile in order to save any outstanding changes.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b> (IXStore),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b> (IXStore)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the IXStoreFile with a temporary file (created in <b>/tmp</b>) that's opened for writing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:forWriting:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromFile:forWriting:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b>(const char *)<i>filename</i> <b>forWriting:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the IXStoreFile from the previously created <i>filename</i>.&nbsp; <i>filename</i> must have been previously created by the <b>initWithFile:</b> method.&nbsp; If <i>flag</i> is YES, then <i>filename</i> is opened for reading and writing, and locked for exclusive access.&nbsp; If <i>flag </i>is NO, then <i>filename</i> is opened for reading only, and locked for shared access. If <i>filename</i> is opened for reading only, any changes made to the IXStoreFile will be reflected only memory, and will never be flushed to disk. This is the designated initializer for IXStoreFile objects that use an existing storage file.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initWithFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the IXStoreFile with <i>filename</i> as its storage file.&nbsp; <i>filename</i> is created and opened for reading and writing, and locked for exclusive access.&nbsp; This the designated initializer for the IXStoreFile class.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:forWriting:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setSizeLimit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSizeLimit:</b>(vm_size_t)<i>aLimit</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Limits the amount of virtual address space consumed by file mapping to <i>aLimit</i>. If <i>aLimit</i> is zero, the size limit is removed.&nbsp; The size limit determines how much of the file the IXStoreFile will try to cache in main memory.&nbsp; Given enough memory, the higher the size limit, the better the performance.&nbsp; If your code will be operating on a machine with little memory, you should set the limit to a relatively small number; for example, 128KB on an 8-megabyte machine.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeLimit</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sizeLimit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(vm_size_t)<b>sizeLimit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the maximum amount of virtual address space consumed by file mapping.&nbsp; The size limit determines how much of the file the IXStoreFile will try to cache in main memory.&nbsp; Given enough memory, the higher the size limit, the better the performance.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSizeLimit:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,2244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/ObjectiveC/3_MoreObjC/MoreObjC.rtfd -->
+<!-- Date: Sun Jun 28 19:36:36 1998 -->
+<head>
+<title>MoreObjC</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>3</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Objective C Extensions</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The preceding chapter has all you need to know about Objective C to define classes and design programs in the language.&nbsp; It covers basic Objective C syntax and explains the messaging process in detail.</font>
+
+<p><font face="Times">Class definitions are at the heart of object-oriented programming, but they're not the only mechanism for structuring object definitions in Objective C.&nbsp; This chapter discusses two other ways of declaring methods and associating them with a class:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Categories can compartmentalize a class definition or extend an existing one.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Protocols declare methods that can be implemented by any class.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The chapter also explains how static typing works and takes up some lesser used features of Objective C, including ways to temporarily overcome its inherent dynamism.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Categories</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can add methods to a class by declaring them in an interface file under a category name and defining them in an implementation file under the same name.&nbsp; The category name indicates that the methods are additions to a class declared elsewhere, not a new class.</font>
+
+<p><font face="Times">A category can be an alternative to a subclass.&nbsp; Rather than define a subclass to extend an existing class, through a category you can add methods to the class directly.&nbsp; For example, you could add categories to Matrix and other NEXTSTEP classes.&nbsp; As in the case of a subclass, you don't need source code for the class you're extending.</font>
+
+<p><font face="Times">The methods the category adds become part of the class type.&nbsp; For example, methods added to the Matrix class in a category will be among the methods the compiler will expect a Matrix instance to have in its repertoire.&nbsp; Methods added to the Matrix class in a subclass would not be included in the Matrix type.&nbsp; (This matters only for statically typed objects, since static typing is the only way the compiler can know an object's class.)</font>
+
+<p><font face="Times">Category methods can do anything that methods defined in the class proper can do.&nbsp; At run time, there's no difference.&nbsp; The methods the category adds to the class are inherited by all the class's subclasses, just like other methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Adding to a Class</b></font>
+
+<p><font face="Times">The declaration of a category interface looks very much like a class interface declaration--except the category name is listed within parentheses after the class name and the superclass isn't mentioned.&nbsp; The category must import the interface file for the class it extends:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>#import &#34;</b><i>ClassName</i><b>.h&#34;</b></font>
+
+<p><font face="Times"><b>@interface</b> <i>ClassName</i> <b>(</b> <i>CategoryName</i> <b>)</b></font><br>
+<font face="Times"><i>method declarations</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The implementation, as usual, imports its own interface.&nbsp; Assuming that interface and implementation files are named after the category, a category implementation looks like this:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>#import &#34;</b><i>CategoryName</i><b>.h&#34;</b></font>
+
+<p><font face="Times"><b>@implementation</b> <i>ClassName</i> <b>(</b> <i>CategoryName</i> <b>)</b></font><br>
+<font face="Times"><i>method definitions</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that a category can't declare any new instance variables for the class; it includes only methods.&nbsp; However, all instance variables within the scope of the class are also within the scope of the category.&nbsp; That includes all instance variables declared by the class, even ones declared <b>@private</b>.</font>
+
+<p><font face="Times">There's no limit to the number of categories that you can add to a class, but each category name must be different, and each should declare and define a different set of methods.</font>
+
+<p><font face="Times">The methods added in a category can be used to extend the functionality of the class or override methods the class inherits.&nbsp; A category can also override methods declared in the class interface.&nbsp; However, it cannot reliably override methods declared in another category of the same class.&nbsp; A category is not a substitute for a subclass.&nbsp; It's best if categories don't attempt to redefine methods the class defines elsewhere; a class shouldn't define the same method more than once.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">When a category overrides an inherited method, the new version can, as usual, incorporate the inherited version through a message to <b>super</b>.&nbsp; But there's no way for a category method to incorporate a method with the same name defined for the same class.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>How Categories are Used</b></font>
+
+<p><font face="Times">Categories can be used to extend classes defined by other implementors--for example, you can add methods to the classes defined in the NEXTSTEP software kits.&nbsp; The added methods will be inherited by subclasses and will be indistinguishable at run time from the original methods of the class.</font>
+
+<p><font face="Times">Categories can also be used to distribute the implementation of a new class into separate source files--for example, you could group the methods of a large class into several categories and put each category in a different file.&nbsp; When used like this, categories can benefit the development process in a number of ways:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">They provide a simple way of grouping related methods.&nbsp; Similar methods defined in different classes can be kept together in the same source file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">They simplify the management of a large class when more than one developer is contributing to the class definition.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">They let you achieve some of the benefits of incremental compilation for a very large class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">They can help improve locality of reference for commonly used methods.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">They enable you to configure a class differently for different applications, without having to maintain different versions of the same source code.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Categories are also used to declare informal protocols, as discussed under &quot;Protocols&quot; below.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Categories of the Root Class</b></font>
+
+<p><font face="Times">A category can add methods to any class, including the root Object class.&nbsp; Methods added to Object become available to all classes that are linked to your code.&nbsp; While this can be useful at times, it can also be quite dangerous.&nbsp; Although it may seem that the modifications the category makes are well understood and of limited impact, inheritance gives them a wide scope.&nbsp; You may be making unintended changes to unseen classes; you may not know all the consequences of what you're doing.&nbsp; Moreover, others who are unaware of your changes won't understand what they're doing.</font>
+
+<p><font face="Times">In addition, there are two other considerations to keep in mind when implementing methods for the root class:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Messages to <b>super</b> are invalid (there is no superclass).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Class objects can perform instance methods defined in the root class.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Normally, class objects can perform only class methods.&nbsp; But instance methods defined in the root class are a special case. They define an interface to the run-time system that all objects inherit.&nbsp; Class objects are full-fledged objects and need to share the same interface.</font>
+
+<p><font face="Times">This feature means that you need to take into account the possibility that an instance method you define in a category of the Object class might be performed not only by instances but by class objects as well.&nbsp; For example, within the body of the method, <b>self</b> might mean a class object as well as an instance.&nbsp; See Appendix C, &quot;The Object Class,&quot; for more information on class access to root instance methods.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Class and category interfaces declare methods that are associated with a particular class--mainly methods that the class implements.&nbsp; Informal and formal <i>protocols</i>, on the other hand, declare methods not associated with a class, but which any class, and perhaps many classes, might implement.</font>
+
+<p><font face="Times">A protocol is simply a list of method declarations, unattached to a class definition.&nbsp; For example, these methods that report user actions on the mouse could be gathered into a protocol:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- mouseDown:(NXEvent *)theEvent;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- mouseDragged:(NXEvent *)theEvent;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- mouseUp:(NXEvent *)theEvent;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Any class that wanted to respond to mouse events could adopt the protocol and implement its methods.</font>
+
+<p><font face="Times">Protocols free method declarations from dependency on the class hierarchy, so they can be used in ways that classes and categories cannot.&nbsp; Protocols list methods that are (or may be) implemented somewhere, but the identity of the class that implements them is not of interest.&nbsp; What is of interest is whether or not a particular class <i>conforms</i> to the protocol--whether it has implementations of the methods the protocol declares.&nbsp; Thus objects can be grouped into types not just on the basis of similarities due to the fact that they inherit from the same class, but also on the basis of their similarity in conforming to the same protocol.&nbsp; Classes in unrelated branches of the inheritance hierarchy might be typed alike because they conform to the same protocol.</font>
+
+<p><font face="Times">Protocols can play a significant role in object-oriented design, especially where a project is divided among many implementors or it incorporates objects developed in other projects.&nbsp; NEXTSTEP software uses them heavily to support interprocess communication through Objective C messages.</font>
+
+<p><font face="Times">However, an Objective C program doesn't need to use protocols.&nbsp; Unlike class definitions and message expressions, they're optional.&nbsp; Some NEXTSTEP software kits use them; some don't.&nbsp; It all depends on the task at hand.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>How Protocols are Used</b></font>
+
+<p><font face="Times">Protocols are useful in at least three different situations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To declare methods that others are expected to implement</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To declare the interface to an object while concealing its class</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To capture similarities among classes that are not hierarchically related</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following sections discuss these situations and the roles protocols can play.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Methods for Others to Implement</b></font>
+
+<p><font face="Times">If you know the class of an object, you can look at its interface declaration (and the interface declarations of the classes it inherits from) to find what messages it responds to.&nbsp; These declarations advertise the messages it can receive.&nbsp; Protocols provide a way for it to also advertise the messages it sends.</font>
+
+<p><font face="Times">Communication works both ways; objects send messages as well as receive them.&nbsp; For example, an object might delegate responsibility for a certain operation to another object, or it may on occasion simply need to ask another object for information. In some cases, an object might be willing to notify other objects of its actions so that they can take whatever collateral measures might be required.</font>
+
+<p><font face="Times">If you develop the class of the sender and the class of the receiver as part of the same project (or if someone else has supplied you with the receiver and its interface file), this communication is easily coordinated.&nbsp; The sender simply imports the interface file of the receiver.&nbsp; The imported file declares the method selectors the sender uses in the messages it sends.</font>
+
+<p><font face="Times">However, if you develop an object that sends messages to objects that aren't yet defined--objects that you're leaving for others to implement--you won't have the receiver's interface file.&nbsp; You need another way to declare the methods you use in messages but don't implement.&nbsp; A protocol serves this purpose.&nbsp; It informs the compiler about methods the class uses and also informs other implementors of the methods they need to define to have their objects work with yours.</font>
+
+<p><font face="Times">Suppose, for example, that you develop an object that asks for the assistance of another object by sending it <b>helpOut:</b> and other messages.&nbsp; You provide an <b>assistant</b> instance variable to record the outlet for these messages and define a companion method to set the instance variable.&nbsp; This method lets other objects register themselves as potential recipients of your object's messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setAssistant:anObject</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">assistant = anObject;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Then, whenever a message is to be sent to the <b>assistant</b>, a check is made to be sure that the receiver implements a method that can respond:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL)doWork</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( [assistant respondsTo:@selector(helpOut:)] ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[assistant helpOut:self];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return NO;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Since, at the time you write this code, you can't know what kind of object might register itself as the <b>assistant</b>, you can only declare a protocol for the <b>helpOut:</b> method; you can't import the interface file of the class that implements it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Anonymous Objects</b></font>
+
+<p><font face="Times">A protocol can also be used to declare the methods of an <i>anonymous</i> object, an object of unknown class.&nbsp; An anonymous object may represent a service or handle a limited set of functions, especially where only one object of its kind is needed.&nbsp; (Objects that play a fundamental role in defining an application's architecture and objects that you must initialize before using are not good candidates for anonymity.)</font>
+
+<p><font face="Times">Objects can't be anonymous to their developers, of course, but they can be anonymous when the developer supplies them to someone else.&nbsp; For example, an anonymous object might be part of a software kit or be located in a remote process:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Someone who supplies a software kit or a suite of objects for others to use can include objects that are not identified by a class name or an interface file.&nbsp; Lacking the name and class interface, users have no way of creating instances of the class. Instead, the supplier must provide a ready-made instance.&nbsp; Typically, a method in another class returns a usable object:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">id formatter = [receiver formattingService];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The object returned by the method is an object without a class identity, at least not one the supplier is willing to reveal.&nbsp; For it to be of any use at all, the supplier must be willing to identify at least some of the messages that it can respond to.&nbsp; This is done by associating the object with a list of methods declared in a protocol.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It's possible to send Objective C messages to <i>remote objects</i>--objects in other applications.&nbsp; (The next section, &quot;Remote Messaging,&quot; discusses this possibility in more detail.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Each application has its own structure, classes, and internal logic.&nbsp; But you don't need to know how another application works or what its components are to communicate with it.&nbsp; As an outsider, all you need to know is what messages you can send (the protocol) and where to send them (the receiver).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">An application that publishes one of its objects as a potential receiver of remote messages must also publish a protocol declaring the methods the object will use to respond to those messages.&nbsp; It doesn't have to disclose anything else about the object.&nbsp; The sending application doesn't need to know the class of the object or use the class in its own design.&nbsp; All it needs is the protocol.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Protocols make anonymous objects possible.&nbsp; Without a protocol, there would be no way to declare an interface to an object without identifying its class.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Even though the supplier of an anonymous object won't reveal its class, the object itself will reveal it at run time.&nbsp; A <b>class</b> message will return the anonymous object's class.&nbsp; The class object can then be queried with the <b>name</b> and <b>superclass </b>methods.&nbsp; However, there's usually little point in discovering this extra information; the information in the protocol is sufficient.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Nonhierarchical Similarities</b></font>
+
+<p><font face="Times">If more than one class implements a set of methods, those classes are often grouped under an abstract class that declares the methods they have in common.&nbsp; Each subclass may reimplement the methods in its own way, but the inheritance hierarchy and the common declaration in the abstract class captures the essential similarity between the subclasses.</font>
+
+<p><font face="Times">However, sometimes it's not possible to group common methods in an abstract class.&nbsp; Classes that are unrelated in most respects might nevertheless need to implement some similar methods.&nbsp; This limited similarity may not justify a hierarchical relationship.&nbsp; For example, many different kinds of classes might implement methods to facilitate reference counting:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setRefCount:(int)count;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)refCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- incrementCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decrementCount;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These methods could be grouped into a protocol and the similarity between implementing classes accounted for by noting that they all conform to the same protocol.</font>
+
+<p><font face="Times">Objects can be typed by this similarity (the protocols they conform to), rather than by their class.&nbsp; For example, a Matrix must communicate with the objects that represent its cells.&nbsp; The Matrix could require each of these objects to be a kind of Cell (a type based on class) and rely on the fact that all objects that inherit from the Cell class will have the methods needed to respond to Matrix messages.&nbsp; Alternatively, the Matrix could require objects representing cells to have methods that can respond to a particular set of messages (a type based on protocol).&nbsp; In this case, the Matrix wouldn't care what class a cell object belonged to, just that it implemented the methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Informal Protocols</b></font>
+
+<p><font face="Times">The simplest way of declaring a protocol is to group the methods in a category declaration:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Object ( RefCounting )</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setRefCount:(int)count;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)refCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- incrementCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decrementCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Informal protocols are typically declared as categories of the Object class, since that broadly associates the method names with any class that inherits from Object.&nbsp; Since all classes inherit from the root class, the methods aren't restricted to any part of the inheritance hierarchy.&nbsp; (It would also be possible to declare an informal protocol as a category of another class to limit it to a certain branch of the inheritance hierarchy, but there is little reason to do so.)</font>
+
+<p><font face="Times">When used to declare a protocol, a category interface doesn't have a corresponding implementation.&nbsp; Instead, classes that implement the protocol declare the methods again in their own interface files and define them along with other methods in their implementation files.</font>
+
+<p><font face="Times">An informal protocol bends the rules of category declarations to list a group of methods but not associate them with any particular class or implementation.</font>
+
+<p><font face="Times">Being informal, protocols declared in categories don't receive much language support.&nbsp; There's no type checking at compile time nor a check at run time to see whether an object conforms to the protocol.&nbsp; To get these benefits, you must use a formal protocol.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Formal Protocols</b></font>
+
+<p><font face="Times">The Objective C language provides a way to formally declare a list of methods as a protocol.&nbsp; Formal protocols are supported by the language and the run-time system.&nbsp; For example, the compiler can check for types based on protocols, and objects can introspect at run time to report whether or not they conform to a protocol.</font>
+
+<p><font face="Times">Formal protocols are declared with the <b>@protocol</b> directive:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@protocol</b> <i>ProtocolName</i></font><br>
+<font face="Times"><i>method declarations</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, the reference-counting protocol could be declared like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol ReferenceCounting</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setRefCount:(int)count;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)refCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- incrementCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- decrementCount;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Unlike class names, protocol names don't have global visibility.&nbsp; They live in their own name space.</font>
+
+<p><font face="Times">A class is said to <i>adopt</i> a formal protocol if it agrees to implement the methods the protocol declares.&nbsp; Class declarations list the names of adopted protocols within angle brackets after the superclass name:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@interface</b> <i>ClassName</i> <b>:</b> <i>ItsSuperclass</i> <b>&lt;</b> <i>protocol list</i> <b>&gt;</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Categories adopt protocols in much the same way:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@interface</b> <i>ClassName</i> <b>(</b> <i>CategoryName</i> <b>) &lt;</b> <i>protocol list</i> <b>&gt;</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Names in the protocol list are separated by commas.</font>
+
+<p><font face="Times">A class or category that adopts a protocol must import the header file where the protocol is declared.&nbsp; The methods declared in the adopted protocol are not declared elsewhere in the class or category interface.</font>
+
+<p><font face="Times">It's possible for a class to simply adopt protocols and declare no other methods.&nbsp; For example, this class declaration,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Formatter : Object &lt; Formatting, Prettifying &gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">adopts the Formatting and Prettifying protocols, but declares no instance variables or methods of its own.</font>
+
+<p><font face="Times">A class or category that adopts a protocol is obligated to implement all the methods the protocol declares.&nbsp; The compiler will issue a warning if it does not.&nbsp; The Formatter class above would define all the methods declared in the two protocols it adopts, in addition to any it might have declared itself.</font>
+
+<p><font face="Times">Adopting a protocol is similar in some ways to declaring a superclass.&nbsp; Both assign methods to the new class.&nbsp; The superclass declaration assigns it inherited methods; the protocol assigns it methods declared in the protocol list.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Protocol Objects</b></font>
+
+<p><font face="Times">Just as classes are represented at run time by class objects and methods by selector codes, formal protocols are represented by a special data type--instances of the Protocol class.&nbsp; Source code that deals with a protocol (other than to use it in a type specification) must refer to the Protocol object.</font>
+
+<p><font face="Times">In many ways, protocols are similar to class definitions.&nbsp; They both declare methods, and at run time they're both represented by objects--classes by class objects and protocols by Protocol objects.&nbsp; Like class objects, Protocol objects are created automatically from the definitions and declarations found in source code and are used by the run-time system.&nbsp; They're not allocated and initialized in program source code.</font>
+
+<p><font face="Times">Source code can refer to a Protocol object using the <b>@protocol()</b> directive--the same directive that declares a protocol, except that here it has a set of trailing parentheses.&nbsp; The parentheses enclose the protocol name:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Protocol *counter = @protocol(ReferenceCounting);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This is the only way that source code can conjure up a Protocol object.&nbsp; Unlike a class name, a protocol name doesn't designate the object--except inside <b>@protocol()</b>.</font>
+
+<p><font face="Times">The compiler creates a Protocol object for each protocol declaration it encounters, but only if the protocol is also:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Adopted by a class, or</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Referred to somewhere in source code (using <b>@protocol()</b>).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Protocols that are declared but not used (except for type checking as described below) aren't represented by Protocol objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Conforming to a Protocol</b></font>
+
+<p><font face="Times">A class is said to <i>conform</i> to a formal protocol if it adopts the protocol or inherits from a class that adopts it.&nbsp; An instance of a class is said to conform to the same set of protocols its class conforms to.</font>
+
+<p><font face="Times">Since a class must implement all the methods declared in the protocols it adopts, and those methods are inherited by its subclasses, saying that a class or an instance conforms to a protocol is tantamount to saying that it has in its repertoire all the methods that the protocol declares.</font>
+
+<p><font face="Times">It's possible to check whether an object conforms to a protocol by sending it a <b>conformsTo:</b> message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [receiver conformsTo:@protocol(ReferenceCounting)] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[receiver incrementCount];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>conformsTo:</b> test is very much like the <b>respondsTo:</b> test for a single method, except that it tests whether a protocol has been adopted (and presumably all the methods it declares implemented) rather than just whether one particular method has been implemented.&nbsp; Because it checks for a whole list of methods, <b>conformsTo:</b> can be more efficient than <b>respondsTo:</b>.</font>
+
+<p><font face="Times">The <b>conformsTo:</b> test is also very much like the <b>isKindOf:</b> test, except that it tests for a type based on a protocol rather than a type based on the inheritance hierarchy.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Type Checking</b></font>
+
+<p><font face="Times">Type declarations for objects can be extended to include formal protocols.&nbsp; Protocols thus offer the possibility of another level of type checking by the compiler, one that's more abstract since it's not tied to particular implementations.</font>
+
+<p><font face="Times">In a type declaration, protocol names are listed between angle brackets after the type name:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (id &lt;Formatting&gt;)formattingService;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id &lt;ReferenceCounting, AutoFreeing&gt; anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Just as static typing permits the compiler to test for a type based on the class hierarchy, this syntax permits the compiler to test for a type based on conformance to a protocol.</font>
+
+<p><font face="Times">For example, if Formatter is an abstract class, this declaration</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Formatter *anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">groups all objects that inherit from Formatter into a type and permits the compiler to check assignments against that type.</font>
+
+<p><font face="Times">Similarly, this declaration,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id &lt;Formatting&gt; anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">groups all objects that conform to the Formatting protocol into a type, regardless of their positions in the class hierarchy.&nbsp; The compiler can check to be sure that only objects that conform to the protocol are assigned to the type.</font>
+
+<p><font face="Times">In each case, the type groups similar objects--either because they share a common inheritance, or because they converge on a common set of methods.</font>
+
+<p><font face="Times">The two types can be combined in a single declaration:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Formatter &lt;Formatting&gt; *anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Protocols can't be used to type class objects.&nbsp; Only instances can be statically typed to a protocol, just as only instances can be statically typed to a class.&nbsp; (However, at run time, both classes and instances will respond to a <b>conformsTo:</b> message.)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Protocols within Protocols</b></font>
+
+<p><font face="Times">One protocol can incorporate others using the same syntax that classes use to adopt a protocol:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@protocol</b> <i>ProtocolName</i> <b>&lt;</b> <i>protocol list</i> <b>&gt;</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All the protocols listed between angle brackets are considered part of the <i>ProtocolName</i> protocol.&nbsp; For example, if the Paging protocol incorporates the Formatting protocol,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol Paging &lt; Formatting &gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">any object that conforms to the Paging protocol will also conform to Formatting.&nbsp; Type declarations</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id &lt;Paging&gt; someObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">and <b>conformsTo:</b> messages</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [anotherObject conformsTo:@protocol(Paging)] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">need mention only the Paging protocol to test for conformance to Formatting as well.</font>
+
+<p><font face="Times">When a class adopts a protocol, it must implement the methods the protocol declares, as mentioned earlier.&nbsp; In addition, it must conform to any protocols the adopted protocol incorporates.&nbsp; If an incorporated protocol incorporates still other protocols, the class must also conform to them.&nbsp; A class can conform to an incorporated protocol by either:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Implementing the methods the protocol declares, or</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Inheriting from a class that adopts the protocol and implements the methods.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Suppose, for example, that the Pager class adopts the Paging protocol.&nbsp; If Pager is a subclass of Object,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Pager : Object &lt; Paging &gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">it must implement all the Paging methods, including those declared in the incorporated Formatting protocol.&nbsp; It adopts the Formatting protocol along with Paging.</font>
+
+<p><font face="Times">On the other hand, if Pager is a subclass of Formatter (a class that independently adopts the Formatting protocol),</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Pager : Formatter &lt; Paging &gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">it must implement all the methods declared in the Paging protocol proper, but not those declared in Formatting.&nbsp; Pager inherits conformance to the Formatting protocol from Formatter.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Remote Messaging</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like most other programming languages, Objective C was initially designed for programs that are executed as a single process in a single address space.</font>
+
+<p><font face="Times">Nevertheless, the object-oriented model, where communication takes place between relatively self-contained units through messages that are resolved at run-time, would seem well suited for interprocess communication as well.&nbsp; It's not hard to imagine Objective C messages between objects that reside in different address spaces (that is, in different tasks) or in different threads of execution of the same task.</font>
+
+<p><font face="Times">For example, in a typical server-client interaction, the client task might send its requests to a designated object in the server, and the server might target specific client objects for the notifications and other information it sends.</font>
+
+<p><font face="Times">Or imagine an interactive application that needs to do a good deal of computation to carry out a user command.&nbsp; It could simply put up an attention panel telling the user to wait while it was busy, or it could isolate the processing work in a subordinate task, leaving the main part of the application free to accept user input.&nbsp; Objects in the two tasks would communicate through Objective C messages.</font>
+
+<p><font face="Times">Similarly, several separate processes could cooperate on the editing of a single document.&nbsp; There could be a different editing tool for each type of data in the document.&nbsp; One task might be in charge of presenting a unified user interface on-screen and of sorting out which user instructions were the responsibility of which editing tool.&nbsp; Each cooperating task could be written in Objective C, with Objective C messages being the vehicle of communication between the user interface and the tools and between one tool and another.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Distributed Objects</b></font>
+
+<p><font face="Times">Remote messaging in Objective C requires a run-time system that can establish connections between objects in different address spaces, recognize when a message is intended for a remote address, and transfer data from one address space to another.&nbsp; It must also mediate between the separate schedules of the two tasks; it has to hold messages until their remote receivers are free to respond to them.</font>
+
+<p><font face="Times">NEXTSTEP includes a <i>distributed objects</i> architecture that is essentially this kind of extension to the run-time system.&nbsp; Using distributed objects, you can send Objective C messages to objects in other tasks or have messages executed in other threads of the same task.&nbsp; (When remote messages are sent between two threads of the same task, the threads are treated exactly like threads in different tasks.)</font>
+
+<p><font face="Times">To send a remote message, an application must first establish a connection with the remote receiver.&nbsp; Establishing the connection gives the application a proxy for the remote object in its own address space.&nbsp; It then communicates with the remote object through the proxy.&nbsp; The proxy assumes the identity of the remote object; it has no identity of its own.&nbsp; The application is able to regard the proxy as if it were the remote object; for most purposes, it <i>is</i> the remote object.</font>
+
+<p><font face="Times">Remote messaging is diagrammed in Figure 13 below, where object A communicates with object B through a proxy, and messages for B wait in a queue until B is ready to respond to them:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=419 height=85></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 13</b></font><font face="Times">.&nbsp; Remote Messages</font>
+
+<p><br><br>
+
+<p><font face="Times">The sender and receiver are in different tasks and are scheduled independently of each other.&nbsp; So there's no guarantee that the receiver will be free to accept a message when the sender is ready to send it.&nbsp; Therefore, arriving messages are placed in a queue and retrieved at the convenience of the receiving application.</font>
+
+<p><font face="Times">A proxy doesn't act on behalf of the remote object or need access to its class.&nbsp; It isn't a copy of the object, but a lightweight substitute for it.&nbsp; In a sense, it's transparent; it simply passes the messages it receives on to the remote receiver and manages the interprocess communication.&nbsp; Its main function is to provide a local address for an object that wouldn't otherwise have one.</font>
+
+<p><font face="Times">A remote receiver is typically anonymous.&nbsp; Its class is hidden inside the remote application.&nbsp; The sending application doesn't need to know how that application is designed or what classes it uses.&nbsp; It doesn't need to use the same classes itself.&nbsp; All it needs to know is what messages the remote object responds to.</font>
+
+<p><font face="Times">Because of this, an object that's designated to receive remote messages typically advertises its interface in a formal protocol. Both the sending and the receiving application declare the protocol--they both import the same protocol declaration.&nbsp; The receiving application declares it because the remote object must conform to the protocol.&nbsp; The sending application declares it to inform the compiler about the messages it sends and because it may use the <b>conformsTo:</b> method and the <b>@protocol() </b>directive to test the remote receiver.&nbsp; The sending application doesn't have to implement any of the methods in the protocol; it declares the protocol only because it initiates messages to the remote receiver.</font>
+
+<p><font face="Times">The distributed objects architecture, including the NXProxy and NXConnection classes, is documented in the <i>NEXTSTEP General Reference</i> manual.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Language Support</b></font>
+
+<p><font face="Times">Remote messaging raises not only a number of intriguing possibilities for program design, it also raises some interesting issues for the Objective C language.&nbsp; Most of the issues are related to the efficiency of remote messaging and the degree of separation that the two tasks should maintain while they're communicating with each other.</font>
+
+<p><font face="Times">So that programmers can give explicit instructions about the intent of a remote message, Objective C defines five type qualifiers that can be used when declaring methods inside a formal protocol:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">oneway</font><br>
+<font face="Times">in</font><br>
+<font face="Times">out</font><br>
+<font face="Times">inout</font><br>
+<font face="Times">bycopy</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These modifiers are restricted to formal protocols; they can't be used inside class and category declarations.&nbsp; However, if a class or category adopts a protocol, its implementation of the protocol methods can use the same modifiers that are used to declare the methods.</font>
+
+<p><font face="Times">The following sections explain how these five modifiers are used.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Synchronous and Asynchronous Messages</b></font>
+
+<p><font face="Times">Consider first a method with just a simple return value:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL)canDance;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a <b>canDance</b> message is sent to a receiver in the same application, the method is invoked and the return value provided directly to the sender.&nbsp; But when the receiver is in a remote application, two underlying messages are required--one message to get the remote object to invoke the method, and the other message to send back the result of the remote calculation.&nbsp; This is illustrated in the figure below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=408 height=85></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 14</b></font><font face="Times">.&nbsp; Round-Trip Message</font>
+
+<p><br><br>
+
+<p><font face="Times">Most remote messages will be, at bottom, two-way (or &quot;round trip&quot;) remote procedure calls (RPCs) like this one.&nbsp; The sending application waits for the receiving application to invoke the method, complete its processing, and send back an indication that it has finished, along with any return information requested.&nbsp; Waiting for the receiver to finish, even if no information is returned, has the advantage of coordinating the two communicating applications, of keeping them both &quot;in sync.&quot;&nbsp; For this reason, round-trip messages are often called <i>synchronous</i>.&nbsp; Synchronous messages are the default.</font>
+
+<p><font face="Times">However, it's not always necessary or a good idea to wait for a reply.&nbsp; Sometimes it's sufficient simply to dispatch the remote message and return, allowing the receiver to get to the task when it will.&nbsp; In the meantime, the sender can go on to other things. Objective C provides a return type modifier, <b>oneway</b>, to indicate that a method is used only for <i>asynchronous</i> messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (oneway void)waltzAtWill;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although <b>oneway</b> is a type qualifier (like <b>const</b>) and can be used in combination with a specific type name, such as <b>oneway float</b> or <b>oneway id</b>, the only such combination that makes any sense is <b>oneway void</b>.&nbsp; An asynchronous message can't have a valid return value.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Pointer Arguments</b></font>
+
+<p><font face="Times">Next, consider methods that take pointer arguments.&nbsp; A pointer can be used to pass information to the receiver by reference. When invoked, the method looks at what's stored in the address it's passed.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setTune:(struct tune *)aSong</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">tune = *aSong;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The same sort of argument can also be used to return information by reference.&nbsp; The method uses the pointer to find where it should place information requested in the message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getTune:(struct tune *)theSong</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*theSong = tune;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The way the pointer is used makes a difference in how the remote message is carried out.&nbsp; In neither case can the pointer simply be passed to the remote object unchanged; it points to a memory location in the sender's address space and would not be meaningful in the address space of the remote receiver.&nbsp; The run-time system for remote messaging must make some adjustments behind the scenes.</font>
+
+<p><font face="Times">If the argument is used to pass information by reference, the run-time system must dereference the pointer, ship the value it points to over to the remote application, store the value in an address local to that application, and pass that address to the remote receiver.</font>
+
+<p><font face="Times">If, on the other hand, the pointer is used to return information by reference, the value it points to doesn't have to be sent to the other application.&nbsp; Instead, a value from the other application must be sent back and written into the location indicated by the pointer.</font>
+
+<p><font face="Times">In the one case, information is passed on the first leg of the round trip.&nbsp; In the other case, information is returned on the second leg of the round trip.&nbsp; Because these cases result in very different actions on the part of the run-time system for remote messaging, Objective C provides type modifiers that can clarify the programmer's intention:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The type modifier <b>in</b> indicates that information is being passed in a message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- setTune:(in struct tune *)aSong;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The modifier <b>out</b> indicates that an argument is being used to return information by reference:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- getTune:(out struct tune *)theSong;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A third modifier, <b>inout</b>, indicates that an argument is used both to provide information and to get information back:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- adjustTune:(inout struct tune *)aSong;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NEXTSTEP distributed objects system takes <b>inout</b> to be the default modifier for all pointer arguments except those declared <b>const</b>, for which <b>in</b> is the default.&nbsp; <b>inout</b> is the safest assumption, but also the most time-consuming since it requires passing information in both directions.&nbsp; The only modifier that makes sense for arguments passed by value (nonpointers) is <b>in</b>. While <b>in</b> can be used with any kind of argument, <b>out</b> and <b>inout</b> make sense only for pointers.</font>
+
+<p><font face="Times">In C, pointers are sometimes used to represent composite values.&nbsp; For example, a string is represented as a character pointer (<b>char *</b>).&nbsp; Although in notation and implementation there's a level of indirection here, in concept there's not.&nbsp; Conceptually, a string is an entity in and of itself, not a pointer to something else.</font>
+
+<p><font face="Times">In cases like this, the distributed objects system automatically dereferences the pointer and passes whatever it points to as if by value.&nbsp; Therefore, the <b>out</b> and <b>inout</b> modifiers make no sense with simple character pointers.&nbsp; It takes an additional level of indirection in a remote message to pass or return a string by reference:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getTuneTitle:(out char **)theTitle;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The same is true of objects:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- adjustMatrix:(inout Matrix **)theMatrix;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These conventions are enforced at run time, not by the compiler.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Proxies and Copies</b></font>
+
+<p><font face="Times">Finally, consider a method that takes an object as an argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- danceWith:aPartner;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A <b>danceWith:</b> message passes an object <b>id</b> to the receiver.&nbsp; If the sender and receiver are in the same application, they would both be able to refer to the same <i>aPartner</i> object.</font>
+
+<p><font face="Times">This is true even if the receiver is in a remote application, except that the receiver will need to refer to the object through a proxy (since the object isn't in its address space).&nbsp; The pointer that <b>danceWith:</b> delivers to a remote receiver is actually a pointer to the proxy.&nbsp; Messages sent to the proxy would be passed across the connection to the real object and any return information would be passed back to the remote application.</font>
+
+<p><font face="Times">There are times when proxies may be unnecessarily inefficient, when it's better to send a copy of the object to the remote process so that it can interact with it directly in its own address space.&nbsp; To give programmers a way to indicate that this is intended, Objective C provides a <b>bycopy</b> type modifier:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- danceWith:(bycopy id)aClone;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>bycopy</b> can also be used for return values:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (bycopy)dancer;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It can similarly be used with <b>out</b> to indicate that an object returned by reference should be copied rather than delivered in the form of a proxy:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getDancer:(bycopy out id *)theDancer;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The only type that it makes sense for <b>bycopy</b> to modify is an object, whether dynamically typed <b>id</b> or statically typed by a class name.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">When a copy of an object is passed to another application, it cannot be anonymous.&nbsp; The application that receives the object must have the class of the object loaded in its address space.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Static Options</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Objective C objects are dynamic entities.&nbsp; As many decisions about them as possible are pushed from compile time to run time:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The memory for objects is <i>dynamically allocated</i> at run time by class methods that create new instances.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Objects are <i>dynamically typed</i>.&nbsp; In source code (at compile time), any object can be of type <b>id</b> no matter what its class.&nbsp; The exact class of an <b>id</b> variable (and therefore its particular methods and data structure) isn't determined until the program is running.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Messages and methods are <i>dynamically bound</i>, as described under &quot;How Messaging Works&quot; in the previous chapter.&nbsp; A run-time procedure matches the method selector in the message to a method implementation that &quot;belongs to&quot; the receiver.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These features give object-oriented programs a great deal of flexibility and power, but there's a price to pay.&nbsp; Messages are somewhat slower than function calls, for example, (though not much slower due to the efficiency of the run-time system) and the compiler can't check the exact types (classes) of <b>id</b> variables.</font>
+
+<p><font face="Times">To permit better compile-time type checking, and to make code more self-documenting, Objective C allows objects to be statically typed with a class name rather than generically typed as <b>id</b>.&nbsp; It also lets you turn some of its object-oriented features off in order to shift operations from run time back to compile time.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Static Typing</b></font>
+
+<p><font face="Times">If a pointer to a class name is used in place of <b>id</b> in an object declaration,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Matrix&nbsp; *thisObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the compiler restricts the declared variable to be either an instance of the class named in the declaration or an instance of a class that inherits from the named class.&nbsp; In the example above, <b>thisObject</b> can only be a Matrix of some kind.</font>
+
+<p><font face="Times">Statically typed objects have the same internal data structures as objects declared to be <b>id</b>s.&nbsp; The type doesn't affect the object; it affects only the amount of information given to the compiler about the object and the amount of information available to those reading the source code.</font>
+
+<p><font face="Times">Static typing also doesn't affect how the object is treated at run time.&nbsp; Statically typed objects are dynamically allocated by the same class methods that create instances of type <b>id</b>.&nbsp; If Mosaic is a subclass of Matrix, the following code would still produce an object with all the instance variables of a Mosaic, not just those of a Matrix:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Matrix&nbsp; *thisObject = [[Mosaic alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Messages sent to statically typed objects are dynamically bound, just as objects typed <b>id</b> are.&nbsp; The exact type of a statically typed receiver is still determined at run time as part of the messaging process.&nbsp; A <b>display</b> message sent to <b>thisObject</b></font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[thisObject display];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">will perform the version of the method defined in the Mosaic class, not its Matrix superclass.</font>
+
+<p><font face="Times">By giving the compiler more information about an object, static typing opens up possibilities that are absent for objects typed <b>id</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In certain situations, it allows for compile-time type checking.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It can free objects from the restriction that identically named methods must have identical return and argument types.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It permits you to use the structure pointer operator to directly access an object's instance variables.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two topics are discussed in the sections below.&nbsp; The third was covered in the previous chapter under &quot;Defining a Class.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Type Checking</b></font>
+
+<p><font face="Times">With the additional information provided by static typing, the compiler can deliver better type-checking services in two situations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">When a message is sent to a statically typed receiver, the compiler can check to be sure that the receiver can respond.&nbsp; A warning is issued if the receiver doesn't have access to the method named in the message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">When a statically typed object is assigned to a statically typed variable, the compiler can check to be sure that the types are compatible.&nbsp; A warning is issued if they're not.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An assignment can be made without warning provided the class of the object being assigned is identical to, or inherits from, the class of the variable receiving the assignment.&nbsp; This is illustrated in the example below.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">View&nbsp;&nbsp;&nbsp; *aView;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Matrix&nbsp; *aMatrix;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aMatrix = [[Matrix alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aView = aMatrix;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here <b>aMatrix</b> can be assigned to <b>aView</b> because a Matrix is a kind of View--the Matrix class inherits from View.&nbsp; However, if the roles of the two variables are reversed and <b>aView</b> is assigned to <b>aMatrix</b>, the compiler will generate a warning; not every View is a Matrix.&nbsp; (For reference, Figure 7 in the previous chapter shows a portion of the class hierarchy including View and Matrix.)</font>
+
+<p><font face="Times">There's no check when the expression on either side of the assignment operator is an <b>id</b>.&nbsp; A statically typed object can be freely assigned to an <b>id</b>, or an <b>id</b> to a statically typed object.&nbsp; Because methods like <b>alloc</b> and <b>init</b> return <b>id</b>s, the compiler doesn't check to be sure that a compatible object is returned to a statically typed variable.&nbsp; The following code is error-prone, but is allowed nonetheless:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Matrix&nbsp; *aMatrix;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aMatrix = [[Window alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">This is consistent with the implementation of <b>void *</b> (pointer to <b>void</b>) in ANSI C.&nbsp; Just as <b>void *</b> is a generic pointer that eliminates the need for coercion in assignments between pointers, <b>id</b> is a generic pointer to objects that eliminates the need for coercion to a particular class in assignments between objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Return and Argument Types</b></font>
+
+<p><font face="Times">In general, methods that share the same selector (the same name) must also share the same return and argument types.&nbsp; This constraint is imposed by dynamic binding.&nbsp; Because the class of a message receiver, and therefore class-specific details about the method it's asked to perform, can't be known at compile time, the compiler must treat all methods with the same name alike. When it prepares information on method return and argument types for the run-time system, it creates just one method description for each method selector.</font>
+
+<p><font face="Times">However, when a message is sent to a statically typed object, the class of the receiver is known by the compiler.&nbsp; The compiler has access to class-specific information about the methods.&nbsp; Therefore, the message is freed from the restrictions on its return and argument types.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Static Typing to an Inherited Class</b></font>
+
+<p><font face="Times">An instance can be statically typed to its own class or to any class that it inherits from.&nbsp; All instances, for example, can be statically typed as Objects.</font>
+
+<p><font face="Times">However, the compiler understands the class of a statically typed object only from the class name in the type designation, and it does its type checking accordingly.&nbsp; Typing an instance to an inherited class can therefore result in discrepancies between what the compiler thinks would happen at run time and what will actually happen.</font>
+
+<p><font face="Times">For example, if you statically type a Matrix instance as a View,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">View *myMatrix = [[Matrix alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the compiler will treat it as a View.&nbsp; If you send the object a message to perform a Matrix method,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id cell = [myMatrix selectedCell];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the compiler will complain.&nbsp; The <b>selectedCell</b> method is defined in the Matrix class, not in View.</font>
+
+<p><font face="Times">However, if you send it a message to perform a method that the View class knows about,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myMatrix display];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the compiler won't complain, even though Matrix overrides the method.&nbsp; At run time, Matrix's version of the method will be performed.</font>
+
+<p><font face="Times">Similarly, suppose that the Upper class declares a <b>worry</b> method that returns a <b>double</b>,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (double)worry;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">and the Middle subclass of Upper overrides the method and declares a new return type:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)worry;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If an instance is statically typed to the Upper class, the compiler will think that its <b>worry</b> method returns a <b>double</b>, and if an instance is typed to the Middle class, it will think that <b>worry</b> returns an <b>int</b>.&nbsp; Errors will obviously result if a Middle instance is typed to the Upper class.&nbsp; The compiler will inform the run-time system that a <b>worry</b> message sent to the object will return a <b>double</b>, but at run time it will actually return an <b>int</b> and generate an error.</font>
+
+<p><font face="Times">Static typing can free identically named methods from the restriction that they must have identical return and argument types, but it can do so reliably only if the methods are declared in different branches of the class hierarchy.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Getting a Method Address</b></font>
+
+<p><font face="Times">The only way to circumvent dynamic binding is to get the address of a method and call it directly as if it were a function.&nbsp; This might be appropriate on the rare occasions when a particular method will be performed many times in succession and you want to avoid the overhead of messaging each time the method is performed.</font>
+
+<p><font face="Times">With a method defined in the Object class, <b>methodFor:</b>, you can ask for a pointer to the procedure that implements a method, then use the pointer to call the procedure.&nbsp; The pointer that <b>methodFor:</b> returns must be carefully cast to the proper function type.&nbsp; Both return and argument types should be included in the cast.</font>
+
+<p><font face="Times">The example below shows how the procedure that implements the <b>setTag:</b> method might be called:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id (*setter)(id, SEL, int);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp; i;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">setter = (id (*)(id, SEL, int))[target methodFor:@selector(setTag:)];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">for ( i = 0; i &lt; 1000, i++ )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">setter(targetList[i], @selector(setTag:), i);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two arguments passed to the procedure are the receiving object (<b>self</b>) and the method selector (<b>_cmd</b>).&nbsp; These arguments are hidden in method syntax but must be made explicit when the method is called as a function.</font>
+
+<p><font face="Times">Using <b>methodFor:</b> to circumvent dynamic binding saves most of the time required by messaging.&nbsp; However, the savings will be significant only where a particular message will be repeated many times, as in the <b>for</b> loop shown above.</font>
+
+<p><font face="Times">Note that <b>methodFor:</b> is provided by the run-time system; it's not a feature of the Objective C language itself.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Getting an Object Data Structure</b></font>
+
+<p><font face="Times">A fundamental tenet of object-oriented programming is that the data structure of an object is private to the object.&nbsp; Information stored there can be accessed only through messages sent to the object.&nbsp; However, there's a way to strip an object data structure of its &quot;objectness&quot; and treat it like any other C structure.&nbsp; This makes all the object's instance variables publicly available.</font>
+
+<p><font face="Times">When given a class name as an argument, the <b>@defs()</b> directive produces the declaration list for an instance of the class.&nbsp; This list is useful only in declaring structures, so <b>@defs()</b> can appear only in the body of a structure declaration.&nbsp; This code, for example, declares a structure that would be identical to the template for an instance of the Worker class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct workerDef {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">@defs(Worker)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} *public;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here <b>public</b> is declared as a pointer to a structure that's essentially indistinguishable from a Worker instance.&nbsp; With a little help from a type cast, a Worker <b>id</b> can be assigned to the pointer.&nbsp; The object's instance variables can then be accessed publicly through the pointer:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp; aWorker;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aWorker = [[Worker alloc] init];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">public = (struct workerDef *)aWorker;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">public-&gt;boss = nil;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This technique of turning an object into a structure makes all of its instance variables public, no matter whether they were declared <b>@private</b>, <b>@protected</b>, or <b>@public</b>.</font>
+
+<p><font face="Times">Objects generally aren't designed with the expectation that they'll be turned into C structures.&nbsp; You may want to use <b>@defs() </b>for classes you define entirely yourself, but it should not be applied to classes found in a library or to classes you define that inherit from library classes.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Type Encoding</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To assist the run-time system, the compiler encodes the return and argument types for each method in a character string and associates the string with the method selector.&nbsp; The coding scheme it uses might also be of use in other contexts and so is made publicly available with the <b>@encode()</b> directive.&nbsp; When given a type specification, <b>@encode()</b> returns a string encoding that type.&nbsp; The type can be a basic type such as an <b>int</b>, a pointer, a tagged structure or union, or a class name--anything, in fact, that can be used as an argument to the C <b>sizeof()</b> operator.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp; *buf1 = @encode(int **);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp; *buf2 = @encode(struct key);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp; *buf3 = @encode(Matrix);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The table below lists the type codes.&nbsp;&nbsp; Note that many of them overlap with the codes used in writing to a typed stream. However, there are codes listed here that you can't use when writing to a typed stream and there are codes that you may want to use when writing to a typed stream that aren't generated by <b>@encode()</b>.&nbsp; (See the <i>NEXTSTEP General Reference</i> manual and the next chapter of this book for information on typed streams.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">c</font></td>
+
+<td><font face="Times">A <b>char</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">i</font></td>
+
+<td><font face="Times">An <b>int</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">s</font></td>
+
+<td><font face="Times">A <b>short</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">l</font></td>
+
+<td><font face="Times">A <b>long</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">C</font></td>
+
+<td><font face="Times">An <b>unsigned char</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">I</font></td>
+
+<td><font face="Times">An <b>unsigned int</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">S</font></td>
+
+<td><font face="Times">An <b>unsigned short</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">L</font></td>
+
+<td><font face="Times">An <b>unsigned long</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">f</font></td>
+
+<td><font face="Times">A <b>float</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">d</font></td>
+
+<td><font face="Times">A <b>double</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">v</font></td>
+
+<td><font face="Times">A <b>void</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">*</font></td>
+
+<td><font face="Times">A character string (<b>char *</b>)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">@</font></td>
+
+<td><font face="Times">An object (whether statically typed or typed <b>id</b>)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">#</font></td>
+
+<td><font face="Times">A class object (Class)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">:</font></td>
+
+<td><font face="Times">A method selector (SEL)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">[...]</font></td>
+
+<td><font face="Times">An array</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">{...}</font></td>
+
+<td><font face="Times">A structure</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">(...)</font></td>
+
+<td><font face="Times">A union</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">b<i>num</i></font></td>
+
+<td><font face="Times">A bitfield of <i>num</i> bits</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">^<i>type</i></font></td>
+
+<td><font face="Times">A pointer to <i>type</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">?</font></td>
+
+<td><font face="Times">An unknown type</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The type specification for an array is enclosed within square brackets; the number of elements in the array is specified immediately after the open bracket, before the array type.&nbsp; For example, an array of 12 pointers to <b>float</b>s would be encoded as:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[12^f]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Structures are specified within braces, and unions within parentheses.&nbsp; The structure tag is listed first, followed by an equal sign and the codes for the fields of the structure listed in sequence.&nbsp; For example, this structure,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct example {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id anObject;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *aString;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int anInt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} Example;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">would be encoded like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{example=@*i}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The same encoding results whether the defined type name (<b>Example</b>) or the structure tag (<b>example</b>) is passed to <b>@encode()</b>. The encoding for a structure pointer carries the same amount of information about the structure's fields:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">^{example=@*i}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, another level of indirection removes the internal type specification:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">^^{example}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Objects are treated like structures.&nbsp; For example, passing the Object class name to <b>@encode()</b> yields this encoding:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{Object=#}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Object class declares just one instance variable, <b>isa</b>, of type Class.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Although the <b>@encode()</b> directive doesn't return them, the run-time system also uses these additional encodings for type qualifiers when they're used to declare methods in a protocol:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Code</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">r</font></td>
+
+<td><font face="Times"><b>const</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">n</font></td>
+
+<td><font face="Times"><b>in</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">N</font></td>
+
+<td><font face="Times"><b>inout</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">o</font></td>
+
+<td><font face="Times"><b>out</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">O</font></td>
+
+<td><font face="Times"><b>bycopy</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">V</font></td>
+
+<td><font face="Times"><b>oneway</b></font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

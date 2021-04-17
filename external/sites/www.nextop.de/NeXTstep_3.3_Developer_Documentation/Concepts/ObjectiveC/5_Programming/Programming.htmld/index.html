@@ -1,0 +1,1830 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/ObjectiveC/5_Programming/Programming.rtfd -->
+<!-- Date: Sun Jun 28 19:36:48 1998 -->
+<head>
+<title>Programming</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>5</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Programming in Objective C</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When you write a program in an object-oriented language, you're almost certainly not doing it alone.&nbsp; You'll be using classes developed by others and perhaps a software kit or two.&nbsp; A kit provides a set of mutually dependent classes that work together to structure a portion, often a substantial portion, of your program.</font>
+
+<p><font face="Times">The NEXTSTEP development environment contains a number of software kits, including:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Application Kit for running an interactive and graphical user interface</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Database Kit for operating a connection to a database server</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The 3D Graphics Kit for drawing in three dimensions</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Sound Kit for recording, editing, and playing sounds</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Indexing Kit</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">for managing large amounts of textual data</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Using a library of kit classes differs somewhat from using a library of C functions.&nbsp; You can pretty much pick and choose which library functions to use and when to use them depending on the program you're designing.&nbsp; A kit, on the other hand, imposes a design on your program (at least on the part the kit is concerned with).&nbsp; When you use a kit, you'll find yourself relying on library methods to do much of the work of the program.&nbsp; To customize the kit and adapt it to your needs, you'll implement methods that the kit will invoke at the appropriate time.&nbsp; These kit-designated methods are &quot;hooks&quot; where your own code can be introduced into the kit design.&nbsp; In a sense, the usual roles of program and library are reversed.&nbsp; Instead of incorporating library code into the program, program code is incorporated into the kit.</font>
+
+<p><font face="Times">This chapter discusses what it's like to write an Objective C program, especially one based on a software kit.&nbsp; It discusses some of the programming techniques that come into play, and, as an example, explains something of how the NEXTSTEP Application Kit works.&nbsp; The final section takes up the question of combining Objective C with C++.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Starting Up</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Objective C programs begin where C programs do, with the <b>main()</b> function.&nbsp; The job of an Objective C <b>main()</b> is quite simple. Its twofold task is to:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Set up a core group of objects, and</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Turn program control over to them.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Objects in the core group might create other objects as the program runs, and those objects might create still other objects. From time to time, the program might also load classes, unarchive instances, connect to remote objects, and find other resources as they're needed.&nbsp; However, all that's required at the outset is enough structure (enough of the object network) to handle the program's initial tasks.&nbsp; <b>main()</b> puts this initial framework in place and gets it ready to go to work.</font>
+
+<p><font face="Times">Typically, one of the core objects has responsibility for overseeing the program or controlling its input&nbsp; When the core structure is ready, <b>main()</b> sends this object a message to set the program in motion:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the program is launched from a shell and takes direction from the command line, <b>main()</b>'s message could simply tell it to begin.&nbsp; It might also pass along crucial command-line arguments.&nbsp; For example, a utility that reformats files might take a target file name as an argument on the command line.&nbsp; After setting up the objects the program requires, <b>main()</b> could begin the reformatting process by passing this name to one of the objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">(In NEXTSTEP, the <b>argc</b> and <b>argv</b> arguments passed to <b>main()</b> are stored in global variables, NXArgc and NXArgv, to make them available to all parts of the program.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the program has no user interface, but exists only to run in the background and serve other applications, <b>main()</b>'s message has it begin listening for remote input.&nbsp; A number of services might be implemented as this kind of background process--for example, a sorting service, a service that checks for spelling errors, a utility that translates documents from one data format to another, or one that compresses and decompresses files.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the program is launched from the workspace, not a shell, and presents a graphical interface to the user, <b>main()</b>'s message has it begin responding to user input.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Most NEXTSTEP applications belong in this last category.&nbsp; They display windows and menus on-screen, and may have various kinds of buttons to click, text fields to type into, icons to drag, and other control devices to manipulate.&nbsp; Such an interface invites user actions on the keyboard and mouse.</font>
+
+<p><font face="Times">The core group of objects that <b>main()</b> sets up must include some that draw the user interface, and <b>main()</b> must make sure that at least part of this interface--perhaps just a menu--is placed on-screen.&nbsp; (This typically is taken care of as a by-product of loading core objects from an Interface Builder archive.)</font>
+
+<p><font face="Times">Once the initial interface is on-screen, the application will be driven not by command-line arguments or even remote messages, but by external <i>events</i>, most notably user actions on the keyboard and mouse.&nbsp; For example, when the user clicks a menu item, two events are generated--a mouse-down event when the mouse button is pressed and a mouse-up event when the button is released again.&nbsp; Similarly, typing on the keyboard generates key-down and key-up events, moving the mouse with a button pressed generates mouse-dragged events, and so on.&nbsp; Each event is reported to the application with a good deal of information about the circumstances of the user action--for example, which key or mouse button was pressed, where the cursor was located, and which window was affected.</font>
+
+<p><font face="Times">An application gets an event, looks at it, responds to it, then waits for another event.&nbsp; It keeps getting one event after another, as long as the user produces them.&nbsp; From the time it's launched to the time it terminates, almost everything the application does will derive from user actions in the form of events.</font>
+
+<p><font face="Times">The mechanism for getting and responding to events is the <i>main event loop</i> (called &quot;main&quot; because an application can also set up subordinate event loops for brief periods of time).&nbsp; One object in the core group has responsibility for running the main event loop--getting an event, generating a message that initiates the application's response to the event, then getting (or waiting for) the next event.</font>
+
+<p><font face="Times">The Application Kit defines an object to do this work; it's an instance of the Application class and is assigned to the global variable NXApp.&nbsp; After creating this object (and other objects in the core framework), the <b>main()</b> function sends it a <b>run </b>message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">main()</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXApp = [Application new];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[NXApp run];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[NXApp free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(0);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">With the <b>run</b> message, <b>main()</b>'s work is essentially done.&nbsp; The <b>run</b> method puts the application in the main event loop and has it begin responding to events.&nbsp; It remains in the loop until the user quits the application.</font>
+
+<p><font face="Times">While in the main event loop, an application can also receive input from other sources.&nbsp; For example, a music application might receive input from a MIDI (Musical Instrument Digital Interface) keyboard, an application that's hooked up to a telephone line might receive data over the line, and almost any application might receive remote messages from other applications.&nbsp; This kind of remote input is scheduled between events.&nbsp; In some cases (MIDI, for example), it might far outweigh user activity on the computer keyboard and mouse.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Using a Software Kit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Library functions impose few restrictions on the programs that use them; they can be called whenever they're needed.&nbsp; The methods in an object-oriented library, on the other hand, are tied to class definitions and can't be used unless you create an object that has access to them.&nbsp; The object must be connected to at least one other object in the program so that it can operate in the program network.&nbsp; A class defines a program component; to avail yourself of its services, you need to craft it into the structure of your application.</font>
+
+<p><font face="Times">Nevertheless, for some classes, using a library object is pretty much the same as using a library function, though on a grander scale.&nbsp; You can simply create an instance, initialize it, and insert it into an awaiting slot in your application.&nbsp; For example, NEXTSTEP includes a HashTable class that provides a hashing service that you can take advantage of as needed.</font>
+
+<p><font face="Times">In general, however, object-oriented libraries contain more than single classes that offer individual services.&nbsp; They contain kits, collections of classes that structure a problem space and present an integrated solution to it.&nbsp; Instead of providing services that you use as needed, a kit provides an entire program structure, a framework, that your own code must adapt to.&nbsp; It's a generic program model that you specialize to the requirements of your particular application.&nbsp; Rather than design a program that you plug library functions into, you plug your own code into the design provided by the kit.</font>
+
+<p><font face="Times">To use a kit, you must accept the program model it defines and employ as many of its classes as necessary to implement the model in your program.&nbsp; The classes are mutually dependent and come as a group, not individually.</font>
+
+<p><font face="Times">The classes in a software kit deliver their services in four ways:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some kit classes define &quot;off-the-shelf&quot; objects.&nbsp; You simply create instances of the class and initialize them as needed.&nbsp; The Matrix, ButtonCell, and TextFieldCell classes in the Application Kit are examples of this kind of class.&nbsp; Off-the-shelf objects are typically created and initialized using Interface Builder.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some kit objects are created for you behind the scenes; you don't need to allocate and initialize them.&nbsp; Behind-the-scenes objects are usually anonymous; a protocol specifies what messages they can respond to.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some kit classes are generic.&nbsp; The kit may provide some concrete subclasses that you can use unchanged and off-the-shelf, but you can--and in some cases are required to--define your own subclasses and complete the implementation of certain methods.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Sometimes, a kit object is prepared to keep another object informed of its actions and even delegate certain responsibilities to it.&nbsp; The messages the kit object is prepared to send are declared in a protocol.&nbsp; If you implement the protocol in a class of your own design and register an instance of the class with the kit object, your code will be connected to the kit.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The last two items on this list--subclassing and delegation--are ways of specializing the kit design and adapting it to the needs of your program.&nbsp; The next sections look in more detail at these two ways of using a kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Inheriting from Kit Classes</b></font>
+
+<p><font face="Times">A kit defines a program framework that many different kinds of applications can share.&nbsp; Since the framework is generic, it's not surprising that some kit classes are incomplete or abstract.&nbsp; A class can often do most of the work in low-level and common code, but nevertheless will require application-specific additions.</font>
+
+<p><font face="Times">These additions are made in subclasses of the kit class.&nbsp; The point of defining a subclass is to fill in pieces the kit class is missing.&nbsp; This is done by implementing a specific set of methods.&nbsp; The kit designer declares these methods, sometimes in a protocol, but typically in the kit class itself.&nbsp; The subclass simply overrides the kit version of the methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Implementing Your Own Version of a Method</b></font>
+
+<p><font face="Times">Most methods defined in a kit class are fully implemented; they exist so that you can invoke the services the class provides.&nbsp; In some cases, these methods should never be changed by the application.&nbsp; The kit depends on them doing just what they do--nothing more and nothing less.&nbsp; In other cases, the methods can be overridden, but there's no real reason to do so.&nbsp; The kit's version does the job.&nbsp; But, just as you might implement your own version of a string comparison function rather than use <b>strcmp()</b>, you can choose to override the kit method if you want to.</font>
+
+<p><font face="Times">However, a few kit methods are designed to be overridden; they exist so that you can add specific behavior to the kit.&nbsp; Often, the kit-defined method will do little or nothing that's of use to your application, but will appear in messages initiated by other methods.&nbsp; To give content to the method, your application must implement its own version.</font>
+
+<p><font face="Times">It's possible to distinguish four different kinds of methods that you might define in a subclass:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some methods are fully implemented by the kit, and are also invoked by the kit; you wouldn't invoke them in the code you write.&nbsp; These methods exist in the interface for just one reason--so that you can override them if you want to.&nbsp; They give you an opportunity to substitute your own algorithm for the one used by the kit.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">For example, the <b>placePrintRect:offset:</b> method is invoked to position an image on the printed page.&nbsp; The kit version of this method works fine and is rarely overridden.&nbsp; But if you want to do it differently, you can replace the kit version with your own.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some methods make object-specific decisions.&nbsp; The kit may implement a default version of the method that makes the decision one way, but you'll need to implement your own versions to make a different decision where appropriate. Sometimes, it's just a matter of returning YES instead of NO, or of calculating a specific value rather than the default.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">For example, Views in the Application Kit are sent <b>acceptsFirstResponder</b> messages asking, among other things, if they can display the user's typing.&nbsp; By default, the View method returns NO--most Views don't accept typed input.&nbsp; However, some View subclasses (such as the Text class) do; they have to override the method to return YES.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some methods must be overridden, but only to add behavior, not to alter what the kit-defined method does.&nbsp; When your application implements one of these methods, it's important that it incorporate the very method it overrides.&nbsp; This is done by messaging <b>super</b> to perform the kit-defined version of the method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Occasionally, the kit method will have generic code that sets up the specific work to be accomplished in the subclass version of the method, and so must be included with the code you write.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">More often, the method is one that every class is expected to contribute to.&nbsp; For example, Chapter 4 discussed how initialization (<b>init</b>...) methods are chained together through messages to <b>super</b>, and also how it was necessary to implement versions of the <b>write:</b> and <b>read:</b> methods to archive and unarchive instance variables declared in the class.&nbsp; So that a <b>write: </b>message will archive all of an object's instance variables, not just those declared in the subclass, each version of the method begins by incorporating the version it overrides.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some kit methods do nothing at all, except return <b>self</b>.&nbsp; These are methods that the kit can't define even in rudimentary form since they carry out tasks that are entirely application-specific.&nbsp; There's no need to incorporate the kit implementation of the method in the subclass version.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Most methods that are to be overridden in a subclass belong in this group.&nbsp; It includes, among others, the principal methods you implement to draw (<b>drawSelf::</b>) and respond to events (<b>mouseDown:</b> and others).&nbsp; To keep the interface simple, kit classes generally try to isolate the responsibilities of their subclasses in methods unencumbered by superclass code.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It's important to note that you're not on entirely on your own when you implement your own version of a method.&nbsp; Subclass methods can often be built from facilities provided in the kit.&nbsp; An event-handling method, for example, can call on other kit methods and functions to do much of the work.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Implementing Methods You Don't Invoke</b></font>
+
+<p><font face="Times">The kit methods you override in a subclass generally won't be ones that you'll invoke yourself, at least not directly.&nbsp; You simply implement the method and leave the rest up to the kit.</font>
+
+<p><font face="Times">In fact, the more likely you are to write an application-specific version of a method, the less likely you are to use it in your own code.&nbsp; There's good reason for this.&nbsp; There are really only two reasons for a kit class to declare a method.&nbsp; Methods are provided so that you can either:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Invoke them to avail yourself of the services the class provides, or</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Override them to introduce your own code into the kit.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If a method is one that you can invoke, it's generally fully defined by the kit and doesn't need to be redefined in your code.&nbsp; If the method is one that you need to implement, the kit has a particular job for it to do and so will invoke the method itself at the appropriate times.</font>
+
+<p><font face="Times">Much of the task of programming an object-oriented application is implementing methods that you use only indirectly, through messages arranged by the kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Inheriting the Framework</b></font>
+
+<p><font face="Times">New instances of a subclass are ready to take their place in the network of objects the kit defines.&nbsp; They inherit the ability to work with other objects from the kit.&nbsp; For example, if you define a Cell subclass, instances of the new class will be able to connect with a Matrix just like ButtonCells, TextFieldCells, and other kinds of kit-defined Cell objects.</font>
+
+<p><font face="Times">The kit superclass defines a set of outlet connections to other objects and provides a mechanism for setting those connections, sometimes automatically.&nbsp; Instances of the subclass fit into the kit framework as if they were defined in the kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Connecting to Kit Objects</b></font>
+
+<p><font face="Times">A kit framework can never be complete.&nbsp; It can cover much of the terrain, but it can't anticipate all the details of every application or what additional structure they'll need.&nbsp; Therefore, kits generally provide ways for you to hook your own objects up to kit objects.</font>
+
+<p><font face="Times">This is usually done by implementing an object that can respond to messages declared in a protocol and registering the object with a kit object.&nbsp; For example, several classes in the NEXTSTEP software kits permit you to register a delegate:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myWindow setDelegate:myObject];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Delegation is one of the principal ways that the objects you design to do the basic work of your application can be connected to a kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Delegation</b></font>
+
+<p><font face="Times">Delegates mainly receive two kinds of messages:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Messages that notify the delegate of what the kit object is doing</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Messages that assign some specific task to the delegate</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification messages are easy to recognize in the interface; the methods that respond to them are typically named for the action the kit object took or is about to take, not for what the method will be implemented to do.&nbsp; For example, names like <b>browserDidScroll:</b> or <b>textWillConvert:fromFont:toFont:</b> are typical of notification methods in the Application Kit.&nbsp; The method can be implemented to do anything the application needs to keep current with the activity of the kit object.</font>
+
+<p><font face="Times">Notifications after the fact allow the delegate to coordinate other activities with the actions of the kit object, but they don't give the delegate any control over the kit.&nbsp; For example, a Window object's delegate receives <b>windowDidResize:</b> messages after the user resizes the window.</font>
+
+<p><font face="Times">Prior notifications permit the same kind of coordination, but in addition may give the delegate a chance to approve or disapprove of the impending action, or to modify it in some way.&nbsp; For example, a Window sends its delegate <b>windowWillResize:toSize: </b>messages as the user drags an outline of the window to resize it.&nbsp; The message gives the delegate a chance to constrain the size of the window.</font>
+
+<p><font face="Times">True delegation messages, those that assign a specific responsibility to the delegate, use a different naming scheme.&nbsp; The methods that respond to these messages are, like most methods, named for what the method is supposed to do, not for what the kit did.&nbsp; For example, a kit object might send a <b>browser:loadCell:atRow:inColumn:</b> message to its delegate when it needs data to display in a browser on-screen, or an <b>app:openFile:type:</b> message when it needs help in opening a file.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Other Kit Outlets</b></font>
+
+<p><font face="Times">Assigning a delegate is just one way of making a connection to a kit object.&nbsp; In the Application Kit, for example, you can also assign owners to Pasteboard objects and targets to control devices (button, sliders, and the like).&nbsp; These different kinds of connections--delegates, targets, owners, and others--name the various kinds of outlet connections that kit objects maintain to the objects you invent.&nbsp; Each specifies the kind of role your object will play in the kit design.</font>
+
+<p><font face="Times">Different kinds of outlets have different responsibilities.&nbsp; The pasteboard's owner, for example, is responsible for providing data when it's needed for a Paste operation.&nbsp; A target is entrusted with carrying out the command of a control device.</font>
+
+<p><font face="Times">Each kit defines its own group of outlets, plus the methods for setting them.&nbsp; Outlets often can be set graphically within Interface Builder while programming the user interface.&nbsp; Although there are <b>setDelegate:</b> and <b>setTarget:</b> methods, for example, delegates and targets are almost always set in Interface Builder.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Programming with the Application Kit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Instead of talking about software kits in the abstract, it's helpful to turn to a specific example--the NEXTSTEP Application Kit. Each NEXTSTEP kit covers a certain terrain.&nbsp; For the Application Kit, it's the user interface and the attendant tasks of drawing on the screen, printing, and organizing the interaction with the user.&nbsp; To show the logic of the Kit and of the framework it defines, the following sections start from the ground up.&nbsp; They build a rationale for the kit, then look at what tasks it takes on, how it's structured, and how your own code can be made to fit within that structure.</font>
+
+<p><font face="Times">For this example, it's necessary to shift gears to some extent and examine, in general terms, the architecture of NEXTSTEP applications.&nbsp; What follows is an overview.&nbsp; Don't be concerned about every method or line of code that's mentioned here--there are other manuals that go into greater detail--but concentrate instead on the general concepts introduced, and especially on the division of labor between the Application Kit and the code that you would write.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>NEXTSTEP Applications</b></font>
+
+<p><font face="Times">The Application Kit is the basic kit used by all NEXTSTEP applications.&nbsp; It's designed for interactive applications that cooperate with each other in a multitasking environment and present a graphical interface to the user.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NEXTSTEP applications cooperate by sharing the screen and other resources, and also by sharing the work.&nbsp; They're able to split up tasks and make use of the services provided by other applications.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NEXTSTEP applications have a graphical interface that structures the user's interaction with the computer, making it easy and intuitive.&nbsp; Rather than use the command line or a multitude of function keys, NEXTSTEP applications employ software control devices--buttons, scrollers, sliders, and the like--to get information from the user.&nbsp; They're more likely to use graphical devices that the user can directly manipulate, like icons and scrollers, than require indirect or typed instructions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NEXTSTEP applications are interactive--they take instructions from the user through the keyboard and mouse and respond visually through the graphical interface.&nbsp; (They can also respond in other ways, but a visual component in always present.) The interaction between the user and the application is immediate and ongoing--like the give and take of a friendly conversation.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This kind of user interface must be a fundamental part of each application's design, not just something that's tacked on at the end.&nbsp; The more an application is able to take advantage of the graphical possibilities of the screen and the more effectively it puts the user in charge, the more successful it will be.&nbsp; Thus, in large part, applications need to be designed around the user interface and the two principal tasks it imposes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Getting user input from the keyboard and mouse, interpreting it, and responding to it without delay.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Drawing the application's interface on the screen and continually updating the display in response to user actions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These can be formidable tasks.&nbsp; While easy and intuitive for the user, an interactive graphical interface can be quite intricate from the programmer's perspective.&nbsp; They demand a lot of time and a lot of code.</font>
+
+<p><font face="Times">The Application Kit is designed to reduce this effort.&nbsp; The Kit takes over much of the user-interface work, so your application doesn't need to be concerned with it at all.&nbsp; For example, it provides ready-made windows and a set of software control devices with built-in code for drawing and responding to user actions.</font>
+
+<p><font face="Times">Of course, the Kit can't handle every user action or do all the drawing.&nbsp; If it did, there would be no way for you to develop an application--to put your own interpretation on input from the user or put your own output on the screen.&nbsp; The goal of the Kit is not to constrain what an application can do, but to set up a structure that makes it easy for it to draw and interpret user input. The Kit assumes most of the low-level burden of these tasks, while allowing you complete freedom to construct any kind of interactive application you want.</font>
+
+<p><font face="Times">Since getting user input and providing drawing output are fundamental to the design of an application, the way the Kit structures these tasks becomes the core of a basic program structure for the entire application.&nbsp; This structure is built around the event cycle.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Event Cycle</b></font>
+
+<p><font face="Times">NEXTSTEPapplications are controlled by the actions of the user on the keyboard and mouse.&nbsp; These actions are reported to the application as <i>events</i>--discrete packets of information that record what the user did along with other relevant information (such as where the cursor was located at the time and which window was affected).&nbsp;&nbsp; For example, a key-down event is generated when the user presses a key on the keyboard, and a key-up event when the key is released again.&nbsp; Mouse-down, mouse-dragged, and mouse-up events are generated when the user presses a mouse button, moves the cursor on-screen with the button down, and then releases the button.&nbsp; Each event records one atomic user action.</font>
+
+<p><font face="Times">Almost everything the application does, it does on direct instructions from the user in the form of events.&nbsp; This is what's meant when it's said that an application is &quot;driven by events&quot;--the user drives the application.&nbsp; An application can choose just what events it wants to receive and just how to react to them, but the cycle of getting an event, responding to it, then getting another event is universal.</font>
+
+<p><font face="Times">Applications invite user actions by the graphical user interface they draw on-screen.&nbsp; An empty text field with a blinking caret, for example, lets the user know it's appropriate to enter text.&nbsp; A button or menu command solicits a click.&nbsp; The knob of a scroller looks like something that might be grabbed and moved along the bar.</font>
+
+<p><font face="Times">Once the user acts and an event is received, an application must draw again to keep up its end of the conversation with the user--to provide a visible response to the user's actions.&nbsp; It's useful, in fact, to think of applications drawing for three overlapping reasons, all of them related to the cycle of getting and responding to events.&nbsp; An application draws:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To present itself to the user.&nbsp; At start up, an application draws its user interface on-screen, then prepares to receive events. As it runs, it continues to update its user interface in response to events.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To provide immediate feedback that an event has been received.&nbsp; For example, a button is highlighted and a typed character appears in place.&nbsp; This feedback lets users know that the application is responsive and paying attention.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To display the results of the user's work.&nbsp; The reason for using a computer is not to experience the user interface or watch buttons highlight, but to get something done.&nbsp; The user's work is captured as data.&nbsp; Only when it displays this data--whether it's an edited document, a scanned image, a graph picturing some information, or the current configuration of pieces on a game board--does the screen become a real &quot;workspace.&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Thus, at start up, an application draws its interface on the screen.&nbsp; The user chooses what to do and generates an event.&nbsp; The application responds to the event and alters the display, while the user again acts to generate another event.</font>
+
+<p><font face="Times">This cycle of drawing and events is illustrated below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=220 height=224></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 22</b></font><font face="Times">.&nbsp; The Event Cycle</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Window Server</b></font>
+
+<p><font face="Times">All of an application's event input and drawing output flows through a single process--the Window Server.&nbsp; The Server is a low-level process that runs in the background; it doesn't have or need a user interface of its own.&nbsp; Its primary function is to provide client applications with windows where they can draw.&nbsp; It can serve any number of clients; there's just one Server for all the applications running on any given machine.</font>
+
+<p><font face="Times">At start up, every NEXTSTEP application establishes a connection to the Window Server.&nbsp; The application and the Server run independently of each other, but maintain a two-way communication channel.&nbsp; As the application runs, it requests the windows it needs, and the Server provides them.&nbsp; Each client application has an independent operating context within the Server and its own set of windows.</font>
+
+<p><font face="Times">All of a client application's drawing output is confined within window boundaries; it's impossible to draw directly on-screen outside a window.&nbsp; So the application presents itself--its user interface--within windows, and users do their work within windows.&nbsp; It's natural, therefore, for windows to be the focus of user actions.&nbsp; Consequently, the Window Server plays a principal role for both drawing output and event input:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It interprets the client's drawing code and renders it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It monitors the keyboard and mouse, and turns the user's actions on those devices into events for the intended application.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Putting the Window Server into the event cycle shown in Figure 22 above, the picture looks something like this:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F4.gif" width=233 height=201></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 23</b></font><font face="Times">.&nbsp; The Window Server in the Event Cycle</font>
+
+<p><br><br>
+
+<p><font face="Times">Drawing instructions are typically encoded in the PostScript</font><font size="-2"><sup>&reg;</sup></font><font face="Times">language.&nbsp; (Three dimensional images from the 3D Graphics Kit are encoded using RenderMan</font><font size="-2"><sup>&reg;</sup></font><font face="Times">.)&nbsp; As the illustration above shows, the Window Server includes a PostScript interpreter that receives drawing code and renders it.</font>
+
+<p><font face="Times">PostScript code is captured within Objective C by a set of C functions that correspond to PostScript operators.&nbsp; For example, this PostScript code</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/radius 50 def</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">10 {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0.333 setgray</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">radius neg radius neg radius 2 mul radius 2 mul rectfill</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0.667 setgray</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0 0 radius 0 360 arc</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fill</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/radius radius 0.707 mul def</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} repeat</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">can be written in C as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float radius = 50.0;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">for ( i = 0; i &lt; 10 ; i++ ) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSsetgray(0.333);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSrectfill(0.0-radius, 0.0-radius, radius*2.0, radius*2.0);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSsetgray(0.667);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSarc(0.0, 0.0, radius, 0.0, 360.0);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSfill();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">radius = 0.707 * radius;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This code draws a series of ten inset circles and squares that looks like this:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=100 height=100></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the C version, the control loop and calculations are done in C.&nbsp; PostScript code is delivered to the Window Server only to produce the image.&nbsp; This is accomplished by the <b>PSsetgray()</b>, <b>PSrectfill()</b>, <b>PSarc()</b>, and <b>PSfill()</b> functions, corresponding to the <b>setgray</b>, <b>rectfill</b>, <b>arc</b>, and <b>fill</b> operators.</font>
+
+<p><font face="Times">In addition to the library of single-operator &quot;PS&quot; functions, a utility called <b>pswrap</b> creates C functions that send definable bundles of PostScript code to the interpreter in the Window Server.&nbsp; The following declaration will compile to a single function, <b>drawSquaresAndCircles()</b>, that, when called with the proper argument, will draw the same figure as the code shown above.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">defineps drawSquaresAndCircles(float initial)</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/radius initial def</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">10 {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">0.333 setgray</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">radius neg radius neg radius 2 mul radius 2 mul rectfill</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">0.667 setgray</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">0 0 radius 0 360 arc</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">fill</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/radius radius 0.707 mul def</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} repeat</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">endps</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This version makes the initial radius (one-half the side of the outer square) a parameter of the function.&nbsp; The values passed to <b>setgray</b> and the other operators could also have been parameterized to make the function more generally useful.&nbsp; Note that this version keeps the control loop and all calculations within the PostScript code.&nbsp; Generally, it's more efficient to do that kind of work in compiled C code, and just do the drawing in interpreted PostScript.</font>
+
+<p><font face="Times">Calling either a single-operator function or a <b>pswrap</b>-generated function delivers PostScript code to the Window Server, where it will be interpreted and the image it describes rendered.</font>
+
+<p><font face="Times">That's just what Application Kit objects do.&nbsp; The Kit defines objects that draw most of the user-interface devices (such as buttons, sliders, window title bars, and the like) that your application will need.&nbsp; There's also a Text object to draw editable text. Your application can concentrate on drawing just what's unique to it.</font>
+
+<p><font face="Times">In addition to functions that wrap around PostScript code, the Kit has other facilities to aid in the drawing code you write.&nbsp; For example, NXImage objects can manage the presentation of images produced from various kinds of data.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Event Loops</b></font>
+
+<p><font face="Times">After setting itself up and placing its initial user interface on-screen, an application begins the cycle of getting and responding to events.&nbsp; In code, the cycle is manifested as the <i>main event loop</i>.&nbsp; In outline form, it looks something like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL running = YES;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( running ) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>get an event</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>respond to it</i> */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As long as an application is running, it stays in the main event loop and continues to get and respond to events as they're generated.&nbsp; It remains in the loop even when it's inactive--when the user turns to another application, for example, or takes a nap.&nbsp; While it waits for events, the application doesn't consume system resources or compete with other applications for processing time.</font>
+
+<p><font face="Times">As part of its response to an event, an application can set up a subordinate event loop for a short period of time.&nbsp; Like the main event loop, a subordinate loop gets and responds to events, but is typically focused on only a small subset of events.&nbsp; The loop puts the application into a temporary mode that's broken by an appropriate user action; subordinate loops are therefore referred to as <i>modal event loops</i>.</font>
+
+<p><font face="Times">In the NEXTSTEP user interface, modal event loops are used in only a limited number of situations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For attention panels.&nbsp; When an attention panel is on-screen, the user's actions within the application are limited.&nbsp; Only actions that affect the panel are permitted.&nbsp; The loop is broken when the user dismisses the panel.&nbsp; Like the main event loop, modal loops for attention panels are implemented by the Application Kit.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">For coordinating events.&nbsp; These are typically &quot;spring-loaded&quot; event loops that last only as long as the user holds down a mouse button or a key.&nbsp; For example, when an application gets a mouse-down event while the cursor is over a button or menu command, it sets up a temporary event loop that tracks the movement of the cursor through mouse-dragged events while waiting for a mouse-up event.&nbsp; When the inevitable mouse-up event is received, the loop is broken and the action of the button or menu command is performed (provided the cursor hasn't moved away).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">A coordinating event loop can also be devised to collect a number of similar events, so they can be handled together.&nbsp; For example, while the user is typing, an application might collect a small number of key-down events before rendering the characters on-screen.&nbsp; The loop is broken when the user stops generating the expected type of event (stops typing or hesitates momentarily) or enough events have been collected to handle efficiently as a group.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Each modal event loop operates inside another event loop and, ultimately, inside the main event loop.&nbsp; For example, a spring-loaded event loop might operate directly inside the main event loop or inside a modal event loop for an attention panel. When the inner loop is broken, the outer loop will get the next event.&nbsp; The main event loop isn't broken until the application terminates.</font>
+
+<p><font face="Times">The main event loop works identically in all applications; it's common code that can be implemented by the Application Kit. The Kit also defines a number of off-the-shelf objects that run modal event loops, including attention panels and &quot;spring-loaded&quot; event loops that track the cursor.&nbsp; You can invent your own objects to do the same.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Other Input</b></font>
+
+<p><font face="Times">Event loops embody the principle that &quot;applications are driven by events.&quot;&nbsp; But applications aren't driven only by events, so event loops must also accommodate other kinds of input:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To be cooperative in a multitasking environment like NEXTSTEP, applications need to communicate not just with the user, but with each other; they need to be able to respond to remote messages.&nbsp; For example, an application might receive a message asking it to supply some data in text form to a word processor, or it might get a message from the Workspace Manager requesting it to open another file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some applications might expect input from an external device other than the keyboard or mouse, or might need to read data that accumulates in a file.&nbsp; For example, an application might monitor changes to a central database.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In addition, an application might want to do something at regular intervals, and so might regard the mere passage of time as sufficient reason to take action.&nbsp; It needs to respond to <i>timed entries</i>, procedures that are called periodically.&nbsp; For example, an application could register a timed entry to animate a display, or to cause files to be saved at regular intervals.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An application responds to these other types of input between events.&nbsp; When it's time to get the next event, the application first checks whether any remote messages have been received, any data is waiting at a monitored port or file, or it's time to call a timed entry.&nbsp; If so, the next event (if one is waiting) can be postponed.</font>
+
+<p><font face="Times">Each additional source of input has an assigned priority.&nbsp; The choice of what to respond to next is made by weighing the various priorities against the threshold importance of getting the next event.&nbsp; If an event and a remote message are both waiting for a response, the application could pick the remote message first and postpone the event, or do it the other way around and pick the event first.&nbsp; For example, while in a modal event loop, an application might not want to be interrupted by a remote message that it would be willing to receive between events in the main event loop.&nbsp; Once your application sets the priorities, the Application Kit manages this decision-making process for you.</font>
+
+<p><font face="Times">Events are the most important input for almost all applications, both because they're generally more common than the other types of input and because they convey instructions directly from the user.</font>
+
+<p><font face="Times">But, like events, the other types of input are also usually due to user activity; they indirectly derive from events.&nbsp; A remote message is typically prompted by an event in another application, data is received at monitored ports and files due to user activity elsewhere, and a timed entry is usually registered because of the events the application receives.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Application Kit Objects</b></font>
+
+<p><font face="Times">The Application Kit defines objects that play critical roles in every part of the event cycle.&nbsp; These objects take over the elementary work of running the main event loop, managing windows, and drawing in them.&nbsp; They structure the event cycle and, in so doing, also structure the application.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The Application object runs the application's connection to the Window Server and initiates its main event loop.&nbsp; It gets events from the Server and distributes them to the objects that will respond.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Window objects correspond to the application's windows.&nbsp; Each object communicates with the Window Server to create and manage a window and responds to events that concern the window.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">View objects draw within windows.&nbsp; Each object controls a particular region within a window and handles events associated with that region.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Each application has just one Application object, several Windows, and many Views.&nbsp; The Application object keeps a list of all the Windows, and each Window organizes a set of Views.&nbsp; When an event is received, the Application object decides which window it matters to, and passes it to the Window object for that window.&nbsp; The Window decides which View it concerns and hands it to the View.</font>
+
+<p><font face="Times">This could be the View that's displaying the current selection and handling typing within the key window, and so needs to receive the key-down events that the typing generates.&nbsp; Or it might be a View that drew an icon that the user clicked, and so must get the mouse-down event for the click.</font>
+
+<p><font face="Times">When a View gets an event, it responds to it, at least in part, by altering the display--for example, by inserting new characters into the stream of text or highlighting the icon that was clicked.</font>
+
+<p><font face="Times">An application in the event cycle looks something like this:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=242 height=316></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 24</b></font><font face="Times">.&nbsp; Inside an Application in the Event Cycle</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Application Object</b></font>
+
+<p><font face="Times">Every program must have an Application object to act as its contact with the Window Server.&nbsp; The Application object has four principal tasks:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It supervises the entire program, receiving events from the Server and dispatching them to the appropriate Window objects for distribution to their Views.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It manages all the application's Windows (much as each Window object manages its Views).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It handles changes to the application's status.&nbsp; It can make it the currently active application, hide and unhide it, and terminate it when the user quits.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It keeps global information shared by other objects.&nbsp; So that all objects can readily take advantage of its services, it's assigned to the global variable NXApp.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Application class is not abstract; it defines an off-the-shelf object that you can use without subclassing.&nbsp; To coordinate your own code with the Application object, you can assign it a delegate of your own design.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Window Objects</b></font>
+
+<p><font face="Times">Every window the user sees on-screen is managed by a separate Window object.&nbsp; At the lowest level, windows are implemented by the Window Server.&nbsp; Generally, when a new Window object is created, the Server produces the window it will manage.&nbsp; However, to conserve memory and reduce start-up time, you can delay creating the window until it's placed on-screen; you can also arrange for the Window object to destroy the window when it's removed from the screen and get a new one when it's needed again.&nbsp; So it's possible for a Window object to be temporarily without a window and to be paired, at various times, with a variety of different window devices.&nbsp; The object corresponds to the user's conception of a window, not necessarily to its lower-level implementation.</font>
+
+<p><font face="Times">The Window object takes care of drawing the window's title bar and frame, and it responds to user actions that move the window, miniaturize and close it.&nbsp; It handles all window-specific communication with the Window Server.</font>
+
+<p><font face="Times">In addition to the Window class, the Application Kit provides a number of more specific classes that inherit from Window:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some, such as Panel, Menu, and PopUpList, provide the specialized form and behavior expected of panels, menus, and pop-up lists in the user interface.&nbsp; But their specific contents can be set by the application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Others, such as FontPanel and OpenPanel, have fixed contents and fulfill specific roles in the user interface.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Instances of the Window class, on the other hand, are more generic; they can be assigned any content the application requires. Typically, they're used to display the work of the user, such as text, graphics, a game board, or a form for entering information in a database.</font>
+
+<p><font face="Times">You give content to a Window by assigning it Views.&nbsp; Each Window contains a set of hierarchically arranged Views; you can place a View anywhere in the hierarchy.&nbsp; At the top of the hierarchy is the <i>content view</i>, which fills the entire content area of the window inside the frame and title bar.&nbsp; Other Views are in charge of smaller areas (such as a particular text field or scroller), or larger areas (such as an entire document) that are clipped to the visible area within the window.</font>
+
+<p><font face="Times">Like the Application object, Windows can be taken off-the-shelf and used without subclassing, though you might define a subclass of Panel (Window's subclass) to set up a particular kind of panel.&nbsp; To connect any Window object (including a Panel, a Menu, or a PopUpList) with application-specific code, you can assign it a delegate.&nbsp; Other kinds of Windows inherit the ability to have a delegate from the Window class.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Views</b></font>
+
+<p><font face="Times">Views are the objects in charge of drawing and handling keyboard and mouse events.&nbsp; Each View owns a rectangular region associated with a particular window and is responsible for drawing one part of a window's contents.&nbsp; It produces images within its rectangle--typically by calling C functions that wrap around PostScript code--and responds to events associated with the images it draws.&nbsp; Its drawing is clipped to the rectangle.</font>
+
+<p><font face="Times">Views adopt coordinate systems that are convenient for the drawing and event handling they do.&nbsp; Typically, the coordinate origin is at the lower (or upper) left corner of the View rectangle.&nbsp; This is illustrated in the figure below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../Images/F6.gif" width=271 height=211></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 25</b></font><font face="Times">.&nbsp; A View in a Window</font>
+
+<p><br><br>
+
+<p><font face="Times">Views can be moved and resized, much as windows can.&nbsp; Each View is part of a hierarchy that includes all the Views associated with the window.&nbsp; One View can be made up of other Views.</font>
+
+<p><font face="Times">The View class is abstract.&nbsp; It implements the overall mechanism for drawing and event handling--organizing the hierarchy of Views, making sure they're in focus before they draw, getting events to the correct View, and so on--but the specific content of methods that draw and respond to events is left up to the application.&nbsp; They have to be implemented in subclasses.</font>
+
+<p><font face="Times">The objects defined by View subclasses fall into three major groups:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Views that display data and enable the user to change and manipulate it.&nbsp; The Views that display editable text for a word processor or images for a graphics editor fall into this group, as do the Views that display data in a spreadsheet or the game board for a chess program.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Views that capture instructions from the user and pass them on to other objects.&nbsp; Views that implement control devices like buttons, sliders, and text fields belong in this group.&nbsp; Their job is to interpret a user action and translate it into a more specific instruction for the application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Views that are used in conjunction with other Views, either to enhance or to regulate the display.&nbsp; This group includes Views that scroll other Views, split the display into two or more resizable sections, or simply enclose other Views within a frame.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Views that belong to the first group are wholesale consumers of events; they display the direct results of the user's actions. Views in the second group act as intermediaries for actions that ultimately are intended to affect other objects.&nbsp; (Because of their importance to program structure, these Views are discussed in a little more detail under &quot;Controls&quot; below.)&nbsp; Views in the third group give users some control over what they see on-screen.</font>
+
+<p><font face="Times">The Application Kit defines off-the-shelf Views in each group--the Text object in the first group, Matrix, Form, and other controls in the second, and ScrollView, ClipView, and others in the third.&nbsp; However, most programs need to add to these objects with their own customized View subclasses.</font>
+
+<p><font face="Times">Unlike Windows and the Application object, Views don't have delegates (though you could implement a View subclass that had one).&nbsp; Since you must define a View subclass to hold application-specific code anyway, any coordinating code that would otherwise be placed in the delegate can go in the subclass instead.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Fitting into the Event Cycle</b></font>
+
+<p><font face="Times">The Application, Window, and View classes set up a basic framework for handling the application's end of the event cycle. The application must fill in this framework by giving it specific drawing and event-handling content.&nbsp; You may also need to coordinate the activities of your own objects with the objects defined in the kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Handling Events</b></font>
+
+<p><font face="Times">Events are delivered to Views in messages named after the event.&nbsp; For example, a mouse-down event is delivered as a <b>mouseDown:</b> message and a key-down event as a <b>keyDown:</b> message.&nbsp; Each message carries a pointer to a record of the event (a structure of type NXEvent).</font>
+
+<p><font face="Times">To handle an event, a View must have a method that can respond to the <i>event message</i> that delivers it.&nbsp; Since each application, and each kind of View, responds to events differently, the implementation of these methods is left to View subclasses.</font>
+
+<p><font face="Times">Methods that respond to event messages sometimes set up modal event loops.&nbsp; For example, to coordinate a mouse-down event with the subsequent mouse-up event, or to track the cursor while the user holds the mouse button down, a <b>mouseDown:</b> method might get mouse-dragged and mouse-up events directly from the Application object.&nbsp; The modal loop is broken when the mouse-up event arrives.&nbsp; Such a method might look something like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- mouseDown:(NXEvent *)thisEvent</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shouldLoop = YES;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; oldMask;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXEvent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *nextEvent;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>Make the initial response to the mouse-down event here.</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">oldMask = [window addToEventMask:NX_MOUSEDRAGGEDMASK];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while ( shouldLoop ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">nextEvent = [NXApp getNextEvent:(NX_MOUSEUPMASK |</font><br>
+<img src="../../../Images/sp.gif" width=411 height=1><font face="Courier" size="-1">NX_MOUSEDRAGGEDMASK)];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">switch ( nextEvent-&gt;type ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">case NX_MOUSEUP:</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">shouldLoop = NO;</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">case NX_MOUSEDRAGGED:</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">/* <i>Track the position of the cusor as</i>&nbsp;&nbsp;&nbsp;&nbsp; *</font><br>
+<img src="../../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">* <i>reported in mouse-dragged events here.</i> */</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">default:</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* <i>Respond to the mouse-up event that broke the loop here.</i> */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[window setEventMask:oldMask];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Briefly, this method responds to a mouse-down event by resetting the window's event mask to include mouse-dragged events.&nbsp; It then sets up a subordinate event loop that looks only for mouse-dragged and mouse-up events.&nbsp; While waiting for the mouse-up event that will break the loop, it tracks the position of the cursor through the mouse-dragged events it receives.&nbsp; (All of the programming elements used in this example are defined in the Application Kit and documented in the <i>NEXTSTEP General Reference</i>.)</font>
+
+<p><font face="Times">Such a method might respond to a click by first highlighting the image that was clicked (on the mouse-down event) then taking the required action (on the mouse-up event).&nbsp; Or it might continually update the position of an image the user is dragging, or highlight a range of text as the user drags over it.</font>
+
+<p><font face="Times">The Application Kit's event-handling mechanism makes sure the event message gets to the View.&nbsp; All the View subclass needs to do is implement the method.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Drawing</b></font>
+
+<p><font face="Times">Views draw at two different times and in two different ways.&nbsp; They draw proactively to present themselves to the user (that is, to present what the display within the View rectangle currently looks like) and reactively in response to events.&nbsp; Reactive drawing is temporary--the highlighting of a button while the cursor is over it or of text as the user drags across it.&nbsp; It gives immediate feedback to the user.&nbsp; Proactive drawing is more permanent.&nbsp; It can change as the result of events, of course, but it doesn't track the user's action.</font>
+
+<p><font face="Times">For example, as the user drags to select a range of text, the amount of highlighted text changes as the cursor moves.&nbsp; This drawing reacts to the movement of the cursor as reported in mouse-dragged events.&nbsp; When the user releases the mouse button to finish the selection, the text stays highlighted.&nbsp; The highlighting has become an inherent part of the text display (at least until the next event), and part of what the View will proactively present when asked to display itself.</font>
+
+<p><font face="Times">Reactive drawing happens in methods that respond to event messages, such as the <b>mouseDown:</b> method illustrated above. Proactive drawing happens as the result of display messages.&nbsp; A View can be asked to display its contents at any time.&nbsp; For example, a View that draws editable text would receive a display message when its window first comes on-screen.&nbsp; Later it might receive display messages when the text is scrolled, after the user makes some editing changes, or when the image is magnified.</font>
+
+<p><font face="Times">The Application Kit's display mechanism makes sure that Views receive display messages when they need to refresh their images on-screen.&nbsp; However the Kit can't know what image to draw.&nbsp; To do the actual drawing, a display message invokes the <b>drawSelf::</b> method of each View being displayed.&nbsp; Every View is required to supply its own <b>drawSelf::</b> method to proactively present itself to the user.</font>
+
+<p><font face="Times">Before sending a <b>drawSelf::</b> message to a View, the Kit brings the View into focus (makes its coordinate system the current coordinate system for drawing).&nbsp; The message itself passes the View two arguments specifying the regions where it's expected to draw.&nbsp; These regions might be smaller that the View rectangle; by paying attention to them, <b>drawSelf::</b> can avoid generating unneeded drawing instructions.</font>
+
+<p><font face="Times">A View can draw using wrapped PostScript code, as discussed earlier under &quot;The Window Server,&quot; or it can use the imaging facilities provided in the NXImage class, or even draw in three dimensions using the 3D Graphics Kit.&nbsp; The 3D Kit defines a framework for building 3D images and presenting them within a View.</font>
+
+<p><font face="Times">A View can also divide its drawing area into small sections and put another object in charge of each section.&nbsp; This is exactly what a Matrix does; it uses Cell objects to draw and handle events for it.&nbsp; A Matrix is a kind of View, so it can take care of all external relations--positioning itself relative to other Views, getting events, setting up a coordinate system for drawing, and so on.&nbsp; The Cells take care of internal matters.&nbsp; When the Matrix receives a display message, its <b>drawSelf::</b> method sends <b>drawSelf:inView:</b> messages to the Cells.&nbsp; When it gets a mouse-down event, its <b>mouseDown:</b> method tracks the cursor over the Cells and informs the Cell the cursor is pointing to.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Controls</b></font>
+
+<p><font face="Times">Event messages deliver the user's instructions directly to Views.&nbsp; However, because events are closely tied to hardware devices--the keyboard and mouse--there can be but a handful of different event types.&nbsp; Events alone don't give an application much information about the user's intentions.</font>
+
+<p><font face="Times">The user interface, therefore, needs to establish well-understood paradigms for interpreting events.&nbsp; In text, for example, a key-down event for a backspace deletes the previous character, other key-down events insert characters into the stream of text, double-clicking selects a word, and so on.</font>
+
+<p><font face="Times">Graphical user interfaces often borrow paradigms from the real world by emulating hardware devices in software.&nbsp; It's not possible (or at least not very practical) to attach a lot of control panels with buttons, knobs, sliders and other devices to the computer alongside the keyboard and mouse.&nbsp; But it is possible to provide those controls on the screen where they can be manipulated indirectly through mouse and keyboard events.</font>
+
+<p><font face="Times">It's the job of software control devices to interpret events and ask other objects to respond to them.&nbsp; Graphically, a control presents the user with an image of a recognizable device that can be manipulated with the keyboard and mouse--a button that can be pressed, a slider with a knob that can be dragged, a text field where data can be entered.&nbsp; Functionally, it translates the event messages it receives into application-specific <i>action messages</i> for another object.&nbsp; The object that receives an action message is the control's <i>target</i>.</font>
+
+<p><font face="Times">The Application Kit defines several standard control devices.&nbsp; Most are implemented as Views, others as Panels.&nbsp; In a Matrix, each ButtonCell or SliderCell might be thought of as a separate control, or the whole Matrix might act as an independent control device.</font>
+
+<p><font face="Times">The Kit lets you set the target of a control,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myDevice setTarget:anObject];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">and also the selector of the action message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myDevice setAction:@selector(dimLights:)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There's a limited set of events, but a virtually unlimited number of action messages.</font>
+
+<p><font face="Times">In some cases, the target might be an object defined in the Kit.&nbsp; The Text object, for example, can respond to <b>copy:</b>, <b>paste:</b>, and <b>selectAll:</b> action messages, among others.&nbsp; In most cases, however, you'll need to define the target object and implement a methods to respond to the action messages it receives.</font>
+
+<p><font face="Times">Action messages take a single argument, the <b>id</b> of the object that sends the message.&nbsp; If a target needs more information to accurately respond to an action message, it can send a message back to the control requesting the information it needs.&nbsp; For example, if a target receives a <b>changeName:</b> message from a Matrix, it can send a <b>stringValue</b> message back to the Matrix to find the name the user selected.</font>
+
+<p><font face="Times">Assigning a target and action message to a control device gives it specific meaning.&nbsp; It's something like buying a generic switch at the hardware store and hooking it up to a particular piece of equipment in your home.&nbsp; Using kit-defined controls, you can assemble most of your application's user interface from off-the-shelf objects.&nbsp; The objects you design to do the basic work of your application can be connected to the user interface by being made targets of controls.</font>
+
+<p><font face="Times">Interface Builder lets you set targets and actions graphically.&nbsp; You can name your own action methods while you design the user interface, then implement the methods later.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Coordinating with the Application and its Windows</b></font>
+
+<p><font face="Times">Much of the activity of an application centers on the Application object, which represents the application as a whole, and on Window objects, which represent each of the windows the application uses.&nbsp; To coordinate other parts of the program with these objects, you can assign them a delegate and implement methods that the Application and Window classes declare in informal protocols.&nbsp; You can select which messages you want the delegate to receive; a message is sent only if the delegate implements a method that can respond.</font>
+
+<p><font face="Times">Most methods implemented by Window and Application delegates respond to simple notifications.&nbsp; For example, when the user moves a window, the Window's delegate can be notified with a <b>windowDidMove:</b> message.&nbsp; Applications mostly don't care where their windows are located on-screen, but they can take note of the new location by implementing this method.</font>
+
+<p><font face="Times">When the window becomes the key window (the window the user is about to work in and the one marked by a black title bar), the delegate is sent a <b>windowDidBecomeKey:</b> message, and when another window takes over as key window, it gets a <b>windowDidResignKey:</b> message.&nbsp; The Window object takes care of all the required changes when a window gains and loses key-window status (such as bringing the window to the front of the screen and highlighting and unhighlighting its title bar), but the delegate can take note of these status changes by implementing these methods.</font>
+
+<p><font face="Times">The Application object can send its delegate a variety of messages.&nbsp; Many are pure notifications.&nbsp; For example, just after it finishes all its initialization tasks and before it enters the main event loop, the Application object sends its delegate an <b>appDidInit:</b> message.&nbsp; When the application becomes the active application (the one the user is about to work in), the delegate is sent an <b>appDidBecomeActive:</b> message and, if it was hidden, an <b>appDidUnhide:</b> message.&nbsp; When the application is hidden (its windows removed from the screen), the delegate is sent an <b>appDidHide:</b> message and an <b>appDidUnhide:</b> message when it returns to the screen. When the user quits the application, the delegate gets an <b>appWillTerminate:</b> message.</font>
+
+<p><font face="Times">These messages give you a chance to coordinate with user actions.&nbsp; For example, <b>appDidInit:</b> could open an empty window for the user to work in, if the application normally opens and displays a file but the user launched it by double-clicking an application icon rather than a file icon.&nbsp; If quitting would destroy some of the user's work, <b>appWillTerminate:</b> could put up an attention panel reminding the user of that fact, then return <b>nil</b> to prevent the termination if the user cancels the Quit command.</font>
+
+<p><font face="Times">Some messages to the Application object's delegate assign it specific tasks.&nbsp; For example, if the application receives a remote message asking it to open a particular file, the Application object will determine whether the application is able to open another file and, if it is, find the file and pass its pathname to its delegate in an <b>app:openFile:type:</b> message.&nbsp; The Application object can't itself open the file and display its contents in a window.&nbsp; Different applications store their data differently.&nbsp; Being generic, the Application Kit can't know about application-specific data formats and conventions.&nbsp; Therefore, when it receives a request to open a file, it sends its delegate an <b>app:openFile:type:</b> message.&nbsp; The delegate can implement this method to open the file, create a Window and a View, and display the contents of the file on-screen.</font>
+
+<p><font face="Times">See the <i>NEXTSTEP General Reference</i> manual for more detailed information on these methods, their arguments, and return values.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Subclass Clusters</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There's usually a one-to-one correspondence between concepts in the program design and class definitions.&nbsp; Matrices are defined by the Matrix class, windows by the Window class, and so on.&nbsp; However, given the basic tenets of object-oriented programming, there's no reason why a single conceptual &quot;object&quot; can't be implemented in more than one class.&nbsp; This possibility follows from the fact that:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A class interface lies in its methods.&nbsp; The data structure it defines is a matter of implementation only; it should never be of much concern to anyone who uses the class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Different classes can have different implementations of the same method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It shouldn't be surprising, therefore, to find a group of classes that have differing, and alternative, implementations of the same interface.&nbsp; Each implementation is optimized for a different set of circumstances.&nbsp; Instead of a program component being implemented in just one class, it's implemented in a cluster of classes.</font>
+
+<p><font face="Times">To keep differences between classes in the cluster a matter of implementation only, it's important that they all share the same interface.&nbsp; Typically, all the implementing classes are grouped under an abstract class that declares their common interface. Program users can regard an instance of any class in the cluster as if it was an instance of the abstract class.</font>
+
+<p><font face="Times">A cluster of classes can be used to optimize data storage.&nbsp; Suppose, for example, that your program will make extensive use of an object with a long list of instance variables.&nbsp; Some variables will be used frequently, but many are for specialized situations that rarely come up.&nbsp; Perhaps some variables declared as <b>double</b>s will most often hold small integers, but they must be declared as floating point numbers for the exceptional case.</font>
+
+<p><font face="Times">Moreover, because there will be many instances of this kind of object in your program, you're concerned with the amount of memory they'll consume.</font>
+
+<p><font face="Times">In this circumstance, you might save memory by implementing a cluster of classes instead of a single class.&nbsp; An abstract class would declare a common interface that all its subclasses would adhere to; it would declare no instance variables of its own. One subclass could declare a small subset of instance variables sufficient to handle simple cases.&nbsp; It would have <b>char</b>s or <b>short</b>s instead of <b>double</b>s and avoid some of the more esoteric fields that would be infrequently used.&nbsp; Other subclasses could be optimized for special circumstances.&nbsp; One subclass, of course, would have to provide the full set of instance variables that you originally contemplated.&nbsp; Each subclass would override superclass methods and implement them in a way that's appropriate for its particular kind of data storage.</font>
+
+<p><font face="Times">A cluster of classes can also be used to optimize methods for different patterns of usage.&nbsp; For example, suppose that you want to define an interface for data storage and retrieval.&nbsp; The way you'd implement the methods would vary depending on the anticipated size of the data elements and the number being stored.&nbsp; In this circumstance, you could provide more than one implementation of the interface, optimizing each for a particular size and amount of data.</font>
+
+<p><font face="Times">The choice of which implementation (which subclass in the cluster) to use can be handled in a variety of ways.&nbsp; Allocation and initialization methods in the superclass might choose the subclass that best fits the circumstances and create an instance of that class--trying always for instances that occupy as little memory as possible and that have access to the most efficient algorithms for the data.</font>
+
+<p><font face="Times">A subclass cluster obviously works best for objects that, once initialized, are rarely or never modified.&nbsp; However, if an instance ever needs to change its implementation to that of another subclass (one that can store more information, for example), the change might be made almost automatically.&nbsp; A special &quot;copy&quot; method would allocate an instance of the alternative class, initialize and return it.&nbsp; The original instance could then be freed.</font>
+
+<p><font face="Times">Subclass clusters take to heart the idea that what matters most about an object is its method interface, not its implementation. By keeping the same interface for an assortment of alternative implementations, they serve to simplify the overall interface and make it easier to understand.&nbsp; Instead of a variety of different data-storage schemes, for example, there's just one, with a variety of different implementations.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Using C++ with Objective C</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Objective C language is conceived as a set of extensions to a base language, which happens to be C.&nbsp; These extensions don't alter the semantics of the base language; they simply add a few syntactic constructions to give it an object-oriented capability.&nbsp; Other programming languages may similarly be made &quot;Objective,&quot; as long as any syntactic conflicts between the base language and the extensions are properly handled.</font>
+
+<p><font face="Times">NeXT has taken the logical step and added the Objective C extensions to C++.&nbsp; Objective C and C++ can be combined in the same source file and compiled together.&nbsp; With C++ as the base for the Objective C extensions, you can mix features from both languages, using whichever ones are appropriate for the task.&nbsp; For example, you can take advantage of Objective C's dynamic binding and still use C++'s stronger type checking and compile-time binding as needed.&nbsp; Modules using features from both languages can translate between modules written in &quot;straight&quot; C++ and Objective C code.</font>
+
+<p><font face="Times">NeXT's primary goal in integrating the C++ and Objective C programming languages is to make it possible for you to use an existing base of C++ code with the NEXTSTEP software kits.&nbsp; You can also take advantage of this integration to write mixed code if you have a strong need for some features of the C++ language while programming in Objective C.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Writing Mixed Code</b></font>
+
+<p><font face="Times">NeXT's C++ compiler allows C++ and Objective C expressions to be mixed in almost any manner.&nbsp; For example, Objective C messages can be sent within the member functions of C++ classes, and C++ member functions can be called within Objective C methods.&nbsp; Objects defined in either language can create and use objects defined in the other language; a C++ class can declare an <b>id</b> as a data member, while an Objective C class can declare a C++ object as an instance variable.&nbsp; An Objective C message can pass a C++ object as an argument, and a C++ function can take an Objective C object as an argument.</font>
+
+<p><font face="Times">However, classes defined in each languages retain their own character.&nbsp; You can't define an hybrid object.&nbsp; Objective C messages can be sent only to Objective C receivers, and C++ member functions are called only through C++ objects.&nbsp; A class defined in one language can't inherit from a class defined in the other language.&nbsp; Moreover, operators specific to C++ can't be applied to Objective C objects.&nbsp; It won't work, for example, to use the C++ <b>new</b> and <b>delete</b> operators to allocate and free Objective C objects.</font>
+
+<p><font face="Times">When mixing C++ and Objective C code, the keywords of both languages should be respected.&nbsp; In most cases, there's no problem since both languages derive from C and most keywords are shared.&nbsp; However, the C++ keyword <b>new</b> is also a common method name in Objective C.&nbsp; To handle this potential conflict, the compiler allows an Objective C method to have the same name as a C++ keyword and decides which is which based on context.&nbsp; For example, if &quot;new&quot; appears outside square brackets, it's treated as the C++ keyword for allocation from the free store; if it appears within square brackets in the position of a message name, it's treated as such.&nbsp; It's even legal to use &quot;new&quot; within a message expression as a C++ keyword:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[anObject useCPlusPlusObject:new cPlusPlusClass];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Since this style of code can be hard to read, it's not recommended that you use it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Bridge Classes</b></font>
+
+<p><font face="Times">A common method of mixing C++ and Objective C code is to write most modules purely in one language or the other, and then connect them by creating compound &quot;bridge&quot; objects--one defined as an Objective C object containing a C++ object as an instance variable, and if needed, a corresponding C++ object containing an Objective C object as a data member.&nbsp; The Objective C object responds to messages by calling one of the C++ object's member functions, and the C++ object implements its member functions to send messages to its Objective C counterpart.&nbsp; If the communication must be two-way, the C++ <b>class </b>and the Objective C <b>@class</b> declarations can be used to avoid circular references in header files.</font>
+
+<p><font face="Times">When a project is structured this way, only the bridge classes need to contain both Objective C and C++ expressions.&nbsp; This reduces the potential for conflicts and makes the rest of the source code easier to read.</font>
+
+<p><font face="Times">Suppose, for example, that a project written primarily in the Objective C language needs to use a C++ object for some of its calculations.&nbsp; A special Objective C class can be defined to translate Objective C messages into C++ function calls.&nbsp; If the Objective C object stores the C++ object as an instance variable called <b>calculator</b>, one of its methods might look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)calcInt:(int)anInt withFloat:(float)aFloat</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return calculator.calcIntWithFloat(anInt, aFloat);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Similarly, a C++ class could be implemented to use an Objective C object for displaying information to the user.&nbsp; If the C++ object stores the Objective C object as a data member called <b>displayer</b>, one of its member functions might look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void collaborator::showResult(char *aString)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[displayer showResult:aString];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Using Objective C Libraries with C++ Code</b></font>
+
+<p><font face="Times">Files written in C++ that use standard C libraries must use an <b>extern</b> linkage directive when including header files for those libraries, for example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern &#34;C&#34; {</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#include &lt;stdio.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Similarly, C++ files that include Objective C header files require the &quot;Objective-C&quot; language to be specified (note that this form of the name is hyphenated):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern &#34;Objective-C&#34; {</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;objc/Object.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When Objective C is added to C++, the meaning of the C++ linkage directive is slightly different from its meaning in standard C++.&nbsp; Normally, the linkage directive merely specifies that the code in the directive's scope is to be linked according to rules defined for the named programming language; the code doesn't actually have to be written in the language specified.&nbsp; However, when the specified language is &quot;Objective-C,&quot; all the code within the scope of the directive must be legal Objective C.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Run-Time Sequencing</b></font>
+
+<p><font face="Times">The Objective C language uses an extensive run-time system to support its dynamic allocation, typing, binding, and loading. C++, on the other hand, needs very little run-time support.&nbsp; Statically declared C++ objects are initialized before the Objective C run-time system is.&nbsp; For this reason, C++ code should not refer to Objective C objects in static initializers or constructors.&nbsp; Doing so will result in launch-time errors.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

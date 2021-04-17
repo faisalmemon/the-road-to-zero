@@ -1,0 +1,704 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/C_ImprovingDrawingPerformance.rtf -->
+<!-- Date: Sun Jun 28 19:36:56 1998 -->
+<head>
+<title>C_ImprovingDrawingPerformance</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Improving Drawing Performance</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In most applications, a large chunk of time is consumed by drawing.&nbsp; Indeed, the optimization of those sections of your application that perform drawing should probably one of your first priorities, since often relatively small changes to your code can result in dramatic improvements in the real and perceived performance of your application.&nbsp; This discussion is broken down into three topics:&nbsp; General rules to follow in a client-server world, efficient focusing, and specific techniques for optimizing the performance of your drawing code.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>General Rules in a Client-Server World</b></font>
+
+<p><font face="Times">NEXTSTEP</font><font size="-2"><sup>&reg;</sup></font> <font face="Times">is based on a client-server model, which has certain implications when you're writing your application, as discussed below.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Write Your Program in Objective C, not in PostScript</b></font>
+
+<p><font face="Times">Underlying the design of NEXTSTEP is the assumption that the center of gravity for a NEXTSTEP application should be on the application side rather than the Server side, that is, applications in the NEXTSTEP environment should be written in Objective C</font><font size="-2"><sup>&reg;</sup></font><font face="Times">, and not in PostScript.&nbsp; This was based on performance considerations, as well as on the view that given the characteristics of the respective languages and the state of the respective development and debugging environments, it was much easier to write and debug applications in Objective C than it was to do the same things in PostScript code.</font>
+
+<p><font face="Times">The bulk of your algorithms and data structures should be written in Objective C and should avoid maintaining state in the Window Server.&nbsp; This point about state is important for a number of reasons:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If your application maintains state or other data structures in the Server, you must either provide PostScript procedures to manipulate that state data, or you need to make calls to the Server whenever your algorithms on the application side need to access or modify that data.&nbsp; On the other hand, if you maintain two copies of the state data, one on the application side and one on the Server side, you'll need to ensure that they're always in synch.&nbsp; In either case, you'll require communication with the Window Server, and that implies interprocess communication.&nbsp; You're far better off to avoid the problem entirely by not maintaining state information in the Server, and doing all the work on the application side.&nbsp; If you have PostScript wraps that require state information, pass the state information as parameters to the wraps.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Another side benefit of avoiding a lot of functions and state information in the Server comes when you print.&nbsp; As you know, printing occurs in a different PostScript context than that of your running application.&nbsp; As a result, if you have any PostScript procedures or state variables that are in the Server, you must ensure that they're downloaded to the printing context as well.&nbsp; While this certainly can be done, it's often easier to avoid the problem altogether.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">It should be noted that the above discussion shouldn't be construed as an argument against using wraps.&nbsp; In fact, replacing calls to multiple single-operator C functions with a single call to a wrap may result in a performance gain. Adobe recommends that while single-operator C functions are easy to use, wraps should be used for all but the simplest drawing.&nbsp; However, avoid using wraps for any operation that can be done entirely within the client application. It almost always pays to perform calculations on the application side and pass the results as parameters, as opposed to performing the calculations in the Server.&nbsp; Similarly, pass required state information as parameters to the wrap.&nbsp; Note also that there's little or no performance gain from downloading a wrap that contains a procedure definition and invoking the downloaded procedure from another wrap when needed, as opposed to downloading the procedure each time it's to be executed.&nbsp; Last, and perhaps most important, is being smart about the drawing your application does and your choice of techniques to perform that drawing.&nbsp; This will probably have a much more dramatic effect on overall performance than the decision whether to use single-operator C functions rather than custom wraps.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Avoid Round Trips</b></font>
+
+<p><font face="Times">Any PostScript function or wrap that has a return value in its parameter list will cause a round trip to the Window Server, and should be avoided if possible.&nbsp; The data an application sends to the Server is buffered to minimize communication overhead and context switches.&nbsp; Executing wraps that return values defeats this buffering, since the data must be flushed to the Server before an answer can be returned.&nbsp; This is always going to be slower than inspecting a variable in your application, or calling a method or function within your application.&nbsp; Thus, be judicious when making calls to the Server; consider whether by caching data or state on the application side you can avoid making the call altogether.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Use the Application Kit's Font Mechanism</b></font>
+
+<p><font face="Times">The Application Kit provides a number of classes (Font, FontManager, and FontPanel) that can perform many font operations without interacting with the Server, thereby reducing the number of round trips.&nbsp; Wherever possible, you should use the font mechanism built into the Application Kit rather than interact directly with the Server.&nbsp; For example, the font mechanism caches font metric information on the application side.&nbsp; Hence, you can query the Font object for font metrics without involving communication with the Window Server.&nbsp; In fact, it's almost twice as fast to use the <b>getStringWidth:</b> method provided by the Font class than to use <b>PSstringwidth()</b> to get the width of strings before drawing.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Avoid Unnecessary Calls</b></font>
+
+<p><font face="Times">Below is an example of making a call to the Server that's silly and inefficient.&nbsp; In this case you're better off just setting the gray, rather than querying the Server first for the current gray.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">float currentGray;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">PScurrentgray(&amp;currentGray);</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">if(currentGray != desiredGray)</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">PSsetgray(desiredGray);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In general, you should avoid making unnecessary calls to the Window Server.&nbsp; Try to structure your drawing code so that you avoid redundant or unnecessary calls to <b>PSsetgray()</b>, <b>PSsetlinewidth()</b>, <b>PSgsave()</b>, and so on.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Boxcarring</b></font>
+
+<p><font face="Times">The Display PostScript language has added a number of imaging operations that don't alter the underlying imaging model, but which cover frequently performed operations and provide highly optimized execution.&nbsp; These operations include:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">user paths</font></td>
+
+<td><font face="Times">A number of operators are provided that allow you to download a very compact representation of a path.&nbsp; The operator builds a special kind of path from it and performs some operation like stroke or fill on the path.&nbsp; (The use of user paths is discussed at length below.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=131 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">rectangles</font></td>
+
+<td><font face="Times">A number of operators are provided to build a path made up of one or more rectangles, and perform some operation on the resulting path (fill, stroke, or clip).&nbsp; The operators can take either a single rectangle or an encoded array of rectangles.&nbsp; If you're doing any rectangle operations, you're almost always better off using these operators than <b>moveto</b>, <b>lineto</b>, and so on.&nbsp; Note the that Application Kit provides a number of functions (<b>NXRectClip()</b>, <b>NXRectClipList()</b>, <b>NXRectFill()</b>, <b>NXRectFillList()</b>, <b>NXEraseRect()</b>, and so on) that use the underlying rectangle operators provided by the Display PostScript language.&nbsp; You should use them whenever performing rectangle operations.</font></td></tr>
+
+<tr valign=top>
+
+<td width=131 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">text drawing</font></td>
+
+<td><font face="Times">A number of operators are provided that take an encoded array of coordinates and a character string, and use the coordinates to place and show the characters in the character string.&nbsp; (The use of <b>xyshow</b> is discussed below.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">We call the use of these operators &quot;boxcarring&quot; because they allow you to download one large chunk of data to the Server where it's operated on efficiently in bulk, instead of sending many smaller chunks of data that are processed individually.&nbsp; In fact, these operators can be several times faster than the equivalent single-operator C functions or wraps.</font>
+
+<p><font face="Times">Needless to say, you should become familiar with these operators and use them wherever appropriate.&nbsp; Note also that the rectangle, <b>xyshow</b> and user path operators above are simulated in the default print packages, so you can use them when printing without modification.&nbsp; Because of their importance, user paths are discussed at length in a later section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Efficient Focusing and gstate Objects</b></font>
+
+<p><font face="Times">Before an application draws in a view, the view must become the focus for drawing; otherwise the drawing will appear in some other view that was previously the focus.&nbsp;&nbsp; When you draw within the context of <b>drawSelf::</b>, focusing is performed by the view's <b>display</b> method.&nbsp; If you draw outside the context of <b>drawSelf::</b>, you manage focusing explicitly by invoking <b>lockFocus</b> and <b>unlockFocus</b>.</font>
+
+<p><font face="Times">Ensuring that your view has the focus before drawing is a necessary step in drawing, but you should avoid unnecessary focusing.&nbsp; When the view is focused on, an appropriate transform matrix must be built to map the view's coordinate system back to the window's coordinate system, an appropriate clipping path must be built, and a <b>PSgsave()</b> is performed.&nbsp; While care has been taken to make this process as efficient as possible, it nonetheless takes time and is worth paying attention to.&nbsp; Here are some suggestions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The fastest focus is the one you don't need to do.&nbsp; Try to structure your code so that you aren't doing unnecessary focusing.&nbsp; For example, if you're drawing within the context of a modal loop, put the <b>lockFocus</b> and <b>unlockFocus </b>outside the loop.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Turn off clipping if not needed with <b>setClipping:</b>.&nbsp; Building the clipping path is usually the slowest part of focusing, so you can usually save a good deal of time by turning clipping off for the view if you don't need it.&nbsp; You don't need clipping if you're sure you'll never attempt to draw outside the bounds of your view.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Use <b>gstate</b> objects.&nbsp; (More on this below.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If you have a view that's repeatedly being focused on (for example, the gauge on an instrument panel of a flight simulator), you should consider allocating a <b>gstate</b> object for the view by using View's <b>allocateGState:</b> method.&nbsp; A <b>gstate</b> object is a PostScript object (not an Objective C object) that contains all the information contained in a graphics state, and is a Display PostScript extension designed to make it much more efficient to switch graphics states.&nbsp; The very first time a <b>lockFocus</b> or <b>display</b> is sent to a view for which a <b>gstate</b> object has been allocated, the view machinery focuses on the view in the normal manner, has the Window Server take a snapshot of the graphics state, and then sticks it in a <b>gstate</b> object.&nbsp; Thereafter, whenever focusing occurs, the view machinery first checks to ensure the <b>gstate</b> object is still valid (that is, the coordinate system of the view or its superviews has not been permanently changed) and, assuming it is, has the Window Server copy the <b>gstate</b> to the current graphics state.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">View has a handy method called <b>initGState</b> that's called automatically whenever the <b>gstate</b> is created or modified.&nbsp; You can override <b>initGState</b> to initialize other aspects of the graphics state, such as line width or gray level.</font>
+
+<p><font face="Times">The use of <b>gstate</b> objects effectively avoids all the work normally associated with focusing, and subsequently reduces the time required for focusing.&nbsp; However, they don't come for free, and thus should be used judiciously.&nbsp; Since a <b>gstate </b>object contains all the information contained in a graphics state, including the current clipping path and current path, they consume hundreds of bytes within the Window Server at a minimum, and can be much larger depending on the nature of the <b>clippath</b> and <b>currentpath</b>.</font>
+
+<p><font face="Times">If your application <i>repeatedly</i> focuses on and draws in a view, it may be a good candidate for a <b>gstate</b> object.&nbsp; On the other hand, if you have a view that your application focuses on infrequently, it may not make sense to allocate a <b>gstate </b>object for it, regardless of the amount of drawing you actually do in that view.&nbsp; Allocating a <b>gstate</b> affects only the focusing time, as it has no effect on the drawing time once the graphics state has been set up.</font>
+
+<p><font face="Times">You'll see less of a gain from using <b>gstate</b> objects if clipping has been turned off for the view, because building the clipping path is normally the most time-consuming part of focusing.</font>
+
+<p><font face="Times">In general, you don't need to allocate a <b>gstate</b> object for a control (e.g., a slider or scroller), because any control with a modal loop will typically focus once at the beginning of the loop and unfocus at the end.&nbsp; When the action message of the control is sent to the control's target, the target will typically do some drawing in response and bracket its drawing by a <b>lockFocus</b> and <b>unlockFocus</b>.&nbsp; However, the focus is still on the control when the action message returns (courtesy of the target's <b>unlockFocus</b>).&nbsp; Thus, while it may make sense for the target of the control to have a <b>gstate </b>allocated for it, it's probably not worth allocating a <b>gstate</b> for the control itself.</font>
+
+<p><font face="Times">Lastly, since every window has a <b>gstate</b> object allocated for it by default, there is little to be gained from allocating a <b>gstate</b> for the <b>contentView</b> of a window.</font>
+
+<p><font face="Times">The key point here is that the use of <b>gstate</b> objects is a convenient and powerful way to reduce focusing time, but you should use them judiciously.&nbsp; As CPU's speed increases, there are fewer cases where the perceived improvement from using gstates is worth the memory they consume.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Efficient Drawing</b></font>
+
+<p><font face="Times">In many cases, your application's overall performance will be determined by its ability to perform the minimal amount of drawing necessary and to use the most efficient means of performing that drawing.&nbsp; This section first describes how to avoid unnecessary drawing, and then discusses a number of the NeXT and Display PostScript extensions that can radically improve drawing performance.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Avoid Unnecessary Drawing</b></font>
+
+<p><font face="Times">The fastest drawing you'll ever do is the drawing you don't do.&nbsp; You should always look for ways to avoid doing drawing that's unnecessary.&nbsp; It's almost always worth the effort to do the work necessary to cull out drawing that's not visible, although you shouldn't take this to the extreme and implement your own two-dimensional clipping.&nbsp; Limit your drawing to the area within your view that's contained within the update rectangles passed to <b>drawSelf::</b>--they'll tell you the area within your view's coordinate space that's visible, based on the intersection of the view's frame and the frames of the views above it in the hierarchy.&nbsp; In the case of scrolling, they'll also tell you what area of your view needs to be redrawn.&nbsp; Even a simple approach of intersecting the bounding boxes of objects with the update rectangles, and drawing only those that intersect, will get you a long way.&nbsp; Of course, if you know that your view is wholly contained within its superviews and that your view is never going to be placed within a ScrollView, and you don't have graphical objects that live outside the frame of the view, then this is less important.</font>
+
+<p><font face="Times">A related point is to avoid drawing in off-screen windows or panels until it's absolutely necessary.&nbsp; For example, if you have a panel that contains things that need to be updated as the user performs actions in another window, don't update the items unless the panel is visible or about to become visible.&nbsp; You'll note that menu updating is a common instance of this type of problem.&nbsp; In fact, the Application Kit provides a mechanism (discussed in a later section) to easily handle the updating of menus, panels, and windows.&nbsp; It should be noted that a consequence of this approach is that the time to bring a panel to the front will probably be longer than if the contents are updated as you go along.&nbsp; Whether this is an acceptable tradeoff depends on the specific situation.</font>
+
+<p><font face="Times">Look for unnecessary drawing by running your application with the command line arguments <b>-NXAllWindowsRetained YES</b>.&nbsp; This forces all windows in an application to be retained, so that you can watch drawing as it is happening.&nbsp; Look for controls and other items being drawn redundantly.</font>
+
+<p><font face="Times">To examine the quality of the PostScript your application's custom views are producing, run the application under <b>gdb </b>and set breakpoints around methods that draw (e.g., the view's <b>drawSelf::</b> method).&nbsp; Before drawing, use the debugger macro <b>showps</b> to turn on a dump of the PostScript code produced.&nbsp; <b>shownops</b> can be used to turn off the dump, to avoid seeing PostScript emitted by other objects.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Compositing</b></font>
+
+<p><font face="Times">Compositing is probably the single most powerful mechanism for improving the apparent drawing performance, but it should be used wisely.&nbsp; Whenever you have a complicated image that must be redrawn repeatedly, you should consider creating an <b>NXImage</b> object, rendering the image into the object, and thereafter use compositing to put the image wherever you need it.&nbsp; If it's a complicated image, this approach can be many, many times faster than redrawing the image each time.&nbsp; This is the standard approach used for most types of animation and for dragging images.</font>
+
+<p><font face="Times">Like most good things, compositing doesn't come for free, and the cost is the memory required for the <b>NXImage </b>(especially the off-screen window used to hold the cached image).&nbsp; While the <b>NXImage</b> object tries to reduce the overhead, the fact remains that 2 bits/pixel without alpha or 4 bits/pixel with alpha is required.&nbsp; For example, a 3&#34;-by-3&#34; image with alpha represents almost 40K.&nbsp; The space required is multiplied by 4 for 12 bit color iamges, and by 8 for 24 bit images.</font>
+
+<p><font face="Times">In many instances the performance benefit far outweighs the cost, but you should be aware of the cost.&nbsp; Also keep in mind:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you don't need transparency, don't use it.&nbsp; Having transparency doubles the storage requirements for black and white images and has a negative impact on performance for all images as well.&nbsp; An occasional mistake is to use the <b>NX_COPY</b> compositing mode instead of <b>NX_SOVER</b>.&nbsp; <b>NX_COPY</b> will transfer the alpha of the source image to the destination (a bad idea if you are compositing to a large on-screen window), whereas <b>NX_SOVER</b> draws the image on top of the destination, heeding any alpha in the source by not transfering it to the destination.&nbsp; Another mistake is to use the <b>NX_CLEAR</b> compositing operator to erase the background of the image rather than <b>NXEraseRect()</b>.&nbsp; If you &quot;clear&quot; the background, you're actually making it transparent with the attendant creation of an alpha channel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Consider using user paths with <b>DPSDoUserPath()</b> as an alternative to compositing.&nbsp; User paths may be a good alternative if you have an image that's large but pretty simple, stroked, and intended to be put on top of another image.&nbsp; This last qualification implies that if you use compositing, you'll need to use transparency and the <b>sover </b>operator.&nbsp; In certain cases, user paths will be not only more efficient from a memory standpoint, but faster as well. Unfortunately there's no hard and fast rule here, but keep user paths in mind as an alternative.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Lastly, compositing isn't a supported operation during printing.&nbsp; If you are using <b>NXImage</b> to optimize some PostScript that you drew into the image's cache, you should reexecute the PostScript when printing instead of using the image (this will produce a better looking, device independent result as well).&nbsp; An alternative is to use <b>NXEPSImageRep</b> to hold the EPS version of an image, and let NXImage decide when to use the EPS representation.&nbsp; In comparison, user paths are a supported operation during printing, and so you need not be concerned with whether the drawing is going to the screen or to the printer.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>DPSDoUserPath()</b></font>
+
+<p><font face="Times">NeXT provides a function called <b>DPSDoUserPath()</b> that facilitates the creation of a user path.&nbsp; Using <b>DPSDoUserPath()</b> can be several times faster than using the equivalent single-operator C functions or wraps to draw even simple shapes.&nbsp; As a result, whenever you need to build a path of more than a few points (as few as four points or so), you may want to consider using <b>DPSDoUserPath()</b>.</font>
+
+<p><font face="Times"><b>DPSDoUserPath()</b> relies on a facility provided by the Display PostScript system called, not surprisingly, user paths.&nbsp; A user path is a completely self-contained description (that is, containing only path construction operators and literal number operands) of a path in user space.&nbsp; Coupled with the fact that you're required to specify the bounding box of the user path as part of the user path, the interpreter can build a user path much more efficiently than a normal path.&nbsp; Since path creation by the Server is one of the more time-consuming tasks involved in drawing, this can be a very big gain.&nbsp; In addition, Display PostScript provides a mechanism to allow you to cache user paths to avoid redundant interpretation of the same path definition.</font>
+
+<p><font face="Times"><b>DPSDoUserPath()</b> takes seven arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A pointer to an array of coordinates</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The number of coordinates in the array</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The numeric type of the coordinates</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A pointer to an array of path-building operators</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The number of operators</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A pointer to an array of coordinates that represents the bounding box for the user path</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An operator to be applied to the user path</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>DPSDoUserPath()</b> takes these arguments and sends an encoded user path down to the Server, where it's interpreted.</font>
+
+<p><font face="Times">Here's an example of using <b>DPSDoUserPath()</b> to build a user path consisting of a series of vertical lines and then have the resulting user path stroked.&nbsp; It also asks the Server to cache the resulting user path so it can be reused.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-drawLines2</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">float&nbsp;&nbsp; a;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">float&nbsp; *cArray;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">char&nbsp;&nbsp; *oArray;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">float&nbsp;&nbsp; bbox[4];</font>
+
+<p><img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">int oi=0,ci=0;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">int size =(int) (bounds.size.width/(interval));</font>
+
+<p><img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">/* fill cArray and oArray */</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cArray = (float *)malloc(4*numLines*sizeof(float));</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">oArray = (char *)malloc(2+2*numLines*sizeof(char));</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">oArray[oi++] = dps_ucache;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">oArray[oi++] = dps_setbbox;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">for(a=0.0;a&lt;bounds.size.width;a+=interval){</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">cArray[ci++] = a;</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">cArray[ci++] = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">oArray[oi++] = dps_moveto;</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">cArray[ci++] = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">cArray[ci++] = 150.0;</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">oArray[oi++] = dps_rlineto;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">/* fill bbox */</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">bbox[0] = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">bbox[1] = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">bbox[2] = bounds.size.width;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">bbox[3] = 150.0;</font>
+
+<p><img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">DPSDoUserPath(cArray,ci,dps_float,oArray,oi,bbox, dps_ustroke);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">free(cArray);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">free(oArray);</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To give you a sense of the power of user paths, the following table shows a comparison of using single-operator C functions versus <b>DPSDoUserPath()</b> to draw a varying number of vertical, zero-width black lines.&nbsp; In each case, the time given represents the cumulative wall time for doing 100 iterations.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Helvetica"><b># Lines</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Case 1</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Case 2</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Case 3</b></font></td>
+
+<td><font face="Helvetica"><b>Case 4</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">5</font></td>
+
+<td nowrap><font face="Times">3.57</font></td>
+
+<td nowrap><font face="Times">2.95</font></td>
+
+<td nowrap><font face="Times">2.41</font></td>
+
+<td><font face="Times">2.19</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">10</font></td>
+
+<td nowrap><font face="Times">4.46</font></td>
+
+<td nowrap><font face="Times">3.85</font></td>
+
+<td nowrap><font face="Times">2.64</font></td>
+
+<td><font face="Times">2.37</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">20</font></td>
+
+<td nowrap><font face="Times">6.99</font></td>
+
+<td nowrap><font face="Times">6.39</font></td>
+
+<td nowrap><font face="Times">3.13</font></td>
+
+<td><font face="Times">2.70</font></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">40</font></td>
+
+<td nowrap><font face="Times">11.34</font></td>
+
+<td nowrap><font face="Times">9.99</font></td>
+
+<td nowrap><font face="Times">4.09</font></td>
+
+<td><font face="Times">3.36</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">Case 1</font></td>
+
+<td><font face="Times">Draw lines using <b>PSlineto()</b> and <b>PSmoveto()</b>.&nbsp; <b>lockFocus</b> and <b>unlockFocus</b> inside loop.</font></td></tr>
+
+<tr valign=top>
+
+<td width=131 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">Case 2</font></td>
+
+<td><font face="Times">Same as Case 1 except <b>lockFocus</b> and <b>unlockFocus</b> taken out of loop.</font></td></tr>
+
+<tr valign=top>
+
+<td width=131 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">Case 3</font></td>
+
+<td><font face="Times">Draw lines using <b>DPSDoUserPath()</b>, arrays <b>malloc</b>'ed, initialized, and freed inside loop. <b>lockFocus</b> and <b>unlockFocus</b> outside loop.</font></td></tr>
+
+<tr valign=top>
+
+<td width=131 height=20></td></tr>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times">Case 4</font></td>
+
+<td><font face="Times">Same as Case 3 except that user path is cached using <b>ucache</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">User paths are beneficial even for a small number of points, and the benefit becomes even greater as the number of points goes up.&nbsp; Note also how taking focusing out of the loop has a noticeable impact on performance.</font>
+
+<p><font face="Times">In some cases, <b>DPSDoUserPath()</b> may be a good alternative to compositing.&nbsp; For example, if you have what amounts to a stroked path that you want to lay on top of other drawing, using <b>DPSDoUserPath()</b> may be faster than rendering the path into an <b>NXImage</b> object with a transparent background and using NX_SOVER to composite the image into the destination.&nbsp; This will be particularly true if the path is relatively simple and the number of pixels touched by the path is small in comparison to the number of pixels.</font>
+
+<p><font face="Times">The knowledge and use of compositing and user paths is essential to fast drawing performance on our system.&nbsp; Be sure to read the relevant descriptions in the <i>NEXTSTEP General Reference</i> manual as well as the Adobe documentation on Display PostScript extensions, and start using these techniques if you aren't already using them.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>PSxyshow()</b></font>
+
+<p><font face="Times">If you need to do drawing of the form</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">x y moveto</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">(a) show</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">x1 y1 moveto</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">(b) show</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">(that is, a sequence of <b>moveto</b>s and single-character shows), you should consider using <b>PSxyshow()</b>, <b>PSxshow()</b>, or <b>PSyshow()</b>.&nbsp; While not as generally useful as user paths, it can provide the same type of improvement in performance. <b>PSxyshow()</b> is the single-operator function for <b>xyshow</b>, which is a Display PostScript operator.&nbsp; These operators take a character string and an array of coordinates, go through the character string rendering a character, and then use the next one or two coordinates (depending on the function) to explicitly position the next character.</font>
+
+<p><font face="Times">Those of you drawing rulers should look at <b>PSxyshow()</b> or one of its relatives.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Other Drawing Tips</b></font>
+
+<p><font face="Times">There are a number of other things to keep in mind that will help with drawing performance.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Zero-Width Lines</b></font>
+
+<p><font face="Times">Use zero-width lines whenever you need top line-drawing performance.&nbsp; Zero-width lines are special-cased by the interpreter and are the fastest way to draw lines.&nbsp; Note that when printing, the line width should be set to some other size since zero-width lines can &quot;disappear&quot; on high-resolution printers like the Linotronic</font><font size="-2"><sup>&reg;</sup></font><font face="Helvetica">.</font>&nbsp; <font face="Times">Adobe recommends using a line width of 0.15 units, which will be treated as zero-width for the purposes of drawing on the screen, but will result in lines that are 0.15 units wide on a printer.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Dashed Lines</b></font>
+
+<p><font face="Times">Don't use these.&nbsp; Dashed lines using <b>PSsetdash()</b> are extremely time consuming.&nbsp; Consider using user paths or compositing as an alternative.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>PSgsave() and PSgrestore()</b></font>
+
+<p><font face="Times">Avoid unnecessary <b>gsave</b>s and <b>grestore</b>s.&nbsp; In particular:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Since part of the built-in focusing mechanism using either <b>display</b> or <b>lockFocus</b> and <b>unlockFocus</b> is to do a <b>gsave </b>and <b>grestore</b>, your drawing code in either <b>drawSelf::</b> or within a <b>lockFocus</b>/<b>unlockFocus</b> is already bracketed by a <b>gsave</b> and <b>grestore</b>, so there's no need for you to explicitly do it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">When stroking or filling a path, don't put a <b>gsave</b> or <b>grestore</b> around the stroke or fill if you aren't planning to use the path again.&nbsp; As Glenn Reid points out in <i>PostScript:&nbsp; Language Program Design</i>, the following construction is particularly inefficient:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">0 0 moveto 100 100 lineto</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">gsave stroke grestore newpath</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Also, if you're clipping to a path, remember that the clip doesn't affect either the path or the current point.&nbsp; Avoid the following construction:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">gsave clip grestore</font>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

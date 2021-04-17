@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/19_WorkspaceManager/IntroWorkspace.rtf -->
+<!-- Date: Sun Jun 28 20:08:05 1998 -->
+<head>
+<title>IntroWorkspace</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>19</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Workspace Manager</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Library:</b></font></td>
+
+<td><font face="Times">None, this API is defined by the Workspace Manager application</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Header File Directory:</b></font></td>
+
+<td><font face="Times">/NextDeveloper/Headers/apps</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Import:</b></font></td>
+
+<td><font face="Times">apps/Workspace.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Introduction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Workspace Manager lets the user navigate the file system and manipulate the files and directories therein.&nbsp; Workspace Manager's Inspector panel, with its four displays, gives additional information about a selected item, for example, file ownership and size (Attributes display), applications capable of opening the file (Tools display), and file permissions (Access display).&nbsp; Finally, the Inspector panel's Contents display can give the user information about the contents of certain types of files.</font>
+
+<p><font face="Times">Since there is no limited to the number of file formats, it's impossible for the contents inspector to display the contents of all file types.&nbsp; NeXT provides inspectors for many of the most common formats--RTF, TIFF, EPS, to name a few--and provides a way for you to install a contents inspector for any other file format.&nbsp; It's even possible to replace a standard inspector with one of your own.</font>
+
+<p><font face="Times">Contents inspectors are stored in bundle files that contain the code and interface objects that are loaded into the Workspace Manager.&nbsp; (For more information on bundles, see the class specification for NXBundle, a common class.)</font>
+
+<p><font face="Times">When the Workspace Manager begins running, it locates contents inspector bundles by scanning the application search path (in this order):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">~/Apps</font><br>
+<font face="Times">/LocalApps</font><br>
+<font face="Times">/NextApps</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Finally, it searches in its own application file package, where it finds the standard modules.</font>
+
+<p><font face="Times">For each directory that it searches, the Workspace Manager looks for bundles both within the directory and within application file packages (&quot;.app&quot; files) in the directory.&nbsp; When it finds a bundle, it checks the executable within it for registry information, information that the Workspace Manager uses to associate an inspector module with a specific file extension.&nbsp; (If more than one module registers for the same file extension, the module later in the search path is ignored.)&nbsp; When the user attempts to inspect the contents of a file, the Workspace Manager consults its registry of file extensions and inspectors and loads the appropriate inspector, if it hasn't been loaded already.</font>
+
+<p><font face="Times">The Workspace Manager application and the contents inspector communicate through the API found in <b>/NextDeveloper/Headers/apps/Workspace.h</b>.&nbsp; This API consists of the declaration of the WMInspector class, an abstract superclass that defines the owner of the inspector module's interface.&nbsp; In creating your own contents inspector, you'll create a subclass of WMInspector and an interface that will appear in the Inspector panel.</font>
+
+<p><font face="Times">The principal messages that the Workspace Manager sends your inspector object are <b>new</b> and <b>revert:</b>.&nbsp; It sends a <b>new</b> message whenever it needs to access the inspector object or, through the object, the interface to the inspector.&nbsp; It sends a <b>revert: </b>message whenever the inspector might need to be updated, such as when the selection in the File Viewer has changed.&nbsp; Thus, all inspector objects must implement these methods.</font>
+
+<p><font face="Times">The inspector object, in turn, can query the Workspace Manager for information about the selection.&nbsp; The WMInspector class declares a method (<b>selectionCount</b>) for determining whether the selection contains a single item or multiple items, and another (<b>selectionPathsInto:separator:</b>) that returns the full path to each item in the selection.&nbsp; Your inspector object, therefore, can access this information by sending itself <b>selectionCount</b> and <b>selectionPathsInto:separator:</b> messages.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Components of an Inspector Project</b></font>
+
+<p><font face="Times">Contents inspectors are created as bundle projects; the process is outlined below.&nbsp; Before looking at the process, let's examine the components that are common to all inspector projects.&nbsp; As an illustration, we'll take the example of an inspector that shows the contents of files containing 3D graphics data in RIB format:&nbsp; &quot;.rib&quot; files.&nbsp; Even the simplest RIB inspector would have these components:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>File</b></font></td>
+
+<td><font face="Helvetica"><b>Description</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">*.lproj/RIBInspector.nib</font></td>
+
+<td><font face="Times">A nib file containing the user interface to the contents inspector.&nbsp; (The nib file is stored in a language-specific subdirectory, such as <b>English.lproj</b>.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Makefile</font></td>
+
+<td><font face="Times">The standard makefile for a bundle project</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Makefile.preamble</font></td>
+
+<td><font face="Times">Additional instructions to the <b>make</b> utility to load the information in <b>bundle.registry</b> into the executable file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PB.project</font></td>
+
+<td><font face="Times">The standard project file for a bundle project.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">RIBInspector.h</font></td>
+
+<td><font face="Times">The class interface file for the subclass of WMInspector.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">RIBInspector.m</font></td>
+
+<td><font face="Times">The class implementation file for the subclass of WMInspector.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">bundle.registry</font></td>
+
+<td><font face="Times">A specification file describing which file extension is associated with this inspector, among other things.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Two files of special interest are <b>bundle.registry</b> and <b>Makefile.preamble</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The bundle.registry File</b></font>
+
+<p><font face="Times">This file contains the instructions that the Workspace Manager uses to associate a contents inspector with a specific type of file. Using the example of a RIB file inspector, the <b>bundle.registry</b> file would look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{type=InspectorCommand; mode=contents; extension=rib;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">selp=selectionOneOnly; class=RIBInspector}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The registry information consists of a list of key words and their assigned values.&nbsp; Here are the keys and their possible values. (The quotation marks below are for clarity; don't include them in your registry file):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Key</b></font></td>
+
+<td><font face="Helvetica"><b>Description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">type</font></td>
+
+<td><font face="Times">The type of registration.&nbsp; For inspector commands, the value must be &quot;InspectorCommand&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">mode</font></td>
+
+<td><font face="Times">The mode of the Inspector panel.&nbsp; For Release 3.0, this must be &quot;contents&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">extension</font></td>
+
+<td><font face="Times">The file extension to be associated with this inspector.&nbsp; (Don't include the &quot;.&quot; in the extension.)&nbsp; You can only list one extension for each inspector module; wildcard characters aren't permitted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">class</font></td>
+
+<td><font face="Times">The name of the subclass of WMInspector.&nbsp; In general, an instance of this class owns the nib file that contains the inspector's user interface.&nbsp; Workspace Manager instantiates an object of this class when the inspector is loaded.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">selp</font></td>
+
+<td><font face="Times">The <i>selection predicate</i>; that is, the requirements concerning the selection.&nbsp; The value can be either &quot;selectionOneOnly&quot; or &quot;selectionOneOrMore&quot;.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>selp</b> key controls whether your inspector is confined to operating on one file of the given extension at a time (<b>selectionOneOnly</b>), or whether it can be displayed if the selection consists of more than one file of the give extension (<b>selectionOneOrMore</b>).&nbsp; If you specify <b>selectionOneOnly</b> (the usual case), the message &quot;No Contents Inspector for Multiple Selection&quot; appears in the panel when the selection contains multiple files of the given extension.</font>
+
+<p><font face="Times">All six keys must be present in the registry file for your inspector to work properly.&nbsp; The order of these key/value pairs in the registry file isn't important, although the case of the key and value words is.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Makefile.preamble File</b></font>
+
+<p><font face="Times">The registry information from <b>bundle.registry</b> must be copied into the _ _ICON segment of the module's Mach object file:&nbsp; This is where the Workspace Manager searches for the information.&nbsp; To accomplish this, you have to create a <b>Makefile.preamble </b>file with the proper instructions.&nbsp; These instructions are:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BUNDLELDFLAGS = -sectcreate __ICON __header bundle.registry</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">OTHER_PRODUCT_DEPENDS = bundle.registry</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first line instructs the linker to create an <b>__header</b> section in the <b>__ICON</b> segment of the executable file and to copy the registry information into it. (Note that the prefixes are two underbar characters).&nbsp; The second ensures that <b>make</b> will rebuild the project whenever <b>bundle.registry</b> is altered.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Building an Inspector Module</b></font>
+
+<p><font face="Times">The following steps show you the process for assembling an inspector, using the RIB inspector as an example.&nbsp; (These steps won't show you how to do the actual imaging of RIB files.&nbsp; For that, you'll have to look into the 3D Graphics Kit.)</font>
+
+<p><font face="Times">To build the inspector, follow these steps:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">1.</font></td>
+
+<td><font face="Times">Start Project Builder and create a new bundle project.&nbsp; In the New Project panel, make sure that the Project Type pop-up list reads &quot;Bundle&quot;.&nbsp; Save the project as <b>~/RIBInspector</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">2.</font></td>
+
+<td><font face="Times">Start Interface Builder and create a new empty module.&nbsp; (Choose New Empty from the New Module menu).&nbsp; Save the module in <b>~/RIBInspector/English.lproj/RIBInspector</b>.&nbsp; When the attention panel appears, confirm that you want to add the nib file to the RIBInspector project.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">3.</font></td>
+
+<td><font face="Times">Now, you have to inform Interface Builder of the WMInspector class, as declared in <b>/NextDeveloper/Headers/apps/Workspace.h</b>.&nbsp; The easiest way to do this is to drag the file icon for <b>Workspace.h</b> from the File Viewer into Interface Builder's File window.&nbsp; Interface Builder will parse the header file and insert the WMInspector class in the Classes browser.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">4.</font></td>
+
+<td><font face="Times">Declare a subclass of WMInspector by selecting WMInspector in the Classes browser and dragging to Subclass in the Operations browser.&nbsp; Rename this subclass &quot;RIBInspector&quot;.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">5.</font></td>
+
+<td><font face="Times">Using the Class inspector, add any outlets and actions that you want to the RIBInspector class.&nbsp; For example, in most cases you would add outlets for the text fields that the inspector uses to display information about the selected file. For this illustration, skip this step.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">6.</font></td>
+
+<td><font face="Times">Select the File's Owner object in the Objects display of the Files window.&nbsp; Using the Inspector panel, specify that the File's Owner is of the RIBInspector class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">7.</font></td>
+
+<td><font face="Times">Drag a Panel object from the Palettes window into the workspace.&nbsp; This panel will contain the interface to your contents inspector.&nbsp; When the Workspace Manager displays your contents inspector, it will take the Panel's content view and installs it in the view hierarchy of the Inspector panel.&nbsp; For the purposes of this example, drag a Button or two into the panel.&nbsp; Finally, using Interface Builder's Panel inspector, make sure that the panel is not deferred.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">8.</font></td>
+
+<td><font face="Times">Connect the <b>window</b> outlet of the File's Owner to the Panel.&nbsp; This outlet must be set so that the Workspace Manager can locate the content view to be displayed in the contents inspector.&nbsp; If your File's Owner had other outlets or actions, you would connect them at this point.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">9.</font></td>
+
+<td><font face="Times">Switch to the Classes browser in the Files window and select the RIBInspector class.&nbsp; Using the pull-down list, drag to Unparse and confirm that you want to add the class files to the project.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=97></td>
+
+<td nowrap><font face="Helvetica">10.</font></td>
+
+<td><font face="Times">Open the class files and implement the <b>new</b> method (see the class specification for WMInspector for an example).&nbsp; You must also implement the <b>revert:</b> method for your inspector to take any action based on the selection in the File Viewer.&nbsp; For this example, you can omit the <b>revert:</b> method.&nbsp; (Note:&nbsp; You will also have to change the #import line at the top of <b>RIBInspector.h</b> from #import &quot;WMInspector.h&quot; to #import &lt;apps/Workspace.h&gt;.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=97 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=97></td>
+
+<td nowrap><font face="Helvetica">11.</font></td>
+
+<td><font face="Times">Create <b>bundle.registry</b> and <b>Makefile.preamble</b> files (as described above) and add them to the Supporting Files suitcase in Project Builder's Files display.</font></td></tr>
+
+<tr valign=top>
+
+<td width=97 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=97></td>
+
+<td nowrap><font face="Helvetica">12.</font></td>
+
+<td><font face="Times">Save the project and build it.&nbsp; When done, copy the <b>RIBInspector.bundle</b> file into your <b>Apps</b> directory.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Registering an Inspector</b></font>
+
+<p><font face="Times">Workspace Manager must be made aware of this new inspector.&nbsp; If you use Workspace Manager to copy the bundle into <b>~/Apps </b>(or anywhere in the application search path, for that matter), it will read the registry information the bundle contains.&nbsp; If you move the file by other means, use Workspace Manager's Update Viewers command to make it recheck for applications and inspectors in the application search path.&nbsp; After Workspace Manager has registered the new inspector, whenever a file of the proper extension (&quot;.rib&quot; in the example) is selected and the Contents inspector panel is visible, the custom contents inspector will be displayed.</font>
+
+<p><font face="Times">Once an inspector has been loaded, it can't be unloaded without restarting the Workspace Manager (that is, logging out and back in again).&nbsp; For this and other reasons, it's often better to create a test application to debug a new inspector, as discussed in the next section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Debugging an Inspector</b></font>
+
+<p><font face="Times">Your inspector operates within the main thread of execution of the Workspace Manager application, so errors occurring with the inspector can crash the Workspace Manager, bringing down with it all applications launched from the Workspace.&nbsp; Given the severity of the consequences, it's imperative that you ensure the reliability of your inspector's code.&nbsp; Unfortunately, at this time there's no standard way to debug inspectors; you'll have to devise your own test mechanisms.</font>
+
+<p><font face="Times">The best strategy is to create a stand-alone debugging application, one that loads your inspector module into its own window just as the Workspace Manager does.&nbsp; You'll have to create a substitute WMInspector class since the main class in your module must inherit from WMInspector.&nbsp; You could perhaps use an OpenPanel as a means of selecting specific files for your module to inspect.</font>
+
+<p><font face="Times">A debugging application makes it easier, safer, and faster to debug your inspector; however, at times you may find it necessary to debug the inspector after it's been loaded into the Workspace Manager.&nbsp; To do this, you'll need to prevent the inspector's symbol table from being stripped.</font>
+
+<p><font face="Times">By default, when the Workspace Manager loads an inspector bundle, it strips the executable code of its symbols.&nbsp; To prevent this, in a shell window enter:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">dwrite Workspace StripAfterLoading NO</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Now, when an inspector is loaded, its symbol data will be preserved.&nbsp; You'll be able to attach to the Workspace Manager process using GDB and trace execution through your inspector's code.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Working Within the Workspace Manager</b></font>
+
+<p><font face="Times">Some contents inspectors display the actual contents of a file while others show only a synopsis.&nbsp; For example, the contents inspector for TIFF and RTF files shows the complete contents, but the Sound inspector shows only summary information.&nbsp; The Sound inspector, however, does offer the user a button that, when clicked, plays the sound.</font>
+
+<p><font face="Times">Since contents inspectors operate in the Workspace Manager's main thread, it's best to let the user decide whether the panel should embark on time- or resource-intensive operations, as illustrated by the Sound inspector panel.&nbsp; (The RIB inspector example outlined above would no doubt include a Render button.)</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 ## Motivation
 
-The reason why we want to do Mach programming is because it is an interface available from user mode (otherwise known as userland) that can reach the internals of kernel mode through the System Call Interface.  The operating system, marketed as iOS or macOS, etc., is the really the Darwin operating system.  Darwin is a UNIX operating system.  It offers two personalities to the programmer; its UNIX personality and its Mach personality.  The kernel of Darwin is XNU, and XNU natively speaks Mach because Mach Inter-Process Communication is central to the way in which it internally operates.
+The reason why we want to do Mach programming is because it is an interface available from user mode (otherwise known as userland) that can reach the internals of kernel mode through the System Call Interface (syscall interface).  The operating system, marketed as iOS or macOS, etc., is the really the Darwin operating system.  Darwin is a UNIX operating system.  It offers two personalities to the programmer; its UNIX personality and its Mach personality.  The kernel of Darwin is XNU, and XNU natively speaks Mach because Mach Inter-Process Communication is central to the way in which it internally operates.
 
 It is straightforward to learn the UNIX syscall interface, because it follows the same paradigm as Linux.  There are therefore many books and example programs written against the UNIX syscall interface.  The details will vary but the approach is the same.
 
@@ -14,7 +14,7 @@ When correctly coded, Mach based solutions can be elegant.  When incorrectly cod
 
 ## Mach Fundamental Abstractions
 
-Mach is built upon the following abstractions:
+Mach (@machconcepts) is built upon the following abstractions:
 
 Entity | Purpose
 --|--
@@ -26,3 +26,17 @@ Entity | Purpose
 In the original formulation, tasks could be on the same machine, on different processors in the machine, or on different machines.  Such tasks become active entities when they host one or more threads.  And threads can communicate with each other using well-defined interfaces that are invariant to whether the recipient is on the same machine or on a different machine.
 
 In reality, due to the inescapable nature of distributed communication, latency and reliability cannot be ignored.  Therefore, the uniform communication abstraction never works out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own.  This is where the XNU kernel does its work.
+
+## How to learn Mach programming
+
+Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NeXTstep documentation, @machconcepts.  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.
+
+We can find the header file directory with:
+```
+# find /Applications/Xcode.app -type d -iname mach
+/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/include/mach
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
+.
+.
+.
+```

@@ -1,0 +1,761 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/07_NeXTbus/NeXTbus.rtfd -->
+<!-- Date: Sun Jun 28 20:10:17 1998 -->
+<head>
+<title>NeXTbus</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>7</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>NeXTbus Device Drivers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NeXTbus is the interface bus supported by all NeXTcube and original NeXT computers. NeXTbus boards, such as the CPU and NeXTdimension</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">boards, plug into slots in the back of these computers and communicate over the NeXTbus.&nbsp; As Figure 7-1 shows, NeXTbus computers have four slots, numbered 0, 2, 4, and 6.&nbsp; The CPU board is always in slot 0.&nbsp; The remaining slots are available for other NeXTbus boards.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">NeXTstation</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">computers don't have a NeXTbus or any expansion slots.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=328 height=195></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-1</b></font><font face="Times">.&nbsp; NeXTbus Slot Order</font>
+
+<p><br><br>
+
+<p><font face="Times">To be able to communicate with other NeXTbus boards, your computer's CPU board must have a NeXTbus Interface Chip (NBIC</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">).&nbsp; All NeXTcubes and 68040 Upgrade Boards have NBICs; however, original NeXT computers that still have the 68030 processor might not.&nbsp; See the <i>NeXTbus Development Kit Installation Guide</i> (part of the NeXTbus Development Kit) for instructions if you need to install an NBIC onto a 68030 board.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>NeXTbus Address Space</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Each NeXTbus board has access to two sections of the NeXTbus physical address space:&nbsp; the <i>board address space</i> and the <i>slot address space</i> that correspond to its slot.&nbsp; The board address space of each slot is 256 megabytes, from 0x<i>s</i>0000000 to 0x<i>s</i>fffffff, where <i>s</i> is the slot number; the slot address space of each slot is 16 megabytes at addresses 0xf<i>s</i>000000 to 0xf<i>s</i>ffffff.&nbsp; Every register that your driver must read or write appears in either the board or the slot address space; the specification for your hardware should tell you exactly which physical address you must use.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">The addresses 0x<i>s</i>200c000 to 0x<i>s</i>200cfff, where <i>s</i> is 2, 4, or 6, are intercepted by logic on the CPU board; some CPU boards also intercept addresses 0x<i>s</i>1000000 to 0x<i>s</i>1ffffff, where <i>s</i> is 2, 4, or 6.&nbsp; Writing to these intercepted addresses can cause errors.&nbsp; If your driver needs access to information at these addresses, your board must be configured to accept addresses for the next higher slot, as described in the gray box later in this chapter.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Figure 7-2 shows the NeXTbus physical address space.&nbsp; As the figure shows, the NeXTbus architecture allows for up to 15 slots, each with up to 272 megabytes of physical address space.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><img src="F1.gif" width=341 height=349></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Figure 7-2</b></font><font face="Times">.&nbsp; NeXTbus Address Space</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=28></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">To read or write a hardware address, your driver must first map the physical address into a virtual one.&nbsp; &quot;Mapping from Physical to Virtual Memory Addresses,&quot; later in this chapter, describes how to perform this mapping.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Writing Code to Control the Hardware</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section discusses some of the considerations for writing code that controls NeXTbus hardware.&nbsp; Before you write any code, you should test the hardware with BusProbe</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">, an application in the NeXTbus Development Kit.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using BusProbe</b></font>
+
+<p><font face="Times">BusProbe is a NeXTSTEP application that lets you read and write any address on a NeXTbus board.&nbsp; BusProbe is useful in all phases of driver writing.&nbsp; When you first start, it can help you verify the address of each register.&nbsp; As you write your server, you can test sequences of reads and writes with BusProbe before you put the code into your server.&nbsp; Later, BusProbe can help you when you're testing or debugging your server.</font>
+
+<p><font face="Times">You can use the repeat and autoincrement features to clear areas of memory on the board or for other repetitive tasks. BusProbe lets you choose the board or slot address space that you want to use.&nbsp; For this reason, you should specify an <i>offset</i> into this address space, not the whole address.</font>
+
+<p><font face="Times">Before you're ready to write any code, try reading from and writing to every register on your NeXTbus board.&nbsp; This will help you verify the address and format of each register.</font>
+
+<p><font face="Times">While you're writing your driver, you can use BusProbe to manually enter the actions that you think your driver will have to take.&nbsp; Once you've made sure the actions work, you can put the code to do them into your driver.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Mapping from Physical to Virtual Memory Addresses</b></font>
+
+<p><font face="Times">Use the routine <b>map_addr()</b> to turn a physical address into a virtual memory address that your driver can use.&nbsp; For example, to set a flag on a 32-bit register at address 0x100 in the slot address space of a NeXTbus board (physical address 0xf<i>s</i>000100), you would use the following code:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define REG_ADDR 0xf0000100</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">volatile unsigned int *reg;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">reg = (unsigned int *)map_addr(REG_ADDR | (slot_number &lt;&lt; 24), 4);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*reg |= FLAG;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For a description of the physical address space, see the previous section, &quot;NeXTbus Address Space.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Transferring Data</b></font>
+
+<p><font face="Times">NeXTbus boards can transfer data in up to three sizes:&nbsp; bytes (8 bits), halfwords (16 bits), and words (32 bits).&nbsp; You usually store bytes in <b>unsigned char</b> structures, halfwords in <b>unsigned short</b> structures, and words in <b>unsigned int</b> structures.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Systems based on the 68040 processor don't allow you to read or write using a larger data structure than the device width.&nbsp; For example, you can't write a 32-bit quantity into an 8-bit register; you must use an 8-bit quantity such as an <b>unsigned char</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Burst transfers (transfers of 16 bytes with one instruction) are turned off by default for addresses that are mapped using <b>map_addr()</b>.&nbsp; (This is a side effect of <b>map_addr()</b> making the memory noncacheable, which is preferable when dealing with devices.)&nbsp; To perform a burst read or write on an address mapped with <b>map_addr()</b>, you must write assembly code that calls the 68040's MOVE16 instruction.&nbsp; Because MOVE16 reads or writes the bytes in 32-bit chunks, your hardware must be 32 bits wide.&nbsp; Note that the 68030 doesn't have a MOVE16 instruction and doesn't support burst writes.&nbsp; You can also enable burst transfers while using BusProbe by turning &quot;Cache Inhibit&quot; off.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">You can't currently use DMA (direct memory access) in a NeXTbus driver.&nbsp; Instead, you must use programmed (direct) I/O.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><img src="../../../Images/EPS2.gif" width=688 height=33><br>
+<img src="../../../Images/sp.gif" width=26 height=1><font face="Helvetica"><b>Workaround for Intercepted NeXTbus Addresses</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica" size="-1">If your driver needs to read or write the addresses that are intercepted by the CPU board (0x<i>s</i>200c000 to 0x<i>s</i>200cfff and 0x<i>s</i>1000000 to 0x<i>s</i>1ffffff, where <i>s</i> is 2, 4, or 6), the NBIC on your board must be configured to accept the addresses for the next higher slot (3, 5, or 7).</font>
+
+<p><font face="Helvetica" size="-1">You can't directly configure the NBIC from your driver; it must be done locally on your board.&nbsp; Specifically, the board must set the IGNSID0 bit (bit 28) of its own NBIC Control register to 1.&nbsp; Then, in your driver, you can address both the slot and board address spaces of the board with the next higher slot number.</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>NeXTbus Byte Ordering</b></font>
+
+<p><font face="Times">Depending on your hardware, bytes might be swapped within a word.&nbsp; For example, if you read a word on your NeXTbus board that contains &quot;0x12345678&quot;, your driver might see &quot;0x78563412&quot;.</font>
+
+<p><font face="Times">You can determine whether byte order is an issue for your driver by consulting the designers of and documentation for your board, and by testing reads and writes using BusProbe.&nbsp; BusProbe does not change byte ordering, so if the reads and writes work with BusProbe, they should work the same way in your driver.</font>
+
+<p><font face="Times">The code below is an example of reversing byte order.&nbsp; In this example, the programmer wants to check whether bit 7 in a word is 1 by performing a bitwise OR with the word and 0x00000080.&nbsp; However, on a board that swaps bytes, the programmer has to switch the first and fourth bytes (0x80 and 0x00), producing 0x80000000.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">volatile unsigned int *my_register;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int reg_size = 4;&nbsp;&nbsp; /* # of bytes in the space to be mapped */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">my_register = (unsigned int *)map_addr((MY_ADDR | (slot_num &lt;&lt; 24)),</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">reg_size);</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (probe_rb(my_register))</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Make sure the Valid field is set */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( !(*my_register &amp; 0x80000000)) /* byte-reversed 00000080 */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Writing an Interrupt Handler</b></font>
+
+<p><font face="Times">If your driver must directly detect interrupts, you must provide an interrupt handler.&nbsp;&nbsp; Your interrupt handler can be called whenever <i>any</i> NeXTbus board interrupts, not just when a board controlled by your driver interrupts.</font>
+
+<p><font face="Times">For this reason, your interrupt handler must check whether your driver's hardware generated the interrupt.&nbsp; If it did, your driver must handle the interrupt, stop the hardware from generating this interrupt, and return true.&nbsp; If your driver's hardware did not generate the interrupt, your interrupt handler must do nothing and return false.</font>
+
+<p><font face="Times">To stop NeXTbus hardware from generating an interrupt, write a 1 to bit 7 of the Interrupt Mask byte.&nbsp; This byte is discussed later in this chapter.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Your interrupt handler (and any function it might call) must not sleep.&nbsp; See Chapter 6 for more details on precautions that interrupt handlers must take.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Because interrupt handlers execute on behalf of the hardware, they have no knowledge of which user process they're working for.&nbsp; Thus, they can't use anything to do with a user process.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You install interrupt handlers using <b>install_polled_intr()</b>, and remove them using <b>uninstall_polled_intr()</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The following example illustrates an interrupt handler.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define SLOT_INTR_BIT 0x80</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define SLOTCOUNT 4</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* In the following macro, slotid is half the slot #. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define nbic_regs(slotid) (caddr_t)(0xf0ffffe8 | ((slotid)&lt;&lt;25)</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">mydriver_var_t my_var[SLOTCOUNT];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">sp = &amp;my_var[slotid];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">sp-&gt;nbic_addr=(unsigned char *)map_addr(nbic_regs(slotid), 24);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int my_intr(void)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; slotid;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">volatile unsigned char *intr_reg, *mask_reg;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Figure out if we really handle this interrupt.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Interrupts at level 5 are polled, so we have to</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* check the interrupt byte associated with the</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* hardware slots we control.&nbsp; slotid 1 corresponds</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* to hardware slot 2, slotid 2 to hardware slot 4,</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* and slotid 3 to hardware slot 6.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">for (slotid = 1; slotid &lt; SLOTCOUNT; slotid++)</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (my_var[slotid].is_ours) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">intr_reg = my_var[slotid].nbic_addr;</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">if (*intr_reg &amp; SLOT_INTR_BIT)</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* If we couldn't handle the interrupt, leave now. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (slotid == SLOTCOUNT)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Poll code should try next handler */</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* At this point some device-dependent code is necessary to</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* reset the interrupt condition so that the device does</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* not continue to try to interrupt the CPU.&nbsp; Here we</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* disable the interrupt by clearing the mask bit.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">mask_reg = intr_reg + 4;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*mask_reg = 0;&nbsp; /* Mask it off. */</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Handle the interrupt. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*&nbsp; Schedule a routine to react to the interrupt.*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_serv_callout(&amp;instance,</font><br>
+<img src="../../../Images/sp.gif" width=278 height=1><font face="Courier" size="-1">(void (*)(void *))my_func,</font><br>
+<img src="../../../Images/sp.gif" width=278 height=1><font face="Courier" size="-1">(void *)sp);</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return TRUE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* We fielded the interrupt, so no</font><br>
+<img src="../../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">other driver should be polled. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">install_polled_intr(I_BUS, my_intr);</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>NeXTbus Board Registers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section discusses the standard NeXTbus registers that your driver might have to read or write.&nbsp; For more information on the NeXTbus, see the <i>NeXTbus Specificatio</i>n.&nbsp; For information on the NeXTbus Interface Chip (NBIC), see the <i>NeXTbus Interface Chip Specification</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>CPU Board NBIC Registers</b></font>
+
+<p><font face="Times">The only NBIC register on the CPU board that you might need to write to is the NBIC Control register, which has three defined bits.&nbsp; The only bit you might need to modify, however, is the Store Forward bit.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>NBIC Control Register</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F3.gif" width=300 height=138></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-3</b></font><font face="Times">.&nbsp; NBIC Control Register</font>
+
+<p><br><br>
+
+<p><font face="Times">The CPU board's NBIC Control register is at address 0x02020000.</font>
+
+<p><font face="Times">Bit 28, Ignore Slot ID 0 (IGNSID0), controls how much NeXTbus address space a board uses.&nbsp; It's set to 1 during initialization so that the CPU board takes up two slots worth of addresses.</font>
+
+<p><font face="Times">Bit 27 is the Store Forward (STFWD) control bit.&nbsp; At power up, it's enabled (set to 1).&nbsp; When enabled, Store Forward causes the CPU board's NBIC to immediately acknowledge writes, without waiting for the other NeXTbus board to write the data.&nbsp; This is called a <i>store and forward write</i> transaction.&nbsp; It speeds up transaction time, since the CPU doesn't have to wait for your board to write data.&nbsp; The disadvantage of store and forward write is that you won't receive any notification of write errors.&nbsp; Thus, unless your hardware is completely reliable, store and forward write can be dangerous.</font>
+
+<p><font face="Times">Bit 26 is the Read Modify Cycle Collision (RMCOL) bit.&nbsp; It's not appropriate to access this register on the CPU board.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Other NeXTbus Board Registers</b></font>
+
+<p><font face="Times">On every NeXTbus board, 6 bytes of identification and interrupt information are at addresses 0xf<i>s</i>ffffe8 to 0xf<i>s</i>fffffc, where <i>s</i> is the slot number of the board.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F4.gif" width=387 height=230></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-4</b></font><font face="Times">.&nbsp; Sample NeXTbus Slot Address Space</font>
+
+<p><br><br>
+
+<p><font face="Times">If your NeXTbus board uses an NBIC, then addresses 0xf<i>s</i>fffff0 through 0xf<i>s</i>fffffc correspond to the NBIC ID register, address 0xf<i>s</i>ffffec is the Interrupt register, and 0xf<i>s</i>ffffe8 is the Interrupt Mask register.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Identification Bytes (NBIC ID Register)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=295 height=88></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-5</b></font><font face="Times">.&nbsp; NBIC ID Register</font>
+
+<p><br><br>
+
+<p><font face="Times">Identification bytes give information that identifies the type of NeXTbus board.&nbsp; Your driver should read them during its initialization to see whether it should take control of this board.</font>
+
+<p><font face="Times">The four Identification bytes are read-only bytes that contain a board ID number, a manufacturer's ID number, and a VALID bit. Unless the VALID bit is 1, none of the identification and interrupt information is valid.&nbsp; When the VALID bit is 1, the ID numbers are valid and your driver can use them to identify the board.</font>
+
+<p><font face="Times">Since each byte is mapped to a separate 32-bit word, your driver has to read four separate words (or bytes, if your hardware supports byte-wide reads) to get all the identification information.&nbsp; Figure 7-6 shows the Identification byte locations in the NeXTbus slot address space.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F6.gif" width=356 height=236></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-6</b></font><font face="Times">.&nbsp; Identification Bytes in the NeXTbus Slot Space</font>
+
+<p><br><br>
+
+<p><font face="Times">If your driver can't perform byte reads, you have to find the correct byte in each word or halfword.&nbsp; If your driver doesn't have to reverse the byte order, you can simply address the last byte of the word as an <b>unsigned char</b>.&nbsp; If you do have to reverse the byte order, you must right-shift each word or halfword to move the byte you want to read from the most significant to the least significant byte.</font>
+
+<p><font face="Times">The following example shows how to read the Identification bytes.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">volatile unsigned int *id_start;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int id_size = 16;&nbsp;&nbsp; /* # of bytes in the space to be mapped */</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id_start=(unsigned int *)map_addr((0xf0fffff0 | (slotid &lt;&lt; 25)),</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id_size);</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (probe_rb(id_start))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (ids_ok(id_start, MY_MFG_ID, MY_BRD_ID))</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">my_var[slotid].present = TRUE;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define HI_BYTE(n) ((n) &gt;&gt; 8)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define LO_BYTE(n) ((n) &amp; 0xff)</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* Check the ID on the remote board to see if it matches ours.&nbsp; The</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* ID fields are spread out over four words from 0xFsFFFFF0 through</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* 0xFsFFFFFC, with the valid data appearing in bits 0 through 7.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">boolean_t</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ids_ok(volatile unsigned int *id_begin, int board_id, int mfg_id)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">volatile unsigned int *current_word = id_begin;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Make sure the Valid field is set */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( !(*current_word &amp; 0x00000080))</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* test high byte of mfg ID, ignoring the Valid field */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( ((*current_word) &amp; 0x7f) != HI_BYTE(mfg_id) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">++current_word;&nbsp; /* Move to next word */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* test low byte of the mfg ID */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( (*current_word) != LO_BYTE(mfg_id) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">++current_word;&nbsp; /* Move to next word */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* test high byte of the board ID */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( (*current_word) != HI_BYTE(board_id) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">++current_word;&nbsp; /* Move to next word */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* test low byte of the board ID */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( (*current_word) != LO_BYTE(board_id) )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return FALSE;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return TRUE;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Interrupt Byte</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F9.gif" width=83 height=52></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-7</b></font><font face="Times">.&nbsp; NBIC Interrupt Register</font>
+
+<p><br><br>
+
+<p><font face="Times">This byte contains a bit that shows whether the board wants to interrupt the CPU.&nbsp; Your driver's interrupt handler can read this bit to determine whether it needs to handle an interrupt.</font>
+
+<p><font face="Times">The Interrupt byte is a read-only byte at address 0xf<i>s</i>ffffe8, where <i>s</i> is the slot ID.&nbsp; This byte has only one significant bit, bit 7. Bit 7 is 1 when the board wants to interrupt, and 0 when it doesn't.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The value of bit 7 doesn't depend on whether interrupts are enabled or disabled.&nbsp; Even if interrupts are disabled, and thus this board can't interrupt the CPU, bit 7 will be 1 if the board wants to interrupt.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Interrupt Mask Byte</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F10.gif" width=83 height=53></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7-8</b></font><font face="Times">.&nbsp; NBIC Interrupt Mask Register</font>
+
+<p><br><br>
+
+<p><font face="Times">Use this byte to enable and disable interrupts.</font>
+
+<p><font face="Times">The Interrupt Mask byte is a read/write byte at address 0xf<i>s</i>ffffec, where <i>s</i> is the slot ID.&nbsp; As in the Interrupt byte, bit 7 is the only meaningful bit.&nbsp; When bit 7 is 1 (the default), the board can interrupt.&nbsp; If your driver writes a 0 to bit 7, the board stops interrupting and can't interrupt again until the driver writes a 1 to it.</font>
+
+<p><font face="Times">After your driver handles an interrupt, you might want to disable interrupts for a while so that the hardware won't keep interrupting the CPU.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

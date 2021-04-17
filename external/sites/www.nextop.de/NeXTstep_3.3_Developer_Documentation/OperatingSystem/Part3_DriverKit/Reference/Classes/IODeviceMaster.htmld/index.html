@@ -1,0 +1,612 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Reference/Classes/IODeviceMaster.rtf -->
+<!-- Date: Sun Jun 28 20:11:20 1998 -->
+<head>
+<title>IODeviceMaster</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IODeviceMaster</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">driverkit/IODeviceMaster.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IODeviceMaster is a class used by user-level programs to gain access to device driver instances. To use IODeviceMaster, the program uses the <b>alloc</b> and <b>init</b> methods to obtain and initialize an IODeviceMaster instance. It then attempts to get the object number of the device driver instance using one of the <b>lookUp...</b> methods. If successful, it can use this object number to get and set parameters associated with the driver instance.</font>
+
+<p><font face="Times">Programs don't need superuser privileges to get information from IODeviceMaster. However, they do need superuser privileges to be able to set device information (with the <b>setCharValues:...</b> and <b>setIntValues:</b> methods).</font>
+
+<p><font face="Times">Here's an example of using IODeviceMaster. It's taken from the <b>DriverInspector</b> directory located in <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IOReturn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ret;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IOObjectNumber&nbsp; objectNumber;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IOString&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kind;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IOCharParameter value;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned int&nbsp;&nbsp;&nbsp; count = IO_MAX_PARAMETER_ARRAY_LENGTH, unit = 0;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name[80];</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IODeviceMaster *devMaster;</font>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Look up the test driver, using IODeviceMaster. */</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">devMaster = [IODeviceMaster new];</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sprintf(name, &#34;%s%d&#34;, my_DEVICE_NAME, unit);</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ret = [devMaster lookUpByDeviceName:name objectNumber:&amp;objectNumber</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">deviceKind:&amp;kind];</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (ret != IO_R_SUCCESS) { /* handle the error */</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;Lookup failed: %s\n&#34;,</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[IODevice stringFromReturn:ret]);</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(-1);</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} else { /* Successfully got the object number */</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Get the value of the test driver's parameter. */</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">ret = [devMaster getCharValues:value</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">forParameter:my_PARAMETER_NAME objectNumber:objectNumber</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">count:&amp;count];</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (ret != IO_R_SUCCESS) { /* handle the error */</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;Failed to get parameter value: %s\n&#34;,</font><br>
+<img src="../../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[IODevice stringFromReturn:ret]);</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">exit(-1);</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} else /* Successfully got the parameter value */</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">printf(&#34;Parameter value: %s; count = %d\n&#34;, value, count);</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating and freeing instances</font></td>
+
+<td><font face="Times">+ new</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Finding IODevice objects</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">lookUpByDeviceName:objectNumber:deviceKind:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">lookUpByObjectNumber:deviceKind:deviceName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting and setting parameter values</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCharValues:forParameter:objectNumber:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntValues:forParameter:objectNumber:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCharValues:forParameter:objectNumber:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntValues:forParameter:objectNumber:count:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>new</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ new</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an IODeviceMaster object. An application has no more than one IODeviceManager object, so this method either returns the previously created object (if it exists) or creates a new one.</font>
+
+<p><font face="Times">Instead of <b>new</b>, use <b>alloc</b> and <b>init</b> to create and initialize an instance:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[IODeviceMaster alloc] init];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing; an IODeviceMaster should never be freed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>getCharValues:</b>(unsigned char *)<i>array</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameter</i></font><br>
+<font face="Times"><b>objectNumber:</b>(IOObjectNumber)<i>objectNumber</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int *)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Gets the array of values associated with <i>parameter</i> for the IODevice object specified by <i>objectNumber</i>; returns IO_R_SUCCESS. Unless <i>count</i> is specified to be 0, the returned array contains no more than <i>count</i> characters. On return, <i>count </i>is set to the number of characters in the array. You can obtain values for <i>objectNumber</i> using the method <b>lookUpByDeviceName:objectNumber:deviceKind:</b>.</font>
+
+<p><font face="Times">If <i>objectNumber</i> is larger than the highest existing object number, this method returns IO_R_NO_DEVICE. If <i>objectNumber </i>refers to an object number for a device driver that's no longer registered, this method returns IO_R_OFFLINE. If <i>parameter</i> is invalid (it isn't recognized by the IODevice instance to have character values that can be read), this method returns IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntValues:forParameter:objectNumber:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>getIntValues:</b>(unsigned int *)<i>array</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameter</i></font><br>
+<font face="Times"><b>objectNumber:</b>(IOObjectNumber)<i>objectNumber</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int *)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Gets the array of values associated with <i>parameter</i> for the IODevice object specified by <i>objectNumber</i>; returns IO_R_SUCCESS. Unless <i>count</i> is specified to be 0, the returned array contains no more than <i>count</i> characters. On return, <i>count </i>is set to the number of characters in the array. You can obtain values for <i>objectNumber</i> using the method <b>lookUpByDeviceName:objectNumber:deviceKind:</b>.</font>
+
+<p><font face="Times">If <i>objectNumber</i> is larger than the highest existing object number, this method returns IO_R_NO_DEVICE. If <i>objectNumber </i>refers to an object number for a device driver that's no longer registered, this method returns IO_R_OFFLINE. If <i>parameter</i> is invalid (it isn't recognized by the IODevice instance to have integer values that can be read), this method returns IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharValues:forParameter:objectNumber:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lookUpByDeviceName:objectNumber:deviceKind:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>lookUpByDeviceName:</b>(IOString)<i>deviceName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>objectNumber:</b>(IOObjectNumber *)<i>objectNumber</i></font><br>
+<font face="Times"><b>deviceKind:</b>(IOString *)<i>deviceKind</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Gets the object number and descriptive string associated with the specified device name. The name is device-specific; it's the same as the value the driver sets using <b>setName:</b>. Returns IO_R_SUCCESS if the lookup was successful. Otherwise, returns IO_R_NO_DEVICE.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lookUpByObjectNumber:deviceKind:deviceName:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lookUpByObjectNumber:deviceKind:deviceName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>lookUpByObjectNumber:</b>(IOObjectNumber)<i>objectNumber</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>deviceKind:</b>(IOString *)<i>deviceKind</i></font><br>
+<font face="Times"><b>deviceName:</b>(IOString *)<i>deviceName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Gets the descriptive strings associated with the IODevice specified by <i>objectNumber</i>. Returns IO_R_SUCCESS if the lookup was successful. If <i>objectNumber</i> is larger than the highest existing object number, returns IO_R_NO_DEVICE. If <i>objectNumber</i> refers to an object number for a device driver that's no longer registered, returns IO_R_OFFLINE.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lookUpByDeviceName:objectNumber:deviceKind:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>setCharValues:</b>(unsigned char *)<i>array</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameter</i></font><br>
+<font face="Times"><b>objectNumber:</b>(IOObjectNumber)<i>objectNumber</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the array of values associated with <i>parameter</i> for the IODevice object specified by <i>objectNumber</i>; returns IO_R_SUCCESS.&nbsp; The <i>count</i> argument specifies the number of elements in the array.&nbsp; You can obtain values for <i>objectNumber </i>using the method <b>lookUpByDeviceName:objectNumber:deviceKind:</b>.</font>
+
+<p><font face="Times">If <i>objectNumber</i> is larger than the highest existing object number, this method returns IO_R_NO_DEVICE.&nbsp; If <i>objectNumber </i>refers to an object number for a device driver that's no longer registered, this method returns IO_R_OFFLINE.&nbsp; If <i>parameter</i> is invalid (it isn't recognized by the IODevice instance to have character values that can be written), this method returns IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValues:forParameter:objectNumber:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>setIntValues:</b>(unsigned int *)<i>array</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>forParameter:</b>(IOParameterName)<i>parameter</i></font><br>
+<img src="../../../../Images/sp.gif" width=3 height=1><font face="Times"><b>objectNumber:</b>(IOObjectNumber)<i>objectNumber</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the array of values associated with <i>parameter</i> for the IODevice object specified by <i>objectNumber</i>; returns IO_R_SUCCESS.&nbsp; The <i>count</i> argument specifies the number of elements in the array.&nbsp; You can obtain values for <i>objectNumber </i>using the method <b>lookUpByDeviceName:objectNumber:deviceKind:</b>.</font>
+
+<p><font face="Times">If <i>objectNumber</i> is larger than the highest existing object number, this method returns IO_R_NO_DEVICE.&nbsp; If <i>objectNumber </i>refers to an object number for a device driver that's no longer registered, this method returns IO_R_OFFLINE.&nbsp; If <i>parameter</i> is invalid (it isn't recognized by the IODevice instance to have integer values that can be written), this method returns IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCharValues:forParameter:objectNumber:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

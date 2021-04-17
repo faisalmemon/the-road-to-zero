@@ -1,0 +1,628 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part1_Mach/03_UsingLKSs/UsingLKSs.rtf -->
+<!-- Date: Sun Jun 28 20:09:29 1998 -->
+<head>
+<title>UsingLKSs</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>3</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Using Loadable Kernel Servers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter discusses how to use the kernel-server loader functions to interact with <i>loadable kernel servers</i>.&nbsp; Loadable kernel servers are modules, such as device drivers and network protocols, that can be added to the NeXT Mach kernel.&nbsp; One example of interaction with a loadable kernel server is using the function <b>kern_loader_load_server()</b> to load a loadable kernel server. Another example is using the function <b>kern_loader_server_list()</b> to get a list of all loadable kernel servers that are either loaded or prepared for loading (allocated).</font>
+
+<p><font face="Times">The following section gives more information on loadable kernel servers and on the kernel-server loader, <b>kern_loader</b>.&nbsp; The next section gives some examples of using the kernel-server loader functions.&nbsp; Each kernel-server loader function is described in detail in Chapter 4, &quot;Mach Functions.&quot;</font>
+
+<p><font face="Times">For more information about loadable kernel servers, see Part 2 of this manual, &quot;Writing Loadable Kernel Servers.&quot;&nbsp; Part 2 also has information about the kernel-server utility, <b>kl_util</b>, which is a command-line interface to many of the functions described in this chapter.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>How Loadable Kernel Servers Work</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The kernel-server loader is a server task that's automatically called during system startup.&nbsp; When started, it reads a list of loadable kernel servers out of its configuration file, <b>/etc/kern_loader.conf</b>, and allocates these servers.</font>
+
+<p><font face="Times">A loadable kernel server is a module that's loaded into the kernel after the system has been booted.&nbsp; Because loadable kernel servers are the only way to add kernel functionality without recompiling the whole kernel, they're the only way for anyone outside of NeXT to write kernel-level device drivers and network protocols.&nbsp; However, third parties aren't the only ones to use loadable kernel servers--NeXT uses them for drivers of devices that many people won't have.</font>
+
+<p><font face="Times">For example, the graphics tablet driver is a loadable kernel server that is loaded by the application <b>/NextAdmin/InstallTablet</b>. Having a loadable tablet driver is advantageous because performance on NeXT computers that don't have a graphics tablet (the majority of NeXT computers) is better than if the tablet driver were always in the kernel.</font>
+
+<p><font face="Times">Loadable kernel servers can have three states:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Allocated--The kernel-server loader (<b>kern_loader</b>) has allocated space and resources for the loadable kernel server and is listening for Mach messages to its ports.&nbsp; However, the server isn't currently loaded into the kernel.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Loaded--The loadable kernel server is running.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Unallocated--The kernel-server loader has no space or other resources allocated for the loadable kernel server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Not all loadable kernel servers stay in the allocated state when they're initialized.&nbsp; Servers that don't use Mach messages, for example, are loaded immediately.&nbsp; Most message-based servers, however, stay in the allocated state until the kernel-server loader receives either a message for the server or a request such as <b>kern_loader_load_server()</b> that tells it to load the server.</font>
+
+<p><font face="Times">Each loadable kernel server stays loaded until the kernel-server loader either shuts down or receives a request to unload or delete the server (such as <b>kern_loader_unload_server()</b>).</font>
+
+<p><font face="Times">See Chapter 5, &quot;Overview of Loadable Kernel Servers,&quot; for more information on loadable kernel servers and on using <b>kern_loader</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Overview of Kernel-Server Loader Functions</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes the use of the kernel-server loader functions.&nbsp; See the &quot;Kernel-Server Loader Functions&quot; section of Chapter 4 for more information on each of the functions.</font>
+
+<p><font face="Times">The kernel-server loader functions are broken into two groups--those that deal with a single loadable kernel server, and those that deal with the kernel-server loader itself.&nbsp; Two more functions help you print error messages:&nbsp; <b>kern_loader_error()</b> and <b>kern_loader_error_string()</b>.</font>
+
+<p><font face="Times">Before you can call any other kernel-server loader function, you must call <b>kern_loader_look_up()</b> to obtain the port of the kernel-server loader.&nbsp; You must provide this port as an argument to all of the following function calls.&nbsp; A similar argument, returned by <b>kern_loader_server_com_port()</b>, is required only for calls to functions that deal with a server's message logging.</font>
+
+<p><font face="Times">Use <b>kern_loader_add_server()</b> to cause a loadable kernel server to be allocated.&nbsp; If the server starts automatically, then it will be loaded into the kernel; otherwise, you can send a message to the server or call <b>kern_loader_load_server()</b> to load the server into the kernel.&nbsp; To remove a loadable kernel server from the kernel, use <b>kern_loader_unload_server()</b> (to leave the server in the allocated state) or <b>kern_loader_delete_server()</b> (to deallocate kernel-server loader resources for the server).</font>
+
+<p><font face="Times">For each loadable kernel server, logging is off by default.&nbsp; To get status messages from a particular loadable kernel server, use <b>kern_loader_log_level()</b> to turn the server's logging on and <b>kern_loader_get_log()</b> to get the next log message.&nbsp; You might want to turn logging off (by again using <b>kern_loader_log_level()</b>) before you stop collecting log messages, since messages continue to be logged and take system space even when no one requests them.</font>
+
+<p><font face="Times">You can get detailed information about the state of a particular server by calling <b>kern_loader_server_info()</b>.</font>
+
+<p><font face="Times">Use <b>kern_loader_status_port()</b> to register a port where log messages from the kernel-server loader should be sent.&nbsp; These messages usually reflect changes in the state of one or more loadable kernel servers.&nbsp; You can get a list of all the servers that the kernel-server loader knows about by calling <b>kern_loader_server_list()</b>.&nbsp; Use <b>kern_loader_abort()</b> to shut down or reconfigure the kernel-server loader.&nbsp; Use <b>kern_loader_ping()</b> to make sure either that the kernel-server loader is responding normally to messages, or that all outstanding status messages have been sent.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Functions for Asynchronous Messages</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Three of the kernel-server loader functions don't immediately return information.&nbsp; Instead, these three functions tell the kernel-server loader to send asynchronous reply messages that contain the information.&nbsp; Whenever you call one of these functions, you must supply the code necessary to handle the kernel-server loader's reply message.&nbsp; The following table shows the three asynchronous kernel-server loader functions and their corresponding user-written functions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Asynchronous Function</b></font></td>
+
+<td><font face="Helvetica"><b>User-Written Function</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>kern_loader_ping()</b></font></td>
+
+<td><font face="Times"><i>ping_func()</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>kern_loader_get_log()</b></font></td>
+
+<td><font face="Times"><i>log_data_func()</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>kern_loader_status_port()</b></font></td>
+
+<td><font face="Times"><i>string_func()</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes how to handle asynchronous reply messages from the kernel-server loader.&nbsp; First it describes the code that all three of the asynchronous functions require in your program.&nbsp; Then it describes how to implement the handler necessary for each of the functions.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Common Code for Handling Reply Messages</b></font>
+
+<p><font face="Times">If your program calls a kernel-server loader function that sends an asynchronous reply message, then your program must follow these steps to handle reply messages:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">1.</font></td>
+
+<td><font face="Times">Allocate a port on which to receive messages from the kernel-server loader.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">2.</font></td>
+
+<td><font face="Times">Call the asynchronous function, passing as data the receiving port.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">3.</font></td>
+
+<td><font face="Times">Listen to the receiving port (often in a separate thread).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">4.</font></td>
+
+<td><font face="Times">After receiving a message on the port, call <b>kern_loader_reply_handler()</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">5.</font></td>
+
+<td><font face="Times">Take care of the reply message in a handling function, which is called by <b>kern_loader_reply_handler()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You must write the handling function that's called by <b>kern_loader_reply_handler()</b>.&nbsp; You must also create a structure that specifies which handling functions exist; you pass a pointer to this structure to <b>kern_loader_reply_handler()</b> every time you call it.&nbsp; The structure is of type <b>kern_loader_reply_t</b>, which is defined in the header file <b>kernserv/kern_loader_reply_handler.h</b> as the following:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct kern_loader_reply {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *arg;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* argument to pass to function */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msg_timeout_t timeout;&nbsp;&nbsp;&nbsp; /* timeout for RPC return msg_send */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t (*string)(&nbsp; /* kern_loader_status_port() function */</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *arg,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">printf_data_t string,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">unsigned int&nbsp; string_count,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; level);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t (*ping)(&nbsp;&nbsp;&nbsp; /* kern_loader_ping() function */</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *arg,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; id);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t (*log_data)(/* kern_loader_get_log() function */</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *arg,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">printf_data_t log_data,</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">unsigned int&nbsp; log_data_count);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} kern_loader_reply_t;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following example calls one of the asynchronous kernel-server loader functions, <b>kern_loader_status_port()</b>.&nbsp; The handler for the reply message is called <b>print_string()</b>, and is specified to the kernel-server loader using the structure <b>reply_handlers</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;mach/mach.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;mach/mach_error.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;kernserv/kern_loader_types.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;kernserv/kern_loader.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;kernserv/kern_loader_reply_handler.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;kernserv/kern_loader_error.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;mach/cthreads.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;libc.h&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;stdio.h&gt;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void receive_thread(port_name_t port);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_return_t print_string(void *arg, printf_data_t string,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int string_count, int level);</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void main()</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t&nbsp;&nbsp; r;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">port_name_t&nbsp;&nbsp;&nbsp;&nbsp; status_port, kl_port;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">r = kern_loader_look_up(&amp;kl_port);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">mach_error(&#34;kl_util: can't find kernel loader&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">r = port_allocate(task_self(), &amp;status_port);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">mach_error(&#34;kl_util: can't allocate reply port&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Get generic status messages on this port. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">r = kern_loader_status_port(kl_port, status_port);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">kern_loader_error(&#34;Couldn't specify status port&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Create a thread to listen on status_port. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cthread_detach(cthread_fork((cthread_fn_t)receive_thread,</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">(any_t)status_port));</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Sleep for a while so we can enter kl_util commands at a shell</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* window.&nbsp; The output of all commands (except status lines from</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* kl_util -s) will show up in both the window that's running this</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* program and in the window that's running kl_util.&nbsp; (kl_util</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* also has a status port registered.)</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">sleep(30);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(0);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_loader_reply_t reply_handlers = {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* argument to pass to function */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* timeout for rpc return msg_send */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">print_string,&nbsp;&nbsp;&nbsp;&nbsp; /* string function */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* reply_ping function */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* log_data function */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void receive_thread(port_name_t port)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; msg_buf[kern_loader_replyMaxRequestSize];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msg_header_t *msg = (msg_header_t *)msg_buf;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t r;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* message handling loop */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (TRUE) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Receive the next message in the queue. */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">msg-&gt;msg_size = kern_loader_replyMaxRequestSize;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">msg-&gt;msg_local_port = port;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">r = msg_receive(msg, MSG_OPTION_NONE, 0);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS)</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">break;</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Handle the message we just received. */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">kern_loader_reply_handler(msg, &amp;reply_handlers);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* We get here only if msg_receive returned an error. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">mach_error(&#34;receive_thread&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* This function is called by kern_loader every time it has status to</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* report.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_return_t print_string(void *arg, printf_data_t string,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int string_count, int level)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* If the string is empty, return. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (string_count == 0 || !string)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return KERN_SUCCESS;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Print the string we were passed, with our special prefix. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">printf(&#34;print_string: %s&#34;, string);</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return KERN_SUCCESS;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Handling a Status Message</b></font>
+
+<p><font face="Times">You can receive many reply messages as the result of just one call to <b>kern_loader_status_port()</b>.&nbsp; The function you must use to handle these reply messages is defined as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times">kern_return_t <i>string_func</i><b>(</b>void *<i>arg</i>, printf_data_t <i>string</i>, u_int <i>string_count</i>, int <i>level</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first argument, <i>arg</i>, has the same value as the <b>arg</b> field in the <b>kern_loader_reply_t</b> structure.&nbsp; The string that the kernel-server loader is logging is returned in <i>string</i>, with the string's length returned in <i>string_count</i>.&nbsp; The <i>level</i> argument is set to the priority of the log message, using the priorities defined in the header file <b>sys/syslog.h</b> (LOG_EMERG, LOG_ALERT, and so on).</font>
+
+<p><font face="Times">Your function should return KERN_SUCCESS.</font>
+
+<p><font face="Times">The following code is an example of a <i>string_func</i> named <b>print_string()</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* This function is called by kern_loader every time it has status to</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* report.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_return_t print_string(void *arg, printf_data_t string,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">u_int string_count, int level)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* If the string is empty, return. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (string_count == 0 || !string)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return KERN_SUCCESS;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Print the string we were passed, with our special prefix. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">printf(&#34;print_string: %s&#34;, string);</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return KERN_SUCCESS;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Handling a Synchronization Message</b></font>
+
+<p><font face="Times">A call to <b>kern_loader_ping()</b> results in a single reply message.&nbsp; Your handler for this reply message must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times">kern_return_t <i>ping_func</i><b>(</b>void *<i>arg</i>, int <i>id</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first argument, <i>arg</i>, is the value in the <b>arg</b> field of the <b>kern_loader_reply_t</b> structure.&nbsp; <i>id</i> is the same as the <i>id</i> value specified in the call to <b>kern_loader_ping()</b>.&nbsp; Your <i>ping_func</i> should return KERN_SUCCESS.</font>
+
+<p><font face="Times">Here's an example of a <i>ping_func</i> that causes its task to shut down.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* This function is called after a kern_loader_ping(). */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_return_t ping (void *arg, int id)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">exit(0);&nbsp;&nbsp;&nbsp; /* Kill this process. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Handling a Log Message</b></font>
+
+<p><font face="Times">Each time you call <b>kern_loader_log_data()</b>, you receive a single reply message as soon as any log data from the specified driver is available.&nbsp; The function you write to handle this message must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times">kern_return_t <i>log_func</i><b>(</b>void *<i>arg</i>, printf_data_t <i>log_data</i>, unsigned int <i>log_data_count</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first argument has the same value as the <i>arg</i> field in the <b>kern_loader_reply_t</b> structure.&nbsp; The <i>log_data</i> argument is a string containing the log entry from the loadable kernel server, preceded by a time stamp that indicates the relative time when the kernel-server loader received the log message.&nbsp; The <i>log_data_count</i> is the size of <i>log_data</i> in bytes.&nbsp; You should call <b>vm_deallocate()</b> on <i>log_data</i> when it's no longer needed.</font>
+
+<p><font face="Times">Your <i>log_func</i> should return KERN_SUCCESS.</font>
+
+<p><font face="Times">Here's an example of a <i>log_func</i> called <b>log_data</b>.&nbsp; It prints out the log message it's passed, and then requests another log message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">kern_return_t log_data(void *arg, printf_data_t log_data,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int log_data_count)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t r;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Print the string we were passed, with our prefix. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">printf(&#34;log_data: %s\n&#34;, log_data);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">vm_deallocate(task_self(), (vm_address_t)log_data,</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">log_data_count*sizeof(*log_data));</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Request the next log message. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">r = kern_loader_get_log(kl_port, server_com_port, reply_port);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (r != KERN_SUCCESS) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">kern_loader_error(&#34;log_data:&nbsp; Error calling</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">kern_loader_get_log&#34;, r);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">exit(1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return KERN_SUCCESS;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+
+
+</body>
+</html>

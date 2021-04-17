@@ -1,0 +1,2105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/06_DistributedObjects/Classes/NXConnection.rtf -->
+<!-- Date: Sun Jun 28 20:05:18 1998 -->
+<head>
+<title>NXConnection</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>NXConnection</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NXInvalidationNotifier (Mach Kit) : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NXSenderIsInvalid</font><br>
+<font face="Times">NXReference (NXInvalidationNotifier)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">remote/NXConnection.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXConnection class is used to establish a connection that allows objects in one process to send messages to objects in another process, and it defines instances that manage the local side of such a connection.</font>
+
+<p><font face="Times">To establish a connection, some object must first be registered with the Network Name Server using <b>registerRoot:withName:</b>. This creates an NXConnection and makes the given root object available (through <b>connectToName:</b>) to any application that knows the registered name.</font>
+
+<p><font face="Times">NXConnection objects can also be automatically created by the system.&nbsp; When a proxy is vended to an application, the application doesn't receive a proxy to the proxy.&nbsp; Instead, a new connection is formed if necessary, and the application receives a proxy to the original object.&nbsp; The delegate method <b>connection:didConnect:</b> is used to inform the application of the automatic creation of new connections.</font>
+
+<p><font face="Times">An NXConnection maintains a table containing an NXProxy object for every local object that has been vended.&nbsp; It also maintains a table of remote NXProxy objects; these proxies are used to send messages to real objects that exist in other applications.&nbsp; A local NXProxy is created automatically by an NXConnection when a local object is vended to another application.&nbsp; Similarly, a remote NXProxy is created automatically when a remote object is vended to the NXConnection; this remote proxy forwards the messages it receives to its corresponding real object, with the effect that it generally appears to be the real object to the local application.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Running a Connection</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a connection is created, it is able to originate messages, and it sends these messages out to a port known as its <i>out-port </i>(available though the <b>outPort</b> method).&nbsp; Having sent a message, the connection will generally need to receive a reply message, which comes in over the connection's <i>in-port</i>.&nbsp; While it awaits this reply, the connection may dispatch messages in response to other messages that appeared on its in-port.&nbsp; However, once the desired reply is found, the connection will return its thread of control back to the caller, and the connection won't be able to receive unsolicited messages.&nbsp; In order to wait on unsolicited messages, a connection must be run, a process that involves waiting for messages on its in-port.&nbsp; The connection's thread is unavailable for other tasks while it runs.&nbsp; For this reason, there are a variety of run methods that allow a connection to run concurrently from the event loop, in its own thread, or for a limited period of time.&nbsp; The run methods are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">run</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runWithTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runInNewThread</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runFromAppKit</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runFromAppKitWithPriority:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A connection can receive remote messages from connections running in other threads or processes, and it will queue up these messages and dispatch them locally from its own thread.&nbsp; However, you cannot run a connection in one thread and send outgoing two-way messages over that connection from another thread; the process of running the connection has the connection's thread waiting on the in-port, so this port is not available for a return message for the caller's thread.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The connection's delegate</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NXSenderIsInvalid</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">senderIsInvalid:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Establishing a connection</font></td>
+
+<td><font face="Times">+&nbsp; connectToName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+&nbsp; connectToName:fromZone:</font><br>
+<font face="Times">+&nbsp; connectToName:onHost:</font><br>
+<font face="Times">+&nbsp; connectToName:onHost:fromZone:</font><br>
+<font face="Times">+&nbsp; connectToPort:</font><br>
+<font face="Times">+&nbsp; connectToPort:fromZone:</font><br>
+<font face="Times">+&nbsp; connectToPort:withInPort:</font><br>
+<font face="Times">+&nbsp; connectToPort:withInPort:fromZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Ascertaining connections</font></td>
+
+<td><font face="Times">+&nbsp; connections:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Registering an object</font></td>
+
+<td><font face="Times">+ registerRoot:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ registerRoot:fromZone:</font><br>
+<font face="Times">+ registerRoot:withName:</font><br>
+<font face="Times">+ registerRoot:withName:fromZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Eliminating references</font></td>
+
+<td><font face="Times">+ removeObject:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Invalidation</font></td>
+
+<td><font face="Times">+ unregisterForInvalidationNotification:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Statistics</font></td>
+
+<td><font face="Times">+ messagesReceived</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Timeouts</font></td>
+
+<td><font face="Times">+ setDefaultTimeout:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ defaultTimeout</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setInTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setOutTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times">inTimeout</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times">outTimeout</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Zone usage</font></td>
+
+<td><font face="Times">+ setDefaultZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">defaultZone</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Returning port objects</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times">inPort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times">outPort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting and setting the root object</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rootObject</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRoot:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Imported and exported objects</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">remoteObjects</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">localObjects</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Returning a proxy</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getLocal:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">newRemote:withProtocol:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Running a connection</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">run</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runWithTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runInNewThread</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runFromAppKit</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">runFromAppKitWithPriority:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Freeing an NXConnection instance</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connections:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>connections:</b>(List *) <i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds all the application's NXConnections to the supplied list <i>aList</i> (but doesn't delete its prior contents).&nbsp; A reference is added to every connection in the list.&nbsp; Returns <i>aList</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToName:</b>(const char *)<i>rootName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the object registered with the Network Name Server as <i>rootName</i>.&nbsp; This method is a cover for <b>connectToName:onHost:fromZone:</b> with a null host-name and using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToName:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToName:</b>(const char *)<i>rootName</i> <b>fromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the object registered with the Network Name Server as <i>rootName</i>.&nbsp; This method is a cover for <b>connectToName:onHost:fromZone:</b> with a null host-name and using the specified zone <i>zone</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToName:onHost:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToName:</b>(const char *)<i>rootName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>onHost:</b>(const char *)<i>hostName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the object registered with the Network Name Server as <i>rootName</i>.&nbsp; This method is similar to <b>connectToName:onHost:fromZone:</b> using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToName:onHost:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToName:</b>(const char *)<i>rootName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>onHost:</b>(const char *)<i>hostName</i></font><br>
+<font face="Times"><b>fromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the object registered with the Network Name Server as <i>rootName</i>, or <b>nil</b> if no connection can be established.&nbsp; Functionally, this method can be thought to return that root object.&nbsp; If <i>hostName</i> is explicitly specified, this method queries the Network Name Server on <i>hostName</i> for the object registered under <i>rootName</i>.&nbsp; If <i>hostName</i> is NULL, this method queries the Network Name Server on the local host.&nbsp; If <i>hostName</i> is &quot;*&quot;, this method will query the Network Name Server on each machine on the subnet until it finds an object registered under <i>rootName</i>.&nbsp; Note that querying each machine on a subnet can take a bit of time, so if the host is known, it should be specified.</font>
+
+<p><font face="Times">In addition to creating and returning an NXProxy, this method creates an NXConnection.&nbsp; If this connection will be used to receive remote messages (as is the common case), you will need to run it by sending it a variation of the <b>run</b> message.&nbsp; A connection that isn't run will dispatch incoming messages only while it awaits a callback in response to a locally initiated message, so unsolicited remote messages will not be handled in a timely manner.&nbsp; To get the connection of the returned proxy (in order to run it), use NXProxy's <b>connectionForProxy</b> method.</font>
+
+<p><font face="Times">If <i>zone</i> is specified, the objects associated with the new connection will be allocated from that zone; if <i>zone</i> is NULL they will be allocated from the NXConnection class's default zone.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>registerRoot:withName:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connectionForProxy</b> (NXProxy)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToPort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToPort:</b>(NXPort *)<i>aPort</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the root object for the connection identified with the port <i>aPort</i>, or <b>nil</b> if no connection can be established.&nbsp; This method is a cover for <b>connectToPort:fromZone:</b> using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToPort:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToPort:</b>(NXPort *)<i>aPort</i> <b>fromZone:</b>(NXZone *) <i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the root object for the connection identified with the port <i>aPort</i>, or <b>nil</b> if no connection can be established.&nbsp; You can use this method to establish a connection based on a port you are vended.&nbsp; In other words, you can use this method to establish a connection based on another connection's out-port that is handed to your application.</font>
+
+<p><font face="Times">If <i>zone</i> is specified, the objects associated with the new connection will be allocated from that zone; if <i>zone</i> is NULL they will be allocated from the NXConnection class's default zone.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>connectToName:onHost:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>outPort</b>,</font> <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>connectToPort:withInPort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToPort:withInPort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToPort:</b>(NXPort *)<i>aPort</i> <b>withInPort:</b>(NXPort *)<i>inPort</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the root object for the connection identified with the port <i>aPort</i>, or <b>nil</b> if no connection can be established.&nbsp; This method is a cover for <b>connectToPort:withInPort:fromZone:</b> using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectToPort:withInPort:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXProxy *)<b>connectToPort:</b>(NXPort *)<i>aPort</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withInPort:</b>(NXPort *)<i>inPort</i></font><br>
+<font face="Times"><b>fromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXProxy to the root object for the connection identified with the port <i>aPort</i>, or <b>nil</b> if no connection can be established.&nbsp; The supplied port <i>inPort</i> will be used to receive incoming messages.</font>
+
+<p><font face="Times">If <i>zone</i> is specified, the objects associated with the new connection will be allocated from that zone; if <i>zone</i> is NULL they will be allocated from the NXConnection class's default zone.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>connectToName:onHost:</b>,</font> <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>connectToPort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>defaultTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>defaultTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the default connection timeout interval in milliseconds.&nbsp; The interval is 15000 milliseconds unless set to some other value by <b>setDefaultTimeout:</b>.&nbsp; A connection will initially use the default timeout interval for both its input and output ports; however, these values can be changed for any port using the <b>setInTimeout:</b> or <b>setOutTimeout:</b> method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>defaultZone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXZone *)<b>defaultZone</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the default zone for all connections.&nbsp; If a zone isn't specified when a connection is created, memory (and objects) associated with the connection will be allocated from this zone.&nbsp; The default zone is initially set to <b>NXDefaultMallocZone()</b>, but can be set to another zone using <b>setDefaultZone:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>messagesReceived</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>messagesReceived</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of messages received by all connections in the application.&nbsp; This value can be helpful when you attempt to optimize an application's performance by minimizing remote messages.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerRoot:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>registerRoot:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes <i>anObject</i> as a root object, creating a new NXConnection if necessary.&nbsp; This method is a cover for <b>registerRoot:fromZone:</b> using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerRoot:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>registerRoot:</b><i>anObject</i> <b>fromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes <i>anObject</i> as a root object, creating a new NXConnection if necessary.&nbsp; <i>anObject</i> isn't advertised by the Network Name Server, though you can allow other objects to access it by vending its in-port to private clients, who can then connect to that port using <b>connectToPort:</b>.&nbsp; Returns <i>anObject</i>'s NXConnection, which must then receive a variant of the <b>run</b> message to receive unsolicited remote messages and forward them to <i>anObject</i>.</font>
+
+<p><font face="Times">If <i>zone</i> is specified, the objects associated with the new connection will be allocated from that zone; if <i>zone</i> is NULL they will be allocated from the NXConnection class's default zone.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>registerRoot:withName:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>inPort</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerRoot:withName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>registerRoot:</b><i>anObject</i> <b>withName:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes <i>anObject</i> as a root object, creating a new NXConnection if necessary.&nbsp; This method is a cover for <b>registerRoot:withName:fromZone:</b> using the NXConnection class's default zone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerRoot:withName:fromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>registerRoot:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withName:</b>(const char *)<i>name</i></font><br>
+<font face="Times"><b>fromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes <i>anObject</i> as a root object, creating a new NXConnection if necessary.&nbsp; <i>anObject</i> is advertised by the Network Name Server with the name <i>name</i>.&nbsp; Returns <i>anObject</i>'s NXConnection, which must then receive a variant of the <b>run</b> message to pass remote messages to <b>anObject</b>.</font>
+
+<p><font face="Times">If <i>zone</i> is specified, the objects associated with <i>anObject</i>'s connection will be allocated from that zone; if <i>zone</i> is NULL they will be allocated from the NXConnection class's default zone.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeObject:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>removeObject:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes all proxies to <i>anObject</i>.&nbsp; If <i>anObject</i> has been vended to clients, the clients hold proxies for it which ought to be removed before <i>anObject</i> is destroyed.&nbsp; You will therefore probably need to invoke <b>removeObject:</b> in <i>anObject</i>'s <b>free</b> method to avoid dangling references and memory leaks.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDefaultTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setDefaultTimeout:</b>(int)<i>interval</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the default connection time interval to <i>interval</i>.&nbsp; A connection initially uses this interval for both its input and output ports; however, these values can be changed for any port using the <b>setInTimeout:</b> or <b>setOutTimeout:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>defaultTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDefaultZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setDefaultZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the default zone for all connections.&nbsp; If a zone isn't specified when a connection is created, memory (and objects) associated with the connection will be allocated from this zone.&nbsp; The default zone is initially set to <b>NXDefaultMallocZone()</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>defaultZone</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unregisterForInvalidationNotification:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>unregisterForInvalidationNotification:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Unregisters <i>anObject</i> so it won't be notified of the invalidation of any of its connections.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unregisterForInvalidationNotification:</b> (NXInvalidationNotifier),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>registerForInvalidationNotification: </b>(NXInvalidationNotifier)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the connection's delegate.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes a reference to the connection.&nbsp; If outstanding references remain, the NXConnection isn't actually freed and this method returns <b>self</b>.&nbsp; If no references remain, this method frees the NXConnection and the proxies it maintains and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getLocal:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getLocal:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the local NXProxy for <i>anObject</i>, or <b>nil</b> if <i>anObject</i> isn't represented by a local proxy on the receiving NXConnection. Vending <i>anObject</i>'s local proxy is essentially the same as vending <i>anObject</i> itself except that by vending the local proxy you determine the connection over which <i>anObject</i> is referenced.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>inPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXPort *)<b>inPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the connection's in-port, the NXPort used by the connection to receive incoming messages.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>inTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>inTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the timeout interval (in milliseconds) for incoming messages.&nbsp;&nbsp; A value of</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 means the connection will wait forever for incoming messages.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setInTimeout:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>outTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>localObjects</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List *)<b>localObjects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns a List of the proxies to local objects vended by the connection.&nbsp; The proxies belong to the connection and should not be altered, but the returned List should be freed by the sender of this message.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>newRemote:withProtocol:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>newRemote:</b>(unsigned int)<i>anObject</i> <b>withProtocol:</b>(Protocol *)<i>proto</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns a remote proxy for the local object identified by <i>anObject</i>.&nbsp; This proxy can then be given to other objects to vend <i>anObject</i> over the receiving connection.&nbsp; <i>anObject</i> is the <b>id</b> of the local object, though you must cast it to an unsigned integer to satisfy the implementation.&nbsp; <i>proto</i>, if non-NULL, is used to specify the protocol that <i>anObject</i> responds to; performance is increased if the protocol is specified because a round-trip message to fetch argument types (for encoding purposes) is obviated.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>outPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXPort *)<b>outPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the connection's out-port, the NXPort object used to identify the remote port (and connection) that the receiving connection communicates with.&nbsp; This NXPort can be used to create a new connection by <b>connectToPort:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>outTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>outTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the timeout interval (in milliseconds) for outgoing messages.&nbsp;&nbsp; A value of</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 means outgoing messages will never time out.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setOutTimeout:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>inTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>remoteObjects</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List *)<b>remoteObjects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns a List of the proxies to remote objects maintained by the receiving connection.&nbsp; The proxies belong to the connection and should not be altered, but the returned List should be freed by the sender of this message.&nbsp; If the connection becomes invalid, objects in the application will no longer be able to send remote messages to the objects in this List.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>localObjects</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rootObject</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rootObject</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the connection's root object, which is the object returned (by way of a proxy) to other applications when they connect to the NXConnection.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>registerRoot:withName:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRoot</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>run</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>run</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Runs the connection by waiting for messages and dispatching them.&nbsp; This method runs in the same thread that it was invoked from, and it doesn't return until the connection is invalidated.&nbsp; If the connection becomes invalid, this method returns <b>self</b>.&nbsp; This method is a cover for <b>runWithTimeout:</b> with an argument of</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runInNewThread</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runWithTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>runFromAppKit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Runs the connection by waiting for messages and dispatching them.&nbsp; This method adds the connection's port to those that the DPS client library monitors for messages, at a priority of NX_RUNMODALTHRESHOLD.&nbsp; When a message arrives over the connection, it will be handled between events.&nbsp; The connection isn't really run concurrent to the application, but the effect is close enough to concurrency for most uses.</font>
+
+<p><font face="Times">This method is typically the best way to run a connection that will dispatch messages to objects that use the Application Kit or Window Server, since these objects cannot be messaged from multiple threads.&nbsp; (Note, however, that the connection run from the DPS client library can communicate with connections running in separate threads.)</font>
+
+<p><font face="Times">This method immediately returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>run</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKitWithPriority:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runInNewThread</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runWithTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>runFromAppKitWithPriority:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKitWithPriority:</b>(int)<i>priority</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Runs the connection by waiting for messages and dispatching them.&nbsp; This method adds the connection's port to those that the DPS client library monitors for messages, at a priority of <i>priority</i>.&nbsp; Otherwise this method is identical to <b>runFromAppKit</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>runInNewThread</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runInNewThread</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Runs the connection by waiting for messages and dispatching them.&nbsp; This method forks a new thread that invokes the <b>run </b>method; it then immediately returns <b>self</b>.&nbsp; All messages sent to this connection are dispatched by the new thread.&nbsp; Because the Window Server and Application Kit aren't thread-safe, you shouldn't send messages to a connection in a separate thread that call upon them.&nbsp; If you need some concurrency in a connection that will invoke the Window Server or Application Kit, you should use <b>runFromAppKit</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>run</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runWithTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>runWithTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runWithTimeout:</b>(int)<i>timeout</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Runs the connection by waiting for messages and dispatching them.&nbsp; This method runs for <i>timeout</i> milliseconds or until the connection is invalidated before returning <b>self</b>.&nbsp; If <i>timeout</i> is (-1) the connection will run forever or until it is invalidated, whichever occurs first.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runFromAppKit</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>runInNewThread</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>run</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>senderIsInvalid:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>senderIsInvalid:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Responds to a message that the connection's port has died.&nbsp; This method invalidates the connection, invalidates the proxies to remote objects (which can no longer be accessed), and sends a <b>free</b> message to all the local objects vended by the connection that conform to the NXReference protocol, thereby giving up the connection's references to these objects.&nbsp; <i>sender</i> is an instance of a private port management class; your code shouldn't send messages to it.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the connection's delegate.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setInTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setInTimeout:</b>(int)<i>timeout</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the connection's timeout for incoming messages to <i>timeout</i> milliseconds.&nbsp; This is the amount of time the connection will wait for return parameters, return values, callbacks, and the like.&nbsp; If a message isn't received before the timeout, an exception will be raised.&nbsp; Setting <i>timeout</i> to</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 results in an infinite timeout interval.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>setDefaultTimeout:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setOutTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setOutTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setOutTimeout:</b>(int)<i>timeout</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the connection's timeout for outgoing messages to <i>timeout</i> milliseconds.&nbsp; This is the amount of time the connection will wait for a message send to succeed.&nbsp; If an outgoing message can't be sent before the timeout, an exception will be raised. Setting <i>timeout</i> to</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 results in an infinite timeout interval, and setting it to 0 has the effect that a message will be delivered only if the receiver's port has room.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>setDefaultTimeout</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setInTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRoot:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRoot:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the connection's root object to <i>anObject</i>.&nbsp; This method should be invoked only for a connection that doesn't have a root object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rootObject</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented By The Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connection:didConnect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connection:</b>(NXConnection *)<i>conn</i> <b>didConnect:</b>(NXConnection *)<i>newConn</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notifies <i>conn</i>'s delegate that a new connection has been established using <i>conn</i>'s input port.&nbsp; <i>newConn</i> is the NXConnection object that was just created.&nbsp; This method must return the NXConnection object that should be used, which is typically <i>newConn</i>; if another connection is returned, the application is responsible for freeing <i>newConn</i>.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

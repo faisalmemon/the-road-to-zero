@@ -1,0 +1,1836 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/Speaker.rtf -->
+<!-- Date: Sun Jun 28 20:01:49 1998 -->
+<head>
+<title>Speaker</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:Speaker"></a><font face="Helvetica" size="+2"><b>Speaker</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/Speaker.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Speaker class, with the Listener class, puts an Objective C interface on Mach messaging.&nbsp; Mach messages are the way that applications communicate with each other; they're how remote procedure calls (RPCs) are implemented in the Mach operating system.</font>
+
+<p><font face="Times">A remote message is initiated by sending a Speaker instance the very same Objective C message you want delivered to the remote application.&nbsp; The Speaker translates the message into the correct Mach message format and dispatches it to the receiving application's port.&nbsp; A Listener in the receiving application reads the message from the port queue and translates in back into an Objective C message, which it tries to delegate to another object.</font>
+
+<p><font face="Times">If the Speaker expects information back from the Listener, it will wait to receive a reply.</font>
+
+<p><font face="Times">Every application must have at least one Speaker and one Listener, if for no other reason but to communicate with the Workspace Manager.&nbsp; If you don't create a Speaker in start-up code and register it as the application's Speaker (with the <b>setAppSpeaker:</b> method), the Application object, when it receives a <b>run</b> message, will create one for you.</font>
+
+<p><font face="Times">For a general discussion of the Speaker-Listener interaction, see the Listener class.&nbsp; The descriptions here add Speaker-specific information, but don't repeat any of the basic information presented there.&nbsp; In particular, the discussion here doesn't explain the structure of remote messages or the distinction between input and output argument types.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Sending Remote Messages</b></font>
+
+<p><font face="Times">Before sending a remote message, it's necessary only to provide variables where output information--information returned to the Speaker by the receiving application--can be returned by reference, and to tell the Speaker which port to send the message to.</font>
+
+<p><font face="Times">The example below shows a typical use of the Speaker class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp; msgDelivered, fileOpened;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mySpeaker = [[Speaker alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">port_t&nbsp; thePort = NXPortFromName(&#34;SomeApp&#34;, NULL);</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">/* Gets the public port for SomeApp */</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (thePort != PORT_NULL) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[mySpeaker setSendPort:thePort];</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">/* Sets the Speaker to send its</font><br>
+<img src="../../../Images/sp.gif" width=327 height=1><font face="Courier" size="-1">* next message to SomeApp's port */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">msgDelivered = [mySpeaker openFile:&#34;/usr/foo&#34; ok:&amp;fileOpened];</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">/* Sends the message, here a message</font><br>
+<img src="../../../Images/sp.gif" width=327 height=1><font face="Courier" size="-1">* to open the &#34;/usr/foo&#34; file. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (msgDelivered == 0) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (fileOpened == YES)</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[mySpeaker free];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Frees the Speaker</font><br>
+<img src="../../../Images/sp.gif" width=327 height=1><font face="Courier" size="-1">* when it's no longer needed. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">port_deallocate(task_self(), thePort);</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">/* Frees the application's</font><br>
+<img src="../../../Images/sp.gif" width=327 height=1><font face="Courier" size="-1">* send rights to the port. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>NXPortFromName()</b> function returns the port registered with the network name server under the name passed in its first argument.&nbsp; The second argument names the host machine; when it's NULL, as in the example above, the local host is assumed.</font>
+
+<p><font face="Times">To find the port of the Workspace Manager, the constant NX_WORKSPACEREQUEST can be passed as the first argument to <b>NXPortFromName()</b>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">port_t&nbsp; workspacePort;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">workspacePort = NXPortFromName(NX_WORKSPACEREQUEST, NULL);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A Speaker can be dedicated to sending remote messages to a single application, in which case its destination port may need to be set only once.&nbsp; Or a single Speaker can be used to send messages to any number of applications, simply by resetting its port.</font>
+
+<p><font face="Times">It's important to reset the destination port of the Speaker registered as the <b>appSpeaker</b> before each remote message.&nbsp; The Application Kit uses the <b>appSpeaker</b> to keep in contact with the Workspace Manager and so may reset its port behind your application's back.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Return Values</b></font>
+
+<p><font face="Times">Each method that initiates a remote message returns an <b>int</b> that indicates whether the message was successfully transmitted or not.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the message couldn't be delivered to the receiving application, the return value will be one of the Mach error codes defined in the <b>mach/message.h</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the message was delivered, but the Listener didn't recognize it or couldn't delegate it to a responsible object, the return value is</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the message was successfully delivered, recognized, and delegated, 0 is returned.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A Mach error code is also returned if the Speaker times out while waiting for a return message.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Copying Output Data</b></font>
+
+<p><font face="Times">The validity of all output arguments is guaranteed until the next remote message is sent.&nbsp; Then the memory allocated for a character string or a byte array will be freed automatically.&nbsp; If you want to save an output string or an array, you must copy it. When the amount of data is large, you can use the <b>NXCopyOutputData()</b> function to take advantage of the out-of-line data feature of Mach messaging.&nbsp; This function is passed the index of the output argument to be copied (the combination of a pointer and an integer for a byte array counts as a single argument) and returns a pointer to an area obtained through the <b>vm_allocate() </b>function.&nbsp; This pointer must be freed with <b>vm_deallocate()</b>, rather than <b>free()</b>.&nbsp; Note that the size of the area allocated is rounded up to the next page boundary, and so will be at least one page.&nbsp; Consequently, it is more efficient to <b>malloc()</b> and copy amounts up to about half the page size.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The application is responsible for deallocating all ports received when they're no longer needed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">port_t <b>sendPort</b>;</font>
+
+<p><font face="Times">port_t <b>replyPort</b>;</font>
+
+<p><font face="Times">int <b>sendTimeout</b>;</font>
+
+<p><font face="Times">int <b>replyTimeout</b>;</font>
+
+<p><font face="Times">id <b>delegate</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">sendPort</font></td>
+
+<td><font face="Times">The port to which the Speaker sends remote messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">replyPort</font></td>
+
+<td><font face="Times">The port where the Speaker receives return messages from the Listener of the remote application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">sendTimeout</font></td>
+
+<td><font face="Times">How long the Speaker will wait for a remote message to be delivered at the port of the receiving application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">replyTimeout</font></td>
+
+<td><font face="Times">How long the Speaker will wait, after a remote message is delivered, to receive a return message from the other application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The Speaker's delegate, which is generally unused.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing a new Speaker instance</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Freeing a Speaker</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up a Speaker</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSendTimeout:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendTimeout</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setReplyTimeout:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">replyTimeout</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the ports</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSendPort:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendPort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setReplyPort:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">replyPort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Standard remote methods</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">openFile:ok:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">openTempFile:ok:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Providing for program control</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCalc:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCopyAsType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgCutAsType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgDirectory:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgFile:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPaste:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPosition:posType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgPrint:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgQuit:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgSelection:length:asType:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgSetPosition:posType:andSelect:ok:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">msgVersion:ok:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Sending remote messages</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">performRemoteMethod:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">performRemoteMethod:with:length:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectorRPC:paramTypes:...</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendOpenFileMsg:ok:andDeactivateSelf:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendOpenTempFileMsg:ok:andDeactivateSelf:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-delegate%5D"></a><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Speaker's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the memory occupied by the Speaker object, but does not deallocate its ports.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated Speaker instance.&nbsp; The new object's <b>sendTimeout</b> and <b>replyTimeout</b> are both set to 30,000 milliseconds, its <b>sendPort</b> and <b>replyPort</b> are both PORT_NULL, and its delegate is <b>nil</b>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgCalc:%5D"></a><font face="Helvetica"><b>msgCalc:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCalc:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to perform any calculations necessary to update its current window. <i>flag</i> points to an integer that will be set to YES if the calculations will be performed, and to NO if they won't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgCopyAsType:ok:%5D"></a><font face="Helvetica"><b>msgCopyAsType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCopyAsType:</b>(const char *)<i>aType</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to copy its current selection to the pasteboard as <i>aType</i> data.&nbsp; <i>flag</i> is the address of an integer that will be set to YES if the selection is copied, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgCutAsType:ok:%5D"></a><font face="Helvetica"><b>msgCutAsType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgCutAsType:</b>(const char *)<i>aType</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message requesting the receiving application to delete the current selection and put it in the pasteboard as <i>aType </i>data.&nbsp; <i>flag</i> points to an integer that will be set to YES if the request is carried out, and to NO if it isn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgDirectory:ok:%5D"></a><font face="Helvetica"><b>msgDirectory:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgDirectory:</b>(char *const *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application for its current directory.&nbsp; See the Listener class for information on the two arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgDirectory:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgFile:ok:%5D"></a><font face="Helvetica"><b>msgFile:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgFile:</b>(char *const *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application for its current document (the file displayed in the main window).&nbsp; See the Listener class for information on the two arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgFile:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgPaste:%5D"></a><font face="Helvetica"><b>msgPaste:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPaste:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to replace its current selection with the contents of the pasteboard, just as if the user had chosen the Paste command in the Edit menu.&nbsp; <i>flag</i> is the address of an integer that will be set to YES if the receiving application will carry out the request, and to NO if it won't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgPosition:posType:ok:%5D"></a><font face="Helvetica"><b>msgPosition:posType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPosition:</b>(char *const *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>posType:</b>(int *)<i>anInt</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application for information about its current selection.&nbsp; See the Listener class for information on the three arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgPosition:posType:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgPrint:ok:%5D"></a><font face="Helvetica"><b>msgPrint:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgPrint:</b>(const char *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to print the <i>fullPath</i> file, then close it.&nbsp; <i>flag</i> points to an integer that will be set to YES if the file will be printed, and to NO if it won't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgQuit:%5D"></a><font face="Helvetica"><b>msgQuit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgQuit:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message requesting the receiving application to quit.&nbsp; <i>flag</i> points to an integer that will be set to YES if the receiving application quits, and to NO if it doesn't.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgSelection:length:asType:ok:%5D"></a><font face="Helvetica"><b>msgSelection:length:asType:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgSelection:</b>(char *const *)<i>bytes</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>length:</b>(int *)<i>numBytes</i></font><br>
+<font face="Times"><b>asType:</b>(const char *)<i>aType</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to provide its current selection as <i>aType</i> data.&nbsp; See the Listener class for information on the four arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgSelection:length:asType:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgSetPosition:posType:andSelect:ok:%5D"></a><font face="Helvetica"><b>msgSetPosition:posType:andSelect:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgSetPosition:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>posType:</b>(int)<i>anInt</i></font><br>
+<font face="Times"><b>andSelect:</b>(int)<i>sflag</i></font><br>
+<font face="Times"><b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application to scroll its current document (the one displayed in the main window) so that the portion represented by <i>aString</i> is visible.&nbsp; See the Listener class for information on permitted argument values.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgSetPosition:posType:andSelect:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-msgVersion:ok:%5D"></a><font face="Helvetica"><b>msgVersion:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>msgVersion:</b>(char *const *)<i>aString</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message asking the receiving application for its current version.&nbsp; See the Listener class for information on the arguments.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>msgVersion:ok:</b> (Listener)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-openFile:ok:%5D"></a><font face="Helvetica"><b>openFile:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>openFile:</b>(const char *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message requesting another application to open the <i>fullPath</i> file.&nbsp; Before the message is sent, the sending application is deactivated to allow the application that will open the file to become the active application.</font>
+
+<p><font face="Times">If the Workspace Manager is sent this message, it will find an appropriate application to open the file based on the file name extension.&nbsp; It will launch that application if necessary.</font>
+
+<p><font face="Times"><i>flag</i> is the address of an integer that the receiving application will set to YES if it opens the file, and to NO if it doesn't.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openFile:ok:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-openTempFile:ok:%5D"></a><font face="Helvetica"><b>openTempFile:ok:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>openTempFile:</b>(const char *)<i>fullPath</i> <b>ok:</b>(int *)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message requesting another application to open a temporary file.&nbsp; The file is specified by an absolute pathname, <i>fullPath</i>.&nbsp; Before the message is sent, the sending application is deactivated to allow the application that will open the file to become the active application.</font>
+
+<p><font face="Times">Using this method instead of <b>openFile:ok:</b> lets the receiving application know that it should delete the file when it no longer needs it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openTempFile:ok:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-performRemoteMethod:%5D"></a><font face="Helvetica"><b>performRemoteMethod:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>performRemoteMethod:</b>(const char *)<i>methodName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message to perform the <i>methodName</i> method.&nbsp; The method must be one that takes no arguments. <b>performRemoteMethod:</b> is analogous to Object's <b>perform:</b> method in that it permits you to send an arbitrary message.</font>
+
+<p><font face="Times">This method has the same return values as other methods that send remote messages:&nbsp; 0 on success, a Mach error code if the message couldn't be delivered, and</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if it was delivered but wasn't understood or couldn't be delegated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>selectorRPC:paramTypes:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-performRemoteMethod:with:length:%5D"></a><font face="Helvetica"><b>performRemoteMethod:with:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>performRemoteMethod:</b>(const char *)<i>methodName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>with:</b>(const char *)<i>data</i></font><br>
+<font face="Times"><b>length:</b>(int)<i>numBytes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message to perform the <i>methodName</i> method and passes it the <i>data</i> byte array containing <i>numBytes</i> of data. This method is similar to Object's <b>perform:with:</b> method in that it permits you to send an arbitrary message with one argument.</font>
+
+<p><font face="Times"><b>performRemoteMethod:with:length:</b> has the same return values as other methods that send remote messages:&nbsp; 0 on success, a Mach error code if the message couldn't be delivered, and</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if it was delivered but wasn't understood or couldn't be delegated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>selectorRPC:paramTypes:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-read:%5D"></a><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the Speaker from the typed stream <i>stream</i>.&nbsp; The Speaker's send-port and reply-port will both be PORT_NULL.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-replyPort%5D"></a><font face="Helvetica"><b>replyPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>replyPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port where the Speaker expects to receive return messages.&nbsp; If this method returns PORT_NULL, the default, the Speaker will use the port returned by Application's <b>replyPort</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replyPort</b> (Application),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReplyPort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-replyTimeout%5D"></a><font face="Helvetica"><b>replyTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>replyTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns how many milliseconds the Speaker will wait, after delivering a remote message to another application, for a return message to arrive back from the other application.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReplyTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-selectorRPC:paramTypes:%5D"></a><font face="Helvetica"><b>selectorRPC:paramTypes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectorRPC:</b>(const char *)<i>methodName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>paramTypes:</b>(char *)<i>params,</i></font><br>
+<font face="Times">...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a remote message to perform the <i>methodName</i> method with an arbitrary number of arguments.&nbsp; This is the general routine for sending remote messages and is used by most of the more specific Speaker methods.&nbsp; For example, an <b>openFile:ok: </b>message could be sent as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; msgDelivered, wasOK;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">msgDelivered = [mySpeaker selectorRPC:&#34;openFile:ok:&#34;</font><br>
+<img src="../../../Images/sp.gif" width=292 height=1><font face="Courier" size="-1">paramTypes:&#34;cI&#34;,&#34;/usr/foo&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=292 height=1><font face="Courier" size="-1">&amp;wasOK]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>params</i> is a character string, &quot;cI&quot; in the example above, that describes the arguments to the method.&nbsp; Each argument is represented by a single character that encodes its type.&nbsp; (A single character, &quot;b&quot; or &quot;B&quot;, represents the two Objective C arguments of a byte array.)&nbsp; See the Listener class for an explanation of these codes.</font>
+
+<p><font face="Times">The actual arguments that will be passed to <i>methodName</i> are listed after <i>params</i>.</font>
+
+<p><font face="Times">This method has the same return values as other methods that send remote messages:&nbsp; 0 on success, a Mach error code if the message couldn't be delivered,</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if it was delivered but wasn't understood or couldn't be delegated, and NX_INCORRECTMESSAGE if the RPC succeeds but the selector is not implemented at the other end.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-sendOpenFileMsg:ok:andDeactivateSelf:%5D"></a><font face="Helvetica"><b>sendOpenFileMsg:ok:andDeactivateSelf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>sendOpenFileMsg:</b>(const char *)<i>fullPath</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>ok:</b>(int *)<i>flag</i></font><br>
+<font face="Times"><b>andDeactivateSelf:</b><i>(BOOL)deactivateFirst</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initiates an <b>openFile:ok:</b> remote message, which could also be initiated by sending an <b>openFile:ok:</b> message directly to the Speaker.&nbsp; However, when a Speaker receives an <b>openFile:ok:</b> message, it first deactivates the application in order to allow the receiving application to become active when it opens the file.</font>
+
+<p><font face="Times">In contrast, this way of sending an <b>openFile:ok:</b> remote message gives the sending application control over whether it will deactivate before dispatching the message.&nbsp; If <i>deactivateFirst</i> is YES, this method works just like <b>openFile:ok:</b>.&nbsp; If <i>deactivateFirst</i> is NO, the sending application will remain the active application.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openFile:ok:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-sendOpenTempFileMsg:ok:andDeactivateSelf:%5D"></a><font face="Helvetica"><b>sendOpenTempFileMsg:ok:andDeactivateSelf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>sendOpenTempFileMsg:</b>(const char *)<i>fullPath</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>ok:</b>(int *)<i>flag</i></font><br>
+<font face="Times"><b>andDeactivateSelf:</b><i>(BOOL)deactivateFirst</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initiates an <b>openTempFile:ok:</b> remote message, which could also be initiated by sending an <b>openTempFile:ok:</b> message directly to the Speaker.&nbsp; However, when a Speaker receives an <b>openTempFile:ok:</b> message, it first deactivates the application in order to allow the receiving application to become active when it opens the file.</font>
+
+<p><font face="Times">In contrast, this way of sending an <b>openTempFile:ok:</b> remote message gives the sending application control over whether it will deactivate before dispatching the message.&nbsp; If <i>deactivateFirst</i> is YES, this method works just like <b>openTempFile:ok:</b>.&nbsp; If <i>deactivateFirst</i> is NO, the sending application will remain the active application.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openTempFile:ok:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-sendPort%5D"></a><font face="Helvetica"><b>sendPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>sendPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port the Speaker will send remote messages to.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSendPort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-sendTimeout%5D"></a><font face="Helvetica"><b>sendTimeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>sendTimeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns how many milliseconds the Speaker will wait for its remote message to be delivered to the port of the receiving application.&nbsp; The Speaker caches this value as its <b>sendTimeout</b> instance variable.&nbsp; If it's 0, there's no time limit.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSendTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-setDelegate:%5D"></a><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>anObject</i> the Speaker's delegate.&nbsp; The default delegate is <b>nil</b>.&nbsp; However, before processing the first event, Application's <b>run</b> method makes the Application object, <b>NXApp</b>, the delegate of the Speaker registered as the <b>appSpeaker</b>.&nbsp; If there is no <b>appSpeaker</b>, the <b>run</b> method creates one, registers it, and sets its delegate to be NXApp.</font>
+
+<p><font face="Times">Unlike a Listener, a Speaker doesn't expect anything from its delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAppSpeaker:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-setReplyPort:%5D"></a><font face="Helvetica"><b>setReplyPort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReplyPort:</b>(port_t)<i>aPort</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>aPort</i> the port where the Speaker receives return messages.&nbsp; If the Speaker sends a remote message with output arguments, it will supply the receiving application with send rights to this port, then wait for a return message containing the output data it requested.</font>
+
+<p><font face="Times">If <i>aPort</i> is PORT_NULL, the Speaker will use a port supplied by the Application object in response to a <b>replyPort</b> message. Since return messages are read from the port as they arrive (synchronously), a number of different Speakers can share the same port.</font>
+
+<p><font face="Times">At start-up, before the <b>run</b> method gets the application's first event, it sets the port of the Speaker registered as the <b>appSpeaker </b>to the port returned by Application's <b>replyPort</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replyPort</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replyPort</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-setReplyTimeout:%5D"></a><font face="Helvetica"><b>setReplyTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReplyTimeout:</b>(int)<i>ms</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets, to <i>ms</i> milliseconds, how long the Speaker will wait to receive a reply from the application it sent a remote message.&nbsp; The Speaker expects a reply when the remote message it sends contains output arguments for information to be supplied by the receiving application.&nbsp; If <i>ms</i> is 0, there will be no time limit; the Speaker will wait until a return message is received or there's a transmission error.&nbsp; The default is 30,000 milliseconds.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replyTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-setSendPort:%5D"></a><font face="Helvetica"><b>setSendPort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSendPort:</b>(port_t)<i>aPort</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>aPort</i> the port that the Speaker will send remote messages to.&nbsp; The default is PORT_NULL.&nbsp; A single Speaker can send remote messages to a variety of applications simply by setting a different port before each message.</font>
+
+<p><font face="Times">The <b>NXPortFromName()</b> function can be used to find the public port of another application, as explained in the class description above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendPort</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-setSendTimeout:%5D"></a><font face="Helvetica"><b>setSendTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSendTimeout:</b>(int)<i>ms</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets, to <i>ms</i> milliseconds, how long the Speaker will persist in attempting to deliver a message to the port of the receiving application.&nbsp; If <i>ms</i> is 0, there will be no time limit; the Speaker will wait until the message is successfully delivered or there's a transmission error.&nbsp; The default is 30,000 milliseconds.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendTimeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BSpeaker-write:%5D"></a><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the receiving Speaker to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

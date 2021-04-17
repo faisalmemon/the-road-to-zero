@@ -1,0 +1,1254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Concepts/4_Configuring/Configuring.rtfd -->
+<!-- Date: Sun Jun 28 20:11:06 1998 -->
+<head>
+<title>Configuring</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>4</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Building, Configuring, and Debugging Drivers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter tells you how to integrate your Driver Kit driver with the rest of the system. It first describes building the driver using Project Builder. It tells how to set up the initial configuration files and set the configuration parameters with the Configure application. Finally, it highlights some of the debugging aids available for finding driver bugs and tracing your driver's execution. Consult the other sources mentioned for in-depth information about the tools.</font>
+
+<p><font face="Times">Also see Chapter 9, &quot;Building, Loading, and Debugging Loadable Kernel Servers&quot; in <i>NEXTSTEP Operating System Software </i>for details on that topic. Look at <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit/TestDriver</b> for an example of building, loading, and debugging a driver.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Driver Bundles</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To load your driver into the kernel--even if only for testing--you need to create a <i>driver bundle</i> for it with Project Builder. A driver bundle contains all the files needed to load and configure a driver: Its relocatable code and configuration information. A bundle may also contain help information and a configuration inspector for Configure to access configuration data. A driver bundle is also called a <i>config bundle</i> because it contains configuration information for the driver and typically has the name <i>Driver</i><b>.config</b>, where <i>Driver</i> is the driver's name.</font>
+
+<p><font face="Times">The driver name should be of the form</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">&lt;vendor&gt;&lt;model&gt;&lt;type&gt;Driver</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The driver name <i>Adaptec1542SCSIDriver</i> follows this form.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Bundle Locations</b></font>
+
+<p><font face="Times">Driver bundles for each system device--like the mouse, display, network card, SCSI devices, and so on--reside in a special directory called <b>/NextLibrary/Devices</b>. The bundles for each type of device are called <i>Driver</i><b>.config</b>, where <i>Driver</i> is a type of device or a device name. In addition, every system has a bundle called <b>System.config</b> that configures the whole system.</font>
+
+<p><font face="Times">An average system's directory <b>/NextLibrary/Devices</b> might contain the following directories, each of which is a bundle for a specific device:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ATI.config</font></td>
+
+<td><font face="Times">PS2Mouse.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Adaptec1542B.config</font></td>
+
+<td><font face="Times">ParallelPort.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Beep.config</font></td>
+
+<td><font face="Times">ProAudioSpectrum.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">BusMouse.config</font></td>
+
+<td><font face="Times">QVision.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">CirrusLogicGD542X.config</font></td>
+
+<td><font face="Times">S3.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">CompaqAudio.config</font></td>
+
+<td><font face="Times">SCSITape.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DPT2012.config</font></td>
+
+<td><font face="Times">SMC16.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">EtherExpress16.config</font></td>
+
+<td><font face="Times">SerialMouse.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">EtherLink3.config</font></td>
+
+<td><font face="Times">SerialPorts.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Floppy.config</font></td>
+
+<td><font face="Times">System.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IDE.config</font></td>
+
+<td><font face="Times">TokenExpress.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IntelGXProAudio.config</font></td>
+
+<td><font face="Times">TsengLabsET4000.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">JAWS.config</font></td>
+
+<td><font face="Times">VGA.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">MSWSoundSystem.config</font></td>
+
+<td><font face="Times">Wingine.config</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PS2Keyboard.config</font></td>
+
+<td></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>/NextLibrary/Devices</b> is a link to the <b>/private/Devices</b> directory, which is a link to the driver directory for the current architecture (for example, <b>/private/Drivers/i386</b>). This link is always valid.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>What's in a Bundle</b></font>
+
+<p><font face="Times">Each driver bundle (including <b>System.config</b>) can contain the following files and directories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>Default.table</b></font><br>
+<font face="Times"><b>Instance</b><i>n</i><b>.table</b> (created by Configure)</font><br>
+<font face="Times"><i>x</i><b>.table</b></font><br>
+<font face="Times"><b>Display.modes</b></font><br>
+<font face="Times"><i>x</i><b>.modes</b></font><br>
+<font face="Times"><i>CustomInspector</i> (optional binary)</font><br>
+<font face="Times"><i>Language</i><b>.lproj/</b></font><br>
+<img src="../../../../Images/sp.gif" width=18 height=1><font face="Times"><i>CustomInspector</i><b>.nib</b> (optional)</font><br>
+<img src="../../../../Images/sp.gif" width=18 height=1><font face="Times"><b>Localizable.strings</b></font><br>
+<img src="../../../../Images/sp.gif" width=18 height=1><font face="Times"><b>Help/</b> (replaces <b>Info.rtf</b>)</font><br>
+<font face="Times"><i>Driver</i><b>_reloc</b> (omitted for NeXT drivers that are compiled into the kernel)</font><br>
+<font face="Times"><i>Pre-Load</i></font><br>
+<font face="Times"><i>Post-Load</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>Default.table</b> is a commented, read-only file that gives the default configuration settings for a generic device. Configure uses <b>Default.table</b> to build <b>Instance</b><i>n</i><b>.table</b> files, which contain specific configuration information for each device you have. There may be other <i>x</i><b>.table</b> files, each expressing a different possible instance of the driver.</font>
+
+<p><font face="Times">Each <b>.table</b> file is the ASCII representation of an NXStringTable object. Drivers and nondrivers can get access to these tables by using the IOConfigTable class. In addition, Driver Kit classes automatically interpret and use some of the standard keys in these tables.</font>
+
+<p><font face="Times">Direct drivers have one <b>Instance</b><i>n</i><b>.table</b> for each device. For example, if you have two of the same card, Configure makes two files called <b>Instance0.table</b> and <b>Instance1.table</b> in the card's bundle. Indirect drivers and the system bundle have only one file, called <b>Instance0.table</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Because Configure's default device inspector has no way of knowing whether a device is direct or indirect, it can create more than one <b>Instance</b><i>n</i><b>.table</b> for an indirect driver. The consequence is that the driver's <b>probe:</b> method gets invoked more than once for each direct driver it might want to attach to. To get around this, you should either write your own device inspector or ensure that your driver's <b>probe:</b> method can handle more than one probe per direct driver.</font>
+
+<p><font face="Times">The <b>Display.mode</b> and <i>x</i><b>.mode</b> files hold display mode information. Default information is in <b>Display.mode</b>, and <i>x</i><b>.mode</b> holds the information for other instances of the driver (just as <i>x</i><b>.table</b> expresses configuration information for other driver instances).</font>
+
+<p><font face="Times">For each language, <b>Localizable.strings</b> contains the text strings that applications display about the device. For example, it includes the name of the device as it appears in the list of devices in Configure. The <b>Help/</b> directory contains files to inform the user about the driver and help them use it.</font>
+
+<p><font face="Times">The <i>Driver</i><b>_reloc</b> file is the relocatable object file of the device driver. The <i>CustomInspector</i> binary is the executable file for the Inspector panel; its name is the same as the bundle name (without the <b>.config</b> suffix). <i>CustomInspector</i><b>.nib</b> is the nib file for the Inspector panel.</font>
+
+<p><font face="Times">The bundle may contain <i>Pre-Load</i> and/or <i>Post-Load</i> programs that are run before and/or after the driver is loaded.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Configuration Tables</b></font>
+
+<p><font face="Times">Files with a <b>.table</b> suffix contain strings of key/value pairs that describe a configuration. See &quot;Configuration Keys&quot; in the Appendix for information on what these tables should contain.</font>
+
+<p><font face="Times">You can use the <b>Default.table</b> of an existing driver as a starting point for a configuration. Later, you should let the Configure application (with your custom inspector, if any) create the <b>Instance</b><i>n</i><b>.table</b> files.</font>
+
+<p><font face="Times">Here's a sample <b>Instance</b><i>n</i><b>.table</b> for a parallel port driver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Driver Name&#34;&nbsp; = &#34;IOParallelPort&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Title&#34;&nbsp;&nbsp; = &#34;System Parallel&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Location&#34;&nbsp;&nbsp; = &#34;System Baseboard&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Family&#34;&nbsp;&nbsp; = &#34;Parallel&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Version&#34;&nbsp;&nbsp; = &#34;1.0&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Server Name&#34;&nbsp; = &#34;ParallelPort&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Path 0&#34;&nbsp;&nbsp; = &#34;/dev/pp0&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Post-Load&#34;&nbsp;&nbsp; = &#34;InstallPPDev&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Memory Maps&#34;&nbsp; = &#34;&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Pre-Load&#34;&nbsp;&nbsp; = &#34;RemovePPDev&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;DMA Channels&#34;&nbsp; = &#34;&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Minor Device Number&#34; = &#34;0&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Valid IRQ Levels&#34;&nbsp; = &#34;7&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;I/O Ports&#34;&nbsp;&nbsp; = &#34;0x378-0x37f&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Instance&#34;&nbsp;&nbsp; = &#34;0&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Port Count&#34;&nbsp;&nbsp; = &#34;1&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;IRQ Levels&#34;&nbsp;&nbsp; = &#34;7&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">C-style comment delimiters (that is, /* */) aren't recognized in configuration tables, such as <b>Default.table</b> or <b>Instance0.table</b>. Anything inside the delimiters will be parsed along with the rest of the file. This means that, for example, if you are testing a driver under development, you can't remove a key-value pair by simply commenting it out.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=30></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica" size="+1"><b>Other Configuration Tables</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=13></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">A bundle may also contain other configuration tables of the form <i>x</i><b>.table</b>, where <i>x</i> is a prefix such as &quot;PCI&quot;. Each of these is a table like <b>default.table</b> but expresses a possible instance of the driver with a slightly different &quot;personality&quot; than <b>default.table</b>. For example, <b>PCI.table</b> might be identical to <b>Default.table</b> except that it contains a line specifying a PCI-compliant driver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Bus Type&#34; = &#34;PCI&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">By convention, <b>Default.table</b> specifies an ISA or VL-bus compliant driver--the simplest case. The prefix <i>x</i> in <i>x</i><b>.table</b> usually designates the bus type.</font>
+
+<p><font face="Times">These configuration table files should contain all information appropriate for the bus type. PCI-compliant drivers, for instance, contain a line specifying the auto detect IDs, such as this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Auto Detect IDs&#34; = &#34;0x71789004 0x0e111234&#34;;</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Custom Device Inspector Files</b></font>
+
+<p><font face="Times">For initial testing, you probably don't need a custom inspector. Instead, you can put the appropriate values directly into your test <b>Default.table</b> or <b>Instance</b><i>n</i><b>.table</b> files.</font>
+
+<p><font face="Times">If you create a custom inspector, you should put the executable file and nib file in the places described in &quot;What's in a Bundle,&quot; earlier in this chapter. Project Builder does this for you automatically. See &quot;Writing a Custom Inspector&quot; later in this chapter for information on creating custom inspectors.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Project Builder creates an Inspector Panel executable file in the bundle and gives it the same name as the bundle (without the <b>.config</b> suffix). This executable loads the default inspector.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Localizable Strings File</b></font>
+
+<p><font face="Times">This file should contain any strings you add to your Configure inspector's user interface, plus the following strings:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">&#34;<i>Driver</i>&#34; = &#34;UltimateTech XYZ-12&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=158 height=1><font face="Courier" size="-1">&#34;Long Name&#34; = &#34;Ultimate Technologies XYZ-12 Transmogrifier&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where <i>Driver</i> is the name of the bundle (minus the <b>.config</b> suffix). Configure uses the string associated with the <i>Driver</i> key (&quot;UltimateTech XYZ-12&quot;) whenever space is tight. When Configure has more space to display the driver's name, it uses the string associated with the &quot;Long Name&quot; key.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Display Mode Tables</b></font>
+
+<p><font face="Times">If your driver is a display driver that supports multiple display modes, you need to specify which modes the user can choose. This information is supplied in the <b>Display.modes</b> file. Here's a sample file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 600 Width: 800 Refresh: 60Hz ColorSpace: RGB:555/16&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 600 Width: 800 Refresh: 72Hz ColorSpace: RGB:555/16&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 60Hz ColorSpace: RGB:256/8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 66Hz ColorSpace: RGB:256/8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 72Hz ColorSpace: RGB:256/8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 76Hz ColorSpace: RGB:256/8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 60Hz ColorSpace: BW:8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 66Hz ColorSpace: BW:8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 72Hz ColorSpace: BW:8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 76Hz ColorSpace: BW:8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 60Hz ColorSpace: RGB:555/16&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 768 Width:1024 Refresh: 72Hz ColorSpace: RGB:555/16&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height:1024 Width:1280 Refresh: 68Hz ColorSpace: RGB:256/8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height:1024 Width:1280 Refresh: 68Hz ColorSpace: BW:8&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 400 Width: 640 Refresh: 60Hz ColorSpace: RGB:888/32&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 400 Width: 640 Refresh: 70Hz ColorSpace: RGB:888/32&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Height: 480 Width: 640 Refresh: 60Hz ColorSpace: RGB:888/32&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If your driver has more than one &quot;personality,&quot; specify alternate display information in <i>x</i><b>.modes</b> files where <i>x</i> is the appropriate prefix such as &quot;PCI&quot;.</font>
+
+<p><font face="Times">See the specification for the IODisplayInspector, IOFrameBufferDisplay, and IOSVGADisplay classes for more information on display modes.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Help Directory</b></font>
+
+<p><font face="Times">This directory contains the help files supported by the NeXT help facility. You add this directory to your project with Project Builder's Add Help Directory command. For more information on adding help to your driver, see &quot;Attaching Help to Objects&quot; in Chapter 3, &quot;The Interface Builder Application&quot; of <i>NEXTSTEP Development Tools and Techniques</i>.</font>
+
+<p><font face="Times">The <b>Help</b> directory replaces the <b>Info.rtf</b> file, formerly used to provide information about the driver.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Driver Relocatable Code</b></font>
+
+<p><font face="Times">This file contains the driver's relocatable code. An example of building a driver relocatable object file is located in <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit/TestDriver</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Pre- and Post-Load Programs</b></font>
+
+<p><font face="Times">Your driver may require some action to be taken before and/or after it is loaded. For instance, you may want to run a program after the driver is loaded to look up its major device number and create a device node for the driver. Use the &quot;Pre-Load&quot; configuration key to specify a program that will run prior to your driver being loaded; use the &quot;Post-Load&quot; key to specify a program that runs after the driver is loaded.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The System Configuration Bundle</b></font>
+
+<p><font face="Times">The <b>System.config</b> bundle is special in several ways. Its <b>Instance0.table</b> has default configuration information for the system as a whole. For example, it specifies which device drivers to load at boot time (&quot;Boot Drivers&quot;) and which to load later (&quot;Active Drivers&quot;). Here's a sample <b>Default.table</b> from a <b>System.config</b> bundle:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Version&#34; = &#34;2.0&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Boot Drivers&#34; = &#34;PS2Keyboard PS2Mouse BusMouse Adaptec1542B DPT2012 IDE Floppy VGA&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Active Drivers&#34; = &#34;SerialPorts SerialMouse ParallelPort&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Kernel&#34; = &#34;mach_kernel&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Kernel Flags&#34; = &#34;&#34;;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;Boot Graphics&#34; = &#34;No&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For writers of Driver Kit drivers, &quot;Active Drivers&quot; and &quot;Boot Drivers&quot; are the most important keywords. They specify which drivers are automatically loaded into the system the next time it's started. When someone uses Configure to add a device that has a loadable driver, the driver is added to one of these two lists. See the &quot;Boot Drivers&quot; and &quot;Active Drivers&quot; keys in the &quot;Configuration Keys&quot; section of the Appendix to see how to specify which list a driver should be in. This section also lists the other keywords for the system configuration table.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Changes to system configuration information don't take effect until the system is restarted. However, you can load a driver without rebooting by using the <b>d</b> option of <b>driverLoader</b> (documented in &quot;Loading a Driver with driverLoader&quot; later in this chapter).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Creating a Driver Bundle</b></font>
+
+<p><font face="Times">Create a project for your driver with Project Builder, and give the project the name you want your driver to have. Copy your driver files into the project by dragging them into the appropriate suitcase (header files to the Header suitcase and so on) or by using the Add command in the Files menu. Switch to the Builder view in the project window and select &quot;bundle&quot; as the Target. Click the Build button. Project Builder builds the driver and puts it in a driver bundle called <i>Driver</i><b>.config</b> where <i>Driver</i> is the name you chose for the driver. Now you can configure and load the driver.</font>
+
+<p><font face="Times">See <i>NEXTSTEP Development Tools and Techniques</i> for more information about using Project Builder. The example in <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit/TestDriver</b> shows building a bundle with Project Builder.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Configuring Drivers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After you have built your driver, you need to configure it with the Configure application.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Configure Application</b></font>
+
+<p><font face="Times">You can configure devices and add drivers with the Configure application. When you select a device, Configure loads the device's inspector, which provides a user interface for manipulating the device configuration (choosing its DMA channels, for example). If you don't supply a device inspector for your driver, Configure uses a default device inspector. See the IODeviceInspector class and IOConfiguration protocol specifications for more information on device inspectors.</font>
+
+<p><font face="Times">The Configure application reads the key/value pairs from a driver bundle's <b>Default.table</b> and displays them in a Configuration Inspector Panel. The user interface allows the user to change the displayed parameters and warns of possible value conflicts. When the user finishes modifying the configuration, Configure writes the updated configuration to the indicated <b>Instance</b><i>n</i><b>.table </b>and configures the driver based on the information in the configuration and kernel tables.</font>
+
+<p><font face="Times">When the system starts up, the kernel uses an IOConfigTable object to parse the configuration information in the <b>Instance</b><i>n</i><b>.table</b>. From this information, the kernel instantiates an IODeviceDescription object, which encapsulates information about the driver. The kernel passes the IODeviceDescription object as the parameter to the <b>probe:</b> method, which instantiates the driver object based on this information.</font>
+
+<p><font face="Times">There's a list of standard key/value configuration pairs in the &quot;Configuration Keys&quot; section in the Appendix.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica"><b>How Configuring Kernel-Level Driver Kit Drivers Differs from Configuring Other Loadable Kernel Servers</b></font>
+
+<p><font face="Helvetica" size="-1">The configuration of Driver Kit kernel-level drivers differs from that of other Loadable Kernel Servers (LKSs) in the following ways:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1">Each Driver Kit driver has its own configuration directory under <b>/NextLibrary/Devices</b>. Other LKSs have no standard way of getting configuration information.</font></td></tr>
+
+<tr valign=top>
+
+<td width=130 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1">With the Configure application, users can add Driver Kit drivers to the system, as well as specify configuration information for each driver. Other LKSs are generally added to the system by adding a line to <b>/etc/kern_loader.conf</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=130 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1">Driver Kit drivers are allocated and loaded with the <b>driverLoader</b> command, which uses the information in the driver's configuration directory. You can load an LKS with the kernel-server utility, <b>kl_util</b>, but it doesn't cause the driver to be probed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=130 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1">Driver Kit drivers can't currently be unloaded, unlike other LKSs. For example, if you want to change a driver that's already running, you must restart the system to be able to load the new driver.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Writing a Custom Inspector</b></font>
+
+<p><font face="Times">The Configure application uses inspectors to configure a driver. With the default inspector in Configure, you can configure values that belong to the standard set of keys with no further implementation effort. If you've added custom parameters, however, you need to implement a custom inspector to view and modify them.</font>
+
+<p><font face="Times">You have two choices in implementing a custom inspector:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Add an accessory view to the inspector, with an 80-pixel height limit.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Replace the standard inspector completely. You're still limited to a 640</font><img src="../../../../Images/cB4.gif" width=8 height=7><font face="Times">480 view. However, you can use a button to display a panel if you run out of space.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You implement an inspector by creating a subclass of IODeviceInspector. For example, you can create a subclass of IODisplayInspector (a subclass of IODeviceInspector) to implement a display inspector. For an example, study the inspector in <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit</b>/<b>DriverInspector</b>.</font>
+
+<p><font face="Times">Other classes relevant to creating an inspector include IOAddressRanger, IODeviceDescription, IODeviceMaster, and IOEISADeviceDescription. Some of these classes adopt the IOConfigurationInspector protocol.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Creating an Inspector</b></font>
+
+<p><font face="Times">Override the following methods in the IODeviceInspector class and the IOConfigurationInspector protocol:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>init</b>. Find and load the nib file that contains the accessory view using the bundle for your inspector. Initialize the user interface and find your driver.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>inspectionView</b>. Override this if you're replacing the standard inspector.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setTable:</b>. Invoke the superclass's implementation:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">[super setTable:]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">Invoke <b>setAccessoryView:</b> to specify and initialize the accessory View. Initialize the user interface settings from the table being inspected.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>resourcesChanged:</b>. Update the user interface in response to resources being chosen or dropped in the inspector.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Modifying Custom Parameters</b></font>
+
+<p><font face="Times">Implement a set of target/action methods to change the custom parameters. The user interface elements of the inspector invokes these methods. Convert the new parameter state to an appropriate string value for display, and insert it into the inspected table with <b>insertKey:value:</b>. The key must be a unique string, and you can use the <b>NXUniqueString()</b> function to generate a unique key based on the string argument. The value should be a copy--use <b>NXCopyStringBuffer()</b> to copy it:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[table insertKey:<i>key</i> value:NXCopyStringBuffer(<i>value</i>)];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Changing Driver Parameters with IODeviceMaster</b></font>
+
+<p><font face="Times">Besides Configure, another way to change parameters associated with a driver is through the IODeviceMaster class, which provides access to a driver instance. First, find your driver using the <b>lookUpByDeviceName:objectNumber:deviceKind: </b>method. Then manipulate parameters associated with that instance with these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>getCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setCharValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>getIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setIntValues:forParameter:objectNumber:count:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Active driver values should be displayed in the user interface--even if they differ from the current configuration table values. If you want the values you change to persist beyond the time the system is powered off or restarted, you must write them to the configuration table.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Loading a Driver with driverLoader</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can load your driver into an already running system. The <b>driverLoader</b> command loads or configures a driver after startup time. You initiate the command as follows (as superuser):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>/usr/etc/driverLoader</b> <i>option</i> [<b>v</b>] [<i>instance</i>]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Specifying <b>v</b> results in more verbose output from <b>driverLoader</b>. The <i>instance</i> argument can be used only with the <b>d</b> option, as described below.</font>
+
+<p><font face="Times">The <i>option</i> is one of the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>a</b></font></td>
+
+<td><font face="Times">Configure all devices. This option is used when <b>driverLoader</b> is run during system boot (by <b>/etc/rc</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>i</b></font></td>
+
+<td><font face="Times">Interactive mode. With this option, you can look at all active and boot drivers in the system configuration. Note that if you add a driver to the system, the driver isn't recognized as &quot;active&quot; until you reboot.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times"><b>d=</b><i>deviceName</i></font></td>
+
+<td><font face="Times">Configure one device interactively. This is how you load drivers that aren't specified in the system configuration. This is usually used for testing purposes. You can specify <i>instance</i> to use a specific <b>Instance</b><i>n</i><b>.table</b> file. For example, if you specify <i>instance</i> as 1, the driver is probed using the information in its <b>Instance1.table</b> file.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here's an example of using the <b>d</b> option:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1"># /usr/etc/driverLoader d=myDriver</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here's an example of using the <b>d</b> option and specifying <i>instance</i>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1"># /usr/etc/driverLoader d=fooDriver 1</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For another example of using <b>driverLoader</b>, see <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Recovering from a Bad Configuration</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you can't restart your system because of a bad configuration or because of bugs in your driver, try restarting with a default configuration. To do this, type the following at the <b>boot:</b> prompt when the system starts:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">boot: config=Default</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This causes the boot program to use <b>Default.table</b> in <b>System.config</b> as the system configuration, which usually works. Once you've started up, log in as <b>me</b> or <b>root</b> and use Configure to fix the rest of the configuration.</font>
+
+<p><font face="Times">If you still can't start the system, try starting in single-user mode and editing the bundles by hand. This is risky since the configuring process has many &quot;rules of thumb,&quot; and you might not know all the effects of a change. To restart in single-user mode, type the following at the <b>boot:</b> prompt after you restart:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">boot: mach_kernel -s config=Default</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can then use a single-user mode editor (such as <b>vi</b> or <b>emacs</b>) to edit the configuration bundles.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Debugging a Driver</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You have two choices for creating debugging messages: the <b>IOLog()</b> function and the Driver Debugging Module (DDM). Most drivers just use <b>IOLog()</b> until a need arises for the more powerful and complex DDM functions.</font>
+
+<p><font face="Times">Another debugging tool, <b>gdb</b>, is described in <i>NEXTSTEP Development Tools and Techniques.</i> You can run the driver with <b>gdb </b>from Project Builder--the example located in <b>/NextLibrary/Documentation/NextDev/Examples/DriverKit/TestDriver </b>shows how to do this. <i>NEXTSTEP Development Tools and Techniques</i> also describes Project Builder.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using the IOLog Function</b></font>
+
+<p><font face="Times">Using <b>IOLog()</b> is similar to using <b>printf()</b> to print error or debug messages. You can output strings and parameters, just as for <b>printf()</b>. One difference is that output is placed in the <b>/usr/adm/messages</b> file instead of the console window. Place a call to <b>IOLog()</b> anywhere in your driver where you want to get information about the driver state--or to indicate that the driver reached that point during execution.</font>
+
+<p><font face="Times"><b>IOLog()</b> is useful both for status messages and as a basic debugging tool. Although <b>IOLog()</b> is useful for debugging, it can affect the timing of the driver. When timing is important, you should use DDM instead.</font>
+
+<p><font face="Times">See &quot;Functions&quot; in Chapter 5, &quot;Driver Kit Reference&quot;, for more information about <b>IOLog()</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using the Driver Debugging Module (DDM)</b></font>
+
+<p><font face="Times">The Driver Debugging Module (DDM) provides support for viewing debugging information without disturbing the timing of the kernel. By using the DDMViewer application (in <b>/NextDeveloper/Demos</b>), you can specify which information should be stored in the event buffer and display debugging information from this buffer.</font>
+
+<p><font face="Times">The core of DDM is a circular event buffer that stores the debugging information sent to it by drivers. Each entry in the buffer is timestamped (to the microsecond) and consists of a <b>printf</b>-style format string and up to five arguments associated with the format string. A call to the function that timestamps and stores one entry takes about 10 microseconds.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Gathering DDM Events</b></font>
+
+<p><font face="Times">The function <b>IOAddDDMEntry()</b> adds an event to the DDM buffer. An event consists of a character string and several integer values. The <b>IODEBUG()</b> macro is provided to call <b>IOAddDDMEntry()</b>: A driver typically doesn't call <b>IOAddDDMEntry() </b>directly. Instead, the driver should define its own macros using the <b>IODEBUG()</b> macro, as in this example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define ddm_exp(x, a, b, c, d, e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \</font><br>
+<img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">IODEBUG(A7770_DDM_INDEX, DDM_EXPORTED, x, a, b, c, d, e)</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define ddm_him(x, a, b, c, d, e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \</font><br>
+<img src="../../../../Images/sp.gif" width=150 height=1><font face="Courier" size="-1">IODEBUG(A7770_DDM_INDEX, DDM_HIM, x, a, b, c, d, e)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These macros can then be called like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ddm_him(&#34;abort_channel chan %d\n&#34;, channel, 2,3,4,5);</font>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ddm_him(&#34;scb_int_preempt: scb 0x%x index %d haStat %s\n&#34;,</font><br>
+<img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">scb_ptr, scb_index,</font><br>
+<img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">IOFindNameForValue(compstat, scbHaStatValues),</font><br>
+<img src="../../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">4,5);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A word of mask bits controls the collection of DDM entries. All calls to <b>IODEBUG()</b> don't add data to DDM's circular buffer--only those events whose mask bits are enabled are added. The mask bits are enabled and disabled by a user-level tool like DDMViewer. A driver isn't (and shouldn't be) concerned about which mask bits are enabled. Typically you turn on one or two bits of the mask word to study the trace information for a particular module.</font>
+
+<p><font face="Times">See the SCSI example driver in <b>/NextDeveloper/Examples/DriverKit/Adaptec1542B</b>, which illustrates all aspects of using DDM.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Viewing DDM Events with DDMViewer</b></font>
+
+<p><font face="Times">You can examine DDM traces at the user-level with the DDMViewer application, which is located in <b>/NextDeveloper/Demos</b>. You can also specify DDM mask bits with this application. DDMViewer can be run on any computer running NEXTSTEP, not just the machine being tested.</font>
+
+<p><font face="Times">The DDMViewer window contains the following controls:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Device Name field</b>. Enter the name of the target to which you want to attach. The name is determined by the driver.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Host Name field</b>. Enter the name of the host on which the target is running. Leave it empty if you are debugging a driver or kernel on the current machine.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>List button</b>. Click this button to start and stop the display of DDM entries. Entries are displayed starting from the last event in time and scrolling backward.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Set Mask button</b>. Click this button to send the mask defined in the Mask window (see below) to the target.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Disable button</b>. Click this button to freeze the state of the DDM buffer at the target. Click again to reenable.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Clear Window button</b>. Click this button to clear the display area.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>Clear Buffer button</b>. Click this button to clear the target's circular DDM buffer.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can specify the value of the DDM mask bits by name if you open a <b>.ddm</b> file that specifies the names of the mask bits. You create <b>.ddm</b> files with an editor such as Edit. Here's an example of a <b>.ddm</b> file:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#&nbsp; DDMViewer data file for kernel devices.</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Index : 0 : &#34;Kernel Devices&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#&nbsp; Common fields.</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0001 : &#34;Device Object&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0002 : &#34;Disk Object&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0004 : &#34;Net&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0020 : &#34;DMA&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#&nbsp; SCSI.</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0100 : &#34;SCSI Control&#34;</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x0400 : &#34;SCSI Disk&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Comments start with &quot;#&quot;. The line that starts with &quot;Index&quot; defines which DDM Mask word is being defined (there are currently four mask words). The Index line also defines the name of the window associated with this set of mask bits. All other lines define one bit in the mask word, specifying the value of the bit and an ASCII name equivalent. The SCSI example driver in <b>/NextDeveloper/Examples/DriverKit/Adaptec1542B</b> has a sample <b>.ddm</b> file.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

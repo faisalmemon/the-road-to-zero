@@ -1,0 +1,604 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/15_RunTime/Classes/Protocol.rtf -->
+<!-- Date: Sun Jun 28 20:06:41 1998 -->
+<head>
+<title>Protocol</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>Protocol</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">objc/Protocol.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A Protocol object corresponds to a protocol declaration in the Objective C language.&nbsp; It's the data structure that the run-time system uses to keep track of the protocol.&nbsp; Just as the compiler creates one class object for each class declaration it sees, it creates one Protocol object for each protocol declaration it encounters, provided the protocol is used somewhere within the program.</font>
+
+<p><font face="Times">In Objective C, protocols are declared with the <b>@protocol</b> directive:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol Cartwheels</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- turn:(int)numWheels startingFrom:(int)side;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setRotationSpeed:(float)velocity;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL)canStartFromRight;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL)canStartFromLeft;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The same directive, but with a set of trailing parentheses, is used to refer to a Protocol object in source code.&nbsp; In the following example, the Protocol object for the Cartwheels protocol is assigned to the <b>wheels</b> variable:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Protocol *wheels = @protocol(Cartwheels);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>@protocol()</b> directive is the only way to ask for a Protocol object.&nbsp; The Protocol class doesn't define any methods that return or initialize instances of the class.</font>
+
+<p><font face="Times">Because Protocol objects are built by the compiler, not by the application, and are part of the run-time system for the Objective C language, they play a slightly different role within an application that most other objects.&nbsp; In particular, you should not allocate and initialize your own instances of the class.&nbsp; The only valid Protocol objects are those obtained through <b>@protocol()</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Incorporation and Adoption</b></font>
+
+<p><font face="Times">A protocol declaration can incorporate other protocols by listing them within angle brackets:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol Tumbling &lt;Cartwheels, WalkOvers, Flips, Aerials&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Class declarations use the same syntax to adopt protocols:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Gymnast : Object &lt;Tumbling, FloorRoutines&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Protocols can also be adopted in categories:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Gymnast (BalanceBeam) &lt;Dismounting&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The adopting class (or category) must implement all the methods declared in the protocol, including methods declared in any incorporated protocols.&nbsp; In the example above, the Gymnast class is obligated to implement all the methods declared in the Tumbling, Cartwheels, WalkOvers, Flips, Aerials, and FloorRoutines protocols; the BalanceBeam category of Gymnast must implement the methods declared in the Dismounting protocol.&nbsp; If any method is left undefined, the compiler will issue a warning.</font>
+
+<p><font face="Times">You can ask a class if it adheres to a particular protocol by using the <b>conformsTo:</b> method defined in the Object class.&nbsp; This method returns YES if the receiving class, or any class above it in the inheritance hierarchy, directly or indirectly adopts the protocol.&nbsp; The same method can also be used to ask an instance if its class conforms:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [myObject conformsTo:@protocol(Tumbling)] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[myObject turn:4 startingFrom:RIGHTSIDE];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Asking whether an object conforms to a protocol is very much like asking whether it responds to a message--except that <b>respondsTo:</b> tests whether one particular method is implemented and <b>conformsTo:</b> tests whether a group of methods has been adopted (and presumably implemented).</font>
+
+<p><font face="Times">When sent to a Protocol object, a <b>conformsTo:</b> message asks if the receiver incorporates another protocol.&nbsp; The following message would return YES:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL canFlip = [@protocol(Tumbling) conformsTo:@protocol(Flips)];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Type Checking</b></font>
+
+<p><font face="Times">When a protocol name is included in a type specification, as in</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id &lt;Cartwheels, Flips&gt; nadia;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">or in</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setGymnast:(id &lt;Tumbling&gt;)anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the compiler will check to make sure that only objects that conform to the specified protocols are used in those slots.&nbsp; Thus, protocols provide an added dimension of type checking at compile time.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Protocol Objects</b></font>
+
+<p><font face="Times">The compiler creates a Protocol object for every protocol declared in source code, provided the protocol is also either:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Adopted by a class, or</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Referred to by an <b>@protocol()</b> directive.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Simply using the protocol name in a type declaration isn't sufficient to cause a Protocol object to be created.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting the protocol name</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Testing for incorporated protocols</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">conformsTo:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting method descriptions</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">descriptionForInstanceMethod:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">descriptionForClassMethod:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>conformsTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>conformsTo:</b>(Protocol *)<i>aProtocol</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiving Protocol object directly or indirectly incorporates the <i>aProtocol</i> protocol, and NO if it doesn't.&nbsp; One protocol can incorporate another by declaring it within angle brackets:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protocol BalanceBeam &lt;Cartwheels, HandStands&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the following code,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[@protocol(BalanceBeam) conformsTo:@protocol(Cartwheels)]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>conformsTo:</b> would return YES:</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>conformsTo:</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descriptionForClassMethod:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(struct objc_method_description *)<b>descriptionForClassMethod:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a structure describing the <i>aSelector</i> class method, or NULL if <i>aSelector</i> isn't declared as a class method in the receiving Protocol.</font>
+
+<p><font face="Times">The structure has two fields, as illustrated below:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct objc_method_description {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">SEL name;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *types;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first field contains the method selector (which should be identical to <i>aSelector</i>).&nbsp; The second field contains encoded information about the method's return and argument types.&nbsp; Type information is encoded according to the conventions of the <b>@encode()</b> directive.&nbsp; For example, type information for this method</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (float)returnFloatForInt:(int)number</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">andString:(char *)name</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">andStruct:(struct entry)data;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">would be encoded as:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">f28@8:12i16*20{entry=**@}24</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method returns a <b>float</b> (`f') and pushes 28 bytes onto the stack.&nbsp; Its first two arguments are an object (`@') at an offset of 8 bytes from the stack pointer and a selector (`:') at an offset of 12 bytes.&nbsp; These two arguments correspond to <b>self</b> (the message receiver) and <b>_cmd</b> (the method selector), which are present in every method implementation but are normally hidden by the Objective C language.&nbsp; The three declared arguments are an <b>int</b> (`i') at an offset of 16 bytes, a string (`*') at an offset of 20 bytes, and a structure (&quot;{...}&quot;) at an offset of 24 bytes.&nbsp; The structure name is &quot;entry&quot; and it consists of two character pointers and an object <b>id</b> (&quot;**@&quot;).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForInstanceMethod:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForMethod:</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descriptionForInstanceMethod:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(struct objc_method_description *)</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>descriptionForInstanceMethod:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a structure describing the <i>aSelector</i> instance method, or NULL if the <i>aSelector</i> method isn't declared as an instance method in the receiving Protocol.&nbsp; The structure is described under <b>descriptionForClassMethod:</b> above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForClassMethod:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descriptionForMethod:</b> (Object)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a null-terminated string containing the name of the protocol.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

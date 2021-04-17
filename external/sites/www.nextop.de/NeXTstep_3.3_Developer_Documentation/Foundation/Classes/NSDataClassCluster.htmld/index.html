@@ -1,0 +1,1727 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSDataClassCluster.rtf -->
+<!-- Date: Sun Jun 28 19:55:51 1998 -->
+<head>
+<title>NSDataClassCluster</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSData Class Cluster</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">NSData objects provide an object-oriented wrapper for byte buffers. This enables simple allocated buffers (that is, data with no embedded pointers) to take on the behavior of Foundation Kit objects. NSData is typically used for data storage. It is also useful in Distributed Objects applications, where data contained in NSData objects can be copied or moved between applications.</font>
+
+<p><font face="Times">NSData can be used to wrap data of any size. When the data size is over a few pages, NSData uses virtual memory management. NSData can also be used to wrap pre-existing data, regardless of how the data was allocated. NSData contains no information about the data itself (such as its type); the responsibility for deciding how to use the data lies with the client. In particular, it will not handle byte-order swapping when distributed between big-endian and little-endian machines. For typed data, use NSValue.</font>
+
+<p><font face="Times">NSData provides an operating system-independent way to benefit from copy-on-write memory. The copy-on-write technique means that when data is copied through a virtual memory copy (using <b>vm_copy()</b>), an actual copy of the data is not made until there is an attempt to modify it. NSData uses either <b>bcopy()</b> (byte copy) or <b>vm_copy()</b> to copy data, depending on the data's size. For large amounts of data, <b>vm_copy()</b> is used. For more information about <b>vm_copy()</b>, see Chapter 1 of <i>NEXTSTEP Operating System Software</i>.</font>
+
+<p><font face="Times">The cluster's two public classes, NSData and NSMutableData, declare the programmatic interface for static and dynamic NSData objects, respectively.</font>
+
+<p><font face="Times">The objects you create using these classes are referred to as <i>data objects</i>. Because of the nature of class clusters, data objects are not actual instances of the NSData or NSMutableData classes but of one of their private subclasses. Although a data object's class is private, its interface is public, as declared by these abstract superclasses, NSData and NSMutableData. (See &quot;Class Clusters&quot; in the introduction to the Foundation Kit for more information on class clusters and creating subclasses within a cluster.)</font>
+
+<p><font face="Times">Generally, you instantiate a data object by sending one of the <b>data...</b> messages to either the NSData or NSMutableData class object. These methods return a data object containing or copying the bytes you pass in as arguments. Depending on the method used to instantiate the object, a copy of the bytes may be created and added to the receiver before the data object is instantiated. This means that when the data object is released, a copy of the bytes it contains continues to exist. Alternatively, you can instantiate a data object with a method whose name includes &quot;NoCopy,&quot; such as <b>initWithBytesNoCopy:length:</b>. In that case, no copy of the bytes remains when the original bytes are freed along with the data object that contains them.</font>
+
+<p><font face="Times">The NSData classes adopt the NSCopying and NSMutableCopying protocols, making it convenient to convert between efficient, read-only data objects and mutable data objects.</font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSData</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCopying</font><br>
+<font face="Times">NSMutableCopying</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSData.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSData class declares the programmatic interface to an object that contains data in the form of bytes. NSData's two primitive methods--<b>bytes</b> and <b>length</b>--provide the basis for all the other methods in its interface. The <b>bytes </b>method returns a pointer to the bytes contained in the data object. <b>length</b> returns the number of bytes contained in the data object.</font>
+
+<p><font face="Times">NSData provides access methods for copying bytes from a data object into a specified buffer. <b>getBytes</b> copies all of the bytes into a buffer, whereas <b>getBytes:length:</b> copies bytes into a buffer of length <i>length</i>. <b>getBytes:range:</b> copies a range of bytes from a starting point within the bytes themselves. You can also return a data object that contains a subset of the bytes in another data object by using the <b>subdataWithRange:</b> method. Or, you can use the <b>desription</b> method to return an NSString representation of the bytes in a data object.</font>
+
+<p><font face="Times">For determining if two data objects are equal, NSData provides the <b>isEqualToData:</b> method, which does a byte-for-byte comparison.</font>
+
+<p><font face="Times">The <b>writeToFile:atomically:</b> method enables you to write the contents of a data object to a file.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSMutableCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopy</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopyWithZone:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Allocating and initializing</font></td>
+
+<td><font face="Times">+ allocWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ data</font><br>
+<font face="Times">+ dataWithBytes:length:</font><br>
+<font face="Times">+ dataWithBytesNoCopy:length:</font><br>
+<font face="Times">+ dataWithContentsOfFile:</font><br>
+<font face="Times">+ dataWithContentsOfMappedFile</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithBytes:length:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithBytesNoCopy:length:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithContentsOfFile:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithContentsOfMappedFile:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithData:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">bytes</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">description</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getBytes:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getBytes:length:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getBytes:range:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">subdataWithRange:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Testing data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqualToData:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">length</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Storing data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">writeToFile:atomically:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allocWithZone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ allocWithZone:</b>(NSZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns an uninitialized data object in the specified zone. If the receiver is the NSData class object, an instance of the appropriate immutable subclass is returned; otherwise, an object of the receiver's class is returned.</font>
+
+<p><font face="Times">Typically, you create objects using the <b>data...</b> class methods, not the <b>alloc...</b> and <b>init...</b> methods. Note that it's your responsibility to release objects created with the <b>alloc...</b> methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>data</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns an empty data object. This method is declared primarily for the use of mutable subclasses of NSData.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithBytes:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ dataWithBytes:</b>(const void *)<i>bytes</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns a data object containing <i>length</i> bytes copied from the buffer <i>bytes</i>. If page alignment is being used and if the data size is more than a few pages, this method performs an efficient virtual copy using <b>vm_copy()</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithBytesNoCopy:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithBytesNoCopy:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ dataWithBytesNoCopy:</b>(void *)<i>bytes</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns a data object containing <i>length</i> bytes from the buffer <i>bytes</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithBytes:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithContentsOfFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ dataWithContentsOfFile:</b>(NSString *)<i>path</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns a data object by reading every byte from the file specified by <i>path</i>.</font>
+
+<p><font face="Times">For example, this excerpt creates a data object <i>myData</i> initialized with the contents of <b>myFile.txt</b>. The path must be absolute.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NSString* thePath = @&#34;/u/smith/myFile.txt&#34;;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NSData *myData;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">myData = [NSData dataWithContentsOfFile:thePath];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithContentsOfMappedFile:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithContentsOfMappedFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ dataWithContentsOfMappedFile:</b>(NSString *)<i>path</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns a data object from the mapped file specified by <i>path</i>. Because of file mapping restrictions, this method should only be used if the file is guaranteed to exist for the duration of the data object's existence. It is generally safer to use the <b>dataWithContentsOfFile:</b> method.</font>
+
+<p><font face="Times">This methods assumes that mapped files are available on the underlying operating system. A mapped file uses virtual memory techniques to avoid copying pages of the file into memory until they are actually needed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times"><b>dataWithContentsOfFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>bytes</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(const void *)<b>bytes</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a pointer to the data object's contents. This method returns read-only access to the data.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>description</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:length:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSString object that contains a hexadecimal representation of the receiver's contents. This string can be read by the ASCII parser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bytes</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getBytes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getBytes:</b>(void *)<i>buffer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copies a data object's contents into <i>buffer</i>.</font>
+
+<p><font face="Times">For example, this excerpt initializes a data object <i>myData</i> with the NSString <i>myString</i>. It then copies the contents of <i>myData</i> into <i>aBuffer</i>.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSData *myData;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned char aBuffer[20];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* myString = @&#34;Test string.&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myData = [NSData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[myString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[myString length]];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myData getBytes:aBuffer];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bytes:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:length:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getBytes:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getBytes:</b>(void *)<i>buffer</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copies <i>length</i> bytes from a data object into <i>buffer</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bytes:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:,</b></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getBytes:range:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getBytes:</b>(void *)<i>buffer</i> <b>range:</b>(NSRange)<i>range</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copies the a data object's contents into <i>buffer</i>, from a range <i>range</i> that is within the bytes in the object. If <i>range</i> isn't within the receiver's range of bytes, an NSRangeException error is raised.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bytes:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:,</b></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBytes:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>hash</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">@protocol NSObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>hash</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an unsigned integer that can be used as a table address in a hash table structure. For a data object, <b>hash</b> returns the length of the data object. If two data objects are equal (as determined by the <b>isEqual:</b> method), they have the same hash value.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEqual:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithBytes:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBytes:</b>(const void *)<i>bytes</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated data object by adding to it <i>length</i> bytes of data copied from the buffer <i>bytes</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBytesNoCopy:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithBytesNoCopy:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBytesNoCopy:</b>(void *)<i>bytes</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated data object by adding to it <i>length</i> bytes of data from the buffer <i>bytes</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBytes:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithContentsOfFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithContentsOfFile:</b>(NSString *)<i>path</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated data object by reading into it the data from the file specified by <i>path</i>. This method invokes <b>initWithData:</b> as part of its implementation.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4>&nbsp; <font face="Times"><b>initWithContentsOfMappedFile:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithContentsOfMappedFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithContentsOfMappedFile:</b>(NSString *)<i>path</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated data object by reading into it the mapped file specified by <i>path</i>. This method invokes <b>initWithData:</b> as part of its implementation.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithContentsOfFile:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithData:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithData:</b>(NSData *)<i>data</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated data object by placing in it the contents of another data object, <i>data</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Helvetica"><b>isEqual:</b></font>
+
+<p><font face="Times">@protocol NSObject</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqual:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if the receiver and <i>anObject</i> are equal; otherwise returns NO. A YES return value indicates that the receiver and <i>anObject</i> both inherit from NSData and contain the same data (as determined by the <b>isEqualToData: </b>method).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEqualToData:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>isEqualToData:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqualToData:</b>(NSData *)<i>other</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Compares the receiving data object to <i>other</i>. If the contents of <i>other</i> are equal to the contents of the receiver, this method returns YES. If not, it returns NO. Two data objects are equal if they hold the same number of bytes, and if the bytes at the same position in the objects are the same.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>length</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned)<b>length</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the number of bytes contained in a data object.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>subdataWithRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSData *)<b>subdataWithRange:</b>(NSRange)<i>range</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a data object containing a copy of the receiver's bytes that fall within the limits specified by <i>range</i>. If <i>range </i>isn't within the receiver's range of bytes, an NSRangeException error is raised.</font>
+
+<p><font face="Times">For example, this excerpt initializes a data object, <i>data2</i>, to contain a sub-range of <i>data1</i>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* myString = @&#34;ABCDEFG&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSRange range = {2, 4};</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSData *data1, *data2;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data1 = [NSData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[myString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[myString length]];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data2 = [data1 subdataWithRange:range];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The result of this excerpt is that <i>data2</i> contains CDEF<b>.</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>writeToFile:atomically:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>writeToFile:</b>(NSString *)<i>path</i> <b>atomically:</b>(BOOL)<i>useAuxiliaryFile</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Writes the bytes in a data object to the file specified by <i>path</i>.</font>
+
+<p><font face="Times">If you provide a value of YES for <b>atomically:</b>, the data is written to a backup file and then, assuming no errors occur, the backup file is renamed to the intended file name.</font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSMutableData</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSData : NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCopying</font><br>
+<font face="Times">NSMutableCopying</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSData.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSMutableData class declares the programmatic interface to an object that contains modifiable data in the form of bytes. NSMutableData's two primitive methods--<b>mutableBytes</b> and <b>setLength:</b>--provide the basis for all the other methods in its interface. The <b>mutableBytes</b> method returns a pointer for writing into the bytes contained in the mutable data object. <b>setLength:</b> allows you to truncate or extend the length of a mutable data object.</font>
+
+<p><font face="Times">NSMutableData provides an additional method for changing the length of a mutable data object: <b>increaseLengthBy:</b>.</font>
+
+<p><font face="Times">The <b>appendBytes:length:</b> and <b>appendData:</b> methods let you append bytes or the contents of another data object to a mutable data object. You can replace a range of bytes in a mutable data object with either zeroes (using the <b>resetBytesInRange:</b> method), or with different bytes (using the <b>replaceBytesInRange:withBytes:</b> method).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Allocating and initializing</font></td>
+
+<td><font face="Times">+ allocWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ dataWithCapacity:</font><br>
+<font face="Times">+ dataWithLength:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCapacity:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adjusting capacity</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">increaseLengthBy:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">setLength:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableBytes</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adding data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">appendBytes:length:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">appendData:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying data</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">replaceBytesInRange:withBytes:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">resetBytesInRange:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allocWithZone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ allocWithZone:</b>(NSZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns an uninitialized data object in the specified zone. If the receiver is the NSData class object, an instance of the appropriate immutable subclass is returned; otherwise, an object of the receiver's class is returned.</font>
+
+<p><font face="Times">Typically, you create objects using the <b>data...</b> class methods, not the <b>alloc...</b> and <b>init...</b> methods. Note that it's your responsibility to release objects created with the <b>alloc...</b> methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithCapacity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><b>+ dataWithCapacity</b></font><font face="Helvetica"><b>:</b></font><font face="Times">(unsigned)<i>aNumItems</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates and returns an NSMutableData object, initially allocating enough memory to hold <i>aNumItems</i> objects. Mutable data objects allocate additional memory as needed, so <i>aNumItems</i> simply establishes the object's initial capacity.</font>
+
+<p><font face="Times">This method acts by invoking the <b>alloc</b> and <b>initWithCapacity:</b> methods.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithLength:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCapacity:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithLength:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataWithLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>dataWithLength:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creates an autoreleased, mutable data object of <i>length</i> bytes, zero-filled.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithCapacity:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCapacity:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>appendBytes:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>appendBytes:</b>(const void *)<i>bytes</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Appends <i>length</i> bytes to a mutable data object from the buffer <i>bytes</i>. If page alignment is being used and if the data size is more than a few pages, this method performs an efficient virtual copy using <b>vm_copy()</b>.</font>
+
+<p><font face="Times">This excerpt copies the bytes in <i>data2</i> into <i>aBuffer</i>, and then appends <i>aBuffer</i> to <i>data1</i>.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSMutableData *data1, *data2;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* firstString =&nbsp; @&#34;ABCD&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* secondString = @&#34;EFGH&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned char *aBuffer;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned len;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data1 = [NSMutableData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[firstString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[firstString length]];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data2 = [NSMutableData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[secondString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[secondString length]];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">len = [data2 length];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aBuffer = malloc(len);</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data2 getBytes:aBuffer];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data1 appendBytes:aBuffer length:len];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><img src="../../Images/sp.gif" width=9 height=1><font face="Times">The final string value of <i>data1</i> is</font> <font face="Courier">&#34;ABCDEFGH&#34;</font><font face="Times">.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>appendData:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>appendData:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>appendData:</b>(NSData *)<i>other</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Appends the contents of a data object other to a receiver data object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>appendBytes:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>increaseLengthBy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>increaseLengthBy:</b>(unsigned)<i>extraLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Increases the length of a mutable data object by <i>extraLength</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLength:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCapacity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCapacity:</b>(unsigned)<i>capacity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated mutable data object, giving it enough memory to hold <i>capacity</i> bytes. Sets the length of the data object to 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithCapacity:,</b></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithLength:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithLength:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated mutable data object, giving it enough memory to hold <i>length</i> bytes. Fills the object with zeroes up to <i>length</i>. This method acts by invoking the <b>initWithCapacity:</b> and <b>setLength:</b> methods.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithCapacity:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataWithLength:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCapacity:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>mutableBytes</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>mutableBytes</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a pointer to the bytes in a mutable data object that enables you to modify the bytes.</font>
+
+<p><font face="Times">In this excerpt, <b>mutableBytes</b> is used to return a pointer to the bytes in <i>data2</i>. The bytes in <i>data2</i> are then overwritten with the contents of <i>data1</i>.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSMutableData *data1, *data2;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* myString = @&#34;string for data1&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* yourString = @&#34;string for data2&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned char *firstBuffer, *secondBuffer;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* initialize data1, data2, firstBuffer, and secondBuffer...</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* ...</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data2 getBytes:secondBuffer];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;data2 before: \&#34;%s\&#34;\n&#34;, (char*)secondBuffer);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">firstBuffer = [data2 mutableBytes];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data1 getBytes:firstBuffer];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;data1: \&#34;%s\&#34;\n&#34;, (char*)firstBuffer);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data2 getBytes:secondBuffer];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;data2 after: \&#34;%s\&#34;\n&#34;, (char*)secondBuffer);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This excerpt produces the output:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data2 before: &#34;String for data2&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data1: &#34;String for data1.&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data2 after: &#34;String for data1.&#34;</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>replaceBytesInRange:withBytes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>replaceBytesInRange:</b>(NSRange)<i>range</i> <b>withBytes:</b>(const void *)<i>bytes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Specifies a range within the contents of a mutable data object to be replaced by <i>bytes</i>. If <i>range</i> isn't within the receiver's range of bytes, an NSRangeException error is raised.</font>
+
+<p><font face="Times">In this excerpt, a range of bytes in <i>data1</i> is replaced by the bytes in <i>data2</i>.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSMutableData *data1, *data2;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* myString = @&#34;Liz and John&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString* yourString = @&#34;Larry&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned len;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned char *aBuffer;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSRange range = {8, [yourString length]};</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data1 = [NSMutableData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[myString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[myString length]];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">data2 = [NSMutableData</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">dataWithBytes:[yourString cString]</font><br>
+<img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">length:[yourString length]];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">len = [data2 length];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aBuffer = malloc(len);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data2 getBytes:aBuffer];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[data1 replaceBytesInRange:range withBytes:aBuffer];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The contents of <i>data1</i> change from &quot;Liz and John&quot; to &quot;Liz and Larry.&quot;</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resetBytesInRange:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>resetBytesInRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>resetBytesInRange:</b>(NSRange)<i>range</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Specifies a range within the contents of a mutable data object to be replaced by zeroes. If <i>range</i> isn't within the receiver's range of bytes, an NSRangeException error is raised.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replaceBytesInRange:withBytes:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>setLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setLength:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Extends or truncates the <i>length</i> of a mutable data object. If the mutable data object is extended, the additional bytes are zero-filled.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>increaseLengthBy:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,3285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/17_3DKit/Classes/N3DShape.rtfd -->
+<!-- Date: Sun Jun 28 20:07:54 1998 -->
+<head>
+<title>N3DShape</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>N3DShape</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">3Dkit/N3DShape.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">N3DShape provides techniques for representing 3D transformations, for rendering the standard RenderMan surface primitives, and for creating and managing hierarchically organized structures.&nbsp; Using subclasses of N3DShape, your application can model compound shapes made from hierarchically related N3DShape objects.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Creating an N3DShape Subclass</b></font>
+
+<p><font face="Times">While N3DShape provides methods for representing 3D transformations and for creating hierarchically organized structures, you need to create a subclass of N3DShape to perform surface modeling.&nbsp; Your subclass must override the abstract method <b>renderSelf:</b>, calling one or more of the following RenderMan geometric primitive functions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>Quadric Surfaces</b></font>
+
+<p><font face="Times">RiSphere()</font><br>
+<font face="Times">RiCone()</font><br>
+<font face="Times">RiDisk()</font><br>
+<font face="Times">RiCylinder()</font><br>
+<font face="Times">RiHyperboloid()</font><br>
+<font face="Times">RiParaboloid()</font><br>
+<font face="Times">RiTorus()</font>
+
+<p><font face="Helvetica"><b>Polygons</b></font>
+
+<p><font face="Times">RiPolygon()</font><br>
+<font face="Times">RiGeneralPolygon()</font><br>
+<font face="Times">RiPointsPolygon()</font><br>
+<font face="Times">RiPointsGeneralPolygons()</font>
+
+<p><font face="Helvetica"><b>Patches</b></font>
+
+<p><font face="Times">RiPatch()</font><br>
+<font face="Times">RiPatchMesh()</font><br>
+<font face="Times">RiNuPatch()</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A complete description of these RenderMan geometric primitive functions, including parameter listings and illustrations, can be found in <i>The RenderMan Companion</i>.&nbsp; Sample code using the <b>RiSphere()</b> function call is included in the description of the <b>renderSelf:</b> method.</font>
+
+<p><font face="Times">N3DShapes can be set to render either their surface geometry or their bounding boxes.&nbsp; This ability to switch rendering modes is useful for faster interactive manipulation of shapes.&nbsp; For your N3DShape subclasses to render their bounding boxes, you must provide a way to set the <b>boundingBox</b> instance variable, both when the shape is initialized and when its size changes (that is, when values passed to RenderMan geometric primitives in the <b>renderSelf:</b> method change).</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The Shape Hierarchy</b></font>
+
+<p><font face="Times">A shape hierarchy is made up by linking shapes in two kinds of relationships: <i>descendant/ancestor</i> and <i>next peer/previous peer</i>. A shape's descendant inherits its graphics state attributes.&nbsp; A descendant and its peers share the same ancestor, and inherit the same graphics state attributes from that ancestor.&nbsp; In this discussion, the term <i>descendant</i> applies to a shape's direct descendant; the term <i>descendants</i> applies to the direct descendant, its peers, and all descendants of the direct descendant or peers.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=446 height=176></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-10</b></font><font face="Times">. A shape hierarchy</font>
+
+<p><br><br>
+
+<p><font face="Times">Peers share a common ancestor (their <b>ancestor</b> methods return the same N3DShape object). However, that ancestor has but one descendant, which is the first peer. Each shape sharing an ancestor can apply its own graphics state attributes, independent of its peers.&nbsp; The two shapes at the bottom of the illustration aren't peers--they have different ancestors.</font>
+
+<p><font face="Times">The graphics state attributes inherited by a shape's descendants include its coordinate system and shaders.&nbsp; You override these inheritances by setting attributes of the descendant explicitly using the appropriate methods.&nbsp; A shape's bounding box isn't explicitly inherited by its descendants.&nbsp; Instead, the box returned by the <b>getBoundingBox:</b> method is the union of the receiver's bounding box with those of all its descendants--thus representing the smallest volume capable of containing the receiver and its descendants.</font>
+
+<p><font face="Times">Be sure to use N3DShape methods to place a shape in the shape hierarchy.&nbsp; Methods for shape hierarchy management include <b>linkPeer:</b>, <b>linkDescendant:</b>, <b>linkAncestor:</b>, <b>unlink</b>, <b>group:</b>, and <b>ungroup</b>.</font>
+
+<p><font face="Times">Your application may need to traverse the shape hierarchy to request that each shape apply a setting or respond to a request.&nbsp; To do so, you can add a traversal method such as the following to your subclass of N3DShape:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- preTraverse</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* do the work here */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ([self descendant] != nil) {</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">descendant preTraverse];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ([self nextPeer] != nil) {</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">[nextPeer preTraverse];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Surface modeling is usually performed only at the leaf nodes of a shape hierarchy; that is, by shapes without descendants.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Transforming Between Coordinate Systems</b></font>
+
+<p><font face="Times">To transform points between the coordinate systems of two N3DShapes, use the methods <b>convertPoints:count:fromAncestor: </b>and <b>convertPoints:count:toAncestor:</b>.&nbsp; To transform points between the 3D coordinate system of a shape and the 2D (PostScript) coordinate system of its camera, use the method <b>convertObjectPoints:count:toCamera:</b>.</font>
+
+<p><font face="Times">You can also transform from one coordinate system to another by applying a matrix to a shape or a camera.&nbsp; A matrix is a two-dimensional array that represents a transformation from one coordinate system to another.&nbsp; The RenderMan standard defines a type, RtMatrix, as a 4 x 4 array of floating point values that represents such a transformation between 3D coordinate systems.&nbsp; Each N3DShape maintains three matrices: the transform, the composite transform, and the inverse of the composite transform.&nbsp; While matrix manipulation concepts are beyond the scope of this discussion, you should understand the meanings of these matrices.</font>
+
+<p><font face="Times">The transform matrix is the matrix the shape applies when its <b>render:</b> method is invoked.&nbsp; It represents the transformation from the immediate ancestor's coordinate system to its owner's coordinates.&nbsp; Use the methods <b>getTransformMatrix:</b> and <b>setTransformMatrix:</b> to access a shape's transform matrix.</font>
+
+<p><font face="Times">The composite transform matrix represents the combined transformations from a distant ancestor--usually the shape at the top of the hierarchy.&nbsp; The composite transform matrix can be used for transforming points from this ancestor's coordinate system to the shape's coordinate system.&nbsp; Use the method <b>getCompositeTransform:relativeToAncestor:</b> to access this matrix.</font>
+
+<p><font face="Times">The inverse of the composite transform matrix represents the transformation from its owner's coordinate system to an ancestor's coordinate system.&nbsp; Use the method <b>getInverseCompositeTransform: relativeToAncestor:</b> to access this matrix.</font>
+
+<p><font face="Times">The identity matrix represents a <i>normalized</i> coordinate system: one to which no transformations are applied.&nbsp; The global constant <b>N3DIdentityMatrix</b> is defined in <b>3Dkit/next3d.h</b>. The values in the identity matrix are:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{{1, 0, 0, 0},</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">{0, 1, 0, 0},</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">{0, 0, 1, 0},</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">{0, 0, 0, 1}}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Shaders</b></font>
+
+<p><font face="Times">Each N3DShape can have one each of the six shader types: surface, displacement, light, imager, volume, and transformation. The shaders belonging to an N3DShape are instances of the N3DShader class; each N3DShader object manages a shading language function.&nbsp; The type of an N3DShader is determined by the shader function which it manages.&nbsp; See the N3DShader class specification for more on shading language functions.</font>
+
+<p><font face="Times">Light shader objects are different than light objects.&nbsp; N3DLight is a subclass of shape whose objects are used to light one or more surfaces in a scene.&nbsp; In most cases, you will illuminate the shapes in a scene using N3DLight objects rather than light shaders.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The Render Delegate</b></font>
+
+<p><font face="Times">The render delegate is an N3DShape that renders a specific geometry.&nbsp; Render delegates are an efficient way to render multiple versions of a single shape.&nbsp; Say, for example, you want to render all four tires on an automobile.&nbsp; Each N3DShape representing a tire can have the same render delegate.&nbsp; Each time one of the tire shapes gets a <b>render:</b> message, it invokes the delegate's <b>renderSelf:</b> method.&nbsp; Thus only the render delegate needs to retain the geometric data for the tire.&nbsp; The four shapes using the delegate need only represent the transformation to the origin of the four tire positions.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">RtMatrix <b>transform</b>;</font>
+
+<p><font face="Times">RtMatrix <b>compositeTransform</b>;</font>
+
+<p><font face="Times">RtMatrix <b>inverseCompositeTransform</b>;</font>
+
+<p><font face="Times">RtBound <b>boundingBox</b>;</font>
+
+<p><font face="Times">N3DShapeName *<b>shapeName</b>;</font>
+
+<p><font face="Times">N3DSurfaceType <b>surfaceType</b>;</font>
+
+<p><font face="Times">id <b>surfaceShader</b>;</font>
+
+<p><font face="Times">id <b>displacementShader</b>;</font>
+
+<p><font face="Times">id <b>lightShader</b>;</font>
+
+<p><font face="Times">id <b>imagerShader</b>;</font>
+
+<p><font face="Times">id <b>volumeShader</b>;</font>
+
+<p><font face="Times">id <b>transformationShader</b>;</font>
+
+<p><font face="Times">struct <b>_shapeFlags</b> {</font><br>
+<font face="Times">unsigned int <b>selectable</b>:1;</font><br>
+<font face="Times">unsigned int <b>visible</b>:1;</font><br>
+<font face="Times">unsigned int <b>ancestorChanged</b>:1;</font><br>
+<font face="Times">unsigned int <b>compositeDirty</b>:2;</font><br>
+<font face="Times">unsigned int <b>drawAsBox</b>:1;</font><br>
+<font face="Times">unsigned int <b>isInstance</b>:1;</font><br>
+<font face="Times">unsigned int <b>hasShader</b>:1;</font>
+
+<p><font face="Times">}<b>shapeFlags</b>;</font>
+
+<p><font face="Times">id <b>nextPeer</b>;</font>
+
+<p><font face="Times">id <b>previousPeer</b>;</font>
+
+<p><font face="Times">id <b>descendant</b>;</font>
+
+<p><font face="Times">id <b>ancestor</b>;</font>
+
+<p><font face="Times">id <b>renderDelegate</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">transform</font></td>
+
+<td><font face="Times">Transformation from ancestor</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">compositeTransform</font></td>
+
+<td><font face="Times">Transformation from top of shape hierarchy</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">inverseCompositeTransform</font></td>
+
+<td><font face="Times">Transformation to top of shape hierarchy</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">boundingBox</font></td>
+
+<td><font face="Times">Three-dimensional bounds of shape</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeName</font></td>
+
+<td><font face="Times">Name and <b>id</b> of shape</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">surfaceType</font></td>
+
+<td><font face="Times">Surface type for interactive rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">surfaceShader</font></td>
+
+<td><font face="Times">Surface shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">displacementShader</font></td>
+
+<td><font face="Times">Displacement shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">lightShader</font></td>
+
+<td><font face="Times">Light shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">imagerShader</font></td>
+
+<td><font face="Times">Imager shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">volumeShader</font></td>
+
+<td><font face="Times">Volume shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">transformationShader</font></td>
+
+<td><font face="Times">Transformation shader for photorealistic rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.selectable</font></td>
+
+<td><font face="Times">YES if the shape can be selected</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.visible</font></td>
+
+<td><font face="Times">YES if the shape and its descendants are visible</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.ancestorChanged</font></td>
+
+<td><font face="Times">YES if the shape's ancestor changed</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.compositeDirty</font></td>
+
+<td><font face="Times">YES if the composite and inverse transform matrices need updating</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.drawAsBox</font></td>
+
+<td><font face="Times">YES if this shape renders by drawing its bounding box</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.isInstance</font></td>
+
+<td><font face="Times">YES if this shape has a delegate to perform its rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">shapeFlags.hasShader</font></td>
+
+<td><font face="Times">YES if this shape has any shaders associated with it</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">nextPeer</font></td>
+
+<td><font face="Times">Next shape in the peer group</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">previousPeer</font></td>
+
+<td><font face="Times">Previous shape in the peer group</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">descendant</font></td>
+
+<td><font face="Times">Shape descended from this one</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">ancestor</font></td>
+
+<td><font face="Times">Shape from which this one descends</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">renderDelegate</font></td>
+
+<td><font face="Times">Delegate that performs rendering</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeAll</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Rendering the N3DShape</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">render:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderSelf:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderSelfAsBox:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Traversing the shape hierarchy</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">nextPeer</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">previousPeer</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">firstPeer</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastPeer</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">descendant</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastDescendant</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">ancestor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">firstAncestor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isWorld</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the shape hierarchy</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">linkPeer:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">linkDescendant:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">linkAncestor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">unlink</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">group:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">ungroup</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Shader</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setShader:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">shaderType:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Surface</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">surfaceType</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSurfaceType:andDescendants:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Bounding box</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getBoundingBox:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDrawAsBox:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesDrawAsBox</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getBounds:inCamera:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Converting points</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">convertObjectPoints:count:toCamera:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">convertPoints:count:fromAncestor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">convertPoints:count:toAncestor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Selection</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSelectable:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isSelectable</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Visibility</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setVisible:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isVisible</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Naming shapes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setShapeName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">shapeName</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Delegate for rendering</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRenderDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeRenderDelegate</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderDelegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Transformation matrices</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTransformMatrix:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getTransformMatrix:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">concatTransformMatrix:premultiply:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCompositeTransformMatrix:relativeToAncestor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getInverseCompositeTransformMatrix: relativeToAncestor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Rotation, scaling, translation</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rotateAngle:axis:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">preRotateAngle:axis:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scale:::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">preScale:::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scaleUniformly:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">preScaleUniformly:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">translate:::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">preTranslate:::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">awake</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>ancestor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ancestor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiving object's ancestor--the N3DShape above it in the shape hierarchy.&nbsp; If the receiving shape is at the top of its hierarchy, returns <b>nil</b>.&nbsp; The class description includes an illustration and discussion of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstAncestor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>awake</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after unarchiving to reinitialize the N3DShape object.&nbsp; Do not invoke this method directly.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>concatTransformMatrix:premultiply:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>concatTransformMatrix:</b>(RtMatrix)<i>aTransform</i> <b>premultiply:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Concatenates <i>aTransform</i> to the N3DShape's current transform matrix.&nbsp; If <i>flag</i> is YES, this method premultiplies the matrix by the <i>aTransform</i>; that is, it applies the effect of <i>aTransform</i> to the receiving shape's coordinate system before applying the effect of its transform matrix.&nbsp; Otherwise, it postmultiplies the transform matrix by <i>aTransform</i>, applying the effect of the transform matrix before applying the effect of <i>aTransform</i>.&nbsp; In either case, it places the result in the receiver's <b>transform</b> instance variable.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>setTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>getTransformMatrix</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>getCompositeTransformMatrix:relativeToAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub> <font face="Times"><b>getInverseCompositeTransformationMatrix:relativeToAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>convertObjectPoints:count:toCamera:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertObjectPoints:</b>(RtPoint *)<i>points</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(int)<i>n</i></font><br>
+<font face="Times"><b>toCamera:</b><i>camera</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Converts <i>points</i> from the receiver's coordinate system to <i>camera</i>'s 2D (PostScript) coordinate system.&nbsp; Returns the converted values by reference in the first two (x and y) coordinates of each RtPoint in <i>points</i>; you should ignore the z coordinates returned in <i>points</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:count:fromAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>convertPoints:count:toAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>convertPoints:count:fromAncestor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:</b>(RtPoint *)<i>points</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(int)<i>n</i></font><br>
+<font face="Times"><b>fromAncestor:</b>(N3DShape *)<i>theShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Converts points from <i>theShape</i>'s coordinate system to the coordinate system of the receiver<i>.</i>&nbsp; If <i>theShape</i> is <b>nil</b> or isn't above the receiver in its shape hierarchy, this method converts from the shape at the top of the receiver's shape hierarchy (its first ancestor).&nbsp; Returns the converted values by reference in <i>points</i>.&nbsp; Returns <b>self</b>.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertObjectPoints:count:toCamera:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>convertPoints:count:toAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstAncestor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>convertPoints:count:toAncestor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:</b>(RtPoint *)<i>points</i> <b>count:</b>(int)<i>n</i> <b>toAncestor:</b>(N3DShape *)<i>theShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Converts points from the receiver's coordinate system to the coordinate system of <i>theShape.</i>&nbsp; If <i>theShape</i> is <b>nil</b> or isn't above the receiver in its shape hierarchy, this method converts to the world shape at the top of the receiver's shape hierarchy.&nbsp; Returns <b>self</b>.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertShapePointsToWorld:count:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>convertShapePoints:count:toCamera:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>descendant</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descendant</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's descendant--the N3DShape below it in the object hierarchy.&nbsp; If the receiving shape has no descendant, returns <b>nil</b>.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastDescendant</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>linkDescendant:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesDrawAsBox</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesDrawAsBox</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver is set to draw its bounding box when it renders.&nbsp; For an instance of your subclass of N3DShape to draw its bounding box, you must explicitly set the bounding box when it is initialized and when it is resized (that is, when values passed to RenderMan geometric primitives in the <b>renderSelf:</b> method change).&nbsp; By default, returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBoundingBox:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>setDrawAsBox:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>firstAncestor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstAncestor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the shape at the top of the receiving N3DShape's hierarchy.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ancestor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>linkAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>firstPeer</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstPeer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the left-most peer in the receiver's peer group.&nbsp; The first peer is the direct descendant of the receiver's ancestor.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the receiving object, its descendants, and the descendants' peers.&nbsp; Unlinks the receiving object from its peer group; if the receiver has a next peer and previous peer, they are set to point to each other; if the receiver has no previous peer, its next peer is set as the direct descendant of the ancestor.&nbsp; Frees the receiver's descendant and its descendants and peers by sending a <b>freeAll</b> message to the descendant.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>freeAll</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeAll</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeAll</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the receiver, its next peer (and all subsequent peers) and its descendants.&nbsp; This method first sends a <b>freeAll</b> message to the next peer, then sends a <b>free</b> message to <b>self</b>.&nbsp; See the class description for a discussion and diagram of the shape hierarchy. Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getBoundingBox:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBoundingBox:</b>(RtBound *)<i>boundingBox</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>boundingBox</i>, the union of the receiver's bounding box and its descendant's bounding boxes; thus, the six coordinates in <i>boundingBox</i> represent the volume of the receiver and all its descendants.&nbsp; The returned values are in the coordinates of the receiving N3DShape.</font>
+
+<p><font face="Times">Note that for your subclass of N3DShape to return the correct value in <i>boundingBox</i>, your code must set the <b>boundingBox </b>instance variable when an instance is initialized and whenever it changes size (that is, when values passed to RenderMan geometric primitives in the <b>renderSelf:</b> method change).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelfAsBox:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawAsBox</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawAsBox:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getBounds:inCamera:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBounds:</b>(NXRect *)<i>boundingRect</i> <b>inCamera:</b><i>theCamera</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>boundingRect</i>, the rectangle that bounds the receiver in <i>theCamera</i>'s 2D (PostScript) coordinate system.&nbsp; If <i>theCamera</i> isn't an N3DCamera object, this method generates an exception.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getCompositeTransformMatrix:relativeToAncestor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCompositeTransformMatrix:</b>(RtMatrix)<i>theMatrix</i> <b>relativeToAncestor:</b>(N3DShape *)<i>theAncestor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>theMatrix</i>, the matrix representing the transformation from <i>theAncestor</i>'s coordinate system to the receiver's coordinate system.&nbsp; If <i>theAncestor</i> is <b>nil</b> or if the receiving N3DShape isn't a descendant of <i>theAncestor</i>, <i>theMatrix </i>represents the transformation from world space to the receiver's coordinate system.&nbsp; See the class description for discussions of the shape hierarchy and transformations.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTransformMatrix:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>concatTransformMatrix:premultiply:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getInverseCompositeTransformationMatrix:relativeToAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getInverseCompositeTransformMatrix:relativeToAncestor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getInverseCompositeTransformMatrix:</b>(RtMatrix)<i>theMatrix</i> <b>relativeToAncestor:</b>(N3DShape *)<i>theAncestor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>theMatrix</i>, the matrix representing the transformation from the receiver's coordinate system to <i>theAncestor</i>'s coordinate system.&nbsp; If <i>theAncestor</i> is <b>nil</b> or if the receiving N3DShape isn't a descendant of <i>theAncestor</i>, <i>theMatrix</i> represents the transformation from the receiver's coordinate system to world space.&nbsp; See the class description for discussions of the shape hierarchy and transformations.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>concatTransformMatrix:premultiply:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub> <font face="Times"><b>getCompositeTransformMatrix:relativeToAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getTransformMatrix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTransformMatrix:</b>(RtMatrix)<i>theMatrix</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>theMatrix</i>, the receiver's transform matrix: the instance variable representing the transformation from the ancestor's space to the receiver's space.&nbsp; This method is invoked by N3DShape's <b>render:</b> method to get the transformation matrix for the space in which the shape is rendered.&nbsp; Override this method to apply your own manipulation on the transform matrix--and, thereby, on the receiver's space--when rendering.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>concatTransformMatrix:premultiply:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>getCompositeTransformMatrix:relativeToAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub> <font face="Times"><b>getInverseCompositeTransformMatrix:relativeToAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>preRotateAngle:axis:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preTranslate:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>rotateAngle:axis:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>translate:::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>group:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>group:</b><i>toShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes the receiver a descendant of <i>toShape</i> while maintaining its position in world space.&nbsp; Invoking this method on a series of N3DShapes, each with the same N3DShape as <i>toShape</i>, causes the receivers to become peers--all descended from <i>toShape</i>. This method is useful, for example, to group a set of N3DShapes after they've been selected by the user.</font>
+
+<p><font face="Times">This method modifies the receiver's transform matrix to reflect the transformation from <i>toShape</i> to the receiver's current position.&nbsp; If <i>toShape</i> has no descendant, the receiver is made its direct descendant using the <b>linkDescendant:</b> method. Otherwise, the receiver is linked by invoking <b>linkPeer:</b> on <i>toShape</i>'s descendant.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkDescendant:</b></font><img src="../../../Images/c2C.gif" width=3 height=4> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b></font><img src="../../../Images/c2C.gif" width=3 height=4> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ungroup</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectable</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectShapesIn:</b> (N3DCamera)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated instance of N3DShape.&nbsp; The <b>transform</b>, <b>compositeTransform</b>, and <b>inverseCompositeTransform</b> matrices are normalized (see the class description for a discussion of matrices and transformations between coordinate systems).&nbsp; All shaders are set to <b>nil</b>, as are the peer, ancestor, and descendant pointers. Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isSelectable</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isSelectable</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiving N3DShape can be selected.&nbsp; Shapes are selected by the N3DCamera method <b>selectShapesIn:</b>. By default, N3DShapes aren't selectable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectable:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectShapesIn:</b> (N3DCamera)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiving N3DShape has been set to render itself.&nbsp; N3DShapes are visible by default.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setVisible:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isWorld</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isWorld</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiving N3DShape is at the top of its shape hierarchy--that is, it has no previous peer or ancestor.&nbsp; Returns NO otherwise.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lastDescendant</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastDescendant</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the N3DShape at the end of the receiver's descendant chain.&nbsp;&nbsp; This method searches directly below the receiver; it doesn't search peer branches for deeper descendants.&nbsp; Returns <b>self</b> if the receiver has no descendant.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descendant</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkDescendant:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lastPeer</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastPeer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the N3DShape at the far right of the receiver's peer group.&nbsp;&nbsp; Searches for the first peer whose next peer is <b>nil</b>, beginning with the receiver.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>linkAncestor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkAncestor:</b><i>anAncestor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets <i>anAncestor</i> as the ancestor of the receiver and its peers.&nbsp; Doesn't reset <i>anAncestor</i>'s descendant.&nbsp; Returns the receiver's previous ancestor.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ancestor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstAncestor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkDescendant</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>linkDescendant:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkDescendant:</b><i>aDescendant</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>aDescendant</i> directly below the receiver.&nbsp; <i>aDescendant</i> is made the receiver's descendant, and <i>aDescendant</i> and its peers set the receiver as their ancestor.&nbsp; The receiver's previous descendant is moved to the bottom of <i>aDescendant</i>'s sub-tree, that is, made the descendant of its last descendant.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Times">If <i>aDescendant</i> isn't an N3DShape (or subclass thereof), no change is made to the receiver's hierarchy.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>descendant</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastDescendant</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkAncestor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>linkPeer:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b><i>aPeer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>aPeer</i> as the receiver's next peer.&nbsp; <i>aPeer</i> brings with it any peers and descendants it may have.&nbsp; The receiver's former next peer is moved to the extreme right of <i>aPeer</i>'s peer group, made the next peer of <i>aPeer</i>'s last peer.&nbsp; If <i>aPeer</i> isn't an N3DShape (or subclass thereof), no change is made to the receiver's hierarchy.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>nextPeer</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextPeer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's next peer--the N3DShape to the right of the receiving N3DShape.&nbsp; If the receiver has no next peer, this method returns <b>nil</b>.&nbsp; See the class description for a discussion and diagram of the shape hierarchy.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>preRotateAngle:axis:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preRotateAngle:</b>(float)<i>angle</i> <b>axis:</b>(RtPoint)<i>referencePoint</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Rotates the receiver about an axis defined by <i>referencePoint</i> and the origin of its coordinate system.&nbsp; The receiving shape's transform matrix is premultiplied by the rotation matrix; that means the rotation is applied to the N3DShape's own coordinate system rather than that of its ancestor.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Both <i>referencePoint</i> and the origin are defined in the receiver's coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateAngle:axis:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>preScale:::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:</b>(float)<i>xScaleFactor</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float)<i>yScaleFactor</i></font><br>
+<font face="Times"><b>:</b>(float)<i>zScaleFactor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scales the receiver.&nbsp; A separate scale factor is applied to each of the receiving shape's dimensions.&nbsp; The receiving shape's transform matrix is premultiplied by the scaling matrix; that means the scaling is applied to the N3DShape's own coordinate system rather than that of its ancestor.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>preScaleUniformly:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b>(float)<i>scaleFactor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scales the receiver.&nbsp; This method works by invoking <b>preScale:::</b> with <i>scaleFactor</i> for all three arguments.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>preTranslate:::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preTranslate:</b>(float)<i>xTranslation</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float)<i>yTranslation</i></font><br>
+<font face="Times"><b>:</b>(float)<i>zTranslation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Translates the receiver.&nbsp; A separate translation is applied along each of the receiving shape's axes.&nbsp; The receiving shape's transform matrix is premultiplied by the translation matrix; that is, the translation is applied to the N3DShape's own coordinate system rather than that of its ancestor.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>translate:::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>previousPeer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's previous peer, the N3DShape to the immediate left of the receiver.&nbsp; If the receiver is the first peer in its peer group, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastPeer</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nextPeer</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the receiver from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeRenderDelegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRenderDelegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes and returns the render delegate for the receiver.&nbsp; See the class description for a discussion of the render delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderDelegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRenderDelegate</b>:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>render:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render:</b>(N3DCamera *)<i>theCamera</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method renders the N3DShape, its descendants, and its peers.&nbsp; The diagram shows the sequence of 3D Graphics Kit methods and RenderMan functions invoked by <b>render:</b>.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=477 height=306></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-11</b></font><font face="Times">.&nbsp; Sequence of 3D Kit and RenderMan calls in <b>render:</b></font>
+
+<p><br><br>
+
+<p><font face="Times">After invoking <b>RiAttributeBegin()</b>, this method invokes <b>set</b> on each of the N3DShape's N3DShaders, which in turn invoke the appropriate RenderMan shader function.&nbsp; Next, this method applies the shape's transformation by invoking <b>getTransformMatrix:</b> on <b>self</b> and applying the matrix returned in <b>RiConcatTransform()</b>.&nbsp; It then invokes <b>renderSelf:</b> (or <b>renderSelfAsBox:</b>) to actually render the shape using the transformation and shaders applied.</font>
+
+<p><font face="Times">After rendering the shape, this method invokes <b>render:</b> on the N3DShape's descendant, which thus inherits the shading and transformation of the ancestor.&nbsp; This method then invokes <b>RiTransformEnd()</b> and <b>RiAttributeEnd()</b> to remove the effect of its transformation and shaders, after which it invokes <b>render:</b> on the N3DShape's next peer.</font>
+
+<p><font face="Times">You don't invoke this method directly.&nbsp; It is invoked by the N3DShape's ancestor, previous peer, or N3DCamera when rendering.&nbsp; This method returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelfAsBox:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTransformMatrix:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>set</b> (N3DShader)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderDelegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderDelegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's rendering delegate, the N3DShape whose <b>renderSelf:</b> method is invoked each time the receiver's <b>render:</b> method is invoked.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRenderDelegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRenderDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderSelf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>(N3DCamera *)<i>theCamera</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This abstract method does nothing, returns <b>self</b>.&nbsp; Override this method to do custom rendering in a subclass of N3DShape.&nbsp; For example, to create a subclass of N3DShape that draws a sphere, you'd implement this method as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- renderSelf:(N3DCamera *)theCamera</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* attributes here apply to the receiver and descendants */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">RiAttributeBegin();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* attributes here apply only to the receiver */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">RiSphere(myRadius, myZMax, myZMin, mySweepAngle, RI_NULL);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">RiAttributeEnd();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A list of RenderMan geometric primitive functions is included in the class description at the beginning of this discussion.&nbsp; See <i>The RenderMan Companion</i> for a complete description of the RenderMan language and its various primitives.</font>
+
+<p><font face="Times">It's recommended that you use N3DShape methods for setting RenderMan attributes rather than placing function calls such as <b>RiRotate</b>() and <b>RiScale</b>() in <b>renderSelf:</b>.&nbsp; Using N3DShape API assures that you can query a shape for an accurate reflection of its state.&nbsp; If you choose to apply attributes directly in <b>renderSelf:</b>, make judicious use of <b>RiAttributeBegin</b>() and <b>RiAttributeEnd</b>().&nbsp; For example, note that in the above code attributes before <b>RiAttributeBegin</b>() apply to the receiver and its descendants; those after <b>RiAttributeBegin</b>() apply only to the receiver.</font>
+
+<p><font face="Times">To draw complex shapes, the <b>renderSelf:</b> method can include calls to any number and combination of RenderMan geometric primitive functions.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelfAsBox:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderSelfAsBox:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelfAsBox:</b>(N3DCamera *)<i>theCamera</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Renders the receiver's bounding box.&nbsp; If the receiver uses a render delegate, renders the delegate's bounding box.&nbsp; This method gets the points to use in drawing the box by invoking <b>getBoundingBox:</b> on <b>self</b>--thus, the box drawn includes the volume of the receiver and all its descendants.&nbsp; If the N3DShape is set to render itself as a box, this method is invoked instead of <b>renderSelf: </b>each time the shape's <b>render:</b> method is invoked.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBoundingBox:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawAsBox</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawAsBox:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rotateAngle:axis:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateAngle:</b>(float)<i>ang</i> <b>axis:</b>(RtPoint)<i>referencePoint</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Rotates the receiver about the axis defined by <i>referencePoint</i> and the origin of the receiver's coordinate system.&nbsp; The rotation is postmultiplied on the receiving shape's transform matrix; that means the rotation is applied to the ancestor's coordinate system before any other transformations in the receiver's coordinate system.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Both <i>referencePoint</i> and the origin are defined in the receiver's coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preRotateAngle:axis:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scale:::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:</b>(float)<i>xScaleFactor</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float)<i>yScaleFactor</i></font><br>
+<font face="Times"><b>:</b>(float)<i>zScaleFactor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scales the receiver.&nbsp; A separate scale factor is applied along each of the receiving shape's axes.&nbsp; The receiving shape's transform matrix is postmultiplied by the scaling matrix; that means the scaling is applied to the ancestor's coordinate system before any other transformations in the receiver's coordinate system.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scaleUniformly:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly:</b>(float)<i>scaleFactor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scales the receiver.&nbsp; This method works by invoking <b>scale:::</b> with <i>scaleFactor</i> used for all three arguments.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDrawAsBox:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawAsBox:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver to render only its bounding box.&nbsp; If <i>flag</i> is YES, <b>renderSelfAsBox:</b> is invoked instead of <b>renderSelf:</b> each time the N3DShape's <b>render:</b> method is invoked; if NO, <b>renderSelf:</b> is called.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">For maximum efficiency and minimum screen clutter, you may want to have an N3DShape render itself as a box, while its descendants and their peers remain invisible.&nbsp; This is useful when a user is interactively manipulating the shapes in an N3DCamera.&nbsp; To use this technique on a specific shape, invoke this method with flag YES, then send the message <b>[descendant setVisible:NO]</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawAsBox</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getBoundingBox:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelfAsBox:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRenderDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRenderDelegate:</b><i>aShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's rendering delegate, the N3DShape whose <b>renderSelf:</b> method is invoked each time the receiver's <b>render: </b>method is invoked.&nbsp; Returns the old render delegate.&nbsp; If <i>aShape</i> isn't a subclass of N3DShape, does nothing and returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRenderDelegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderDelegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setSelectable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectable:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Enables the receiver to be selected.&nbsp; N3DShapes are selected by N3DCamera's <b>selectShapesIn:</b> method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isSelectable</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectShapesIn:</b> (N3DCamera)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setShader:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setShader:</b><i>aShader</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets <i>aShader</i> as the receiver's shader of <i>aShader</i>'s type.&nbsp; An N3DShape can have shaders of six types:&nbsp; surface, displacement, light, imager, volume, and transformation.&nbsp; <i>aShader</i> must be an object of the N3DShader class (or subclass thereof).</font>
+
+<p><font face="Times">If you want your N3DShape to have various shader types (for example, surface, displacement, and light shaders), you allocate separate instances of N3DShader--each associated with a shader function of the appropriate type.&nbsp; You then invoke this method three separate times, once for each of the N3DShaders.</font>
+
+<p><font face="Times">This method returns the old shader of <i>aShader</i>'s type.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>shaderType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setShapeName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setShapeName:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's name to <i>aName</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>shapeName</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setSurfaceType:andDescendants:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSurfaceType:</b>(N3DSurfaceType)<i>theSurface</i> <b>andDescendants:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the surface type used by the interactive renderer.&nbsp; <i>theSurface</i> can be one of five enumerated values defined in the header file <b>3Dkit/next3d.h</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">N3D_PointCloud</font><br>
+<font face="Times">N3D_WireFrame</font><br>
+<font face="Times">N3D_ShadedWireFrame</font><br>
+<font face="Times">N3D_FacetedSolids</font><br>
+<font face="Times">N3D_SmoothSolids</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Four of these types are shown in the following illustration:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=280 height=287></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-12</b></font><font face="Times">.&nbsp; N3D_PointCloud, N3D_WireFrame, N3D_FacetedSolids, and N3D_SmoothSolids surface types</font>
+
+<p><br><br>
+
+<p><font face="Times">N3D_ShadedWireFrame renders an N3D_WireFrame surface with depth cueing.</font>
+
+<p><font face="Times">The surface type set by this method applies to the receiver and, if <i>flag</i> is YES, to its descendants and their peers.&nbsp; N3DCamera's <b>setSurfaceTypeForAll:chooseHider:</b> method invokes this method on the world shape.&nbsp; The photorealistic renderer uses the surface shader set with the <b>setShader:</b> method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>surfaceType</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSurfaceTypeForAll:chooseHider:</b> (N3DCamera)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setTransformMatrix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTransformMatrix:</b>(RtMatrix)<i>newTransform</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the receiver's current transform matrix with <i>newTransform</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCompositeTransformMatrix:relativeToAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub> <font face="Times"><b>concatTransformMatrix:premultiply:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>getInverseCompositeTransformMatrix:relativeToAncestor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub> <font face="Times"><b>preRotateAngle:axis:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preScaleUniformly:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preTranslate:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4><sub><img src="../../../Images/c11.gif" width=18 height=4></sub><font face="Times"><b>rotateAngle:axis:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scale:::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scaleUniformly:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>translate:::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setVisible:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If flag is YES, the receiver will be rendered each time its <b>render:</b> method is invoked.&nbsp; If NO, the receiver won't be rendered. The N3DShape's descendants (and their peers) also set their visibility to <i>flag</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isVisible</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>shaderType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>shaderType:</b>(SLO_TYPE)<i>type</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the id of the receiver's <i>type</i> N3DShader object.&nbsp; An N3DShape may have six different shaders, one for each of the standard RenderMan shader types.&nbsp; <i>type</i> may be one of the following six constants (defined in the header file <b>ri/slo.h</b>):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">SLO_TYPE_SURFACE</font><br>
+<font face="Times">SLO_TYPE_LIGHT</font><br>
+<font face="Times">SLO_TYPE_DISPLACEMENT</font><br>
+<font face="Times">SLO_TYPE_VOLUME</font><br>
+<font face="Times">SLO_TYPE_TRANSFORMATION</font><br>
+<font face="Times">SLO_TYPE_IMAGER</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setShader:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>shapeName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>shapeName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's name.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setShapeName:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>surfaceType</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(N3DSurfaceType)<b>surfaceType</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's surface type, which can be one of five enumerated values defined in the header file <b>3Dkit/next3d.h</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">N3D_PointCloud</font><br>
+<font face="Times">N3D_WireFrame</font><br>
+<font face="Times">N3D_ShadedWireFrame</font><br>
+<font face="Times">N3D_FacetedSolids</font><br>
+<font face="Times">N3D_SmoothSolids</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The default surface type is N3D_WireFrame.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSurfaceType:andDescendants:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>translate:::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>translate:</b>(float)<i>xTranslation</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float)<i>yTranslation</i></font><br>
+<font face="Times"><b>:</b>(float)<i>zTranslation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Translates the receiver.&nbsp; A separate translation is applied along each of the receiving shape's axes.&nbsp; The receiving shape's transform matrix is postmultiplied by the translation matrix; that means the translation is applied to the ancestor's coordinate system before any other transformations in the receiver's coordinate system.&nbsp; The resulting transformation is stored in the receiver's transform matrix.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>preTranslate:::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>ungroup</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ungroup</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the receiver from its hierarchy, and promotes its descendant and the descendant's peers to its place.&nbsp; Adjusts the descendant's transformations so that they remain in place relative to the world coordinate system.</font>
+
+<p><font face="Times">If the receiver has a previous peer and next peer, they are set to point to one another.&nbsp; The descendant is then made a peer of the previous peer by the <b>linkPeer:</b> method.&nbsp; If the receiver is at the far left of its peer group, the receiver's descendant is made its ancestor's descendant.&nbsp; The receiver's transform matrix is applied to its descendant and the descendants peers:&nbsp; thus, the descendants retain their orientation to the world coordinate system.&nbsp; The receiver's next peer, previous peer, descendant and ancestor are all set to <b>nil</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>group:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unlink</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unlink</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the receiver, its descendants, and the descendants' peers from the shape hierarchy.&nbsp; If the receiver is the direct descendant of its ancestor, its next peer is made the ancestor's descendant.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkPeer:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkDescendant:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>linkAncestor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the receiving N3DShape to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

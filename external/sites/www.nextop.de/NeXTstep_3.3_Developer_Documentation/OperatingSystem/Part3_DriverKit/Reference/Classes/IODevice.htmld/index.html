@@ -1,0 +1,1899 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Reference/Classes/IODevice.rtf -->
+<!-- Date: Sun Jun 28 20:11:15 1998 -->
+<head>
+<title>IODevice</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IODevice</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">driverkit/IODevice.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IODevice is an abstract class that is the superclass of all device driver classes. Functionality provided by IODevice includes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Standard driver startup and connection to driver objects</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Standard ways of getting and setting driver parameters</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Getting and setting standard information such as the instance's unit number</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Mapping IOReturn values to strings and to UNIX error numbers</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Adding and removing drivers from UNIX device switch tables</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Getting the Driver Kit version that the IODevice was compiled under</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Getting and Setting Parameters</b></font>
+
+<p><font face="Times">The IODevice methods <b>getCharValues:forParameter:count:</b>, <b>getIntValues:forParameter:count:</b>, <b>setIntValues:forParameter:count:</b>, and <b>setCharValues:forParameter:count:</b> provide a general, extensible means for user-level programs to get and set device-specific parameters for drivers that reside in the kernel. The general scheme is as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A parameter's value is either an array of <b>int</b>s or an array of <b>char</b>s. The maximum number of elements in a parameter array is IO_MAX_PARAMETER_ARRAY_LENGTH, a system constant (currently 512 though you shouldn't count on this value).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Parameters are specified with human-readable strings. For example, the parameter for getting an IODevice's unit number is named &quot;IOUnit&quot; and defined as the constant IO_UNIT.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Any subclass of IODevice can define any parameters it wishes. Any class that does so must implement the appropriate methods by which the parameters can be accessed (<b>getIntValues:...</b>, for example). If such a method is invoked with a parameter name that the class does not recognize, the method invocation should be passed up to <b>super</b>. If no classes recognize the parameter name, IODevice returns IO_R_UNSUPPORTED.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By sending messages to an IODeviceMaster object, a user program can find the desired instance of a device driver and get or set device-specific parameters.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Implementing a Subclass</b></font>
+
+<p><font face="Times">Subclasses of IODevice that are indirect or direct device drivers must implement the following methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">+ <b>deviceStyle</b></font><br>
+<font face="Times">+ <b>probe:</b></font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Indirect device drivers also need to implement the <b>requiredProtocols</b> class method.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If your class's direct superclass isn't IODevice, check the documentation for the superclass--it may implement some or all of these methods for you.</font>
+
+<p><font face="Times">During initialization, indirect and direct drivers must invoke the following methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>registerDevice</b></font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDeviceKind:</b></font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLocation:</b></font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setName:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>registerDevice</b> method should be invoked at the end of initialization. Generally, indirect and direct drivers also invoke <b>setUnit:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating, initializing, and freeing instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ probe:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromDeviceDescription:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Registering the class</font></td>
+
+<td><font face="Times">+ deviceStyle</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ registerClass:</font><br>
+<font face="Times">+ unregisterClass:</font><br>
+<font face="Times">+ requiredProtocols</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Registering the instance</font></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">registerDevice</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">unregisterDevice</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting and setting standard information</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDeviceKind:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">deviceKind</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setLocation:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">location</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setName:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setUnit:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">unit</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Converting an IOReturn value</font></td>
+
+<td><font face="Times">+ stringFromReturn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">stringFromReturn:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">errnoFromReturn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adding and removing the driver from UNIX device switch tables</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ addToBdevswFromDescription:open:close:strategy: dump:psize:isTape:</font><br>
+<font face="Times">+ addToCdevswFromDescription:open:close:read:write: ioctl:stop:reset:select:mmap:getc:putc:</font><br>
+<font face="Times">+ blockMajor</font><br>
+<font face="Times">+ characterMajor</font><br>
+<font face="Times">+ removeFromBdevsw</font><br>
+<font face="Times">+ removeFromCdevsw</font><br>
+<font face="Times">+ setBlockMajor:</font><br>
+<font face="Times">+ setCharacterMajor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting the Driver Kit version of the IODevice</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ driverKitVersion</font><br>
+<font face="Times">+ driverKitVersionForDriverNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Getting and setting parameter values</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCharValues:forParameter:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCharValues:forParameter:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntValues:forParameter:count:</font><br>
+<img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntValues:forParameter:count:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addToBdevswFromDescription:open:close:strategy:dump:psize:isTape:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>addToBdevswFromDescription:</b>(id)<i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>open:</b>(IOSwitchFunc)<i>openFunc</i></font><br>
+<font face="Times"><b>close:</b>(IOSwitchFunc)<i>closeFunc</i></font><br>
+<font face="Times"><b>strategy:</b>(IOSwitchFunc)<i>strategyFunc</i></font><br>
+<font face="Times"><b>dump:</b>(IOSwitchFunc)<i>dumpFunc</i></font><br>
+<font face="Times"><b>psize:</b>(IOSwitchFunc)<i>psizeFunc</i></font><br>
+<font face="Times"><b>isTape:</b>(BOOL)<i>isTape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the specified values to the <b>bdevsw</b> table. Drivers that have UNIX block entry points should use this method during initialization.</font>
+
+<p><font face="Times">The major number to use is taken from the value of the &quot;Block Major&quot; key in the class's configuration table. If &quot;Block Major&quot; isn't specified, the first available major number is used. If the entry is successfully added, this method invokes <b>setBlockMajor:</b>.</font>
+
+<p><font face="Times">If the entry was successfully added, this method returns YES; otherwise, it logs an error message and returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>blockMajor</b>, + <b>addToCdevswFromDescription:open:close:read:write:</b></font><br>
+<font face="Times"><b>ioctl:stop:reset:select:mmap:getc:putc:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addToCdevswFromDescription:open:close:read:write:ioctl:stop:reset:select:mmap:getc:putc:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>addToCdevswFromDescription:</b>(id)<i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>open:</b>(IOSwitchFunc)<i>openFunc</i></font><br>
+<font face="Times"><b>close:</b>(IOSwitchFunc)<i>closeFunc</i></font><br>
+<font face="Times"><b>read:</b>(IOSwitchFunc)<i>readFunc</i></font><br>
+<font face="Times"><b>write:</b>(IOSwitchFunc)<i>writeFunc</i></font><br>
+<font face="Times"><b>ioctl:</b>(IOSwitchFunc)<i>ioctlFunc</i></font><br>
+<font face="Times"><b>stop:</b>(IOSwitchFunc)<i>stopFunc</i></font><br>
+<font face="Times"><b>reset:</b>(IOSwitchFunc)<i>resetFunc</i></font><br>
+<font face="Times"><b>select:</b>(IOSwitchFunc)<i>selectFunc</i></font><br>
+<font face="Times"><b>mmap:</b>(IOSwitchFunc)<i>mmapFunc</i></font><br>
+<font face="Times"><b>getc:</b>(IOSwitchFunc)<i>getcFunc</i></font><br>
+<font face="Times"><b>putc:</b>(IOSwitchFunc)<i>putcFunc</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the specified values to the cdevsw table. Drivers that have UNIX character entry points should use this method during initialization.</font>
+
+<p><font face="Times">The major number to use is taken from the value of the &quot;Character Major&quot; key in the class's configuration table. If &quot;Character Major&quot; isn't specified, the first available major number is used. If the entry is successfully added, this method invokes <b>setCharacterMajor:</b>.</font>
+
+<p><font face="Times">If the entry was successfully added, this method returns YES; otherwise, it logs an error message and returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>characterMajor</b>, + <b>addToBdevswFromDescription:open:close:strategy:</b></font><br>
+<font face="Times"><b>dump:psize:isTape:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>blockMajor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>blockMajor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the block major number associated with this driver, or</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if this driver has no block major number. The block major number is set using <b>setBlockMajor:</b>, which is invoked by <b>addToBdevswFromDescription...</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>characterMajor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>characterMajor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the character major number associated with this driver, or</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if this driver has no character major number. The character major number is set using <b>setCharacterMajor:</b>, which is invoked by <b>addToCdevswFromDescription...</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deviceStyle</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (IODeviceStyle)<b>deviceStyle</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by subclasses to return the basic style of driver (IO_DirectDevice, IO_IndirectDevice, or IO_PseudoDevice). The meaning of direct, indirect, and pseudo device drivers is discussed in Chapters 1 and 2.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>deviceStyle</b> (IODirectDevice)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>driverKitVersion</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>driverKitVersion</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the version of the currently running DriverKit objects. The Driver Kit compares this value to the value returned by <b>driverKitVersionForDriverNamed:</b> to determine whether the driver is compatible with the driver environment.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>driverKitVersionForDriverNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>driverKitVersionForDriverNamed:</b>(char *)<i>driverName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the version of the Driver Kit that the specified driver was compiled for. The Driver Kit compares this value to the value returned by <b>driverKitVersion</b> to determine whether the driver is compatible with the driver environment.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>probe:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>probe:</b>(id)<i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing and returns NO. This method is invoked by the kernel (in the context of the kernel I/O task) to conditionally instantiate an instance of an IODevice subclass.</font>
+
+<p><font face="Times">This method should be implemented by every direct and indirect driver. It should determine whether it needs to instantiate itself, examining the hardware if appropriate. It should then allocate and initialize all the necessary instances for the specified <i>deviceDescription</i>. Should return YES if any IODevice objects were created; otherwise, this method should return NO.</font>
+
+<p><font face="Times">See Chapter 1 for information on when <b>probe:</b> is invoked.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>registerClass:</b><i>aClass</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the specified class to the kernel list of device driver classes.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <font face="Times">+ <b>unregisterClass:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeFromBdevsw</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>removeFromBdevsw</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the driver's entry from the bdevsw table. This method finds the driver's entry in the table by invoking <b>blockMajor</b>. If <b>blockMajor</b> is</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1, this method does nothing and returns NO. Otherwise, this method sets the block major number to</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1 (using <b>setBlockMajor:</b>) and returns YES.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeFromCdevsw</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>removeFromCdevsw</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the driver's entry from the cdevsw table. This method finds the driver's entry in the table by invoking <b>characterMajor</b>. If <b>characterMajor</b> is</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1, this method does nothing and returns NO. Otherwise, this method sets the character major number to</font> <img src="../../../../Images/c2D.gif" width=8 height=4><font face="Times">1 (using <b>setCharacterMajor:</b>) and returns YES.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>requiredProtocols</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (Protocol **)<b>requiredProtocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns NULL. Indirect device drivers should implement this method to return a NULL-terminated list of the protocols to which associated drivers must conform. Kernel-level indirect devices must implement this.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setBlockMajor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>setBlockMajor:</b>(int)<i>bmajor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the driver's block major number. You usually don't have to invoke this, since it's invoked by <b>addToBdevswFromDescription:...</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCharacterMajor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>setCharacterMajor:</b>(int)<i>cmajor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the driver's character major number. You usually don't have to invoke this, since it's invoked by <b>addToCdevswFromDescription:...</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>stringFromReturn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char *)<b>stringFromReturn:</b>(IOReturn)<i>returnValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a text string that describes the specified IOReturn value.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringFromReturn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unregisterClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (void)<b>unregisterClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the specified class from the kernel list of device driver classes. This method is invoked when a class is being removed from the address space of a program such as the kernel.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>registerClass:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deviceKind</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>deviceKind</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a string that identifies the object in general terms. For example, IOSCSIDisk objects return &quot;SCSIDisk&quot;. See the description of <b>setDeviceKind:</b> for more information<i>.</i></font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDeviceKind:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>errnoFromReturn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>errnoFromReturn:</b>(IOReturn)<i>returnValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a UNIX error number that corresponds to the specified IOReturn value. Subclasses that add additional IOReturn values should override this method and send an <b>errnoFromReturn:</b> to <b>super</b> for IOReturn values that the subclass doesn't handle.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees resources used by the IODevice and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getCharValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>getCharValues:</b>(unsigned char *)<i>array</i> <b>forParameter:</b>(IOParameterName)<i>parameter</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(unsigned int *)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Gets the array of character values associated with <i>parameter</i>. IODevice accepts the following character parameters: IO_CLASS_NAME (which returns [[self class] name]), IO_DEVICE_NAME (which returns [self name]), and IO_DEVICE_KIND (which returns [self deviceKind]).</font>
+
+<p><font face="Times">Subclasses should override this method if they support parameters not understood by the superclass. Here's an example of overriding this method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (IOReturn)getCharValues&nbsp;&nbsp; : (unsigned char *)parameterArray</font><br>
+<img src="../../../../Images/sp.gif" width=229 height=1><font face="Courier" size="-1">forParameter : (IOParameterName)parameterName</font><br>
+<img src="../../../../Images/sp.gif" width=278 height=1><font face="Courier" size="-1">count : (unsigned int *)count</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">const char&nbsp; *param;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int length;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int maxCount = *count;</font>
+
+<p><img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(strcmp(parameterName, my_PARAMETER_NAME) == 0){</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">param = _myParameter;&nbsp; /* _myParameter is an instance var */</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">length = strlen(param);</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if(length &gt;= maxCount) {</font><br>
+<img src="../../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">length = maxCount - 1;</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">*count = length + 1;</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">strncpy(parameterArray, param, length);</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">parameterArray[length] = '\0';</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return IO_R_SUCCESS;</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Pass parameters we don't recognize to our superclass. */</font><br>
+<img src="../../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return [super getCharValues:parameterArray</font><br>
+<img src="../../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">forParameter:parameterName count:count];</font><br>
+<img src="../../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns IO_R_SUCCESS if <i>parameter</i> is a valid parameter with character values that can be read; otherwise, returns IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntValues:forParameter:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCharValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>getIntValues:</b>(unsigned int *)<i>array</i> <b>forParameter:</b>(IOParameterName)<i>parameter</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(unsigned int *)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns IO_R_UNSUPPORTED. Subclasses should implement this method if necessary to return (in <i>array</i>) the array of integer values associated with <i>parameter</i>. See <b>getCharValues:forParameter:count:</b> for an example of implementing this kind of method. This method should return IO_R_SUCCESS if <i>parameter</i> is a valid parameter with integer values that can be read; otherwise, it should return IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharValues:forParameter:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns a newly allocated IODevice. Returns <b>self</b> if successful; otherwise, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Direct and indirect drivers should use <b>initFromDeviceDescription:</b> instead of this method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromDeviceDescription:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b><i>deviceDescription</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing and returns <b>self</b>. Subclasses that implement this method should have it initialize and return a newly allocated instance of the subclass, using the information from <i>deviceDescription</i>. This method should return <b>nil</b> on error.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromDeviceDescription:</b> (IODirectDevice)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>location</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>location</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the device-specific location of the IODevice--for example, &quot;0xf7f04000&quot;. See the description of <b>setLocation:</b> for information on how this location is used.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLocation:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the device-specific name of the IODevice--for example, &quot;sd0a&quot;. See the description of <b>setName:</b> for information on how the name is used.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setName:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerDevice</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>registerDevice</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Registers the IODevice in the current name space and adds a string to the system log that announces the device's registration. The IODevice must be ready to perform I/O, its name must have been set already using <b>setName:</b>, and its location (set with <b>setLocation:</b>) must be either valid or NULL.</font>
+
+<p><font face="Times">This method also probes all indirect IODevices that require this object's protocols, giving them a chance to connect to this object.</font>
+
+<p><font face="Times">Each IODevice should invoke this method at the end of its initialization. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">I/O can begin before this method returns.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unregisterDevice</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCharValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>setCharValues:</b>(unsigned char *)<i>array</i> <b>forParameter:</b>(IOParameterName)<i>parameter</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(unsigned int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns IO_R_UNSUPPORTED. Subclasses should implement this method if necessary to set (from <i>array</i>) the array of character values associated with <i>parameter</i>. See <b>getCharValues:forParameter:count:</b> for an example of implementing this kind of method. This method should return IO_R_SUCCESS if <i>parameter</i> is a valid parameter with character values that can be written; otherwise, it should return IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValues:forParameter:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDeviceKind:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setDeviceKind:</b>(const char *)<i>type</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets a string that identifies the object in general terms. For example, IOFrameBufferDisplay objects have a device kind of &quot;Linear Framebuffer&quot;. The string should be no longer than IO_STRING_LENGTH</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">1 characters. The standard parameter name IO_DEVICE_KIND refers to this string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deviceKind</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IOReturn)<b>setIntValues:</b>(unsigned int *)<i>array</i> <b>forParameter:</b>(IOParameterName)<i>parameter</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(unsigned int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns IO_R_UNSUPPORTED. Subclasses should implement this method if necessary to set (from <i>array</i>) the array of character values associated with <i>parameter</i>. See <b>getCharValues:forParameter:count:</b> for an example of implementing this kind of method. This method should return IO_R_SUCCESS if <i>parameter</i> is a valid parameter with integer values that can be written; otherwise, it should return IO_R_UNSUPPORTED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCharValues:forParameter:count:</b>,</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntValues:forParameter:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setLocation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setLocation:</b>(const char *)<i>location</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the device-specific location of the IODevice--for example, &quot;0xf7f04000&quot;. If the location is irrelevant, its value should be set to NULL. The location is used in the system log when this object is registered and unregistered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>location</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setName:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the device-specific name of the IODevice--for example, &quot;sd0a&quot;. The name should be no longer than IO_STRING_LENGTH</font> <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">1 characters.</font>
+
+<p><font face="Times">The specified name is used to identify this instance. For example, it's used in the system log when this object is registered and unregistered, and it's used by the UNIX command <b>iostat</b>. The name is also used by user-level programs to find this object, using the IODeviceMaster method <b>lookUpByDeviceName:objectNumber:deviceKind:</b>. The standard parameter name IO_DEVICE_NAME refers to this string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setUnit:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setUnit:</b>(unsigned int)<i>unit</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the IODevice's unit number, a device-specific number that can be used like a UNIX minor number.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unit</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>stringFromReturn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>stringFromReturn:</b>(IOReturn)<i>returnValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the text string that corresponds to the specified IOReturn value. Subclasses that add additional IOReturn values should override this method and invoke <b>stringFromReturn:</b> against the superclass for IOReturn values that the subclass doesn't handle.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>stringFromReturn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>unit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the IODevice's unit number, a device-specific number that can be used like a UNIX minor number.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUnit:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unregisterDevice</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>unregisterDevice</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the IODevice from the current name space.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>registerDevice</b></font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

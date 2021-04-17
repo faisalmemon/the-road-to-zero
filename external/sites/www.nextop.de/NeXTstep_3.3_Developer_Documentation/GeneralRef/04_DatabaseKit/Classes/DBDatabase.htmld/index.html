@@ -1,0 +1,2087 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Classes/DBDatabase.rtf -->
+<!-- Date: Sun Jun 28 20:04:14 1998 -->
+<head>
+<title>DBDatabase</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBDatabase</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/DBDatabase.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBDatabase class provides a means for reading a database model and for communicating with the adaptor that the model is built upon.&nbsp; For each model that you use in your application, you need a separate DBDatabase object.</font>
+
+<p><font face="Times">You rarely create a DBDatabase object directly in your application.&nbsp; Instead, you ask the DBDatabase class to find, and return to you, the object that corresponds to a particular model file.&nbsp; You do this by passing the name of the model as the first argument to the <b>findDatabaseNamed:connect:</b> class method.&nbsp; DBDatabase objects that are retrieved through this method are global to your application:&nbsp; All invocations of the method with the same model name argument will return the same DBDatabase object.</font>
+
+<p><font face="Times">Having found the DBDatabase object that you want, you use it to retrieve the entity objects that are stored in the model, through the <b>getEntities:</b> and <b>entityNamed:</b> methods.&nbsp; These entity objects, and the property objects that are gotten from them, are used to configure instances of (typically) DBRecordList, which are used to store data that's retrieved (or &quot;fetched&quot;) from the server.</font>
+
+<p><font face="Times">However, before data can be fetched, your DBDatabase object must be connected to the server.&nbsp; There are three methods that form this connection:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>findDatabaseNamed:connect:</b>.&nbsp; You can connect the object when you find it by passing YES as the second argument to <b>findDatabaseNamed:connect:</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>connect</b>.&nbsp; If you want to defer the connection--to just before the first data fetch, for example--you can pass NO to the <b>findDatabaseNamed:connect:</b> method and then connect later by sending a <b>connect</b> message to your DBDatabase object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>connectUsingAdaptor:andString:</b>.&nbsp; In forming a connection to the server, the <b>findDatabaseNamed:connect:</b> and <b>connect </b>methods use the adaptor name and login string information that's found in the DBDatabase's model.&nbsp; The <b>connectUsingAdaptor:andString:</b> method lets you override these default settings while attempting a connection.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The three tasks of (1) finding a model, (2) getting its entities, and (3) connecting to the server are, typically, the extent of a DBDatabase object's employment in an application.&nbsp; (Furthermore, if you use the Database Kit Palette to configure your application's user interface, these three tasks are taken care of for you.)&nbsp; All the other methods defined by DBDatabase either support these three operations or are designed to be used only if you need to initiate and control data transactions directly.</font>
+
+<p><font face="Times">There is, however, one more thing that the DBDatabase object does, albeit indirectly:&nbsp; It allows a delegate object that receives a series of messages that log watershed moments and allow some mediation if a transaction is confounded.&nbsp; See the delegate method descriptions at the end of this class description for more on information.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">id</font></td>
+
+<td><font face="Times"><b>delegate</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The object that receives notification messages</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Reporting what's available</font></td>
+
+<td><font face="Times">+ adaptorNames</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ databaseNamesForAdaptor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing an instance</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromFile:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Describing the model source</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">directory</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentAdaptorName</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">defaultAdaptorName</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">defaultLoginString</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentLoginString</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">loginStringForUser:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Describing the database model</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">entityNamed:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getEntities:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Revising the data dictionary</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">emptyDataDictionary</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">loadDefaultDataDictionary</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Connecting to the database</font></td>
+
+<td><font face="Times">+ findDatabaseNamed:connect:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">connect</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">connectUsingAdaptor:andString:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">disconnect</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">disconnectUsingString:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isConnected</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">connectionName</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing transactions</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">beginTransaction</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rollbackTransaction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">commitTransaction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isTransactionInProgress</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">areTransactionsEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">enableTransactions:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Using a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Evaluating an arbitrary string</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">evaluateString:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Controlling the user interface</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">arePanelsEnabled</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPanelsEnabled:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>adaptorNames</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char **)<b>adaptorNames</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a NULL-terminated array of strings that name the adaptors that are available to the DBDatabase class.&nbsp; The array is compiled by searching the application's main bundle and then the directories <b>~/Library/Adaptors</b>, <b>/LocalLibrary/Adaptors</b>, and finally <b>/NextLibrary/Adaptors</b>.&nbsp;&nbsp; The names in the array are given without pathnames and without the &quot;.adaptor&quot; file extensions.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>databaseNamesForAdaptor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>databaseNamesForAdaptor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char **)<b>databaseNamesForAdaptor:</b>(const char *)<i>anAdaptorName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a NULL-terminated array of strings that name the models that the named adaptor serves.&nbsp; The class constructs the list by searching the application's bundle and then the directories <b>~/Library/Databases</b>, <b>/LocalLibrary/Databases</b>, and finally <b>/NextLibrary/Databases</b>.&nbsp;&nbsp; The names in the array are given without pathnames and without the &quot;.dbmodel&quot; or &quot;.dbmodela&quot; file extentions.</font>
+
+<p><font face="Times">If the argument is NULL, the method returns the names of all the models it can find, regardless of the adaptors upon which they're built.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>adaptorNames</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>findDatabaseNamed:connect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>findDatabaseNamed:</b>(const char *)<i>modelName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>connect:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a DBDatabase object for the given model name.&nbsp; The model is searched for in the locations described in the <b>databaseNamesForAdaptor:</b> class method.&nbsp; Repeated invocations of this method with the same <i>modelName</i> argument will return the same DBDatabase object.</font>
+
+<p><font face="Times">If flag is YES, the object attempts to connect to the server that lies beneath the adaptor upon which the model is built.</font>
+
+<p><font face="Times">This method returns <b>nil</b> if the model wasn't found, or if a connection was attempted but failed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>databaseNamesForAdaptor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connectUsingAdaptor:andString:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>arePanelsEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>arePanelsEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the adaptor upon which the DBDatabase object is built is allowed to display panels in the user interface.&nbsp; By default, panels are enabled; you can disallow by passing NO to the <b>setPanelsEnabled:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPanelsEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>areTransactionsEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>areTransactionsEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBDatabase's adaptor allows transaction contexts to be established.&nbsp; The method returns NO if transactions aren't allowed or if the DBDatabase isn't currently connected to the server.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>enableTransactions:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>beginTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>beginTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Tells the adaptor to set up a transaction context.&nbsp; Exactly how the transaction is implemented depends on the server; typically, a virtual copy of subsequently fetched data is created (by the server), thus &quot;stabilizing&quot; the data while the transaction is in progress.&nbsp; When you've finished reading and modifying the data, you send <b>commitTransaction</b> to the DBDatabase, which attempts to write the data back to the server, or <b>rollbackTransaction</b>, which simply throws the copy away.&nbsp; You're allowed to set up only one transaction context at a time.</font>
+
+<p><font face="Times">Returns YES if the transaction context is successfully initiated; the method will fail, and return NO, if the adaptor doesn't allow transactions, if the DBDatabase isn't connected to the server, or if a transaction context has already been initiated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rollbackTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>commitTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>commitTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes a transaction started with <b>beginTransaction</b> to be committed.&nbsp; Any changes to the data that have been queued up since the previous <b>beginTransaction</b> will be irreversibly made in the database.&nbsp; Returns YES if the transaction was committed.&nbsp; If the server rejects the data,&nbsp; this method returns NO.</font>
+
+<p><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">A return of NO does <i>not</i> mean that the transaction has been closed.&nbsp; It remains open. That way, the application retains the option to take remedial action before trying again to commit.&nbsp; The transaction will remain open until <b>rollbackTransaction</b> is called.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>beginTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rollbackTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connect</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>connect</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Opens a connection to the server, using the default adaptor name and login string.&nbsp;&nbsp;&nbsp; Returns YES if the connection was successfully established by this method.&nbsp; Note well that this method returns NO if the DBDatabase is already connected.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultAdaptorName</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultLoginString</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disconnect</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectionName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const unsigned char *)<b>connectionName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the adaptor's current connection to the server (as defined by the adaptor itself).&nbsp; If the DBDatabase isn't connected, this returns an empty string.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>connectUsingAdaptor:andString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>connectUsingAdaptor:</b>(const char *)<i>adaptorName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Opens a connection to the server using the adaptor identified by <i>adaptorName</i>, and the login string <i>aString</i>.&nbsp; You must supply the adaptor name; if the login string <i>aString</i> is NULL, the method uses the default login string.&nbsp; You should only invoke this method if you want to connect to an adaptor other than the one named in the model through which the DBDatabase was created.&nbsp; For a &quot;normal&quot; connection, use the <b>findDatabaseNamed:connect:</b> class method, or the <b>connect</b> instance method.</font>
+
+<p><font face="Times">Returns YES if the connection is made.&nbsp; Note well that this method returns NO if the DBDatabase is already connected.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disconnect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disconnectUsingString:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>currentAdaptorName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>currentAdaptorName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the adaptor through which the DBDatabase is connected to the server.&nbsp; This method returns NULL if the DBDatabase isn't currently connected.</font>
+
+<p><font face="Times">Typically, the current adaptor is the same as the default adaptor--in other words, it's the adaptor that's named in the DBDatabase's model.&nbsp; The one case in which the current and default adaptors may differ is if the DBDatabase was connected through the <b>connectUsingAdaptor:andString:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultAdaptorName</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultLoginString</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentLoginString</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>currentLoginString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const unsigned char *)<b>currentLoginString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the login string that was used to form the connection to the server.&nbsp; If the DBDatabase isn't currently connected, this method returns NULL.</font>
+
+<p><font face="Times">Typically, the current login string is the same as the default login string--in other words, it's the login string that's named in the DBDatabase's model.&nbsp; The one case in which the current and default login strings may differ is if the DBDatabase was connected through the <b>connectUsingAdaptor:andString:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultLoginString</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultAdaptorName</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentAdaptorName</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>defaultAdaptorName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>defaultAdaptorName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the adaptor that's named in the DBDatabase's model.&nbsp; This is the adaptor that, by default, is used to form a connection to the server.&nbsp; To use some other adaptor, you must name it in an invocation of the <b>connectUsingAdaptor:andString:</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentAdaptorName</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultLoginString</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentLoginString</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>defaultLoginString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const unsigned char *)<b>defaultLoginString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the login string that's given in the DBDatabase's model.&nbsp; This is the login string that, by default, is used to form a connection to the server.&nbsp; To use some other string, you must pass it in an invocation of the <b>connectUsingAdaptor:andString: </b>method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentLoginString</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>defaultAdaptorName</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentAdaptorName</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBDatabase's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>directory</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>directory</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the full pathname of the model file that the DBDatabase represents.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>disconnect</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>disconnect</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Closes the connection to the database.&nbsp; Returns YES if the connection was successfully closed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disconnectUsingString:</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connect</b>, <b>+ findDatabaseNamed:connect:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>disconnectUsingString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>disconnectUsingString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Closes the connection to the database by sending it the command <i>aString</i>.&nbsp; Returns YES if the connection was successfully closed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>disconnect</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connect</b>, <b>+ findDatabaseNamed:connect:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>emptyDataDictionary</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>emptyDataDictionary</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the information that the DBDatabase found in its model.&nbsp; Specifically, the entity names (and property names), adaptor name, and login string are all erased.&nbsp; You should only need to invoke this method if you want to load the server's default data dictionary (and that should be rare).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadDefaultDataDictionary</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>enableTransactions:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>enableTransactions:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Controls the right to use transactions--that is, permits use of the methods <b>beginTransaction</b>, <b>commitTransaction</b>, and <b>rollbackTransaction</b>--according to the value of <i>flag</i>.&nbsp; Returns YES if the adaptor is able to comply, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areTransactionsEnabled</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>entityNamed:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;DBEntities&gt;)<b>entityNamed:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the entity named <i>aName</i> from the DBDatabase object's list of entities, or <b>nil</b> if it isn't found.&nbsp; The list of entities is gotten from the DBDatabase's model.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getEntities:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>evaluateString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>evaluateString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Asks the server to evaluate the string <i>aString</i>, which must be a valid statement in the server's query language.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">You can't use this method to fetch data into a DBRecordList; to retrieve fetched data through this method, you must capture it in a DBBinder object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Returns YES if the string is successfully evaluated.&nbsp; If the delegate implements the method <b>db:willEvaluateString:usingBinder:</b>, the evaluation is permitted only if the delegate returns YES to that notification.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>db:willEvaluateString:usingBinder:</b> (delegate method)</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=41></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>getEntities:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>getEntities:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fills <i>aList</i> with the DBEntities objects that represent the model's entities.&nbsp; The method also returns the List.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>entityNamed:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b>(const char *)<i>aPath</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the DBDatabase object from the database model information in the bundle identified by the path <i>aPath</i>. Model information (database name, login string, adaptor name, and entities) are read from the file.&nbsp; You rarely should need to invoke this method.&nbsp; In general, you should use the class method <b>findDatabaseNamed:connect:</b> to get a DBDatabase object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>findDatabaseNamed:connect:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isConnected</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isConnected</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBDatabase is connected to the server.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>findDatabaseNamed:connect:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>connect</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isTransactionInProgress</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isTransactionInProgress</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if a transaction has been started (by <b>beginTransaction</b>) and has not yet been committed or rolled back.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>beginTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rollbackTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>loadDefaultDataDictionary</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadDefaultDataDictionary</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the server's data dictionary (its list of entities and properties) and fills the DBDatabase with this information.&nbsp; You should always precede the method with an invocation of <b>emptyDataDictionary</b> (the DBDatabase's current dictionary must be empty for this method to succeed).&nbsp; This method has no effect if the DBDatabase object isn't connected to the server.&nbsp; You should rarely need to invoke this method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>emptyDataDictionary</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>loginStringForUser:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const unsigned char *)<b>loginStringForUser:</b>(const char *)<i>aUser</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the login string for the database server user identified by <i>aUser</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the model that the DBDatabase object represents.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <font face="Times">+ <b>findDatabaseNamed:connect:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>directory</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rollbackTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>rollbackTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the server to roll back all changes since a preceding <b>beginTransaction</b>.&nbsp; Returns YES if the rollback was successful. Returns NO if the server couldn't roll back the transaction, or if there wasn't a transaction in progress.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>beginTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbWillRollbackTransaction:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>anObject</i> the DBDatabase's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setPanelsEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPanelsEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Tells the DBDatabase to suppress (or not) the attention panels that it displays (in response to server errors, for example).&nbsp; By default, panels are enabled.&nbsp; You should disable a DBDatabase's panels if you're creating an application that must run on its own, or that doesn't have a graphic interface.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>arePanelsEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>db:notificationFrom:message:code:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>db:log:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>db:</b><i>aDatabase</i> <b>log:</b>(const char *)<i>fmt,</i> ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the DBDatabase experiences a particularly important, stressful, or otherwise notable moment.&nbsp; The second argument is a log entry that can be written to a file, displayed in the user interface, spat to standard out, or placed on a shelf along with the object's other trophies and mementoes.&nbsp; The format of the log entry argument is in the <b>varargs</b> style; the example implementation shown below demonstrates how to turn the argument into text (which, here, is displayed in the user interface):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@implementation Control (DatabaseDelegate)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- db:aDatabase log:(const char*)format, ...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">va_list args;</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">static char buf[1024];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">va_start(args, format);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">vsprintf(buf, format, args);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">if ([self respondsTo:@selector(setStringValue:)])</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">[self setStringValue:buf];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">syslog(LOG_NOTICE, buf);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The operations that cause this method to be invoked are</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Connecting to and disconnecting from the server</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Enabling transactions</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Initiating, committing, and rolling back a transaction</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Receiving a notification message (see the <b>db:notificationFrom:...</b> method)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Fetching and saving modified data (through a DBRecordList, for example)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Evaluating a string</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>db:notificationFrom:message:code:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>db:</b><i>aDatabase</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>notificationFrom:</b><i>anAdaptor</i></font><br>
+<font face="Times"><b>message:</b>(const unsigned char *)<i>msg</i></font><br>
+<font face="Times"><b>code:</b>(int)<i>errorCode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked (by the adaptor) when the server encounters an exceptional situation.&nbsp; The arguments are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>aDatabase</i> is the DBDatabase object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>anAdaptor</i> is the object that represents the adaptor.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>msg</i> is a string that describes the error.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>errorCode</i> is an integer constant, defined by the server, that represents the error.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The return value is ignored.</font>
+
+<p><font face="Times">If the delegate doesn't implement this method, and if panels are enabled, an attention panel that displays the <i>msg</i> and <i>errorCode </i>values is presented to the user.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPanelsEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>db:willEvaluateString:usingBinder:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>db:</b><i>aDb</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>willEvaluateString:</b>(const unsigned char *)<i>aString</i></font><br>
+<font face="Times"><b>usingBinder:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before <i>aString</i>, which must be expressed in the server's query language, is sent to the server for evaluation.&nbsp; Whether the string is actually sent depends on the value that's returned by this method:&nbsp; If this method returns YES (or if it isn't implemented), the string is sent; a return of NO prevents the evaluation.</font>
+
+<p><font face="Times">This method is invoked when the DBDatabase receives an <b>evaluateString:</b> message, and when the DBDatabase's adaptor is about to perform a data operation, such as selecting or updating.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>evaluateString:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dbDidCommitTransaction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbDidCommitTransaction:</b><i>aDatabase</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked just after a transaction is committed.&nbsp;&nbsp; The return value is ignored.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbWillCommitTransaction:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dbDidRollbackTransaction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbDidRollbackTransaction:</b><i>aDatabase</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked just after a transaction is rolled back.&nbsp; The return value is ignored.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbWillRollbackTransaction:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dbWillCommitTransaction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbWillCommitTransaction:</b><i>aDatabase</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked just before a transaction is committed.&nbsp;&nbsp; The return value is ignored.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbDidCommitTransaction:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dbWillRollbackTransaction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbWillRollbackTransaction:</b><i>aDatabase</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked just before a transaction is rolled back.&nbsp; The return value is ignored.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dbDidRollbackTransaction:</b> (delegate method)</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

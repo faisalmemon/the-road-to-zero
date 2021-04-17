@@ -1,0 +1,1305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXDataLink.rtf -->
+<!-- Date: Sun Jun 28 20:00:48 1998 -->
+<head>
+<title>NXDataLink</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXDataLink"></a><font face="Helvetica" size="+2"><b>NXDataLink</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXDataLink.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXDataLink defines a single data link between a selection in a source document and a dependent, dynamically updated selection in a destination document.</font>
+
+<p><font face="Times">A data link is typically created when linkable data is copied to the pasteboard.&nbsp; First, an NXSelection object describing the data is created.&nbsp; Then a link to that selection is created using <b>initLinkedToSourceSelection:managedBy:supportingTypes:count:</b>. The link can then be written to the pasteboard using <b>writeToPasteboard:</b>.&nbsp; Usually, after the link has been written to the pasteboard (or saved to a file using <b>writeToFile:</b>) the link is freed because it is generally of no further use to the source application.</font>
+
+<p><font face="Times">Once the data and link have been written to the pasteboard, they can be added to a destination document using the Paste and Link command.&nbsp; The implementation responding to this command will paste the data as usual (with the possible exception that the linked data will be pasted in a &quot;display&quot; format rather than a richer, editable format, since the data is to be dependent on the source data rather than fundamentally editable).&nbsp; The destination application will then read the link from the pasteboard using <b>initFromPasteboard:</b>, create an NXSelection describing the linked data within the destination document, and will add the link by sending <b>addLink:at:</b> to the document's link manager.</font>
+
+<p><font face="Times">When the link is added to the destination document's link manager, it becomes a <i>destination link</i>.&nbsp; At this time, the data links implementation establishes a connection with the source document's link manager, which automatically creates a <i>source link</i> in the source application; the source link refers to the source selection.&nbsp; Only applications that must update destination links continuously need to be aware of when source links are created; these applications can return YES in response to a <b>dataLinkManagerTracksLinksIndividually:</b> message, and then respond to <b>dataLinkManager:startTrackingLink:</b> messages to receive notifications that source links are created.</font>
+
+<p><font face="Times">A link that isn't managed by a link manager is a <i>broken link</i>.&nbsp; (Both source and destination links have link managers.)&nbsp; All links are broken links when they are created.&nbsp; Links can be explicitly broken (ensuring that they cause no updates) using the <b>break </b>method.&nbsp; Broken links (that aren't former source links) can be hooked up as destination links with the <b>addLink:at:</b> method.&nbsp; The disposition of a link (destination, source, or broken) can be retrieved with the <b>disposition</b> method.&nbsp; Most of the messages defined by the NXDataLink class can be sent to a link of any disposition, but some only make sense when sent to a link with a specific disposition; these are so noted in their method descriptions.</font>
+
+<p><font face="Times">Links of all dispositions (except links to files) maintain an NXSelection object referring to the link's selection in the source document; this selection is returned by the <b>sourceSelection</b> method.&nbsp; Links directly to files represent entire files rather than selections in a document; these links are created with <b>initLinkedToFile:</b> and have no source selection.</font>
+
+<p><font face="Times">Source and destination links also maintain an NXSelection describing how the data is presented in the destination document; this selection is returned by the <b>destinationSelection</b> method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing a link</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFromPasteboard:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initLinkedToFile:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initLinkedToSourceSelection:managedBy:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=333></td>
+
+<td><font face="Times">supportingTypes:count:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyFromZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Exporting a link</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeToPasteboard:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">saveLinkIn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeToFile:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Information about the link</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">manager</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">disposition</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">linkNumber</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Information about the link's source</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sourceAppName</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sourceFilename</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sourceSelection</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">openSource</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastUpdateTime</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">types</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Information about the link's destination</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">destinationAppName</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">destinationFilename</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">destinationSelection</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Updating the link's data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sourceEdited</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">updateDestination</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setUpdateMode:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">updateMode</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">break</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-break%5D"></a><font face="Helvetica"><b>break</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>break</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Breaks the link so the data referred to by its selection will not get updated.&nbsp; The link is removed from its link manager and its destination selection is freed.&nbsp; The link itself is not freed; if it wasn't formerly a source link it can be hooked back up again using NXDataLinkManager's <b>addLink:at:</b> method.&nbsp; Alternatively, it can be explicitly freed by the application if the application directly sent the <b>break</b> message, or freed by Applications's <b>delayedFree:</b> method on receiving a <b>dataLinkManager:didBreakLink:</b> notification that the link was broken.&nbsp; (This could happen in response to user input from the data link panel.)&nbsp; Returns <b>self</b> if sent to a destination link, does nothing and returns <b>nil</b> if sent to a broken link&nbsp; If sent to a source link, the message is forwarded to the destination link; it then returns <b>self</b> if the link is successfully broken and <b>nil</b> otherwise.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-copyFromZone:%5D"></a><font face="Helvetica"><b>copyFromZone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyFromZone:</b>(NXZone *)<i>zone</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a copy of the receiving data link allocated from <i>zone</i>.&nbsp; The copy is essentially linked to the source data, but not hooked up to the destination document.&nbsp; The copy has a copy of the receiver's source selection, has no destination selection, and its disposition is NX_LinkBroken.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLink:at:</b> (NXDataLinkManager)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-destinationAppName%5D"></a><font face="Helvetica"><b>destinationAppName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>destinationAppName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name (as returned by Application's <b>appName</b> method) of the application containing the destination link.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sourceAppName</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-destinationFilename%5D"></a><font face="Helvetica"><b>destinationFilename</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>destinationFilename</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the file name of the destination document, as set by any of several NXDataLinkManager methods for the destination document.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sourceFilename</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-destinationSelection%5D"></a><font face="Helvetica"><b>destinationSelection</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSelection *)<b>destinationSelection</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the destination selection, which describes how the linked data is represented in the destination document.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sourceSelection</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-disposition%5D"></a><font face="Helvetica"><b>disposition</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXDataLinkDisposition)<b>disposition</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Identifies the link as a source link, a destination link, or a broken link by returning one of the following values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NX_LinkInDestination</font><br>
+<font face="Times">NX_LinkInSource</font><br>
+<font face="Times">NX_LinkBroken</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLink:at:</b> (NXDataLinkManager),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataLinkManager:startTrackingLink:</b> (NXDataLinkManager delegate),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>break</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-initFromFile:%5D"></a><font face="Helvetica"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated NXDataLink instance from <i>filename</i>, a link that was previously saved using the <b>saveLinkIn:</b> or <b>writeToFile:</b> method.&nbsp; The new link is generally used by adding it to a destination document's link manager with <b>addLink:at:</b>. Returns the link if it is successfully initialized; otherwise frees the link and returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveLinkIn</b>:,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToFile:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLink:at:</b> (NXDataLinkManager)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-initFromPasteboard:%5D"></a><font face="Helvetica"><b>initFromPasteboard:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromPasteboard:</b>(Pasteboard *)<i>pasteboard</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated NXDataLink instance from the pasteboard <i>pasteboard</i>.&nbsp; The new link is generally used by adding it to a destination document's link manager with <b>addLink:at:</b>.</font>
+
+<p><font face="Times">In order for this method to succeed, a link must have been placed on the pasteboard using <b>writeToPasteboard:</b>, or the file name of a saved link (data of type NXFilenamePboardType with an extension of NXDataLinkFilenameExtension) must be on the pasteboard.</font>
+
+<p><font face="Times">Returns the link if it is successfully initialized; otherwise frees the link and returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToPasteboard:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">s<b>aveLinkIn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLink:at:</b> (NXDataLinkManager)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-initLinkedToFile:%5D"></a><font face="Helvetica"><b>initLinkedToFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initLinkedToFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated NXDataLink instance corresponding to the entire file <i>filename</i>.&nbsp; The link is identified as a link to a file because it has no source selection.&nbsp; Returns the link if it is successfully initialized; otherwise frees the link and returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLink:at:</b> (NXDataLinkManager),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToPasteboard:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sourceSelection</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-initLinkedToSourceSelection:managedBy:supportingTypes:count:%5D"></a><font face="Helvetica"><b>initLinkedToSourceSelection:managedBy:supportingTypes:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initLinkedToSourceSelection:</b>(NXSelection *)<i>selection</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>managedBy:</b><i>linkManager</i></font><br>
+<font face="Times"><b>supportingTypes:</b>(const char *const *)<i>newTypes</i></font><br>
+<font face="Times"><b>count:</b>(int)<i>numTypes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a newly allocated NXDataLink instance corresponding to a selection in the source document described by <i>selection</i>. <i>linkManager</i> is the source document's link manager.&nbsp; <i>newTypes</i> is an array (with size <i>numTypes</i>) of pointers to the pasteboard types that <i>linkManager</i>'s delegate is willing to provide (by <b>copyToPasteboard:at: cheapCopyAllowed:</b>) when a user of the link requests the data described by <i>selection</i>.</font>
+
+<p><font face="Times">Typically, when the user uses the Copy command to copy linkable data, this method should be invoked to create a link corresponding to the data.&nbsp; The new link should be added to the pasteboard (by <b>writeToPasteboard:</b>) and immediately freed, since it will usually be of no further use to the source document.&nbsp; Many links so placed on the pasteboard will go unused and will simply be discarded when the pasteboard changes.&nbsp; If state identifying <i>selection</i> must be saved in the source document, the link manager's delegate should find out whether the selection is used by implementing <b>dataLinkManager:startTrackingLink:</b> (to discover if the selection gets used) and the Pasteboard owner's method <b>pasteboardChangedOwner:</b> (to discover when the pasteboard has changed, precluding the use of a link that was placed there).</font>
+
+<p><font face="Times">Returns the new link.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyToPasteboard:at:cheapCopyAllowed:</b> (NXDataLinkManager delegate),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataLinkManager:startTrackingLink:</b> (NXDataLinkManager delegate),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pasteboardChangedOwner:</b> (Pasteboard owner)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-lastUpdateTime%5D"></a><font face="Helvetica"><b>lastUpdateTime</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(time_t)<b>lastUpdateTime</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the last time the link was updated.&nbsp; A link could be updated for many reasons; for example, a message could be sent to the source document's link manager telling it that its document was saved, or the link could be brought up to date with an <b>updateDestination</b> message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLinksVerifiedByDelegate:</b> (NXDataLinkManager),</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>documentSaved</b> (NXDataLinkManager)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-linkNumber%5D"></a><font face="Helvetica"><b>linkNumber</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXDataLinkNumber)<b>linkNumber</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a destination link's link-number, which may be useful in identifying the link.&nbsp; This number is constant through the life of the document, and unique among the document's links; it is not meaningful in source links.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-manager%5D"></a><font face="Helvetica"><b>manager</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXDataLinkManager *)<b>manager</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the link's link manager, or <b>nil</b> if it doesn't have one.&nbsp; (For example, returns <b>nil</b> if the link is broken.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-openSource%5D"></a><font face="Helvetica"><b>openSource</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openSource</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Opens the document corresponding to the link's source selection.&nbsp; This message only has meaning when sent to a destination link.&nbsp; Returns <b>self</b> if the source document is successfully opened, <b>nil</b> otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>app:openFile:type:</b> (Application delegate),</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>showSelection:</b> (NXDataLinkManager delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-saveLinkIn:%5D"></a><font face="Helvetica"><b>saveLinkIn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveLinkIn:</b>(const char *)<i>directoryName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Saves the link with a file name provided by the user.&nbsp; This method should be invoked through the Publish Selection command.&nbsp; It runs the SavePanel to prompt the user for a filename to save the link to.&nbsp; The SavePanel's initial directory is provided in <i>directoryName</i>.&nbsp; It then writes the link using the <b>writeToFile:</b> method.&nbsp; Returns <b>self</b> if the link is successfully saved; <b>nil </b>otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-setUpdateMode:%5D"></a><font face="Helvetica"><b>setUpdateMode:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUpdateMode:</b>(NXDataLinkUpdateMode)<i>mode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the link's update mode to <i>mode</i>, which must be one of the following values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NX_UpdateContinuously</font><br>
+<font face="Times">NX_UpdateWhenSourceSaved</font><br>
+<font face="Times">NX_UpdateManually</font><br>
+<font face="Times">NX_UpdateNever</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A mode of NX_UpdateContinuously updates the link's destination data every time a <b>sourceEdited</b> message is sent to the source link.&nbsp; A mode of NX_UpdateWhenSourceSaved updates the link's destination data every time a <b>documentSaved</b> (or related) message is sent to the source link's link manager.&nbsp; A mode of NX_UpdateManually updates the link's destination data every time a <b>updateDestination</b> message is sent to the destination link; this message can be sent programmatically or by the data link panel.&nbsp; A mode of NX_UpdateNever makes the link never update; once a destination link has been set to this mode, it can't be set back to any other mode until it is broken.&nbsp; (This mode is used for link buttons, for example.)</font>
+
+<p><font face="Times">This message only has meaning when sent to a destination link or a broken link.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateMode</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>break</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-sourceAppName%5D"></a><font face="Helvetica"><b>sourceAppName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>sourceAppName</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name (as returned by Application's <b>appName</b> method) of the application containing the source link.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>destinationAppName</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-sourceEdited%5D"></a><font face="Helvetica"><b>sourceEdited</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sourceEdited</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sent to a source link to inform it that the data referred to by its source selection has changed.&nbsp; If the link's destination link has been set to update continuously, the destination will be updated.</font>
+
+<p><font face="Times">This message only has meaning if sent to a source link.&nbsp; An application will only know of the source links that are being used in its document if the data link manager's delegate tracks links individually and responds to <b>dataLinkManager:startTrackingLink:</b> messages.&nbsp; However, an application doesn't need to track source links individually unless it wishes to allow continuous updating.</font>
+
+<p><font face="Times">Returns <b>self</b> unless the link's destination is set to continuously update and the update fails; in this case, the method returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataLinkManager:startTrackingLink:</b> (NXDataLinkManager delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-sourceFilename%5D"></a><font face="Helvetica"><b>sourceFilename</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>sourceFilename</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the file name of the source document, as set by any of several NXDataLinkManager methods for the source document.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>destinationFilename</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-sourceSelection%5D"></a><font face="Helvetica"><b>sourceSelection</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSelection *)<b>sourceSelection</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the source selection, or <b>nil</b> if the link refers to an entire file (in which case the source file can be retrieved from <b>sourceFilename</b>).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>destinationSelection</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-types%5D"></a><font face="Helvetica"><b>types</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const NXAtom *)<b>types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the pasteboard types that the source document can provide when the data for the link's source selection is required.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyToPasteboard:at:cheapCopyAllowed:</b> (NXDataLinkManager delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-updateDestination%5D"></a><font face="Helvetica"><b>updateDestination</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateDestination</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Updates the data referred to by the link's destination selection.&nbsp; This message can be sent to a source link or a destination link. If it's sent to a destination link, it will usually open the source document if it isn't already open.&nbsp; If it is sent to a source link, it will usually force the destination data to be immediately updated (which is generally less desirable than sending the source link a <b>sourceEdited</b> message, since that would allow the update to occur at the normal time).&nbsp; If the destination must be updated, it will be done by sending a <b>pasteFromPasteboard:at:</b> or <b>importFile:at:</b> message to the destination link manager's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pasteFromPasteboard:at:</b> (NXDataLinkManager delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-updateMode%5D"></a><font face="Helvetica"><b>updateMode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXDataLinkUpdateMode)<b>updateMode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the link's update mode, which determines when the data referred to by the link's destination selection will be updated. Possible return values are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NX_UpdateContinuously</font><br>
+<font face="Times">NX_UpdateWhenSourceSaved</font><br>
+<font face="Times">NX_UpdateManually</font><br>
+<font face="Times">NX_UpdateNever</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A description of these values can be found in the method description for <b>setUpdateMode:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-writeToFile:%5D"></a><font face="Helvetica"><b>writeToFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToFile:</b>(const char *)<i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the link into the file <i>filename</i>.&nbsp; This allows selections to be published by the file system; the link can be read in later using <b>initFromFile:</b>.&nbsp; Returns <b>self</b> if the link is successfully written, <b>nil</b> otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initLinkedToSourceSelection:managedBy:supportingTypes:count:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToPasteboard:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveLinkIn:</b>, </font><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromFile:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXDataLink-writeToPasteboard:%5D"></a><font face="Helvetica"><b>writeToPasteboard:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToPasteboard:</b>(Pasteboard *)<i>pasteboard</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the link onto the pasteboard <i>pasteboard</i>, allowing other applications to paste both copied data and the link referring to that data.&nbsp; When a link is written to a pasteboard, the type <b>NXDataLinkPboardType</b> must be included in the pasteboard's types, either using <b>declareTypes:num:owner:</b> or <b>addTypes:num:owner:</b>.&nbsp; The link can be read in later using <b>initFromPasteboard:</b>. Returns <b>self</b> if the link is successfully written, <b>nil</b> otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initLinkedToSourceSelection:managedBy:supportingTypes:count:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeToFile</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFromPasteboard:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

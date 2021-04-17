@@ -1,0 +1,1342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/16_Sound/Classes/NXSoundStream.rtf -->
+<!-- Date: Sun Jun 28 20:06:56 1998 -->
+<head>
+<title>NXSoundStream</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>NXSoundStream</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Inherits From:</font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Declared In:</font></td>
+
+<td><font face="Times">soundkit/NXSoundStream.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NXSoundStream is an abstract superclass; each subclass represents a single stream of sound samples.&nbsp; Currently, the Sound Kit provides two subclasses of NXSoundStream:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NXRecordStream represents sound recorded through the microphone jack.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NXPlayStream represents sound that's sent to sound output (the speaker, line-out jacks, and headphone jack).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The utility of NXSoundStream is invested in these subclasses; the NXSoundStream class itself simply defines methods that are common to them.&nbsp; In addition, you can't create useful subclasses of NXSoundStream yourself.</font>
+
+<p><font face="Times">Many applications needn't bother with NXSoundStream and its subclasses; in general, the methods provided by the Sound class suffice for applications that record and playback sounds.&nbsp; However, while Sound objects are easy to use, you can only record or play one sound at a time.&nbsp; The primary advantage of using NXSoundStream objects is that they let you record and playback multiple simultaneous sounds.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Streams and Devices</b></font>
+
+<p><font face="Times">To be of use, an NXSoundStream object must connect it to an instance of an NXSoundDevice subclass:&nbsp; For recording you connect an NXRecordStream to an instance of NXSoundIn, and for playback you connect NXPlayStreams to NXSoundOuts. The connection is formed as the NXSoundStream is initialized, through the <b>initOnDevice:</b> or <b>initOnDevice:withParameters: </b>method.&nbsp; The latter method lets you provide further configuration of the NXSoundStream through the use of an NXSoundParameters object.&nbsp; See the &quot;Types and Constants&quot; section for a list of parameter keys that are meaningful to an NXSoundStream.</font>
+
+<p><font face="Times">Any number of NXSoundStream objects can be connected to the same NXSoundDevice.&nbsp; For recording, this creates multiple copies of the same data--one copy for each NXRecordStream.&nbsp; These copies can even be spread across applications:&nbsp; All NXRecordStreams that are actively listening to the NXSoundIn device will receive the data that's being recorded, regardless of the application that they're in.&nbsp; Similarly, by connecting more than one NXPlayStream to an NXSoundOut object, you can mix several sounds during playback, possibly from different applications.&nbsp;&nbsp; See the NXSoundIn and NXSoundOut classes for more on simultaneous recording and playback.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Using a Sound Stream</b></font>
+
+<p><font face="Times">Having connected an NXSoundStream to an NXSoundDevice, you must tell the sound driver that you want the NXSoundStream to be involved in a recording or playback.&nbsp; This is done through the <b>activate</b> method.&nbsp; Activating an NXSoundStream uses valuable sound driver resources, thus it's best to activate the object just before you want to record or play a sound and deactivate it (through the <b>deactivate</b> method) soon after you've finished.</font>
+
+<p><font face="Times">Activating an NXSoundStream doesn't cause it to instantly start recording or playing.&nbsp; For this, you must enqueue sound buffers with the sound device:&nbsp; For recording you enqueue empty buffers that are filled with data and delivered back to your application, for playback you enqueue buffers filled with the data that you want to play.&nbsp; These tasks are performed through methods defined by the respective subclasses.&nbsp; The thing to keep in mind is that you must deliver these buffers constantly and steadily while the stream is running.&nbsp; This is the essential programming difference between using a Sound object and a NXSoundStream:&nbsp; A Sound object can be &quot;turned on&quot; and then ignored; an NXSoundStream demands constant attention.&nbsp; You can ameliorate this by supplying the NXSoundStream with large buffers, although this affords less dynamic control over the data in the stream.</font>
+
+<p><font face="Times">Important:&nbsp; An NXSoundStream's sound data buffers aren't the same as an NXSoundDevice's DMA transfer buffers.&nbsp; The former can be arbitrarily large; the latter is restricted to a page of virtual memory.</font>
+
+<p><font face="Times">As an NXSoundStream delivers sound buffers to the sound driver, the sound driver sends back Mach messages to the NXSoundDevice class, messages that report on a device's status and, for recording, deliver freshly recorded data.&nbsp; The NXSoundDevice class forwards this information to the delegate of the appropriate NXSoundStream.&nbsp; The delegate methods defined by the NXSoundStream class mark general watershed moments in a stream's career:&nbsp; when it starts, ends, pauses, and resumes.&nbsp; NXRecordStream and NXPlayStream augment this collection with record- and playback-specific notification methods.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Sound Stream Errors</b></font>
+
+<p><font face="Times">Most of NXSoundStream's methods communicate with the sound driver; many of these return NXSoundDeviceError error codes, which enumerate the situations that can thwart this communication.&nbsp; The NXSoundDeviceError codes are listed in NXSoundDevice class specification.&nbsp; NXSoundDevice's <b>textForError:</b> method translates these error codes into localized strings that you can display in your application.</font>
+
+<p><font face="Times">Other methods, such as <b>pause:</b> and <b>resume:</b>, also communicate with the sound driver, but don't return NXSoundDeviceError codes.&nbsp; However, such methods are susceptible to driver-communication errors and maintain a private variable to note their occurences.&nbsp; You should follow these methods (which are listed in NXSoundDevice and noted in the descriptions below) with invocation of <b>lastError</b>, a method that returns the last NXSoundDeviceError code that was provoked.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>delegate</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The receiver of notification messages.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=17></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Configuring an NXSoundStream</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initOnDevice:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initOnDevice:withParameters:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDevice:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">device</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">parameters</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Activating and Deactivating</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">activate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deactivate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Controlling the stream</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">abort:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">abortAtTime:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pause:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pauseAtTime:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resume:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resumeAtTime:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Querying the object</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">bytesProcessed</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isActive</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isPaused</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">streamPort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastError</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>abort:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abort:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Stops the NXSoundStream's playback or recording (after the current DMA transfer buffer has been processed), removes its remaining enqueued buffers, and sends the object's delegate a <b>soundStreamDidAbort:deviceReserved:</b> message.&nbsp; The argument is ignored--it's included so the method can be used in Interface Builder as an action method.&nbsp; You should follow this method with an invocation of <b>lastError</b> to see if an error occured.&nbsp;&nbsp; If the NXSoundStream isn't currently active, this does nothing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortAtTime:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>abortAtTime:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>abortAtTime:</b>(NXSoundStreamTime *)<i>time</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Schedules the NXSoundStream to be aborted (as described in the <b>abort</b>: method, above) at the time specified in the structure <i>time</i>.&nbsp; The NXSoundStreamTime structure is a cover for the familiar <b>timeval</b> structure:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct timeval {</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">long tv_sec;&nbsp;&nbsp; /* seconds */</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">long tv_usec;&nbsp; /* microseconds */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The value given by <i>time</i> is absolute; to abort a stream after a given number of seconds have elapsed, you need to know the present time.&nbsp; This can be retrieved through system calls such as <b>gettimeofday()</b>.</font>
+
+<p><font face="Times">This method returns immediately--it doesn't wait for the stream to abort.&nbsp; A <b>soundStreamDidAbort:deviceReserved: </b>message is sent to the NXSoundStream's delegate when the abortion is performed.</font>
+
+<p><font face="Times">You should follow this method with an invocation of <b>lastError</b> to see if an error occured.&nbsp; If the NXSoundStream isn't active when this method is invoked or when the specified time is met, this does nothing.&nbsp;&nbsp; If the specified time is in the past, the object is aborted immediately.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abort:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>activate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>activate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the NXSoundStream to the sound driver's list of active streams.&nbsp; You must invoke this method before you enqueue buffers on the stream.&nbsp; When you've finished recording or playing, you should send the NXSoundStream a <b>deactivate:</b> message.&nbsp; The NXSoundStream must be connected to an NXSoundDevice for this method to have an effect.&nbsp; An error code is returned.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deactivate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isActive</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>bytesProcessed</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>bytesProcessed</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of bytes of sound that the NXSoundStream has recorded or played since it was most recently activated. Returns 0 if the object is inactive, or if an error occurs.&nbsp; You should follow this method with an invocation of <b>lastError</b> to see if an error occured.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deactivate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>deactivate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Aborts the NXSoundStream's current activity and removes the object from the sound driver's list of active streams.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>activate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isActive</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXSoundStream's delegate.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>device</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>device</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXSoundDevice object that the NXSoundStream is connected to.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnDevice:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDevice:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deactivates and frees the NXSoundStream.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the NXSoundStream without connecting it to an NXSoundDevice.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnDevice:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDevice:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initOnDevice:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnDevice:</b><i>aDevice</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the NXSoundStream and connects it to <i>aDevice</i>, which should be an instance of an NXSoundDevice subclass. Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initOnDevice:withParameters:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnDevice:</b><i>aDevice</i> <b>withParameters:</b>(&lt;NXSoundParameters&gt;)<i>params</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the NXSoundStream, configures it by reading the appropriate parameters from&nbsp; <i>params</i>, and connects it to <i>aDevice</i>, which should be an instance of an NXSoundDevice subclass.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isActive</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isActive</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXSoundStream is currently activate; otherwise, NO.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>activate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isPaused</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isPaused</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXSoundStream is currently paused; otherwise, NO.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isActive</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lastError</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>lastError</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the most recent sound device error associated with the NXSoundSound.&nbsp; Many methods don't explicitly return an NXSoundDeviceError, but set an internal variable, which can be retrieved with this method.&nbsp; To retrieve localized text that describes the error, pass the value returned by this method to the <b>textForError:</b> NXSoundDevice class method.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times"><b>textForError:</b> (NXSoundDevice)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>parameters</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(&lt;NXSoundParameters&gt;)<b>parameters</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXSoundParameters object that was used to configure the NXSoundStream.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>pause:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Pauses the NXSoundStream's recording or playback (after the current DMA transfer buffer has been processed) and sends a <b>soundStreamDidPause:</b> message to the object's delegate.&nbsp; The argument is ignored--it's included so the method can be used in Interface Builder as an action method.&nbsp; You should follow this method with an invocation of <b>lastError</b> to see if an error occured.&nbsp;&nbsp; If the NXSoundStream isn't currently active or if it's already paused, this does nothing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pauseAtTime:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resume:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>pauseAtTime:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>pauseAtTime:</b>(NXSoundStreamTime *)<i>time</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Schedules the NXSoundStream to be paused (as described in the <b>pause:</b> method, above) at the time specified in the structure <i>time</i>.&nbsp; See the <b>abortAtTime:</b> method for an explanation of the NXSoundStreamTime type.&nbsp; This method returns immediately--it doesn't wait for the stream to pause.&nbsp; A <b>soundStreamDidPause:</b> message is sent to the NXSoundStream's delegate at the time that the stream is paused.&nbsp; This does nothing if the NXSoundStream isn't currently active.&nbsp; An error code is returned.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortAtTime:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resume:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resume:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resumes the NXSoundStream's recording or playback (after the current DMA transfer buffer has been processed) and sends a <b>soundStreamDidResume:</b> message to the object's delegate.&nbsp; The argument is ignored--it's included so the method can be used in Interface Builder as an action method.&nbsp; You should follow this method with an invocation of <b>lastError</b> to see if an error occured.&nbsp; If the NXSoundStream isn't currently active or if it isn't paused, this does nothing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resumeAtTime:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resumeAtTime:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>resumeAtTime:</b>(NXSoundStreamTime *)<i>time</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Schedules the NXSoundStream to be resumed (as described in the <b>resume:</b> method, above) at the time specified in the structure <i>time</i>.&nbsp; See the <b>abortAtTime:</b> method for an explanation of the NXSoundStreamTime type.&nbsp; This method returns immediately--it doesn't wait for the stream to resume.&nbsp; A <b>soundStreamDidResume:</b> message is sent to the NXSoundStream's delegate at the time that the stream is resumed.&nbsp; This does nothing if the NXSoundStream isn't currently active.&nbsp; An error code is returned.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortAtTime:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Assigns <i>anObject</i> as the NXSoundStream's delegate.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDevice:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>setDevice:</b><i>aDevice</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Connects the NXSoundStream to <i>aDevice</i>, which should be an instance of an NXSoundDevice subclass.&nbsp; If the NXSoundStream is currently active, it immediately starts transferring sound to or from the new device.&nbsp; An error code is returned.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnDevice:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>device</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>streamPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>streamPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port that the NXSoundStream uses to connect to the sound driver.&nbsp; You can't set this port yourself, and you normally don't need to note its identity; this method is provided in case you want to pass the port as an argument to a function such as <b>port_status()</b>.&nbsp; (Note that this device port isn't understood by the old Sound/DSP driver, and thus shouldn't be used as an argument to the sound driver functions.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented By The Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>soundStream:didCompleteBuffer:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStream:</b><i>sender</i> <b>didCompleteBuffer:</b>(int)<i>tag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the driver finishes playing or recording the sound buffer identified by <i>tag</i> (as assigned when the buffer was enqueued).&nbsp; The return value is ignored.</font>
+
+<p><font face="Times">See also:</font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordSize:tag:</b> (NXRecordStream),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>playBuffer:size:tag:</b> (NXPlayStream)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>soundStream:didStartBuffer:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStream:</b><i>sender</i> <b>didStartBuffer:</b>(int)<i>tag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the driver starts playing or recording the sound buffer identified by <i>tag</i> (as assigned when the buffer was enqueued).&nbsp;&nbsp;&nbsp; The return value is ignored.</font>
+
+<p><font face="Times">See also:</font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordSize:tag:</b> (NXRecordStream),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>playBuffer:size:tag:</b> (NXPlayStream)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>soundStreamDidAbort:deviceReserved:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStreamDidAbort:</b><i>sender</i> <b>deviceReserved:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the driver aborts the stream.&nbsp; If the stream was aborted because the NXSoundDevice was reserved, <i>flag</i> will be YES, otherwise if will be NO.&nbsp; The return value is ignored.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abort:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortAtTime:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReserved:</b> (NXSoundDevice)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>soundStreamDidPause:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStreamDidPause:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the NXSoundStream <i>sender</i> is paused.&nbsp; The return value is ignored.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pauseAtTime:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>soundStreamDidResume:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStreamDidResume:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the NXSoundStream <i>sender</i> is resumed.&nbsp; The return value is ignored.</font>
+
+<p><font face="Times">See also:</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resume:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resumeAtTime:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

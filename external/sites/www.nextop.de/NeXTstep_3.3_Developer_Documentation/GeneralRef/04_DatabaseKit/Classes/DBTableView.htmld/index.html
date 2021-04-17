@@ -1,0 +1,4178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Classes/DBTableView.rtf -->
+<!-- Date: Sun Jun 28 20:04:33 1998 -->
+<head>
+<title>DBTableView</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBTableView</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">ScrollView : View : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/DBTableView.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">DBTableView is a class that displays data in a table.&nbsp; It's similar to the Matrix class, but with two important differences:&nbsp; First, the data resides not in the DBTableView instance but in an external data source (usually a DBRecordList).&nbsp; Second, the table's rows and columns can be individually resized and repositioned by the user.</font>
+
+<p><font face="Times">A DBTableView object consists of up to three different views:&nbsp; A row title view, a column title view, and a content view.&nbsp; The content view can be made scrollable, horizontally, vertically, or both.&nbsp; The row and column title views display title information; the titles automatically scroll with their contents.&nbsp; Either or both the title views may be hidden.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Rows and Columns</b></font>
+
+<p><font face="Times">Although the appearance of the DBTableView is completely configurable, the usual arrangement is to have a fixed number of properties (fields) arranged as columns.&nbsp; Columns are therefore said to be the table's <i>static</i> axis.&nbsp; The rows, representing records, vary dynamically with the data source or with the qualifier used to select records.&nbsp; In that case, rows are said to be the table's <i>dynamic</i> axis.&nbsp; Usually such a DBTableView has column titles but no row titles. (If you ask for titles on a dynamic axis, the display shows consecutive integers, reporting the record's position in the data source.)</font>
+
+<p><font face="Times">When a new DBTableView is initialized, it has no rows and no columns, and neither rows nor columns are static.&nbsp; Sending it the first <b>addColumn:withTitle:</b> message both adds a column and makes columns static rather than dynamic.&nbsp; Similarly, sending it an <b>addRow:...</b> message would do the same thing for rows.&nbsp; A few applications may want to have both rows and columns static. In the common case (that is, static columns, dynamic rows), you call <b>addColumn:...</b> for each column, and then hook up a data source to provide the data.&nbsp; The rows will then be determined lazily at display time through the data source's <b>getValueFor:at:into:</b> method.&nbsp; Like a very lazy browser, the DBTableView doesn't cache data.</font>
+
+<p><font face="Times">There are two ways to refer to a static vector:&nbsp; by its row or column number, or by the property that it represents.&nbsp; Most of the methods that manipulate specific rows or columns refer to them by row number or column number.&nbsp; These numbers are like indexes to an array:&nbsp; if the user or the application moves a vectors to a new position, or deletes or inserts a vector, the row or column numbers change accordingly.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Formatting</b></font>
+
+<p><font face="Times">To format the display of its content view, a DBTableView uses subclasses of the abstract superclass DBFormatter (see the specifications of DBFormatter, DBTextFormatter, DBEditableFormatter, and DBImageFormatter).&nbsp; A formatter is responsible for taking the data from a particular row/column intersection within the DBTableView's grid and displaying it in a particular rectangle on the screen.&nbsp; That row/column intersection is in some ways like a Cell within a Matrix object,&nbsp; but there are important differences.&nbsp; Whereas a Cell actually stores its data, a formatter does not; a DBTableView must always refer to its data source to get the values it displays.</font>
+
+<p><font face="Times">Although a formatter displays the field at a single row/column intersection, its formatting rule applies to any of the fields having the same property.&nbsp; That is, in the usual case (with static columns), it applies to all the fields in a particular column.&nbsp; When rows are static, it applies to all the fields in a particular row.&nbsp; Since the formatter can apply either to a row or to a column, it is said to apply to a <i>vector</i>--that is, to one axis of the table (be it row or column).&nbsp; The DBVectors protocol provides methods for specifying the format of fields within a vector.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Response to User Action</b></font>
+
+<p><font face="Times">Although DBTableView is not a subclass of Control, it does implement the target/action paradigm, so that the target to be notified and the action to be performed can be selected in Interface Builder's Conection Inspector.&nbsp; Whenever the user double clicks, or selects a new row or column, whether by mouse action or by pressing the arrow keys, notification is sent to the delegate.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>delegate</b></font>
+
+<p><font face="Times">id <b>dataSource</b></font>
+
+<p><font face="Times">id <b>rowLayout</b></font>
+
+<p><font face="Times">id <b>columnLayout</b></font>
+
+<p><font face="Times">id <b>rowHeading</b></font>
+
+<p><font face="Times">id <b>columnHeading</b></font>
+
+<p><font face="Times">id <b>rowsClip</b></font>
+
+<p><font face="Times">id <b>columnsClip</b></font>
+
+<p><font face="Times">id <b>gridView</b></font>
+
+<p><font face="Times">id <b>rowSel</b></font>
+
+<p><font face="Times">id <b>columnSel</b></font>
+
+<p><font face="Times">id <b>cornerView</b></font>
+
+<p><font face="Times">id <b>target</b></font>
+
+<p><font face="Times">SEL <b>action</b></font>
+
+<p><font face="Times">SEL <b>doubleAction</b></font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The object notified of a double click or change of selection</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">dataSource</font></td>
+
+<td><font face="Times">The DBAssociation linking this view to its data</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">rowLayout</font></td>
+
+<td><font face="Times">Row layout information</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">columnLayout</font></td>
+
+<td><font face="Times">Column layout information</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">rowHeading</font></td>
+
+<td><font face="Times">Heading of the selected row</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">columnHeading</font></td>
+
+<td><font face="Times">Heading of the selected column</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">rowsClip</font></td>
+
+<td><font face="Times">Clip view for the row headings</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">columnsClip</font></td>
+
+<td><font face="Times">Clip view for the column headings</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">gridView</font></td>
+
+<td><font face="Times">The actual data view</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">rowSel</font></td>
+
+<td><font face="Times">The list of selected rows</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">columnSel</font></td>
+
+<td><font face="Times">The list of selected columns</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cornerView</font></td>
+
+<td><font face="Times">View in the upper left corner of the DBTableView</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">target</font></td>
+
+<td><font face="Times">The object that receives target/action messages</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">action</font></td>
+
+<td><font face="Times">Selector of the action of a target/action message</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">doubleAction</font></td>
+
+<td><font face="Times">Selector of the action of a double-click message</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up the DBTableView</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDataSource:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">dataSource</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting and reporting formatting</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">formatterAt::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">dynamicRows</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">dynamicColumns</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isRowHeadingVisible</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isColumnHeadingVisible</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntercell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getIntercell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setGridVisible:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isGridVisible</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptArrowKeys:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAcceptArrowKeys</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">allowVectorReordering:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAllowVectorReordering</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">allowVectorResizing:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAllowVectorResizing</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=108></td>
+
+<td><font face="Times">Notifying the DBTableView of change</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reloadData:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">layoutChanged:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rowsChangedFrom:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnsChangedFrom:to:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=108></td>
+
+<td nowrap><font face="Times">Handling rows and columns</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnCount</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rowCount</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnList</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rowList</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rowAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addColumn:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addColumn:withTitle:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addColumn:withFormatter:andTitle:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeColumnAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">moveColumnFrom:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRow:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRow:withTitle:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRow:withFormatter:andTitle:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeRowAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">moveRowFrom:to:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Editing support</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">editFieldAt::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEditable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isEditable</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">endEditing</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Handling the selection</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMode:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mode</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">allowEmptySel:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAllowEmptySel</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedRowCount</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedColumnCount</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedRow</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isRowSelected:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isColumnSelected:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deselectAll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectAll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRowSelectionOn::to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setColumnSelectionOn::to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectRow:byExtension:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectColumn:byExtension:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deselectRow:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deselectColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedRowAfter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedColumnAfter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction:to:forSelectedRows:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction:to:forSelectedColumns:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting DBTableView components</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rowHeading</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRowHeading:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRowHeadingVisible:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnHeading</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setColumnHeading:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setColumnHeadingVisible:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adjusting the view</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawSelf::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollClip:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isHorizScrollerVisible</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setHorizScrollerRequired:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isVertScrollerVisible</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setVertScrollerRequired:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">tile</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeTo::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollRowToVisible:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollColumnToVisible:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptsFirstResponder</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Transmitting action</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">action</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDoubleAction:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doubleAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">target</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">finishUnarchiving</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Appointing a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>acceptArrowKeys:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptArrowKeys:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Enables or disables the arrow keys for keystrokes the user makes within the DBTableView, as <i>flag</i> is YES or NO.&nbsp; The default when a DBTableView is initialized is YES.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">When at least one row is selected,</font> <sub><img src="../../../Images/cAD.gif" width=9 height=15></sub> <font face="Times">moves the selection to the row below the highest selected row, and</font> <sub><img src="../../../Images/cAF.gif" width=9 height=15></sub> <font face="Times">to the row above it (if necessary, scrolling to make the newly selected row visible); the horizontal arrows do nothing.&nbsp; Similarly, when at least one column is selected,</font> <img src="../../../Images/cAC.gif" width=14 height=7> <font face="Times">moves the selection to the column to the left of the leftmost selected column, and</font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Times">to the column to the right of it (if necessary, scrolling to make the newly selected column visible); the vertical arrows do nothing.&nbsp; In either case, arrows don't wrap around; if the selection is the first or last vector, pressing the arrow that points to the edge does nothing.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAcceptArrowKeys</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>acceptsFirstResponder</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>acceptsFirstResponder</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView accepts the role of first responder for its Window.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>action</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>action</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the selector for the action method that will be sent to the DBTableView's target when a target/action event occurs in the DBTableView.&nbsp; Usually, this is the action you selected in Interface Builder's Connections Inspector.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addColumn:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addColumn:</b><i>identifier</i> <b>at:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new static column into the DBTableView.&nbsp; The data for the new column will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; The new column will be inserted so that it precedes the column whose column-number (before the insertion) was <i>aPosition.</i>&nbsp;&nbsp; No title is assigned to the new column; its formatting will be handled by a default formatter.&nbsp;&nbsp;&nbsp; Return <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addColumn:withFormatter:andTitle:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addColumn:</b><i>identifier</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withFormatter:</b><i>formatter</i></font><br>
+<font face="Times"><b>andTitle:</b>(const char *)<i>title</i></font><br>
+<font face="Times"><b>at:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new static column into the DBTableView.&nbsp; The data for the new column will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; Text for the new column's title will be taken from <i>title</i>.&nbsp; The column's formatting will be handled by <i>formatter</i>.&nbsp; The new column will be inserted so that it precedes the column whose column-number (before the insertion) was <i>aPosition.</i></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addColumn:withTitle:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addColumn:</b><i>identifier</i> <b>withTitle:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Appends a new static column following the last existing column in the DBTableView.&nbsp; The data for the new column will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; Text for the new column's title will be taken from <i>title</i>.&nbsp; The new column has its own default DBTextFormatter.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addRow:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow:</b><i>identifier</i> <b>at:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new static row into the DBTableView.&nbsp; The data for the new row will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; The new row will be inserted so that it precedes the row whose row-number (before the insertion) was <i>aPosition.</i>&nbsp; No title is assigned to the new row; its formatting will be handled by a default formatter.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addRow:withFormatter:andTitle:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow:</b><i>identifier</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withFormatter:</b><i>formatter</i></font><br>
+<font face="Times"><b>andTitle:</b>(const char *)<i>title</i></font><br>
+<font face="Times"><b>at:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts a new static row into the DBTableView.&nbsp; The data for the new row will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; Text for the new row's title will be taken from <i>title</i>.&nbsp; The row's formatting will be handled by <i>formatter</i>.&nbsp; The new row will be inserted so that it precedes the row whose row-number (before the insertion) was <i>aPosition. </i>Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addRow:withTitle:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRow:</b><i>identifier</i> <b>withTitle:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Appends a new static row following the last existing row in the DBTableView.&nbsp; The data for the new row will come from the DBRecordList's attribute identified by <i>identifier</i>.&nbsp; Text for the new row's title will be taken from <i>title</i>.&nbsp; The new row gets it its own DBTextFormatter.&nbsp;&nbsp; If the DBTableView previously had no rows, adding a row makes rows static.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allowEmptySel:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowEmptySel:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Permits the user to deselect a vector (with shift-click) when that would leave nothing selected (or prohibits it, when <i>flag</i> is NO). The default is NO.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAllowEmptySel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allowVectorReordering:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorReordering:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Permits the user to drag a static vector to a new position within the DBTableView (or prohibits it, when <i>flag</i> is NO).&nbsp; The default is YES.&nbsp; To drag a vector, the user must click in the vector's title area (to select it) and then drag; it isn't possible to drag an untitled vector.&nbsp; The new ordering of vectors depends on the ordering of their midpoints.&nbsp; That is, if column B is to the right of column A, to reverse their positions the user must drag B until its midpoint is to the left of A's midpoint.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAllowVectorReordering</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>allowVectorResizing:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorResizing:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Permits the user to drag the edges of a static vector so as to change its height or width (or prohibits it, when <i>flag</i> is NO).&nbsp; To resize a vector, the user must start to drag from a position over the title's edge.&nbsp; In that position, the cursor changes to a double arrow (like this</font> <img src="../../../Images/cAB.gif" width=15 height=7> <font face="Times">for a column, or the corresponding vertical form for a row).&nbsp; It isn't possible to resize an untitled vector. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAllowVectorResizing</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>columnAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;DBTableVectors&gt;)<b>columnAt:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object that controls the formatting of the (static) column identified by <i>aPosition</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>columnCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>columnCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For a DBTableView with static columns, returns the number of columns.&nbsp; For a table view whose columns are dynamic, returns the number of columns in the data source.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>columnHeading</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>columnHeading</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the view that contains the DBTable's column headings.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>columnList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>columnList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a list of the identifiers of successive columns in the order that they currently appear in the DBTableView.&nbsp; (If columns aren't static, returns <b>nil</b>.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>columnsChangedFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>columnsChangedFrom:</b>(unsigned int)<i>startColumn</i> <b>to:</b>(unsigned int)<i>endColumn</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification that the data source has changed the values in a block of consecutive columns, so their display should be redrawn. The first of the changed columns is identified by <i>startColumn</i>, the last by <i>endColumn</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dataSource</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataSource</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an object that identifies the source from which the DBTableView is getting the data it's displaying.&nbsp; The returned object is a private subclass of DBAssociation; sending it a <b>fetchGroup</b> message will return the fetch group that is fetching the data.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBTableView's delegate.&nbsp; The delegate receives notification of a double click within the DBTableView, or any of the actions that cause a change in the row or column selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deselectAll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deselectAll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If empty selection is permitted, deselects all selected vectors and their row or column headings.&nbsp; If empty selection is not permitted, deselects all but the first.&nbsp; Notifies the deleegate by sending it a <b>tableViewDidChangeSelection:</b> message, and sends an action message to the DBTableViews's target.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowEmptySel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deselectColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deselectColumn:</b>(unsigned int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deselects the indicated column.&nbsp;&nbsp; However, if this is the only selected column and an empty selection is not allowed, does nothing.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deselectRow:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deselectRow:</b>(unsigned int)<i>row</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deselects the indicated row.&nbsp;&nbsp; However, if this is the only selected row and an empty selection is not allowed, does nothing. Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesAcceptArrowKeys</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesAcceptArrowKeys</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if arrow keys are enabled while the DBTableView is first responder.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptArrowKeys</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesAllowEmptySel</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">- (BOOL)<b>doesAllowEmptySel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView permits the user to deselect a vector (with Shift-click) when that would leave nothing selected.&nbsp; The default is NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowEmptySel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesAllowVectorReordering</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesAllowVectorReordering</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView permits the user to drag a static vector (row or column) to a new position.&nbsp; The default is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorReordering</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesAllowVectorResizing</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesAllowVectorResizing</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView permits the user to resize a static vector (row or column).&nbsp; The default is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorResizing</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doubleAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>doubleAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the selector for the action to be taken when the user double clicks within the DBTableView. (Usually, the action is interpreted as a request to edit a particular row/column intersection within the table.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>drawSelf::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:</b>(const NXRect *)<i>rects</i> <b>:</b>(int)<i>count</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked by various methods during scrolling or dragging to redraw the DBTableView.&nbsp; Your application shouldn't need to call this method directly.&nbsp; The argument <i>rects</i> is a list of pointers to the coordinates of rectangles in which the DBTableView is visible, while <i>count</i> is the number of such rectangles.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dynamicColumns</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>dynamicColumns</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView's columns are dynamic: that is, if the number of available columns is determined by the number of records available (in contrast to the static number of attributes).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>dynamicRows</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>dynamicRows</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView's rows are dynamic: that is, if the number of available rows is determined by the number of records available (in contrast to the static number of attributes).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>editFieldAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>editFieldAt:</b>(unsigned int)<i>row</i> <b>:</b>(unsigned int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects the entry at the indicated row and column, and invokes an editor.&nbsp; This achieves programmatically the effect the user would produce by double-clicking a field within the DBTableView's content view.</font>
+
+<p><font face="Times">Editing a field permits the user to change the text displayed there.&nbsp; When the user signals completion (by pressing Enter, or by clicking outside the field being edited), the editor may invoke methods to validate the revised field, and, if it is acceptable, copy its value to the table view's data source.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>endEditing</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>endEditing</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked automatically to redraw the field that has been edited at the conclusion of editing.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>finishUnarchiving</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>finishUnarchiving</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked as the last step in reading a DBTableView from an archive, to position the table view within its frame, layout its rows and columns and their headings (if appropriate), and initialize the selection of rows and columns.&nbsp; You shouldn't need to invoke this explicitly, since it is done automatically as part of the process of reading from an archive.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>formatterAt::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>formatterAt:</b>(unsigned int)<i>row</i> <b>:</b>(unsigned int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the formatter responsible for the field at the intersection of the indicatated row and column of the display.&nbsp; In a typical display,&nbsp; one axis (usually columns) is static and the other (usually rows) is dynamic.&nbsp; In that case, the same formatter applies throughout a given static position, and the dynamic index is immaterial.&nbsp; If there is no formatter explicitly assigned to the specified field, the method returns a default formatter for the type of data (text or image).</font>
+
+<p><font face="Times">You may want to override this method in order to apply different formatting rules.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the storage used by a DBTableView instance (by freeing the table view's various internal components before invoking the superclass's <b>free</b> method).&nbsp; Returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getIntercell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getIntercell:</b>(NXSize *)<i>theSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reports the number of pixels of spacing between adjacent cells, by setting <i>theSize</i> with the two values, for horizontal and vertical separation.&nbsp; The default is 2, 2.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>newFrame</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a DBTableView instance within the frame boundaries specified by <i>newFrame</i>.&nbsp; The new view has no rows or columns, and both axes are considered dynamic.&nbsp; Initially, there is no title; there are column headings but not row headings; vertical scrollbars but not horizontal ones.&nbsp; Reordering and resizing are enabled (but this has no effect until rows or columns become static).&nbsp; The arrow keys are enabled.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isColumnHeadingVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isColumnHeadingVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the column-heading view (containing the headings for all columns) is visible.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isColumnSelected:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isColumnSelected:</b>(unsigned int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the indicated column is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isEditable</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEditable</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView is editable.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEditable</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isGridVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isGridVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBTableView's grid lines are visible.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setGridVisible</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isHorizScrollerVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isHorizScrollerVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the horizontal scroller is visible.&nbsp; The default is NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizScrollerRequired</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isRowHeadingVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isRowHeadingVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the row-heading view (containing the headings for all rows) is visible.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isRowSelected:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isRowSelected:</b>(unsigned int)<i>row</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the indicated row is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isVertScrollerVisible</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isVertScrollerVisible</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the vertical scroller is visible.&nbsp; The default is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setVertScrollerRequired</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>layoutChanged:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>layoutChanged:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when there is any change in the number, position, width, height, titling, or format of the DBTableView's content, to update all of these.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>mode</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>mode</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the selection mode.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMode</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>moveColumnFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>moveColumnFrom:</b>(unsigned int)<i>oldPos</i> <b>to:</b>(unsigned int)<i>newPos</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the position of one of the static columns.&nbsp; The column to move is identified by <i>oldPos</i>, its position before the move.&nbsp; Its new position will be <i>newPos</i>.&nbsp; That is, in the new sequence, it will precede the column that used to be at <i>newPos</i>.&nbsp; The method also makes the corresponding change in the column headings.&nbsp; Returns YES if the move is permitted, NO otherwise.&nbsp; It is never permissible to move a dynamic column.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorReordering:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAllowVectorReordering</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>moveRowFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>moveRowFrom:</b>(unsigned int)<i>oldPos</i> <b>to:</b>(unsigned int)<i>newPos</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the position of one of the static rows.&nbsp; The row to move is identified by <i>oldPos</i>, its position before the move.&nbsp; Its new position will be <i>newPos</i>.&nbsp; That is, in the new sequence, it will precede the row that used to be at <i>newPos</i>.&nbsp; The method also makes the corresponding change in the row headings.&nbsp; Returns YES if the move is permitted, NO otherwise.&nbsp; It is never permissible to move a dynamic row.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>allowVectorReordering:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesAllowVectorReordering</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Unarchives a DBTableView object from the archive identified by <i>stream</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>reloadData:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reloadData:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Rechecks the layout and redraws the display.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeColumnAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeColumnAt:</b>(unsigned int)<i>columnPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deletes a static column (and its heading) from the display.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeRowAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRowAt:</b>(unsigned int)<i>rowPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deletes a static row (and its heading) from the display.&nbsp;&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rowAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;DBTableVectors&gt;)<b>rowAt:</b>(unsigned int)<i>aPosition</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object that controls the formatting of the static row whose row number is <i>aPosition</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rowCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>rowCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For a DBTableView with static rows, returns the number of rows.&nbsp; For a table view whose rows are dynamic, returns the number of rows in the data source.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rowHeading</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rowHeading</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the view that contains the DBTableView's row headings.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rowList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rowList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a list of the identifiers of successive static rows in the order that they currently appear in the DBTableView.&nbsp; (If rows aren't static, returns <b>nil</b>.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rowsChangedFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rowsChangedFrom:</b>(unsigned int)<i>startRow</i> <b>to:</b>(unsigned int)<i>endRow</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification that the data source has change the values in a block of rows, so their display should be redrawn.&nbsp; The first of the changed rows is identified by <i>startRow</i>, and the last by <i>endRow</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scrollClip:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollClip:</b><i>aClip</i> <b>to:</b>(const NXPoint *)<i>newOrigin</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the portion of the content of the clip view <i>aClip</i> that is visible.&nbsp; The change makes the position <i>newOrigin</i> (in the content view's coordinates) appear at the clip view's origin (that is, its lower left corner).&nbsp; This message is usually sent automatically, in response to scrolling in the view aClip.&nbsp; It is used to coordinate the scrolling of the content view and the two heading views with a table view, or when the arrow keys make the selected portion of the view outside the clip view.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scrollColumnToVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnToVisible:</b>(unsigned int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the content view and column headings horizontally so that the requested column is visible.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scrollRowToVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollRowToVisible:</b>(unsigned int)<i>row</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the content view and row headings vertically so that the requested row is visible.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectAll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Provided the DBTableView is in list mode (permitting multiple selection), selects all rows and columns and their headings. Notifies the delegate by sending it a <b>tableViewDidChangeSelection:</b> message.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectColumn:byExtension:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectColumn:</b>(unsigned int)<i>column</i> <b>byExtension:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects the column (and its heading) identified by <i>column</i>.&nbsp; When <i>flag</i> is YES and the DBTableView's mode permits multiple selection, includes <i>column</i> in the set of selected columns.&nbsp; Otherwise, this method deselects other columns.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the column number of the selected column.&nbsp; Column numbers are successive integers starting at 0, for the columns actually displayed, in their current left-to-right order in the display.&nbsp; Returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 of no column is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedColumnAfter:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>selectedColumnAfter:</b>(unsigned int)<i>aColumn</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the column number of the first selected column that is further to the right than <i>aColumn</i>.&nbsp; If <i>aColumn</i> is DB_NoIndex and there is at least one selected column, returns the first selected column.&nbsp; If no column is selected, or there is no selected column to the right of <i>aColumn</i>, returns DB_NoIndex.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedColumnCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>selectedColumnCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of selected columns.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedRow</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedRow</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the row number of the selected row.&nbsp; Row numbers are successive integers starting at 0, for the rows actually displayed, in their current top-to-bottom order in the display.&nbsp; Returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no row is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectRow:byExtension:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectRow:</b>(unsigned int)<i>row</i> <b>byExtension:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects the row (and its heading) identified by <i>row</i>.&nbsp; When <i>flag</i> is YES and the DBTableView's mode permits multiple selection, includes <i>row</i> in the set of selected rows.&nbsp; Otherwise, this method deselects other rows.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedRowAfter:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>selectedRowAfter:</b>(unsigned int)<i>aRow</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the row number of the first selected row that is further down than <i>aRow</i>.&nbsp; If <i>aRow</i> is DB_NoIndex and there is at least one selected row, returns the first selected row.&nbsp; If no row is selected, or there is no selected row lower than <i>aColumn</i>, returns DB_NoIndex.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedRowCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>selectedRowCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of selected rows.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sendAction:to:forSelectedColumns:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:</b>(SEL)<i>anAction</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>to:</b><i>anObject</i></font><br>
+<font face="Times"><b>forSelectedColumns:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends the message <i>anAction</i> to the object <i>anObject</i> once for each column (when flag is NO) or once for each selected column (when flag is YES).&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sendAction:to:forSelectedRows:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:</b>(SEL)<i>anAction</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>to:</b><i>anObject</i></font><br>
+<font face="Times"><b>forSelectedRows:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends the message <i>anAction</i> to the object <i>anObject</i> once for each row (when flag is NO) or once for each selected row (when flag is YES).&nbsp;&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action method that will be sent to the DBTableView's target when a target/action event occurs in the DBTableView.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setColumnHeading:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setColumnHeading:</b><i>newColumnHeading</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the view that contains the DBTable's column headings.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>columnHeading</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setColumnHeadingVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setColumnHeadingVisible:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the DBTableView to include a heading view across the top of the columns (when <i>flag</i> is YES), or to omit it (when <i>flag</i> is NO).&nbsp; This in turn causes the DBTableView to recompute its layout and redisplay in response to the change,</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setColumnSelectionOn::to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setColumnSelectionOn:</b>(unsigned int)<i>start</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(unsigned int)<i>end</i></font><br>
+<font face="Times"><b>to:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects (when <i>flag</i> is YES) or deselects (when <i>flag</i> is NO) the block of columns from <i>start</i> to <i>end</i>, inclusive.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDataSource:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDataSource:</b><i>aSource</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>aSource</i> the data source from which the DBTableView gets its values, and redisplays the table.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>delegate</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>delegate</i> the DBTableView's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDoubleAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action method that will be sent to the DBTableView's target when there's a double-click in the DBTableView.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setEditable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEditable:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Permits or prohibits editing (as <i>flag</i> is YES or NO).&nbsp; The default is YES.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEditable</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setGridVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setGridVisible:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes grid lines between adjacent rows and columns of the content view visible or not (as <i>flag</i> is YES or NO).&nbsp; The space the gridlines use is in addition to the intercell spacing. (Row and column headings always have a separating line, regardless of whether there's a grid in the content view.) Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isGridVisible</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntercell:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setHorizScrollerRequired:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizScrollerRequired:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Includes or omits a horizontal scroller along the lower edge of the DBTableView, as <i>flag</i> is YES or NO.&nbsp; Including a scroller takes space away from the area otherwise available for the content display.&nbsp; When a scroller is included, it contains a slider and scroll buttons when the total width of the columns exceeds the width of the display; at other times it's blank.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isHorizScrollerVisible</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setIntercell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntercell:</b>(const NXSize *)<i>aSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the number of pixels that separate adjacent rows and columns.&nbsp; The argument <i>aSize</i> specifies two values, for horizontal and vertical separation.&nbsp; When gridlines are used, the space they use is in addition to the intercell spacing.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setMode:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMode:</b>(int)<i>newMode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the DBTableView's selection mode.&nbsp; The possible values are member of the enumeration set DBSelectionType, to wit:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_LISTMODE</font></td>
+
+<td><font face="Times">Shift-clicking a vector adds it to the current selection if it is not already selected, or removes it if it is. (Deselecting a vector may not be permitted if it is the only selected vector and empty selection is not permitted.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RADIOMODE</font></td>
+
+<td><font face="Times">Selecting a vector automatically deselects the previous selection.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NOSELECT</font></td>
+
+<td><font face="Times">Selecting a vector is not permitted.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRowHeading:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRowHeading:</b><i>newRowHeading</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the view that contains the DBTable's row headings.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rowHeading</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRowHeadingVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRowHeadingVisible:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the DBTableView to include a heading view down the left side of the rows (when <i>flag</i> is YES), or to omit it (when <i>flag </i>is NO).&nbsp; Changing the row heading in turn causes the DBTableView to recompute its layout and redisplay in response to the change.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRowSelectionOn::to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRowSelectionOn:</b>(unsigned int)<i>start</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(unsigned int)<i>end</i></font><br>
+<font face="Times"><b>to:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects (when <i>flag</i> is YES) or deselects (when <i>flag</i> is NO) the block of rows from <i>start</i> to <i>end</i>, inclusive.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>anObject</i> the target of a target/action message sent in response to an event within the DBTableView.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setVertScrollerRequired:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setVertScrollerRequired:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Includes or omits a vertical scroller along the left edge of the DBTableView, as <i>flag</i> is YES or NO.&nbsp; Including a scroller takes space away from the area otherwise available for the content display.&nbsp; When a scroller is included, it contains a slider and scroll buttons while when the total width of the columns exceeds the width of the display; at other times it's blank.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isVertScrollerVisible</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo:</b>(NXCoord)<i>width</i> <b>:</b>(NXCoord)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resets the overall size of the DBTableView, and then recomputes its layout and redisplays it.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>target</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object that is the target for a target/action event in the DBTableView.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>tile</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tile</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Places the DBTableView's three component views (content, column heading, and row heading--or as many of them as have been made visible) within the DBTableView's frame.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Archives the DBTableView object by writing it to the NXTypedStream identified by <i>stream</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>tableView:movedColumnFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tableView:</b><i>sender</i> <b>movedColumnFrom:</b>(unsigned int)<i>old</i> <b>to:</b>(unsigned int)<i>new</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the user changes the position of a static column.&nbsp; By implementing this method, the delegate can take corresponding action of its own; for example, it might recompute a sort of the displayed record reflecting the changed sequence of columns.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>tableView:movedRowFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tableView:</b><i>sender</i> <b>movedRowFrom:</b>(unsigned int)<i>old</i> <b>to:</b>(unsigned int)<i>new</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the user changes the position of a static rows.&nbsp; By implementing this method, the delegate can take corresponding action of its own.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>tableViewDidChangeSelection:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tableViewDidChangeSelection:</b><i>aTableView</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the user has changed the selection.&nbsp; The delegate may wish to respond by making corresponding changes to another display that is synchronized with the TableView that sent the message.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>tableViewWillChangeSelection:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>tableViewWillChangeSelection:</b><i>aTableView</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the user has taken action to change the selection.&nbsp; By implementing this method, the delegate has a chance to interpose some test of its own.&nbsp; Returning YES permits the change in selection to proceed.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

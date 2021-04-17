@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/I_ListingsForTimingClass.rtf -->
+<!-- Date: Sun Jun 28 19:37:04 1998 -->
+<head>
+<title>I_ListingsForTimingClass</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Listings for the Timing Class</b></font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Timing.h</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">This class implements a simple interval timer to aid in measuring drawing performance.&nbsp; It'll measure either wall or CPU time spent within an interval delineated by a pair of messages to the Timing object.&nbsp; It's most useful in situations where you need to measure not only the time spent within the process, but also the time spent in other processes, most notably the Window Server.&nbsp; CPU time includes process time, system time on behalf of the process, and Window Server time on behalf of the process.&nbsp; The results are most accurate if averaged over a number of passes through the interval, and the Timing object will keep track of:&nbsp; number of times entered, cumulative elapsed time, and average elapsed time.</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Use the +newWithTag: method to create a Timing object.</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Use the -reset message to reset the Timing object before entering the timing interval for the first time.</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">A timing interval is delineated by an -enter: message and a -leave message.&nbsp; enter: takes a single argument that specifies either WALLTIME or PSTIME.</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Use the -summary: method to have the Timing object print out a summary to the stream that is passed in as the argument to summary:.&nbsp; Alternatively, the Timing object provides methods for querying it for the appropriate values.</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Here's an example of its use.</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">- action4:sender</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int i=100;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">id t4 = [Timing newWithTag:4];</font>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[t4 reset];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self lockFocus];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">while(i--){</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[t4 enter:PSTIME];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[self drawCachedLines];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[[self window] flushWindow];</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[t4 leave];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self unlockFocus];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[t4 summary:stream];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self addSummary];</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*/</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;objc/Object.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#include &lt;sys/time.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;sys/resource.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define PSTIME 0</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define WALLTIME 1</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Timing : Object</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct timezone tzone;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct timeval realtime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct rusage rtime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double synctime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; stime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double cumWallTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* cum. wall time app + server */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double cumAppTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* cum. app process + system time */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double cumPSTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* cum. Server time on behalf of the app */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double avgWallTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* (cum. wall time app + server)/</font><br>
+<img src="../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">cumTimesEntered */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double avgAppTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* (cum. app process + system time)/</font><br>
+<img src="../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">cumTimesEntered */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double avgPSTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* (cum. Server time on behalf of the</font><br>
+<img src="../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">app)/cumTimesEntered */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double tare;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* used to account for ipc overhead */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; cumTimesEntered;&nbsp; /* number of times timing interval entered</font><br>
+<img src="../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">since last reset */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; tag;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* identifies timer object */</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp; wallTime;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* flag to specify whether wall or process</font><br>
+<img src="../../Images/sp.gif" width=348 height=1><font face="Courier" size="-1">time is desired */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+newWithTag:(int) aTag;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Creates a new timing object with tag = aTag */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-enter:(int)wt;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Starts a timing interval measuring either elapsed wall time if</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">wt ==WALLTIME or elapsed process time + system time + Server time</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">if wt == PSTIME.&nbsp; Sets the wallTime flag to be equal to wt. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-wallEnter;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Called by enter: if WALLTIME is desired.&nbsp; You should call enter:</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">rather than call this method directly. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-psEnter;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Called by enter: if PSTIME is desired.&nbsp; You should call enter:</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">rather than call this method directly. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-wallLeave;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Called by leave if WALLTIME was specified on the previous enter.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">You should call leave rather than call this method directly.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">Updates cumWallTime based on the elapsed time. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-psLeave;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Called by leave if PSTIME was specified on the previous enter.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">You should call leave rather than call this method directly.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">Updates cumPSTime and cumAppTime based on the elapsed time. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-leave;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Call leave to leave a timing interval.&nbsp; Depending on whether</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">WALLTIME or PSTIME was specified on the previous call to enter:,</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">leave will invoke wallLeave or psLeave. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-reset;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Resets the values of cumWallTime, cumPSTime, cumAppTime,</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">cumTimesEntered and other variables to 0 in preparation for</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">measuring a series of timing intervals.&nbsp; Should be called prior to</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">running a timing test. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-avgElapsedTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Calculates averages.&nbsp; Called automatically by summary:. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-summary:(NXStream *)c;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Writes out a summary to the stream pointed to by c.&nbsp; Depending on</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">the current value of wallTime will write out a summary for either</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">wall time or ps time. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumWallTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Returns cumWallTime if wallTime == WALLTIME, -1 otherwise. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumAppTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Returns cumAppTime if wallTime == PSTIME, -1.0 otherwise.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">cumAppTime represents the cumulative time spent in the process and</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">system calls made by the process.&nbsp; It does not include time spent</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">in the Server. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumPSTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Returns cumPSTime if wallTime == PSTIME, -1.0 otherwise.</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">cumPSTime represents the cumulative time spent in the Window</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">Server on the behalf of the process. */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Timing.m */</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &#34;Timing.h&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;stdio.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;streams/streams.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;dpsclient/wraps.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;appkit/graphics.h&gt;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@implementation Timing</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+newWithTag:(int) aTag</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = [super new];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">tag = aTag;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self reset];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-enter:(int)wt</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime = (wt==WALLTIME))</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self wallEnter];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self psEnter];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-wallEnter</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumTimesEntered++;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime,&amp;tzone);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">synctime = realtime.tv_sec + realtime.tv_usec/1000000.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-tare</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct timezone tzone1;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct timeval realtime1;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct timeval realtime2;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime1,&amp;tzone1);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime2,&amp;tzone1);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">tare = (-realtime1.tv_sec + realtime2.tv_sec)+</font><br>
+<img src="../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">(-realtime1.tv_usec+realtime2.tv_usec)/1000000.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-psEnter</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumTimesEntered++;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSusertime(&amp;stime);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">getrusage(RUSAGE_SELF,&amp;rtime);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">synctime = (rtime.ru_utime.tv_sec + rtime.ru_stime.tv_sec) +</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">(rtime.ru_utime.tv_usec + rtime.ru_stime.tv_usec)/1000000.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-wallLeave</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double eTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime,&amp;tzone);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">eTime = (- synctime + realtime.tv_sec + realtime.tv_usec/1000000.0)</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">-tare;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumWallTime += eTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-psLeave</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int et;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double appTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">double psTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">getrusage(RUSAGE_SELF,&amp;rtime);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">PSusertime(&amp;et);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">psTime = ((et-stime)/1000.0);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumPSTime += psTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">appTime&nbsp; = ((rtime.ru_utime.tv_sec + rtime.ru_stime.tv_sec) +</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">(rtime.ru_utime.tv_usec +</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">rtime.ru_stime.tv_usec)/1000000.0) -synctime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumAppTime += appTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-leave</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self wallLeave];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">[self psLeave];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-reset</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumAppTime = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumPSTime = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumWallTime = 0.0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cumTimesEntered = 0;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-avgElapsedTime</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">avgWallTime = (cumWallTime/(double)cumTimesEntered);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else{</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">avgAppTime = (cumAppTime/(double)cumTimesEntered) ;</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">avgPSTime = (cumPSTime/(double)cumTimesEntered);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumWallTime</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime ==WALLTIME)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return cumWallTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return -1.0;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumAppTime;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime ==PSTIME)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return cumAppTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return -1.0;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-(double) cumPSTime;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime ==PSTIME)</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return cumPSTime;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return -1.0;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">-summary:(NXStream *)c</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if(wallTime) {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NXPrintf(c,&#34;Timer %d : entered %d trials TotalWall Time&nbsp; %lf\n&#34;,</font><br>
+<img src="../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">tag, cumTimesEntered, cumWallTime);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">NXPrintf(c,&#34;Timer %d : %d trials App: %lf&nbsp; Server: %lf</font><br>
+<img src="../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">Percent Server: %lf Total: %lf\n\00&#34;,</font><br>
+<img src="../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">tag, cumTimesEntered, cumAppTime, cumPSTime,</font><br>
+<img src="../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">cumPSTime/(cumAppTime+cumPSTime),</font><br>
+<img src="../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">cumAppTime+cumPSTime);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXFlush(c);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+
+
+<p><br><br><br><br><br><br><br>
+
+</body>
+</html>

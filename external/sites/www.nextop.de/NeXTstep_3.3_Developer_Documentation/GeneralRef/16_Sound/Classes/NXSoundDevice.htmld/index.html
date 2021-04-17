@@ -1,0 +1,2157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/16_Sound/Classes/NXSoundDevice.rtf -->
+<!-- Date: Sun Jun 28 20:06:53 1998 -->
+<head>
+<title>NXSoundDevice</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>NXSoundDevice</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NXSoundParameters</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">soundkit/NXSoundDevice.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NXSoundDevice is an abstract superclass; each subclass represents a sound input or output device. The&nbsp; Sound Kit provides two subclasses of NXSoundDevice:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NXSoundIn represents sound input.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">NXSoundOut represents sound output.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The utility of NXSoundDevice is invested in these subclasses; the NXSoundDevice class itself simply defines methods that are common to them.&nbsp; In addition, you can't create useful subclasses of NXSoundDevice yourself.</font>
+
+<p><font face="Times">Many applications needn't bother with NXSoundDevice and its subclasses; in general, the methods provided by the Sound class are sufficicient for applications that record and play sounds.&nbsp; However, while Sound objects are easy to use, NXSoundDevices give you greater of sound resources.&nbsp; The primary advantages of NXSoundDevice objects are that you can:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Reserve sound devices for exclusive use by your application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Specify the host computer of the device that you want to use.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Specify the size and number of the sound data buffers used by the device.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Initializing and Reserving a Sound Device</b></font>
+
+<p><font face="Times">You initialize an NXSoundDevice by connecting it to a sound driver.&nbsp; The <b>init</b> method connects it to the sound driver on the local host; <b>initOnHost:</b> lets you access the sound driver on some other machine.&nbsp; A single NXSoundDevice can be connected to only one sound driver (one host) at a time.</font>
+
+<p><font face="Times">Underneath the two NXSoundDevice subclasses lie specific sound driver devices:&nbsp; NXSoundIn represents the sound-in device, and NXSoundOut represents the sound-out device.&nbsp; You can connect any number of NXSoundOut and NXSoundIn instances to the same sound driver; in other words, you can initialize them on the same host.</font>
+
+<p><font face="Times">You can reserve a sound device for exclusive use by a particular NXSoundDevice object through the <b>setReserved:</b> method. While you have it reserved, no other application, nor any other NXSoundDevice within your application, can use your sound device.&nbsp; If it's unreserved, the sound device is shared:&nbsp; For sound-in, this means that more than one application can get a copy of the same recording.&nbsp; For sound-out, more than one application can play sounds at the same time (see the NXSoundOut class description for more on mixing sounds during playback).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">The device reservation mechanism only ensures that no other application will be able to <i>share</i> a device with you--it doesn't prevent the device from being stolen altogether.&nbsp; If you reserve a device, and then a competing application comes along and reserves the same device, this second reservation will win and you'll be left with memories.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Devices and Streams</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">By themselves, NXSoundDevice objects are of limited use.&nbsp; An NXSoundOut object, for example, lets you manipulate the sound-out device, but it doesn't provide data to the device, thus the object isn't capable of making any sound.&nbsp; For this, you need to connect an NXPlayStream object to the NXSoundOut.&nbsp; (This is done by passing the NXSoundOut as the argument to NXPlayStream's <b>initOnDevice:</b> method.)&nbsp; Similarly, to record sound you must connect an NXRecordStream to an NXSoundIn object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">NXPlayStream and NXRecordStream inherit from NXSoundStream, an abstract superclass that defines methods for its subclasses in much the same way that NXSoundDevice embodies the common functionality of NXSoundIn and NXSoundOut. You can connect more than one NXSoundStream to the same NXSoundDevice, but the NXRecordStream/NXSoundIn, NXPlayStream/NXSoundOut marriages must be honored; you can't connect an NXPlayStream to an NXSoundIn, for example.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">An NXSoundDevice can pause, resume, and abort all the NXSoundStreams that are connected to it.&nbsp; Each NXSoundDevice controls only its own NXSoundStreams; for example, if you initialize two NXSoundOut objects on the same host and connect a pair of NXPlayStreams to each (for a total of four NXPlayStreams), sending a <b>pauseStreams:</b> message to one of the NXSoundOuts will pause only the two streams that are connected to it--the other two streams are unaffected, even though both NXSoundOut objects are connected to the same sound driver device.&nbsp; This ability--to independently control groups of sound streams--is the only reason for creating multiple NXSoundDevices for the same driver device.&nbsp; You should never otherwise need to create more than one NXSoundOut and one NXSoundIn per host machine.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Sound Device Parameters</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Many of the attributes of an NXSoundDevice object are set through NXSoundParameters protocol methods.&nbsp; See the NXSoundParameters protocol specification for descriptions of parameter-setting and -getting methods.&nbsp; There are three parameter keys that are common to the two NXSoundDevice subclasses:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>Common NXSoundDevice Parameter Keys</b></font>
+
+<p><font face="Times">NX_SoundDeviceBufferSize</font><br>
+<font face="Times">NX_SoundDeviceBufferCount</font><br>
+<font face="Times">NX_SoundDeviceDetectPeaks</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXSoundOut parameter keys are these:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>NXSoundOut Parameter Keys</b></font>
+
+<p><font face="Times">NX_SoundDeviceRampUp</font><br>
+<font face="Times">NX_SoundDeviceRampDown</font><br>
+<font face="Times">NX_SoundDeviceInsertZeros</font><br>
+<font face="Times">NX_SoundDeviceDeemphasize</font><br>
+<font face="Times">NX_SoundDeviceMuteSpeaker</font><br>
+<font face="Times">NX_SoundDeviceMuteHeadphone</font><br>
+<font face="Times">NX_SoundDeviceMuteLineOut</font><br>
+<font face="Times">NX_SoundDeviceOutputLoudness</font><br>
+<font face="Times">NX_SoundDeviceOutputAttenuationStereo</font><br>
+<font face="Times">NX_SoundDeviceOutputAttenuationLeft</font><br>
+<font face="Times">NX_SoundDeviceOutputAttenuationRight</font><br>
+<font face="Times">NX_SoundDeviceMonitorAttenuation</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">And these are the NXSoundIn keys:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>NXSoundIn Parameter Keys</b></font>
+
+<p><font face="Times">NX_SoundDeviceAnalogInputSource</font><br>
+<font face="Times">NX_SoundDeviceInputGainStereo</font><br>
+<font face="Times">NX_SoundDeviceInputGainLeft</font><br>
+<font face="Times">NX_SoundDeviceInputGainRight</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Setting the values of any of these parameters affects the underlying device.&nbsp; In other words, all NXSoundOut objects that are initialized on a particular host will always have the same set of values for these three parameters; a change to one of the objects affects all the others.&nbsp; Similary are all NXSoundIn objects affected by changes to a single NXSoundIn.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Some of the parameter value-retrieving methods defined by NXSoundDevice are meant to be used to configure the NXSoundStream objects that you attach to a particular NXSoundDevice.&nbsp; Specifically, methods are provided that let you ask for the sampling rates, channel counts, and data formats (encodings) that are supported by the underlying hardware.&nbsp; See the &quot;Setting up streams&quot; method type for a list of these methods.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Sound Buffers</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The sound-in and sound-out devices parcel sound data into equally sized &quot;device buffers&quot; and then send these buffers to the sound hardware.&nbsp; The size (in bytes) of these buffers is controlled by the NX_SoundDeviceBufferSize parameter; the largest a device buffer can be is a page of virtual memory, as given by the global variable <b>vm_page_size</b>.&nbsp; By default, sound-in buffers are 256 bytes and sound-out buffers are a page of virtual memory.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You can also specify the number of device buffers, through the NX_SoundDeviceBufferCount parameter.&nbsp; By default, both sound-in and sound-out use four buffers.&nbsp; Device buffers are sent as soon as they're filled; by maintaining more than one buffer, the sound driver is able to &quot;run ahead,&quot; filling the extra buffers while the first one is being played (or emptied, in the case of recording).&nbsp; This provides a sort of cushion, allowing the buffer-filling process (which is run in a background thread) to procede in jerks and starts while sound is played back (or recorded) without interruption.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Note that if you resize or renumber the&nbsp; device buffers, all may be for nought unless you also adjust the size of the &quot;stream buffers&quot; that you enqueue on the NXSoundStream that you're using.&nbsp; For the best fit, the stream buffers should be no larger than the device buffer size times the device buffer count.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The buffer attributes for a particular device are reset to their defaults when there are no active streams connected to the device. Because of this, you should always connect an NXSoundStream to your NXSoundDevice and open the stream (through NXSoundStream's <b>activate</b> method) before setting the device buffer size and count.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Peak Detection</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You can set an NXSoundDevice to detect the peak, or maximum absolute amplitude, within&nbsp;&nbsp; each device buffer of data.&nbsp; To enable this feature, you must set the boolean NX_SoundDeviceDetectPeaks parameter to YES.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You can retrieve the most recent peak amplitudes (in stereo) through the <b>getPeakLeft:right:</b> method.&nbsp; The peak values returned by the method are normalized to fall within (0.0, 1.0), where 0.0 is no amplitude and 1.0 is the maximum amplitude supported by the data format.&nbsp; Old peak data is thrown away as the most recent peaks are detected--if you want an on-going and thorough chart of the peaks, you must query for this data promptly and consistently while sound is recording or playing.&nbsp; Typically, you set up a timed entry to invoke <b>getPeakLeft:right:</b> at a frequency that matches the rate at which device buffers are transfered.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The NXSoundDevice itself doesn't perform the peak detection--it's done by the underlying device.&nbsp; This has a particular significance for sound-out:&nbsp; The data that's returned by <b>getPeakLeft:right:</b> is the peak amplitude of all sounds that are being played, <i>not</i> just those NXPlayStreams that are connected to the queried NXSoundOut object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Sound Driver Reply Messages</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">As it's processing a sound stream, the sound driver sends Mach messages to a reply port that's managed by the NXSoundDevice class object.&nbsp; Each message contains either a status report--whether a sound has started, completed, aborted, and so on--or, in the case of sound-in, a buffer of recorded sound data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The NXSoundDevice class object interprets each of these driver messages and sends a corresponding Objective C message to the delegate of the appropriate NXSoundStream object (as described in the class specifications of NXSoundStream, NXPlayStream, and NXRecordStream).&nbsp; You can repress these messages by lowering the device's &quot;thread threshold,&quot; as explained in the <b>setThreadThreshold:</b> method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">If you want the reply messages to be delivered as promptly as possible, you should create a separate thread in which the messages are received.&nbsp; This is done by sending <b>setUseSeparateThread:YES</b> to the NXSoundDevice class object.&nbsp; The thread threshold setting has no effect if you're using a separate thread.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Although using a separate thread increases responsiveness to the sound driver, it may degrade overall system performance, thus degrading the synchronization between sound and graphics (for example).&nbsp; Also, if you're using a separate thread, the NXSoundStream delegate methods that are ultimately invoked mustn't invoke methods or call functions that aren't re-entrant, nor should they cause code to be sent to the PostScript interpreter--in other words, they mustn't draw.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">To have an effect, <b>setUseSeparateThread:</b> and <b>setThreadThreshold:</b> must be invoked <i>before</i> any NXSoundDevice objects are initialized.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Sound Device Timeout</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The NXSoundDevice and NXSoundStream methods that communicate with the underlying driver do so by sending Mach messages to the driver.&nbsp; Such a method sends the Mach message and then waits for a reply from the driver; the method doesn't return--and your application hangs--until the driver responds.&nbsp; On a local host this usually isn't a concern--if your application is running, then the sound driver is running.&nbsp; However, if your application is using the sound driver on a remote host, this assurance is less certain; for example, if the remote host is powered off, then your application will hang when a driver-accessing method is invoked.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You can specify the maximum amount of time to wait for the sound driver to respond through NXSoundDevice's <b>setTimeout: </b>class method.&nbsp; The method sets, in milliseconds, the time limit for all sound devices.&nbsp;&nbsp; If the sound driver doesn't respond to a Mach message within the given amount of time, the method that caused the message to be sent is forced to return with the error code NX_SoundDeviceErrorTimeout (the sound device error codes are listed in the section &quot;Types and Constants&quot; under the heading &quot;NXSoundDeviceError&quot;).</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Although you can set the time limit to an excruciatingly specific interval, it's perhaps better thought of as acting as a boolean that determines whether your application can hang forever or not.&nbsp; The default setting (NX_SOUNDDEVICE_TIMEOUT_MAX) is extremely, perhaps frustratingly, patient.&nbsp; A more urgent setting, say ten seconds or so, will ensure that your application won't hang forever, while allowing enough time for even the sleepiest driver to wake up.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The Sound Kit methods that access the sound driver, and so are liable to the time limit, are those that return an NXSoundDeviceError value (except for NXSoundDriver's <b>lastError</b>), plus these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Method</b></font></td>
+
+<td><font face="Helvetica"><b>Class</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">isReserved</font></td>
+
+<td><font face="Times">NXSoundDevice</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">pauseStreams:</font></td>
+
+<td><font face="Times">NXSoundDevice</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">resumeStreams:</font></td>
+
+<td><font face="Times">NXSoundDevice</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">abortStreams:</font></td>
+
+<td><font face="Times">NXSoundDevice</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">clipCount</font></td>
+
+<td><font face="Times">NXSoundDevice</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">pause:</font></td>
+
+<td><font face="Times">NXSoundStream</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">resume:</font></td>
+
+<td><font face="Times">NXSoundStream</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">abort:</font></td>
+
+<td><font face="Times">NXSoundStream</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">bytesProcessed</font></td>
+
+<td><font face="Times">NXSoundStream</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NXSoundParameters</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">boolValueForParameter:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">floatValueForParameter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getParameters:count:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getValues:count:forParameter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">intValueForParameter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isParameterPresent:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeParameter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setParameter:toBool:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setParameter:toFloat:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setParameter:toInt:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing and freeing an NXSoundDevice</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initOnHost:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Using a separate thread</font></td>
+
+<td><font face="Times">+ replyThread</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ isUsingSeparateThread</font><br>
+<font face="Times">+ setThreadThreshold:</font><br>
+<font face="Times">+ setUseSeparateThread:</font><br>
+<font face="Times">+ threadThreshold</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Examining ports</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">devicePort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ replyPort</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">streamOwnerPort</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Identifying the host computer</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">host</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Configuring the object</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isReserved</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setReserved:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setParameters:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">parameters</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font><br>
+<font face="Times">+ setTimeout:</font><br>
+<font face="Times">+ timeout</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Retrieving peak amplitudes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getPeakLeft:right:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clipCount</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up streams</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptsContinuousStreamSamplingRates</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStreamChannelCountsLimit:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStreamSamplingRates:low:high:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStreamSamplingRates:count:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getStreamDataEncodings:count:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Controlling streams</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">abortStreams:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pauseStreams:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resumeStreams:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Handling errors</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastError</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ textForError:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isUsingSeparateThread</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (BOOL)<b>isUsingSeparateThread</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXSoundDevice is using a separate thread to process messages from the driver to the reply port; otherwise, returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setUseSeparateThread:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>replyPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (port_t)<b>replyPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port to which the sound driver sends reply messages.&nbsp; You can't set this port yourself, and you normally don't need to note its identity; this method is provided so you can pass the reply port as an argument to a function such as <b>port_status()</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>replyThread</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (cthread_t)<b>replyThread</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the thread in which messages from the sound driver are sent to the reply port.&nbsp; If the NXSoundDriver isn't using a separate thread for these messages, this returns NO_CTHREAD.&nbsp; The <b>cthread_t</b> type is defined in <b>mach/cthreads.h</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setUseSeparateThread:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setThreadThreshold:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setThreadThreshold:</b>(int)<i>threshold</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the threshold against which the application's current event threshold is compared as messages arrive from the driver.&nbsp; If <i>threshold</i> is higher than the event threshold, the message is delivered to the reply port (and so a message is sent to the delegate of the appropriate NXSoundStream), otherwise the message is ignored.&nbsp; By default, <i>threshold</i> is NX_MODALRESPTHRESHOLD, as defined in <b>appkit/Application.h</b>.&nbsp; If the NXSoundDevice is using a separate thread to receive driver messages, this method has no effect (messages are always received).</font>
+
+<p><font face="Times">This method does nothing and returns <b>nil</b> if your application contains any initialized NXSoundDevice objects.&nbsp; Otherwise it returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>threadThreshold,</b> + <b>isUsingSeparateThread:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setTimeout:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setTimeout:</b>(unsigned int)<i>milliseconds</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the length of time, in milliseconds, that all sound devices will wait for a method that communicates with the sound driver to return, as explained in the class description, above.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>timeout</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setUseSeparateThread:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setUseSeparateThread:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, the NXSoundDevice class object will use a separate thread for processing messages from the sound driver.&nbsp; The NXSoundDevice class object interprets these Mach messages and sends corresponding Objective-C messages to the delegate of the appropriate NXSoundStream instance.&nbsp; If <i>flag</i> is NO, the sound driver messages are processed in the application's main thread.</font>
+
+<p><font face="Times">This method does nothing and returns <b>nil</b> if your application contains any initialized NXSoundDevice objects.&nbsp; Otherwise it returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>isUsingSeparateThread</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>textForError:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (const char *)<b>textForError:</b>(NXSoundDeviceError)<i>errorCode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a localized string that corresponds to <i>errorCode</i>.&nbsp; The sound device error codes are listed in the &quot;Constants and Types&quot; section.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastError</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>threadThreshold</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (int)<b>threadThreshold</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the threshold that's used to determine whether messages from the sound driver are ignored.&nbsp; The default is NX_MODALRESPTHRESHOLD, as defined in <b>appkit/Application.h</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setThreadThreshold:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>timeout</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (unsigned int)<b>timeout</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the amount of time, in milliseconds, that driver-accessing methods are allowed to hang before being forced to return, as explained in the class description, above.&nbsp; The default is NX_SOUNDDEVICE_TIMEOUT_MAX (essentially forever).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setTimeout:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>abortStreams:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortStreams:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Aborts all streams that are connected to the NXSoundDevice.&nbsp; You should check the return value of <b>lastError</b> after invoking this method to see if an error occurred.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abort:</b> (NXSoundStream),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastError</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>acceptsContinuousStreamSamplingRates</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>acceptsContinuousStreamSamplingRates</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the underlying hardware accepts sampling rate values that are continuous (in other words, that are non-discrete). You use this method to determine the type of sampling rate values that you can set in a NXSoundParameters object that's applied to an NXSoundStream that's attached to this NXSoundDevice.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRates:count:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRatesLow:high:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>clipCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>clipCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of sample frames that have been clipped since the activation of the oldest connected stream.&nbsp; Clipping occurs when the amplitude of a sample is great than the greatest representable value for this device.&nbsp; The clip count is reset to 0 when the last stream is deactivated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPeakLeft:right:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>devicePort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>devicePort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port that the NXSoundDevice uses to communicate with the sound driver.&nbsp; You can't set this port yourself, and you normally don't need to note its identity; this method is provided so you can pass the port as an argument to a function such as <b>port_status()</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deallocates the NXSoundDevice's ports and frees the object.&nbsp; If the NXSoundDevice had reserved the underlying sound device, it's made available again.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReserved:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getStreamChannelCountLimit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>getStreamChannelCountLimit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the maximum number of channels of sound data that are accepted by the underlying hardware.&nbsp; To play a sound, you must set the channel count of any NXSoundStream object that's attached to this NXSoundDevice to a value not greater than that returned by this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRates:count:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRatesLow:high:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamDataEncodings:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getStreamDataEncodings:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>getStreamDataEncodings:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times">(const NXSoundParameterTag **)<i>encodings</i></font><br>
+<font face="Times"><b>count:</b>(unsigned int *)<i>numEncodings</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>encodings</i>, a list of the data encoding values that are accepted by the underlying hardware.&nbsp; The encodings are represented by paramater value tags; the number of encodings in the list is returned by reference in <i>numEncodings</i>.&nbsp; You then set an NXSoundStream object's encoding to a value plucked from the list.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp;&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamChannelCountLimit:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRatesLow:high:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRates:count:</b></font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>See also:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getStreamSamplingRates:count:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>getStreamSamplingRates:</b>(const float **)<i>rates</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(unsigned int *)<i>numRates</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference in <i>rates</i>, a list of the discrete sampling rates that are accepted by the underlying hardware.&nbsp; The number of sampling rates in the list is returned by reference in <i>numRates</i>.&nbsp; You then set an NXSoundStream object's sampling rate to a value plucked from the list.&nbsp; You invoke this method only if the NXSoundDevice doesn't accept continuous sampling rate values (as determined by the <b>acceptsContinuousStreamSamplingRates</b> method).&nbsp; If it accepts continuous values, use the <b>getStreamSamplingRatesLow:high:</b> method instead of this one.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptsContinuousStreamSamplingRates,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRatesLow:high:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamChannelCountLimit:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamDataEncodings:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getStreamSamplingRates:low:high:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>getStreamSamplingRatesLow:</b>(float *)<i>lowRate</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>high:</b>(float *)<i>highRate</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns, by reference, the lowest and highest sampling rates that are accepted by the underlying hardware.&nbsp; You then set an NXSoundStream object's sampling rate to a value in the returned range.&nbsp; You invoke this method only if the NXSoundDevice accepts continuous sampling rate values (as determined by the <b>acceptsContinuousStreamSamplingRates</b> method).&nbsp; If it only accepts discrete values, use the <b>getStreamSamplingRates:count</b>: method to return this information.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptsContinuousStreamSamplingRates,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamSamplingRates:count:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamChannelCountLimit:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getStreamDataEncodings:count:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getPeakLeft:right:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>getPeakLeft:</b>(float *)<i>leftAmp</i> <b>right:</b>(float *)<i>rightAmp</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the most recent peak amplitudes detected by the NXSoundDevice's underlying sound device.&nbsp; For stereo sounds, peaks are detected independently for the two channels and returned by reference in <i>leftAmp</i> and <i>rightAmp</i>.&nbsp; For monophonic sounds, the same value is returned in both arguments.&nbsp; The peak values returned in the arguments are normalized to fall within (0.0, 1.0), where 0.0 is no amplitude and 1.0 is the maximum amplitude supported by the data format.&nbsp; See the class description for more information on peak detection.&nbsp; An error code is returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clipCount</b> (NXSoundOut)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>host</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>host</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the computer on which the NXSoundDevice was initialized, or <b>nil</b> if it's the local host.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnHost:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the NXSoundDevice on the machine specified by the NXHost default (normally the local host).&nbsp; Returns <b>nil</b> if the sound resources cannot be accessed; otherwise returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnHost:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initOnHost:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initOnHost:</b>(const char *)<i>hostName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the NXSoundDevice on the machine named <i>hostName</i>.&nbsp; Returns <b>nil</b> if the sound resources cannot be accessed; otherwise returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isReserved</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isReserved</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the device is reserved for exclusive access by this NXSoundDevice; otherwise, returns NO (the default).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setReserved:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lastError</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>lastError</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the most recent sound device error associated with the NXSoundDevice.&nbsp; Many methods don't explicitly return an NXSoundDeviceError, but set an internal variable, which can be retrieved with this method.&nbsp; To retrieve localized text that describes the error, pass the value returned by this method to the <b>textForError:</b> class method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>textForError:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the NXSoundDevice's underlying device, as registered with the network.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>parameters</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;NXSoundParameters&gt;)<b>parameters</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an object that contains the NXSoundDevice's parameter settings.&nbsp; The parameters take default value settings in a freshly initialized NXSoundDeivce.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setParameters:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>pauseStreams:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pauseStreams:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Pauses all streams that are connected to the NXSoundDevice.&nbsp; You should check the return value of <b>lastError</b> after invoking this method to see if an error occurred.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pause:</b> (NXSoundStream),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastError</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resumeStreams:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resumeStreams:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resumes all streams that are connected to the NXSoundDevice.&nbsp; You should check the return value of <b>lastError</b> after invoking this method to see if an error occurred.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resume:</b> (NXSoundStream),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastError</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setParameters:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>setParameters:</b>(id &lt;NXSoundParameters&gt;)<i>parameterObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the NXSoundDevice's parameter values to those specified in the argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>parameters</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setReserved:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSoundDeviceError)<b>setReserved:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If&nbsp; flag is YES, reserves the underlying device for exclusive access by the NXSoundDevice (even if it's currently reserved by another NXSoundDevice--the current owner is forced to yield).&nbsp; No other application, nor any other NXSoundDevice within your application, will be able access the device while it's reserved.&nbsp; Any currently active streams not connected to this NXSoundDevice instance are aborted.&nbsp; If flag is NO the device is made available to all NXSoundDevices.&nbsp; NXSoundDevices are unreserved by default.&nbsp; An error code is returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isReserved</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>soundStreamDidAbort:deviceReserved:</b> (NXSoundStream delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>streamOwnerPort</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(port_t)<b>streamOwnerPort</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the port that the NXSoundDevice uses to connect to the sound driver.&nbsp; You can't set this port yourself, and you normally don't need to note its identity; this method is provided in case you want to pass the port as an argument to a function such as <b>port_status()</b>.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

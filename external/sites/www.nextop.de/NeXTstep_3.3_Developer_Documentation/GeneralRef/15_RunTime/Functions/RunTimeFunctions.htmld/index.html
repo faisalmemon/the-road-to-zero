@@ -1,0 +1,1387 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/15_RunTime/Functions/RunTimeFunctions.rtf -->
+<!-- Date: Sun Jun 28 20:06:42 1998 -->
+<head>
+<title>RunTimeFunctions</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>class_addMethods()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See class_getInstanceMethod()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_createInstance(), class_createInstanceFromZone()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Create a new instance of a class</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">id <b>class_createInstance(</b>Class <i>aClass</i>, unsigned int <i>indexedIvarBytes</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">id <b>class_createInstanceFromZone(</b>Class <i>aClass</i>, unsigned int <i>indexedIvarBytes</i>, NXZone *<i>zone</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions provide an interface to the object allocators used by the run-time system.&nbsp; The default allocators, which can be changed by reassigning the <b>_alloc</b> and <b>_zoneAlloc</b> variables, create a new instance of <i>aClass</i> by dynamically allocating memory for it, initializing its <b>isa</b> instance variable to point to the class, and returning the new instance.&nbsp; All other instance variables are initialized to 0.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The two functions are identical, except that <b>class_createInstanceFromZone()</b> allocates memory for the new object from the region specified by <i>zone</i> and <b>class_createInstance()</b> allocates memory from the default zone returned by <b>NXDefaultMallocZone()</b>.</font>
+
+<p><font face="Times">Object's <b>alloc</b> and <b>allocFromZone:</b> methods use <b>class_createInstanceFromZone()</b> to allocate memory for a new object, with <b>alloc</b> taking the memory from the default zone.&nbsp; The <b>new</b> method uses <b>class_createInstance()</b>.</font>
+
+<p><font face="Times">The second argument to both functions, <i>indexedIvarBytes</i>, states the number of extra bytes required for indexed instance variables.&nbsp; Normally, it's 0.</font>
+
+<p><font face="Times">Indexed instance variables are instance variables that are not declared or accounted for in the usual way, generally because they don't have a fixed size.&nbsp; Usually they're arrays whose length can't be computed at compile time.&nbsp; Since the components of a C structure can't be of uncertain size, indexed instance variables can't be declared in the class interface.&nbsp; The class must account for them outside the normal channels provided by the Objective C language.</font>
+
+<p><font face="Times">All of the storage required for indexed instance variables must be allocated through one of these two functions.&nbsp; The following code shows how they might be used in an instance-creating class method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ new:(unsigned int)numBytes</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = class_createInstance((Class)self, numBytes);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">length = numBytes;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (char *)getArray</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return(object_getIndexedIvars(self));</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Indexed instance variables should be avoided if at all possible.&nbsp; It's a much better practice to store variable-length data outside the object and declare one real instance variable that points to it and perhaps another that records its length.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ new:(unsigned int)numBytes</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = [super new];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">data = malloc(numBytes);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">length = numBytes;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (char *)getArray</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return data;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">If successful, both <b>class_createInstance()</b> and <b>class_createInstanceFromZone()</b> return the new instance of <i>aClass</i>.&nbsp; If not successful, they generate an error message and call <b>abort()</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_createInstanceFromZone()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See class_createInstance()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>class_getClassMethod()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See class_getInstanceMethod()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_getInstanceMethod(), class_getClassMethod(), class_addMethods(), class_removeMethods()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get, add, and remove methods</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">Method <b>class_getInstanceMethod(</b>Class <i>aClass</i>, SEL <i>aSelector</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Method <b>class_getClassMethod(</b>Class <i>aClass</i>, SEL <i>aSelector</i><b>)</b></font><br>
+<font face="Times">void <b>class_addMethods(</b>Class <i>aClass</i>, struct objc_method_list *<i>methodList</i><b>)</b></font><br>
+<font face="Times">void <b>class_removeMethods(</b>Class <i>aClass</i>, struct objc_method_list *<i>methodList</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The first two functions, <b>class_getInstanceMethod()</b> and <b>class_getClassMethod()</b>, return a pointer to the class data structure that describes the <i>aSelector</i> method.&nbsp; For <b>class_getInstanceMethod()</b>, <i>aSelector</i> must identify an instance method; for <b>class_getClassMethod()</b>, it must identify a class method.&nbsp; Both functions return a NULL pointer if <i>aSelector</i> doesn't identify a method defined in or inherited by <i>aClass</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The run-time system uses the next function, <b>class_addMethods()</b>, to implement Objective C categories.&nbsp; Each function adds the methods in <i>methodList</i> to the dictionary of methods defined for <i>aClass</i>.&nbsp; To add methods that can be used by instances of a class, <i>aClass</i> should be the class object.&nbsp; To add methods that can be used by a class object, <i>aClass</i> should be the metaclass object (the <b>isa</b> field of the Class structure).&nbsp; All the methods in <i>methodList</i> must be mapped to valid SEL selectors before they're added to the class.&nbsp; The <b>sel_registerName()</b> function can be used to accomplish this.</font>
+
+<p><font face="Times">The last function, <b>class_removeMethods()</b>, removes methods that were previously added using <b>class_addMethods()</b>.&nbsp; The run-time system uses it to unload categories that were dynamically loaded at an earlier point in time.&nbsp; Its second argument, <i>methodList</i>, must be identical to a pointer previously passed to <b>class_addMethods()</b>.&nbsp; To remove instance methods, <i>aClass </i>should be the class object.&nbsp; To remove class methods, <i>aClass</i> should be the <b>isa</b> field of the Class structure.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>class_getInstanceMethod()</b> and <b>class_getClassMethod()</b> return a pointer to the data structure that describes the <i>aSelector </i>method as implemented for <i>aClass</i>.&nbsp; If <i>aSelector</i> isn't defined for <i>aClass</i>, they return NULL.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_getInstanceVariable()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get the class template for an instance variable</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">Ivar <b>class_getInstanceVariable(</b>Class <i>aClass</i>, const char *<i>variableName</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">This function returns a pointer to the class data structure that describes the <i>variableName</i> instance variable.&nbsp; If <i>aClass</i> doesn't define or inherit the instance variable, a NULL pointer is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_getVersion()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See class_setVersion()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>class_poseAs()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Pose as the superclass</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">Class <b>class_poseAs(</b>Class <i>theImposter</i>, Class <i>theSuperclass</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>class_poseAs()</b> causes one class, <i>theImposter</i>, to take the place of its own superclass, <i>theSuperclass</i>.&nbsp; Messages sent to <i>theSuperclass</i> will actually be received by <i>theImposter</i>.&nbsp; The posing class can't declare any new instance variables, but it can define new methods and override methods defined in the superclass.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Posing is usually done through Object's <b>poseAs:</b> method, which calls this function.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Normally, <b>class_poseAs()</b> returns its first argument, <i>theImposter</i>.&nbsp; However, if <i>theImposter</i> defines instance variables or is not a subclass of (or the same as) <i>theSuperclass</i>, it generates an error message and aborts.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>class_removeMethods()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See class_getInstanceMethod()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>class_setVersion(), class_getVersion()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set and get the class version</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">void <b>class_setVersion(</b>Class <i>aClass</i>, int <i>versionNumber</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">int <b>class_getVersion(</b>Class <i>aClass</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions set and return the class version number.&nbsp; This number is used when archiving instances of the class.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Object's <b>setVersion:</b> and <b>version</b> methods do the same work as these functions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>class_getVersion()</b> returns the version number for <i>aClass</i> last set by <b>class_setVersion()</b>, or 0 if no version has been set.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>marg_getRef()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See marg_getValue()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>marg_getValue(), marg_getRef(), marg_setValue()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Examine and alter method argument values</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times"><i>type-name</i> <b>marg_getValue(</b>marg_list <i>argFrame</i>, int <i>offset</i>, <i>type-name</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>type-name</i> *<b>marg_getRef(</b>marg_list <i>argFrame</i>, int <i>offset</i>, <i>type-name</i><b>)</b></font><br>
+<font face="Times">void <b>marg_setValue(</b>marg_list <i>argFrame</i>, int <i>offset</i>, <i>type-name</i>, <i>type-name value</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These three macros get and set the values of arguments passed in a message.&nbsp; They're designed to be used within implementations of the <b>forward::</b> method, which is described under the Object class in Chapter 1, &quot;Root Class.&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first argument to each macro, <i>argFrame</i>, is a pointer to the list of arguments passed in the message.&nbsp; The run-time system passes this pointer to the <b>forward::</b> method, making it available to be used in these macros.&nbsp; The next two arguments--an <i>offset </i>into the argument list and the type of the argument at that offset--can be obtained by calling <b>method_getArgumentInfo()</b>.</font>
+
+<p><font face="Times">The first macro, <b>marg_getValue</b>, returns the argument at <i>offset</i> in <i>argFrame</i>.&nbsp; The return value, like the argument, is of type <i>type-name</i>.&nbsp; The second macro, <b>marg_getRef</b>, returns a reference to the argument at <i>offset</i> in <i>argFrame</i>.&nbsp; The pointer returned is to an argument of the <i>type-name</i> type.&nbsp; The third macro, <b>marg_setValue</b>, alters the argument at <i>offset</i> in <i>argFrame</i> by assigning it <i>value.</i>&nbsp; The new value must be of the same type as the argument.</font>
+
+<p><font face="Times">Because these are macros, the <i>type-name</i> must be written as types normally are in source code; it can't be passed as a variable. Therefore, if the type is obtained from <b>method_getArgumentInfo()</b>, a <b>switch</b> statement would be required to select the correct macro call from a list of predetermined choices.&nbsp; <b>method_getArgumentInfo()</b> encodes the argument type according to the conventions of the <b>@encode()</b> compiler directive.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>marg_getValue</b> returns a <i>type-name</i> argument value.&nbsp; <b>marg_getRef</b> returns a pointer to a <i>type-name</i> argument value.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>marg_setValue()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See marg_getValue()</b></font>
+
+<p><font face="Helvetica"><b>method_getArgumentInfo()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See method_getNumberOfArguments()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>method_getNumberOfArguments(), method_getSizeOfArguments(), method_getArgumentInfo()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Get information about a method</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-class.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">unsigned int <b>method_getNumberOfArguments(</b>Method <i>aMethod</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">unsigned int <b>method_getSizeOfArguments(</b>Method <i>aMethod</i><b>)</b></font><br>
+<font face="Times">unsigned int <b>method_getArgumentInfo(</b>Method <i>aMethod</i>, int <i>index</i>, const char **<i>type</i>, int *<i>offset</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The three functions described here all provide information about the argument structure of a particular method.&nbsp; They take as their first argument the method's data structure, <i>aMethod</i>, which can be obtained by calling <b>class_getInstanceMethod()</b> or <b>class_getClassMethod()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first function, <b>method_getNumberOfArguments()</b>, returns the number of arguments that <i>aMethod</i> takes.&nbsp; This will be at least two, since it includes the &quot;hidden&quot; arguments, <b>self</b> and <b>_cmd</b>, which are the first two arguments passed to every method implementation.</font>
+
+<p><font face="Times">The second function, <b>method_getSizeOfArguments()</b>, returns the number of bytes that all of <i>aMethod</i>'s arguments, taken together, would occupy on the stack.&nbsp; This information is required by <b>objc_msgSendv()</b>.</font>
+
+<p><font face="Times">The third function, <b>method_getArgumentInfo()</b>, takes an <i>index</i> into <i>aMethod</i>'s argument list and returns, by reference, the type of the argument and the offset to the location of that argument in the list.&nbsp; Indices begin with 0.&nbsp; The &quot;hidden&quot; arguments <b>self </b>and <b>_cmd</b> are indexed at 0 and 1; method-specific arguments begin at index 2.&nbsp; If <i>index</i> is too large for the actual number of arguments, the <i>type</i> aand <i>offset</i> pointers are set to NULL.&nbsp; Otherwise, the offset is measured in bytes; it depends entirely on the size of arguments preceding the one at <i>index</i>.&nbsp; The type is encoded according to the conventions of the <b>@encode()</b> compiler directive.</font>
+
+<p><font face="Times">The information obtained from <b>method_getArgumentInfo()</b> can be used in the <b>marg_getValue</b>, <b>marg_getRef</b>, and <b>marg_setValue</b> macros to examine and alter the values of an argument on the stack after <i>aMethod</i> has been called.&nbsp; The offset can be passed directly to these macros, but the type must first be decoded to a full type name.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>method_getNumberOfArguments()</b> returns how many arguments the implementation of <i>aMethod</i> takes, and <b>method_getSizeOfArguments()</b> returns how many bytes the arguments take up on the stack.&nbsp; <b>method_getArgumentInfo() </b>returns the <i>index</i> it is passed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>method_getSizeOfArguments()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See method_getNumberOfArguments()</b></font>
+
+<p><font face="Helvetica"><b>objc_addClass()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_getClass()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>objc_getClass(), objc_lookUpClass(), objc_getMetaClass(), objc_getClasses(), objc_addClass(), objc_getModules()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Manage run-time structures</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-runtime.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">id <b>objc_getClass(</b>const char *<i>aClassName</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">id <b>objc_lookUpClass(</b>const char *<i>aClassName</i><b>)</b></font><br>
+<font face="Times">id <b>objc_getMetaClass(</b>const char *<i>aClassName</i><b>)</b></font><br>
+<font face="Times">NXHashTable *<b>objc_getClasses(</b>void<b>)</b></font><br>
+<font face="Times">void <b>objc_addClass(</b>Class <i>aClass</i><b>)</b></font><br>
+<font face="Times">Module *<b>objc_getModules(</b>void<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These functions return and modify the principal data structures used by the run-time system.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two functions, <b>objc_getClass()</b> and <b>objc_lookUpClass()</b>, both return the <b>id</b> of the class object for the <i>aClassName </i>class.&nbsp; However, if the <i>aClassName</i> class isn't known to the run-time system, <b>objc_getClass()</b> prints a message to the standard error stream and causes the process to abort, while <b>objc_lookUpClass()</b> merely returns <b>nil</b>.</font>
+
+<p><font face="Times">The third function, <b>objc_getMetaClass()</b>, returns the <b>id</b> of the metaclass object for the <i>aClassName</i> class.&nbsp; The metaclass object holds information used by the class object, just as the class object holds information used by instances of the class.&nbsp; Like <b>objc_getClass()</b>, it prints a message to the standard error stream and causes the process to abort if <i>aClassName</i> isn't a valid class.</font>
+
+<p><font face="Times"><b>objc_getClasses()</b> returns a pointer to the hash table containing all the Objective C classes that are currently known to the run-time system.&nbsp; You can examine the table using the common hashing functions.&nbsp; In the following example, <b>NXNextHashState()</b> gets each class from the table in turn, and <b>object_getClassName()</b> asks for their names:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXHashTable *classes = objc_getClasses();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXHashState state = NXInitHashState(classes);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Class thisClass;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while ( NXNextHashState(classes, &amp;state, (void **)&amp;thisClass) )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;%s\n&#34;, object_getClassName((id)thisClass));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXHashTable type returned by <b>objc_getClasses()</b> is defined in the <b>objc/hashtable.h</b> header file and is documented in Chapter 3, &quot;Common Classes and Functions.&quot;&nbsp; This data structure can be read, as illustrated in the example above, but it should not be modified or freed.</font>
+
+<p><font face="Times"><b>objc_addClass()</b> adds <i>aClass</i> to the list of classes known to the run-time system.&nbsp; (The class is added to the hash table that <b>objc_getClasses()</b> returns.)</font>
+
+<p><font face="Times">The compiler creates a Module data structure for each file it compiles.&nbsp; The <b>objc_getModules()</b> function returns a pointer to the run-time system's list of all current modules, except those that were dynamically loaded.&nbsp; Module structures are described under &quot;Supporting Header Files&quot; later in this chapter.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>objc_lookUpClass()</b> returns the class object for <i>aClassName</i>, or <b>nil</b> if there is no such class.&nbsp; <b>objc_getClass()</b> and <b>objc_getMetaClass()</b>&nbsp; return the class and metaclass objects for <i>aClassName</i>, if such a class exists, and abort otherwise. <b>objc_getClasses()</b> returns a pointer to a hash table of all current classes, and <b>objc_getModules()</b> returns a pointer to all current modules.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>objc_getClasses()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_getClass()</b></font>
+
+<p><font face="Helvetica"><b>objc_getMetaClass()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_getClass()</b></font>
+
+<p><font face="Helvetica"><b>objc_getModules()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_getClass()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>objc_loadModules(), objc_unloadModules()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Dynamically load and unload classes</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-load.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">long <b>objc_loadModules(</b>char *<i>files</i>[], NXStream *<i>stream</i>, void (*<i>callback</i>)(Class, Category), struct mach_header **<i>header</i>, char *<i>debugFilename</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">long <b>objc_unloadModules(</b>NXStream *<i>stream</i>, void (*<i>callback</i>)(Class, Category)<b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>objc_loadModules()</b> dynamically loads object files containing Objective C class and category definitions into a running program.&nbsp; Its first argument, <i>files</i>, is a list of null-terminated pathnames for the object files containing the classes and categories that are to be loaded.&nbsp; They can be full paths or paths relative to the current working directory.&nbsp; The second argument, <i>stream</i>, is a pointer to an NXStream where any error messages produced by the loader will be written.&nbsp; It can be NULL, in which case no messages will be written.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The third argument, <i>callback</i>, allows you to specify a function that will be called immediately after each class or category is loaded.&nbsp; When a category is loaded, the function is passed both the <b>Category</b> structure and the <b>Class</b> structure for that category. When a class is loaded, it's passed only the <b>Class</b> structure.&nbsp; Like <i>stream</i>, <i>callback</i> can be NULL.</font>
+
+<p><font face="Times">The fourth argument, <i>header</i>, is used to get a pointer to the <b>mach_header</b> structure for the loaded modules.&nbsp; It, too, can be NULL.&nbsp; All the modules in <i>files</i> are grouped under the same header.</font>
+
+<p><font face="Times">The final argument, which also can be NULL, is the pathname for a file that the loader will create and initialize with a copy of the loaded modules.&nbsp; This file can be passed to the debugger and added to the list of files being debugged.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) add-file <i>debugFilename</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>obj_unloadModules()</b> unloads all the modules loaded by <b>objc_loadModules()</b>, that is, all the modules from the <i>files</i> list.&nbsp; Each time it's called, it unloads another set of modules, working its way back from the modules loaded by the most recent call to <b>objc_loadModules()</b> to those loaded by the next most recent call, and so on.</font>
+
+<p><font face="Times">The first argument to <b>obj_unloadModules()</b>, <i>stream</i>, is a pointer to an NXStream where error messages will be written.&nbsp; Its second argument, <i>callback</i>, allows you to specify a function that will be called immediately before each class or category is unloaded.&nbsp; Both arguments can be NULL.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The NXBundle class, documented in Chapter 3, &quot;Common Classes and Functions,&quot; provides a simpler and preferred way to dynamically load classes.&nbsp; NXBundle integrates dynamic loading with localization (using language-specific resources such as strings, images, and sounds).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Both functions return 0 if the modules are successfully loaded or unloaded and 1 if they're not.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>objc_lookUpClass()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_getClass()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>objc_msgSend(), objc_msgSendSuper(), objc_msgSendv()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Send messages at run time</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-runtime.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">id <b>objc_msgSend(</b>id <i>theReceiver</i>, SEL <i>theSelector</i>, ...<b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">id <b>objc_msgSendSuper(</b>struct objc_super *<i>superContext</i>, SEL <i>theSelector</i>, ...<b>)</b></font><br>
+<font face="Times">id <b>objc_msgSendv(</b>id <i>theReceiver</i>, SEL <i>theSelector</i>, unsigned int <i>argSize</i>, marg_list <i>argFrame</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The compiler converts every message expression into a call on one of the first two of these three functions.&nbsp; Messages to <b>super </b>are converted to calls on <b>objc_msgSendSuper()</b>; all others are converted to calls on <b>objc_msgSend()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Both functions find the implementation of the <i>theSelector</i> method that's appropriate for the receiver of the message.&nbsp; For <b>objc_msgSend()</b>, <i>theReceiver</i> is passed explicitly as an argument.&nbsp; For <b>objc_msgSendSuper()</b>, <i>superContext</i> defines the context in which the message was sent, including who the receiver is.</font>
+
+<p><font face="Times">Arguments that are included in the <i>aSelector</i> message are passed directly as additional arguments to both functions.</font>
+
+<p><font face="Times">Calls to <b>objc_msgSend()</b> and <b>objc_msgSendSuper()</b> should be generated only by the compiler.&nbsp; You shouldn't call them directly in the Objective C code you write.&nbsp; You can however use the Object instance method <b>performv::</b> to send an arbitrary message to an object..</font>
+
+<p><font face="Times">The third function, <b>objc_msgSendv()</b>, is an alternative to <b>objc_msgSend()</b> that's designed to be used within class-specific implementations of the <b>forward::</b> method.&nbsp; Instead of being passed each of the arguments to the <i>aSelector</i> message, it takes a pointer to the arguments list, <i>argFrame</i>, and the size of the list in bytes, <i>argSize</i>.&nbsp; <i>argSize</i> can be obtained by calling <b>method_getSizeOfArguments()</b>; <i>argFrame</i> is passed as the second argument to the <b>forward::</b> method.</font>
+
+<p><font face="Times"><b>objc_msgSendv()</b> parses the argument list based on information stored for <i>aSelector</i> and the class of the receiver.&nbsp; Because of this additional work, it's more expensive than <b>objc_msgSend()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Each method passes on the value returned by the <i>aSelector</i> method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>objc_msgSendSuper()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_msgSend()</b></font>
+
+<p><font face="Helvetica"><b>objc_msgSendv()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_msgSend()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>objc_setMultithreaded()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Make the run-time system thread safe</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc-runtime.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">void <b>objc_setMultithreaded(</b>BOOL <i>flag</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">When <i>flag</i> is YES, this function ensures that two or more threads of the same task can safely use the run-time system for Objective C.&nbsp; To guarantee correct run-time behavior, it should be called immediately before starting up a new thread.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Because of the additional checking required to ensure thread-safe behavior, messaging will be slower than normal.&nbsp; Therefore, <i>flag</i> should be reset to the default NO when there is only one thread using Objective C.</font>
+
+<p><font face="Times">This function cannot guarantee that all parts of the run-time system are absolutely thread-safe.&nbsp; In particular, if one thread is in the middle of dynamically loading or unloading a class (using <b>objc_loadModules()</b> or <b>objc_unloadModules()</b>) while another thread is using the class, the second thread might find the class in an inconsistent state.&nbsp; Similarly, a thread that gets the class hash table (using <b>objc_getClasses()</b>) cannot be sure that another thread won't be modifying it at the same time.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>objc_unloadModules()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See objc_loadModules()</b></font>
+
+<p><font face="Helvetica"><b>object_copy()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See object_dispose()</b></font>
+
+<p><font face="Helvetica"><b>object_copyFromZone()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See object_dispose()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>object_dispose(), object_copy(), object_copyFromZone(),</b></font><br>
+<font face="Helvetica"><b>object_realloc(), object_reallocFromZone()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Manage object memory</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/Object.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">id <b>object_dispose(</b>Object *<i>anObject</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">id <b>object_copy(</b>Object *<i>anObject</i>, unsigned int <i>indexedIvarBytes</i><b>)</b></font><br>
+<font face="Times">id <b>object_copyFromZone(</b>Object *<i>anObject</i>, unsigned int <i>indexedIvarBytes</i>, NXZone *<i>zone</i><b>)</b></font><br>
+<font face="Times">id <b>object_realloc(</b>Object *<i>anObject</i>, unsigned int <i>numBytes</i><b>)</b></font><br>
+<font face="Times">id <b>object_reallocFromZone(</b>Object *<i>anObject</i>, unsigned int <i>numBytes</i>, NXZone *<i>zone</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">These five functions, along with <b>class_createInstance()</b> and <b>class_createInstanceFromZone()</b>, manage the dynamic allocation of memory for objects.&nbsp; Like those two functions, each of them is simply a &quot;cover&quot; for--a way of calling--another, private function.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>object_dispose()</b> frees the memory occupied by <i>anObject</i> after setting its <b>isa</b> instance variable to <b>nil</b>, and returns <b>nil</b>.&nbsp; The function it calls to do this work can be changed by reassigning the <b>_dealloc</b> variable.</font>
+
+<p><font face="Times"><b>object_copy()</b> and <b>object_copyFromZone()</b> create a new object that's an exact copy of <i>anObject</i> and return the new object. <b>object_copy()</b> allocates memory for the copy from the same zone as the original; <b>object_copyFromZone()</b> places the copy in <i>zone</i>.&nbsp; The second argument to both functions, <i>indexedIvarBytes</i>, specifies the number of additional bytes that should be allocated to accommodate indexed instance variables; it serves the same purpose as the second argument to <b>class_createInstance()</b>.</font>
+
+<p><font face="Times">The functions that <b>object_copy()</b> and <b>object_copyFromZone()</b> call to do their work can be changed by reassigning the <b>_copy </b>and <b>_zoneCopy</b> variables.</font>
+
+<p><font face="Times"><b>object_realloc()</b> and <b>object_reallocFromZone()</b> reallocate storage for <i>anObject</i>, adding <i>numBytes</i> if possible.&nbsp; The memory previously occupied by <i>anObject</i> is freed if it can't be reused, and a pointer to the new location of <i>anObject</i> is returned. <b>object_realloc()</b> allocates memory for the object from the same zone that it originally occupied; <b>object_reallocFromZone() </b>locates the object in <i>zone</i>.</font>
+
+<p><font face="Times">The functions that <b>object_realloc() and object_reallocFromZone()</b> call to do their work can be changed by reassigning the <b>_realloc</b> and <b>_zoneRealloc</b> variables.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>object_dispose()</b> returns <b>nil</b>, <b>object_copy()</b> and <b>object_copyFromZone()</b> return the copy, and <b>object_realloc()</b> and <b>object_reallocFromZone()</b> return the reallocated object.&nbsp; If the attempt to copy or reallocate the object fails, an error message is generated and <b>abort()</b> is called.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>object_getClassName()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Return the class name</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">const char *<b>object_getClassName(</b>id <i>anObject</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function returns the name of <i>anObject</i>'s class, or the string &quot;nil&quot; if <i>anObject</i> is <b>nil</b>.&nbsp; <i>anObject</i> can be either an instance or a class object.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>object_getIndexedIvars()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Return a pointer to an object's extra memory</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">void *<b>object_getIndexedIvars(</b>id <i>anObject</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function returns a pointer to the first indexed instance variable of <i>anObject</i>, if <i>anObject</i> has indexed instance variables.&nbsp; If not, the pointer returned won't be valid and should not be used.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SEE ALSO </b></font><font face="Times"><b>class_createInstance()</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>object_getInstanceVariable()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See object_setInstanceVariable()</b></font>
+
+<p><font face="Helvetica"><b>object_realloc()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See object_dispose()</b></font>
+
+<p><font face="Helvetica"><b>object_reallocFromZone()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See object_dispose()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>object_setInstanceVariable(), object_getInstanceVariable()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Set and get instance variables</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/Object.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">Ivar <b>object_setInstanceVariable(</b>id <i>anObject</i>, const char *<i>variableName</i>, void *<i>value</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Ivar <b>object_getInstanceVariable(</b>id <i>anObject</i>, const char *<i>variableName</i>, void **<i>value</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times"><b>object_setInstanceVariable()</b> assigns a new value to the <i>variableName</i> instance variable belonging to <i>anObject</i>.&nbsp; The instance variable must be one that's declared as a pointer; typically it's an <b>id</b>.&nbsp; The new value of the pointer is passed in the third argument, <i>value</i>.&nbsp; (Note that the pointer value is passed directly, not by reference.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>object_getInstanceVariable()</b> gets the value of the pointer stored as <i>anObject</i>'s <i>variableName</i> instance variable.&nbsp; The pointer is returned by reference through the third argument, <i>value</i>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int *i;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Ivar var = object_getInstanceVariable(anObject, &#34;num&#34;, (void **)&amp;i);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These functions provide a way of setting and getting instance variables that are declared as pointers, without having to implement methods for that purpose.&nbsp; For example, Interface Builder calls <b>object_setInstanceVariable()</b> to initialize programmer-defined &quot;outlet&quot; instance variables.</font>
+
+<p><font face="Times">These functions cannot reliably be used to set and get instance variables that are not pointers.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times">Both functions return a pointer to the class template that describes the <i>variableName</i> instance variable.&nbsp; A NULL pointer is returned if <i>anObject</i> has no instance variable with that name.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The returned template has a field describing the data type of the instance variable.&nbsp; You can check it to be sure that the value set is of the correct type.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>sel_getName()</b></font> <img src="../../../Images/cAE.gif" width=14 height=7> <font face="Helvetica"><b>See sel_getUid()</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>sel_getUid(), sel_getName()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Match method names with method selectors</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">SEL <b>sel_getUid(</b>const char *<i>aName</i><b>)</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">const char *<b>sel_getName(</b>SEL <i>aSelector</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">The first function, <b>sel_getUid()</b>, returns the unique identifier that represents the <i>aName</i> method at run time.&nbsp; The identifier is a selector (type SEL) and is used in place of the method name in compiled code; methods with the same name have the same selector.&nbsp; Whenever possible, you should use the <b>@selector()</b> directive to ask the compiler to provide the selector for a method. This function asks the run-time system for the selector and should be used only if the name isn't known at compile time.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The second function, <b>sel_getName()</b>, is the inverse of the first.&nbsp; It returns the name that was mapped to <i>aSelector</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>sel_getUid()</b> returns the selector for the <i>aName</i> method, or 0 if there is no known method with that name.&nbsp; <b>sel_getName() </b>returns a character string with the name of the method identified by the <i>aSelector</i> selector.&nbsp; If <i>aSelector</i> isn't a valid selector, a NULL pointer is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>sel_isMapped()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Determine whether a selector is valid</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">BOOL <b>sel_isMapped(</b>SEL <i>aSelector</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>sel_isMapped()</b> returns YES if <i>aSelector</i> is a valid selector (is currently mapped to a method implementation) or could possibly be one (because it lies within the same range as valid selectors); otherwise it returns NO.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Because all of a program's selectors are guaranteed to be mapped at start-up, this function has little real use.&nbsp; It's included here for reasons of backward compatibility only.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>sel_registerName()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>SUMMARY </b></font><font face="Times">Register a method name</font>
+
+<p><font face="Helvetica" size="-1"><b>DECLARED IN </b></font><font face="Times">objc/objc.h</font>
+
+<p><font face="Helvetica" size="-1"><b>SYNOPSIS </b></font><font face="Times">SEL <b>sel_registerName(</b>const char *<i>aName</i><b>)</b></font>
+
+<p><font face="Helvetica" size="-1"><b>DESCRIPTION </b></font><font face="Times">This function registers <i>aName</i> as a method name and causes it to be mapped to a SEL selector, which it returns.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">No check is made to see if <i>aName</i> is already a valid method name.&nbsp; If it is, the same name will be mapped to more than one selector.&nbsp; When the run-time system needs to match a selector to the name, it's indeterminant which one it will find.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=86></td>
+
+<td><font face="Helvetica" size="-1"><b>RETURN </b></font><font face="Times"><b>sel_registerName()</b> returns the selector it maps to the <i>aString</i> method.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

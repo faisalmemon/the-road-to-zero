@@ -1,0 +1,1457 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part3_DriverKit/Concepts/1_Overview/Overview.rtfd -->
+<!-- Date: Sun Jun 28 20:10:55 1998 -->
+<head>
+<title>Overview</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>1</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Driver Kit Architecture</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Driver Kit is a tool kit for writing object-oriented device drivers. Part of the NEXTSTEP Developer software (except for 680x0-based computers), it simplifies writing device drivers for NEXTSTEP systems. The Driver Kit provides as much of the software in a device driver as possible without specific information about the device. The Driver Kit developers have already done much of the work of writing a NEXTSTEP device driver for you.</font>
+
+<p><font face="Times">The preface briefly described the Driver Kit and mentioned a few of its advantages. This chapter provides greater detail about what a Driver Kit driver is and how it's structured. It discusses the components of the Driver Kit and what they do. It contrasts developing a Driver Kit driver to developing a typical UNIX</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">driver--this contrast shows some of the advantages of the Driver Kit approach. It talks about the various Driver Kit classes and how you create a driver with them. The chapter finishes with a discussion of how drivers are integrated into the system at startup time, how interrupts are handled, and how users interface with drivers.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Driver Kit Components</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Driver Kit consists of the following tools:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Objective C classes and protocols that provide the framework for writing drivers for various types of devices. The first three chapters discuss how to use these classes. The section &quot;Classes&quot; in Chapter 5, &quot;Driver Kit Reference,&quot; specifies each class in detail.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Objective C classes that help user-level programs to configure and communicate with drivers. Configuration is discussed in Chapter 4, &quot;Building, Configuring, and Debugging Drivers.&quot; The &quot;The User-Level Interface to Drivers&quot; section in this chapter and &quot;Interfacing with the Driver&quot; in Chapter 2, &quot;Designing a Driver,&quot; tell how to communicate with drivers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">C functions that provide debugging capabilities, kernel services such as memory and time management, and other services. These functions provide most of the operating system services your driver should need. The &quot;Functions&quot; section of Chapter 5, &quot;Driver Kit Reference,&quot; contains specifications for these functions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Utility programs that help you load a driver into an already running system and help you test and debug your driver. Chapter 4, &quot;Building, Configuring, and Debugging Drivers,&quot; tells you about these programs.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The rest of this chapter describes the basics of Driver Kit architecture.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica"><b>Why Objective C?</b></font>
+
+<p><font face="Helvetica" size="-1">Why is Objective C the required language for the Driver Kit? Part of the reason is that all other NEXTSTEP Application Program Interfaces (APIs) are object-oriented and use Objective C. But more importantly, drivers benefit in several ways from object-orientation and Objective C:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1"><b>Naturalness</b>--Object orientation is a natural design method for drivers. Each hardware object can be modeled by a software</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">object,</font></td>
+
+<td><font face="Helvetica" size="-1">and functionality common to a group of drivers (such as display drivers) can be provided by superclasses.</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1"><b>Flexibility</b>--Objective C provides dynamic typing and binding, which help different objects communicate without having to be</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">compiled</font></td>
+
+<td><font face="Helvetica" size="-1">together. For example, this lets a SCSI peripheral driver determine at run time which SCSI controller driver it should</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">communicate</font></td>
+
+<td><font face="Helvetica" size="-1">with. You can simulate dynamism using function lookup tables and type casting in ANSI C, but this results in code</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">that's</font></td>
+
+<td><font face="Helvetica" size="-1">harder to understand and maintain.</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Helvetica" size="-1"><b>Code reduction</b>--The Driver Kit provides classes that significantly lessen the amount of code you have to write. For example,</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">the</font></td>
+
+<td><font face="Helvetica" size="-1">IODirectDevice class greatly simplifies configuration and initialization, and IOFrameBufferDisplay takes care of almost</font></td></tr>
+
+<tr valign=top>
+
+<td width=143></td>
+
+<td nowrap><font face="Helvetica" size="-1">everything</font></td>
+
+<td><font face="Helvetica" size="-1">that a display driver must do.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica" size="-1">See <i>NEXTSTEP Object-Oriented Programming and the Objective C Language</i> for more information on Objective C.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Device and Bus Support</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Driver Kit has classes to help you write drivers for several kinds of devices:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Displays</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Network cards for Ethernet and Token Ring networks</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">SCSI controllers and peripherals such as tape drives</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Sound cards</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The IOEthernet class, for example, provides much of the functionality required for Ethernet drivers. To write a driver for a new type of Ethernet card, you need to implement only six methods, filling in the details of how your hardware performs the various functions required in an Ethernet driver.</font>
+
+<p><font face="Times">Chapter 3, &quot;Support for Specific Devices,&quot; tells you how to implement a driver for device types the Driver Kit explicitly supports.</font>
+
+<p><font face="Times">You can write drivers for other kinds of devices than those listed above. The devices above are merely those that the Driver Kit specifically supports.</font>
+
+<p><font face="Times">In addition, the Driver Kit has general-purpose classes that support these computer buses:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">ISA (Industry Standard Architecture)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">EISA (Extended Industry Standard Architecture, a superset of ISA)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">VL-Bus (VESA Local Bus, where VESA is Video Electronics Standards Association)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">PCI (Peripheral Component Interconnect)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">PCMCIA (Personal Computer Memory Card International Association)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Both ISA and VL-Bus are supported through the EISA bus class.</font>
+
+<p><font face="Times">You indicate the bus type that your driver works with in the configuration file for the driver. See Chapter 4, &quot;Building, Configuring, and Debugging Drivers,&quot; for more information.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Driver Structure</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To appreciate the structural simplicity of a Driver Kit driver, first consider how standard UNIX drivers are constructed.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>UNIX Driver Architecture</b></font>
+
+<p><font face="Times">A UNIX driver has a &quot;top-half&quot; that is accessed through the system call interface and runs in the kernel on behalf of a user process. It manages the driver state and initiates data transfers. The &quot;bottom- half&quot; runs at interrupt level since it's driven by interrupts caused by data transfer completion or other asynchronous events. Interrupts are handled by the driver's interrupt handler, which may call top-half routines at interrupt priorities. Indirect devices--devices that are not directly connected to the processor, such as secondary-bus devices or SCSI peripherals--are each handled in an individual fashion--there's no systematic way to treat them.</font>
+
+<p><font face="Times">This design paradigm has several consequences:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Multiple requests may attempt to access the same hardware or driver data structures at the same time.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Interrupts may occur at any time, and their handlers may also need to access hardware or data structures.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To coordinate access to these hardware and data resources, the driver must use such tactics as disabling interrupts, changing processor priority, and engaging locks of various types. The resulting code is often complicated: difficult to write, debug, understand, and maintain.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Driver Kit Driver Architecture</b></font>
+
+<p><font face="Times">You can write a UNIX style driver with the Driver Kit, but that's not the best way to go about it. Driver Kit drivers differ significantly from traditional UNIX or MS-DOS</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">drivers. Driver Kit drivers have these characteristics:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Drivers are <i>objects</i>. The Driver Kit is written in the Objective C language, which supports object-oriented programming. This programming approach also allows code that's common to all drivers--or a set of drivers such as network drivers--to be written once and inherited by subclasses.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By default, each driver uses only one thread--the <i>I/O thread</i>--to access its hardware device. All I/O threads reside in a separate kernel task--the I/O kernel task.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By default, there's one I/O thread for each hardware device. Given any hardware resource, only one thread deals with that resource at a time. Traditional device drivers use locks and disable interrupts to protect access to hardware and data structures. Limiting resource access to only one thread greatly simplifies driver design.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Interface methods in the driver are invoked from the <i>user thread</i>: the thread running in the kernel on behalf of the user. These methods communicate requests to the I/O thread using techniques such as <i>Mach messaging</i>, and they enqueue commands for the I/O thread to execute. The I/O thread can then handle one request at a time instead of being subjected to a barrage of requests to access multiple resources at the same time. (Interface methods don't perform I/O requests directly, because only the I/O thread should touch hardware and other critical resources.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times"><i>Mach messages</i> are not the same as <i>Objective C messages</i> that are sent to objects. Mach messaging refers to use of the Mach operating system's message system. See the references on the Mach operating system and the Objective C language in the &quot;Suggested Reading&quot; section of the Appendix.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The kernel takes all interrupts and notifies the I/O thread via Mach messages. Drivers don't need to run with interrupts disabled. The Driver Kit's thread-based model lets the driver delay responding to interrupts until it's ready to deal with them. The UNIX concept of a direct <i>interrupt handler</i>--a section of driver code that executes as soon as an interrupt is detected by the kernel--has been replaced by this Mach messaging mechanism. Interrupt handling is discussed in greater detail in &quot;Servicing Interrupts&quot; in this chapter. You can register your own interrupt handler if that's required, but unless you do, your driver will run at the user or I/O thread level--not at interrupt level.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Drivers for devices that are connected to the processor indirectly through some secondary bus--such as SCSI peripherals connected to a SCSI bus--have a structured way to communicate with the drivers controlling the secondary bus. For example, SCSI controller objects conform to an Objective C protocol that SCSI peripheral drivers can employ.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Driver Kit drivers are currently kernel-level drivers, either as loadable kernel servers or as part of the kernel supplied by NeXT. User-level drivers are not yet supported.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Tip:</b></font>&nbsp; <font face="Times">Running drivers at user level would make testing hardware much easier, and it would greatly reduce the likelihood of system panics due to driver bugs. This design goal hasn't been realized yet. However, when you design your driver, you should keep in mind the possibility of it becoming a user-level driver. To make porting drivers from kernel to user level as easy as possible, much of the Driver Kit API is identical at kernel level and at user level. In future releases, the goal is to allow all drivers to run at user level.</font>
+
+<p><font face="Times">Although it's possible to write a UNIX style driver with the Driver Kit, that's not the best way to proceed. You wouldn't be taking full advantage of the capabilities of the Driver Kit, and you would be doing a lot of extra work.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Driver Classes and Instances</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You implement a driver by creating a subclass of one of the device type classes in the Driver Kit. <i>A driver object is an instance of this subclass you've defined.</i></font>
+
+<p><font face="Times">Each Driver Kit class has a set of methods, some of which don't actually do anything. These methods--even the ones that do nothing--provide a framework for you to build on. The classes and their methods all ignore hardware-dependent aspects of a driver to some extent. Of course, every driver must control real hardware, so you must implement or override the methods provided in the Driver Kit so that they perform their intended functions with your hardware. You essentially &quot;fill in the blanks&quot; in the methods to develop much of your driver.</font>
+
+<p><font face="Times">You choose the Driver Kit class for which you're going to create a subclass based on the device type, such as display, network, sound, and so on.</font>
+
+<p><font face="Times">For example, you can write an Ethernet card driver by creating a subclass of the IOEthernet class. You then override each method in the IOEthernet superclass by writing code that performs that method's functions--using the software interface to your particular Ethernet card hardware. In other words, you take the generic methods provided by the IOEthernet class and make them specific to your hardware in the subclass that you implement.</font>
+
+<p><font face="Times">Most Driver Kit classes are never instantiated. Instead, they serve as abstract classes that give capabilities to their subclasses. For example, IODisplay is an abstract class that implements functionality common to all displays.</font>
+
+<p><font face="Times">The hierarchy of Driver Kit classes has three main branches, as shown in Figure 1-1.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F10.gif" width=523 height=217></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 1-1</b></font><font face="Times">. Some Core Driver Kit Classes</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Classes for developing disk drivers, such as IODisk, aren't currently documented.</font>
+
+<p><font face="Times">You create a subclass of a class in the IODevice branch to create your driver. All drivers are instances of subclasses of IODevice. These classes provide frameworks for specific types of device drivers.</font>
+
+<p><font face="Times">The other two branches--IODeviceDescription and IOConfigTable--provide information about drivers. IOConfigTable objects get configuration information about particular devices and the system as a whole from configuration tables, which specify how a driver is to be configured. IODeviceDescription objects encapsulate configuration and other information about the driver and are used for initializing the driver. These classes allow you to configure the driver into the system and allow it to communicate with system hardware.</font>
+
+<p><font face="Times">In summary, the Driver Kit provides a framework for developing a driver for NEXTSTEP systems. It provides many of the pieces you need to create a driver--classes and protocols, methods, functions, and utilities--and puts the pieces together for you. A class hierarchy groups methods logically by function and device type. A thread mechanism, including a default I/O thread, ensures that methods work together, taking advantage of the NEXTSTEP architecture. You still have to implement the methods to fit your hardware, but the basic structure is already there. The paradigm embodied in the Driver Kit fits well with NEXTSTEP, but it's different from the model that standard UNIX drivers use. You can write a driver using a UNIX model, but it would require greater effort.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Direct and Indirect Device Drivers</b></font>
+
+<p><font face="Times">Some devices, such as displays and network devices, are connected directly to the processor, and their drivers are referred to as <i>direct device drivers</i>. Other devices are connected to the processor indirectly through some secondary bus--such as SCSI peripherals connected to a SCSI bus. Drivers for such devices are called <i>indirect device drivers.</i> Drivers for direct devices talk to the hardware directly. Indirect device drivers talk to their device hardware indirectly through some direct device. A SCSI disk driver, for instance, communicates with the disk through a SCSI controller driver, which controls the SCSI bus.</font>
+
+<p><font face="Times">Thus drivers talk to hardware either directly or indirectly, or they may not deal with hardware at all. Drivers are thus further classified into these three types:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Direct device drivers (for example, drivers for SCSI controllers)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Indirect device drivers (for example, drivers for disks attached to SCSI controllers)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Pseudo device drivers (drivers that control no hardware)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These classes work differently, are initialized differently, and require different system resources. This manual focuses primarily on direct and indirect drivers, not pseudo device drivers.</font>
+
+<p><font face="Times">Note that the IODevice branch in Figure 1-1 is further split into two branches. On one side is IODirectDevice, from which you would create a subclass for a direct device driver. Indirect device drivers stem from the other branch and are subclasses of IODevice.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica"><b>Terminology Used in This Document</b></font>
+
+<p><font face="Helvetica" size="-1">The term <i>driver</i> refers to the implementation of a subclass of one of the Driver Kit device classes--since Driver Kit classes are typically abstract classes. <i>Instances</i> of a driver are instances of the subclass. Often an object is referred to as an object of one of its superclasses--for example, as an <i>IOSCSIController object</i> or <i>IODevice object</i>--to indicate that the object is an instance of any subclass of the superclass. Finally, <i>device</i> is sometimes used to refer to any IODevice object.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As Figure 1-1 shows, IOSCSIController, IODisplay, and IOEthernet are subclasses of IODirectDevice. This classification occurs because instances of their subclasses talk directly to the hardware, performing such operations as handling interrupts, mapping memory, and performing DMA operations. IODisk, an indirect device class, is a subclass of IODevice--but not of IODirectDevice. This occurs because IODisk objects don't talk directly to the hardware: They talk indirectly to the hardware by sending request messages to IODirectDevice objects such as IOSCSIControllers.</font>
+
+<p><font face="Times">Figure 1-2 shows how two objects--one an instance of a direct device driver, the other an instance of an indirect device driver--combine to control two pieces of hardware. The indirect driver, an IOSCSIDisk object, uses the direct driver, an IOSCSIController object, to control the hardware.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">IOSCSIDisk is a nonpublic subclass of IODisk.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=328 height=240></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 1-2</b></font><font face="Times">. How Objects Correspond to Hardware</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>One Device Driver Object per Hardware Device</b></font>
+
+<p><font face="Times">There is one device driver object for each hardware device. In Figure 1-3, one IOSCSIController object manages the SCSI controller, and an IOSCSIDisk object manages each disk. Both disks are connected to the same SCSI controller, so both IOSCSIDisk objects communicate with the hardware using the single IOSCSIController object.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F7.gif" width=309 height=242></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 1-3</b></font><font face="Times">. One-to-One Correspondence between Driver Objects and Hardware Devices</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Key Driver Kit Classes</b></font>
+
+<p><font face="Times">You typically create a subclass of either IODevice or IODirectDevice (or one of its subclasses) to create a driver.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>IODevice: The Generic Device Driver</b></font>
+
+<p><font face="Times">Every driver is a subclass of IODevice. This class provides a standard programming interface for probing hardware and for creating, initializing, and registering a driver instance.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>IODirectDevice: The Class for All Direct Devices</b></font>
+
+<p><font face="Times">IODirectDevice is the class for drivers that directly control hardware. This class adds data (that is, instance variables) and methods for managing interrupts, DMA channels, address ranges, and other resources. It contains a configuration table, an NXStringTable object of key/value pairs that hold configuration data provided by the system and the user.</font>
+
+<p><font face="Times">The IODirectDevice class has Objective C categories for specific hardware buses:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">IOEISADirectDevice for EISA-, ISA-, and VL-Bus-based systems</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">IOPCIDirectDevice for PCI-based systems</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">IOPCMCIADirectDevice for PCMCIA-based systems</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Display, network, SCSI controller, and sound drivers are all direct drivers that can be implemented as subclasses of IODirectDevice--or its subclasses. IODirectDevice has subclasses for each of these specific device types. For example, you can use the IODisplay class (a subclass of IODirectDevice) to write a display driver.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>IODeviceDescription: Device Information</b></font>
+
+<p><font face="Times">For every IODevice object, there's a device description object--an instance of the IODeviceDescription class--that contains information about the device. Thus every device in a system has a device description that contains information about the device:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Device address</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">System resources (IRQ, DMA channels, and so on) used by the device</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Other information specific to the bus type</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Instance variables in IODevice (of which the driver is a subclass) contain the rest of the device information, such as device type. The configuration tables, such as <b>Default.table</b> and <b>Instance</b><i>n</i><b>.table</b>, contain the device driver configuration information. These tables can be modified using the Configure application.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Class Components</b></font>
+
+<p><font face="Times">When you create a subclass, you add instance variables that are appropriate for your hardware, such as variables for memory-mapped registers. A subclass might include the following typical instance variables:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Pointers to hardware registers</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Device state from volatile or write-only registers</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Driver mode or state</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">I/O management variables such as queue heads, locks for critical structures, or data buffer pointers</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Any per-device private data that normally goes in a UNIX driver's &quot;softc&quot; structure</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your subclass inherits a set of methods from its superclass to perform such actions such as these:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Initialize the driver object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Get and set values of instance variables</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Send commands to hardware</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Receive notifications such as interrupts, I/O completions, and timeouts</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In your subclass you can override methods from the superclass, and you can also add new ones. You customize these methods to work with your device's hardware.</font>
+
+<p><font face="Times">Suppose, for example, you're implementing a display driver for a display card that can linearly map the entire frame buffer. Create a subclass of the IOFrameBufferDisplay class (a subclass of IODisplay), then override four methods to do the following operations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>initFromDeviceDescription:</b> to invoke <b>super</b>'s implementation of <b>initFromDeviceDescription:</b>, map the display into the memory, and select the display mode.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>enterLinearMode</b> to place the frame buffer device into the linear frame buffer mode selected during device initialization.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>revertToVGAMode</b> to set the display to run as a standard VGA device.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setBrightness:</b> to control screen brightness, if the hardware supports this function.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Once you've done this, you've finished much of your driver.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>The User-Level Interface to Drivers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You typically don't need to be concerned about interfacing with your driver: The kernel automatically finds the driver and uses its methods to communicate with the driver. Most display, network, SCSI controller, and sound drivers are integrated into the system this way. For some devices, such as SCSI peripherals, you may need to write an interface program called by user programs or other drivers. This interface program invokes the driver's methods to communicate with the driver.</font>
+
+<p><font face="Times">See &quot;Interfacing with the Driver&quot; in Chapter 2 for more discussion of user-level to driver-level communication.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>How IODevice Objects are Created</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Drivers are packaged into <i>driver bundles</i>. A driver bundle contains its relocatable code and configuration information--everything needed to load and configure the driver. It may also contain help information, programs to be run before and after loading the driver, and a configuration inspector that the Configure application uses to access configuration data. Chapter 4, &quot;Building, Configuring, and Debugging Drivers,&quot; tells you more about bundle contents and how to create a driver bundle.</font>
+
+<p><font face="Times">When the system starts up, it goes through three steps to create each driver object, using the information in the driver bundle:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">1.</font></td>
+
+<td><font face="Times">Load the relocatable code for the driver.</font></td></tr>
+
+<tr valign=top>
+
+<td width=130 height=14></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">2.</font></td>
+
+<td><font face="Times">Create an IODeviceDescription object for the device.</font></td></tr>
+
+<tr valign=top>
+
+<td width=130 height=14></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">3.</font></td>
+
+<td><font face="Times">Send a <b>probe:</b> message to the IODevice class object to instantiate a driver object.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The system goes through two phases of driver creation. In the first phase, it performs these three steps to create all the boot device drivers. Boot drivers are the drivers that must be loaded before the kernel can be active, such as the driver for the boot device. In the second phase, the system creates the active device drivers--drivers for the rest of the devices in the system. The <b>System.config/Instance0.table</b> file defines the boot and active devices.</font>
+
+<p><font face="Times">Some driver objects need to know about each other. For instance, an indirect driver controlling a SCSI peripheral needs to communicate with the direct driver that manages the SCSI controller. These drivers get connected with each other during the startup process. See &quot;Connecting the Driver,&quot; in Chapter 2, &quot;Designing a Driver.&quot;</font>
+
+<p><font face="Times">The system is not limited to creating drivers only at system start up time. You can also load a driver after the system has started up with the <b>driverLoader</b> command. See &quot;Using the driverLoader Command&quot; in Chapter 4, &quot;Building, Configuring, and Debugging Drivers,&quot; for more information.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Loading Driver Relocatable Code</b></font>
+
+<p><font face="Times">In the first phase of driver object creation, the kernel loads the driver's relocatable code (in the file <i>Driver</i><b>_reloc</b> in the driver bundle, where <i>Driver</i> is the driver's name) if necessary. The driver is already loaded if it's in the kernel. If there are multiple instances of the driver, the relocatable code is loaded only once.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Creating a Device Description</b></font>
+
+<p><font face="Times">Next, the kernel creates an IOConfigTable object that provides methods to examine the appropriate configuration file for the driver (either <b>Default.table</b> or <b>Instance</b><i>n</i><b>.table</b>). The IOConfigTable object parses the configuration information it gets, which is in configuration key/value pairs in this file. From this information, the kernel instantiates an IODeviceDescription object, which encapsulates information about the driver.</font>
+
+<p><font face="Times">The driver's bus type is indicated in the configuration table as the value associated with the &quot;Bus Type&quot; configuration key (see &quot;Configuration Keys&quot; in the Appendix). The kernel creates the appropriate IODeviceDescription object for the bus:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Bus Type</b></font></td>
+
+<td><font face="Helvetica"><b>IODevice Description Subclass</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">EISA, ISA, VL-Bus</font></td>
+
+<td><font face="Times">IOEISADeviceDescription</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PCI</font></td>
+
+<td><font face="Times">IOPCIDeviceDescription</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PCMCIA</font></td>
+
+<td><font face="Times">IOPCMCIADeviceDescription</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IOPCIDeviceDescription and IOPCMCIADeviceDescription are subclasses of IOEISADeviceDescription, which is a subclass of IODeviceDescription.</font>
+
+<p><font face="Times">After instantiating the IODeviceDescription object, the kernel may do further initialization, using methods in IODeviceDescription to get configuration information. For example, for a PCI-bus device, the kernel might check whether the location of the object on the bus is correct, and if it isn't, the kernel doesn't initialize that device.</font>
+
+<p><font face="Times">If the system supports automatic detection of devices, it automatically scans all system buses to determine which devices are present and to obtain additional configuration information. For more information, see &quot;Auto Detection of Devices&quot; in &quot;Other Features&quot; of Chapter 5, &quot;Reference.&quot; Some EISA- and PCI-based systems support this feature.</font>
+
+<p><font face="Times">For more information on configuration tables, see Chapter 4.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Instantiating Drivers</b></font>
+
+<p><font face="Times">The kernel invokes <b>probe:</b>, a class method in the IODevice class, to instantiate a driver. You must override this method in your driver.</font>
+
+<p><font face="Times">The receiver of a <b>probe:</b> message determines whether to create a new instance of itself, with the help of information passed as the <b>probe:</b> message's argument--the IODeviceDescription object created in the previous step. The IODeviceDescription object contains information about the device's logical location in the system, and the device can query this object for additional information about the way it is configured. From this information, <b>probe:</b> can determine whether the device exists. If the device is present, <b>probe:</b> instantiates and initializes the driver. Your <b>probe:</b> method should invoke the <b>initFromDeviceDescription: </b>method, which initializes the driver.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Use the <b>alloc</b> and <b>initFromDeviceDescription:</b> methods to instantiate and initialize the driver, not the <b>new</b> method.</font>
+
+<p><font face="Times">If <b>probe:</b> creates a driver instance, it returns YES. Otherwise, it returns NO.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Declare your <b>probe:</b> method to return BOOL--not <b>id</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>I/O and Interrupt Requests</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Everything a driver does--whether or not it's a Driver Kit driver--is the result of one of two types of requests:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">I/O requests (from a user-level program, the kernel, or another driver)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Interrupt requests (from the hardware)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Interrupt requests include &quot;soft interrupts,&quot; such as timeout notifications. The Driver Kit thread-based design allows you to manage I/O requests and interrupts one at a time.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Scheduling Hardware Access with I/O Threads</b></font>
+
+<p><font face="Times">Different drivers have different requirements for ordering their accesses to the hardware. Driver Kit display drivers are very simple in this respect: they don't have to queue requests because the Window Server is the only process that makes requests, and it sends them one at a time. Display drivers may be particularly simple because on many systems, display hardware doesn't generate interrupts.</font>
+
+<p><font face="Times">Other drivers have to be more careful. These drivers use an I/O thread--a single thread of execution that handles all access to a single hardware device. Some of the device classes, such as those for SCSI controllers, network, and sound devices, start up the default I/O thread for you.</font>
+
+<p><font face="Times">Typically, each driver instance has exactly one I/O thread. However, some drivers use a single I/O thread for more than one instance. What matters is that only one thread at a time has access to any particular hardware resource.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Some hardware devices can handle more than one request at once. For example, some SCSI controllers can queue multiple commands.</font>
+
+<p><font face="Times">At any given time, the I/O thread should be doing exactly one of two things:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Waiting for an I/O request (from a user, the kernel, or another driver) or an interrupt message</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Executing (dealing with the hardware)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Processes can use a variety of mechanisms to communicate I/O requests to the I/O thread. One of these mechanisms--Mach messages--is the same way the kernel informs the I/O thread that an interrupt has occurred. In this scheme, the kernel enqueues Mach messages for the I/O thread. When the I/O thread isn't executing a request, it dequeues the message and invokes an appropriate driver method in response. (You can also write a custom I/O thread to take whatever action you want in response to messages.) &quot;Synchronizing with the I/O Thread&quot; in Chapter 2 provides more details.</font>
+
+<p><font face="Times">The I/O thread model greatly simplifies driver development and lessens the time needed for debugging the driver. Only one thread deals with any hardware resource at a time, so it's not necessary to use locks and disable interrupts to protect access to hardware and data structures. The user thread communicates requests to the I/O thread, and commands can be enqueued for the I/O thread to execute. The driver can handle one request at a time--instead of many requests to access multiple resources at the same time.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Servicing Interrupts</b></font>
+
+<p><font face="Times">The Driver Kit has a simple scheme for servicing interrupts: The kernel notifies drivers of interrupts by sending them Mach messages. Each driver can receive these messages whenever it chooses, typically when it isn't executing any other requests.</font>
+
+<p><font face="Times">The advantages of this scheme become clear when you consider an alternative--the traditional UNIX method of handling interrupts. Traditional UNIX drivers handle interrupts as soon as they happen--even if the driver is already executing an I/O request. Each driver registers an interrupt handling function that's called whenever the device interrupts. Some systems can't tell exactly which device interrupted, so they call several drivers' interrupt handlers until one accepts the interrupt. While an interrupt is being handled, nothing else in the system (except higher priority interrupt handlers) can execute.</font>
+
+<p><font face="Times">Under the traditional UNIX scheme, drivers can't control when interrupts occur. All they can do is control when interrupts <i>don't </i>occur by disabling interrupts. Drivers disable interrupts to protect critical sections of code, such as those that access hardware or access data structures that are also used by interrupt handlers. However, disabling interrupts has disadvantages:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If a driver disables interrupts for too long, the consequences can be anything from reduced performance to system crashes or hangs.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If a driver disables interrupts and, through some bug, fails to reenable them, the system will hang.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It's easy to fail to protect a critical section--especially when you're changing code that someone else wrote--which can result in bugs that are hard to track down.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Driver Kit scheme of interrupt handling lets you choose when to handle interrupts, so you don't have to protect critical sections from interrupt handlers. This scheme works well with most hardware devices.</font>
+
+<p><font face="Times">IODirectDevice provides a default I/O thread that intercepts Mach interrupt messages and notifies drivers of them with Objective C messages. Driver objects are notified of interrupts with the <b>interruptOccurred</b> or <b>interruptOccurredAt: </b>message. See the sections &quot;Interfacing with the Driver&quot; and &quot;Handling Interrupts&quot; in Chapter 2 and the IODirectDevice class specification in Chapter 5 for more information.</font>
+
+<p><font face="Times">A few devices require that interrupts be handled immediately. For example, a device might have a register that must be read within 50 microseconds of the interrupt occurring. On some devices data overruns occur if interrupts aren't handled quickly enough. In these cases, a kernel-level driver might need to register a direct interrupt handler--a function that's called as soon as the interrupt is detected. This function should perform any time-critical operations and, if necessary, send a Mach message so that the driver can further process the interrupt. The section &quot;Custom Interrupt Handlers&quot; in Chapter 2 describes how this interrupt handling function should work.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

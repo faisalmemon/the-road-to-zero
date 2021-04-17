@@ -1,0 +1,4055 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/17_3DKit/Classes/N3DCamera.rtfd -->
+<!-- Date: Sun Jun 28 20:07:32 1998 -->
+<head>
+<title>N3DCamera</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>N3DCamera</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">View : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">3Dkit/N3DCamera.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">N3DCamera is the 3D Graphics Kit's link to the Application Kit's event-handling and display mechanisms.&nbsp; N3DCamera is a subclass of View that adds methods for managing and performing both Interactive and PhotoRealistic RenderMan rendering.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>PostScript and RenderMan Drawing</b></font>
+
+<p><font face="Times">An N3DCamera draws both 2D and 3D images in response to a <b>display</b> message.&nbsp; The <b>lockFocus</b> method focuses both the Display PostScript interpreter and the Interactive RenderMan renderer on the camera.&nbsp; N3DCamera's <b>drawSelf::</b> works by synchronizing previous PostScript drawing in the view hierarchy, sending a <b>render:</b> message to the camera's world shape (described in the next section), and finally sending itself a <b>drawPS::</b> message to perform custom PostScript drawing over the RenderMan rendering.</font>
+
+<p><font face="Times">In other View subclasses, you override the <b>drawSelf::</b> method to perform PostScript drawing.&nbsp; In N3DCamera, you override the <b>drawPS::</b> method.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The World Shape</b></font>
+
+<p><font face="Times">The N3DCamera has a pointer to a single N3DShape object--its world shape--that serves as the origin of the coordinate system for the scene viewed by the camera.&nbsp; Since both the camera and the world shape may be transformed (translated, scaled, rotated) independently, the world origin can be thought of as existing between the transformation applied to the N3DCamera and that applied to its world shape.</font>
+
+<p><font face="Times">The world shape is at the top of the hierarchy of shapes potentially visible to the camera.&nbsp; The N3DShape class description includes a discussion of the shape hierarchy, as well as a diagram showing the relationships between camera, world shape, and shape hierarchy.</font>
+
+<p><font face="Times">A camera can be connected to any N3DShape in a shape hierarchy.&nbsp; This allows you to view just a part of a scene by setting the camera's world shape to the shape whose descendants you wish to view.&nbsp; You can also have several cameras viewing the same shapes, from different points of view, by setting each camera's world shape to the same N3DShape.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The Camera Coordinate System</b></font>
+
+<p><font face="Times">The camera's position is initially defined in terms of the world coordinate system.&nbsp; The camera's view point defines a point in world coordinates at the center of the scene viewed by the camera.&nbsp; The camera's eye point defines the camera's focal point in world coordinates.&nbsp; The line segment connecting the eye point to the view point is referred to as the eye-to-view-point vector.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=290 height=270></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-1</b></font><font face="Times">.&nbsp; World and camera coordinate systems</font>
+
+<p><br><br>
+
+<p><font face="Times">In the illustration above, the view point is at the origin of the world coordinate system (0.0, 0.0, 0.0) and the eye point is at a point (<i>A<sub>x</sub></i>, <i>B<sub>y</sub></i>, <i>C<sub>z</sub></i>), with <i>A<sub>x</sub></i>being 0.0, <i>B<sub>y</sub></i>being positive, and <i>C<sub>z</sub></i>being negative.&nbsp; By default, the N3DCamera has its eye point positioned at the origin of world space (0.0, 0.0, 0.0) and its view point at (0.0, 0.0, 1.0).</font>
+
+<p><font face="Times">Also shown in the above illustration are the axes of the camera's coordinate system:&nbsp; the s-axis, t-axis, and u-axis.&nbsp; The camera's axes are shown more clearly in the following illustration:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=161 height=166></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-2</b></font><font face="Times">.&nbsp; Camera coordinates</font>
+
+<p><br><br>
+
+<p><font face="Times">The origin of the camera coordinate system is always at the eye point.&nbsp; The u-axis is always perpendicular to the camera's focal plane:&nbsp; it points along the eye-to-view-point vector.&nbsp; The s-axis aligns horizontally with the camera, running through the eye point, and the t-axis aligns vertically with the camera through the eye point.&nbsp; (Note that the camera's coordinate system is a left-handed coordinate system.)</font>
+
+<p><font face="Times">The s-basis, u-basis and t-basis are points that define vectors (directed line segments) related to the camera coordinate system. These vectors define the units and orientation of the axes of the camera's coordinate system.&nbsp; The basis points are initialized by N3DCamera with s-basis at (1.0, 0.0, 0.0), t-basis at (0.0, 1.0, 0.0), u-basis at (0.0, 0.0, 1.0).&nbsp; With these settings, units in the camera coordinate system are equal to units in the world coordinate system.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=195 height=139></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 17-3</b></font><font face="Times">. Camera bases</font>
+
+<p><br><br>
+
+<p><font face="Times">The camera's roll defines its rotation about the u-basis.&nbsp; A positive roll angle produces counterclockwise rotation about this axis (as viewed by the camera), negative rotation produces clockwise rotation.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Global Lights</b></font>
+
+<p><font face="Times">The camera's light list manages N3DLights that illuminate the whole scene viewed by the camera: the world shape, its peers, and its descendants.</font>
+
+<p><font face="Times">Since N3DLight is a subclass of N3DShape, an N3DLight object can be both a descendant or peer of the world shape and a member of the list of global light.&nbsp; Since the light's position is determined by its position in the shape hierarchy, you can place a light at a specific point in the scene viewed by the camera.&nbsp; You can then make it a global light, causing it to illuminate all shapes visible in the scene, even those above it in the shape hierarchy.</font>
+
+<p><font face="Times">A global light need not belong to the shape hierarchy viewed by the camera.&nbsp; You could, for example, create an instance of N3DLight and add it to the global light list.&nbsp; Such a light would by default have a coordinate system that matched the world coordinate system.&nbsp; You could then use a method such as <b>getEyeAt:toward:roll:</b> to get the coordinates needed to position this light relative to the camera.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Determining Rendering Order</b></font>
+
+<p><font face="Times">The camera's hider determines the order in which surfaces are rendered.&nbsp; Which hider is appropriate depends on the type of surface being rendered and the drawing performance desired.&nbsp; The 3D Kit defines three hider types (in the header file <b>/NextDeveloper/Headers/3Dkit/next3d.h</b>):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Hider Type</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Surface Type</b></font></td>
+
+<td><font face="Helvetica"><b>Performance</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">N3D_HiddenRendering</font></td>
+
+<td nowrap><font face="Times">solids</font></td>
+
+<td><font face="Times">slower</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">N3D_InOrderRendering</font></td>
+
+<td nowrap><font face="Times">wireframe, point cloud</font></td>
+
+<td><font face="Times">faster</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">N3D_NoRendering</font></td>
+
+<td nowrap><font face="Times">any</font></td>
+
+<td><font face="Times">fastest</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">N3D_HiddenRendering performs standard hidden-surface computations using a z-buffer.&nbsp; N3D_InOrderRendering renders objects in the order in which they are defined in the camera's RIB stream; this is the default setting.&nbsp; N3D_NoRendering produces no image.&nbsp; The methods <b>hider</b> and <b>setHider:</b> manage the hider type used by the camera.&nbsp; The method <b>setSurfaceTypeForAll:chooseHider:</b> can be used to select the appropriate hider for a particular surface type.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>The Camera's Delegate</b></font>
+
+<p><font face="Times">The camera's delegate implements a method to handle image streams rendered by the PhotoRealistic RenderMan renderer. The methods <b>renderAsEPS</b> and <b>renderAsTIFF</b> initiate photorealistic rendering, and the delegate receives the resulting image stream in a message from the 3D Kit when rendering is complete.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">unsigned int <b>globalWindowNum</b>;</font>
+
+<p><font face="Times">RtToken <b>windowResource</b>;</font>
+
+<p><font face="Times">N3DProjectionType <b>projectionType</b>;</font>
+
+<p><font face="Times">RtToken <b>contextToken</b>;</font>
+
+<p><font face="Times">id <b>worldShape</b>;
+
+<p></font><font face="Times">List *<b>lightList</b>;
+
+<p></font><font face="Times">id <b>delegate</b>;</font>
+
+<p><font face="Times">NXColor <b>backgroundColor</b>;</font>
+
+<p><font face="Times">N3DHider <b>hider</b>;</font>
+
+<p><font face="Times">struct _cameraFlags {</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>degenerate</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>windowChanged</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>needsWindow</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>basisChanged</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>canRender</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>usePreTM</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>doFlush</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>inWorldBlock</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>drawBackground</b>:1;</font>
+
+<p><font face="Times"><b>cameraFlags</b>;</font>
+
+<p><font face="Times">struct _projectionRectangle {</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">float <b>l</b>, <b>r</b>, <b>t</b>, <b>b</b>;</font>
+
+<p><font face="Times">} <b>projectionRectangle</b>;</font>
+
+<p><font face="Times">RtPoint <b>eyePoint</b>;</font>
+
+<p><font face="Times">RtPoint <b>viewPoint</b>;</font>
+
+<p><font face="Times">float <b>rollAngle</b>;</font>
+
+<p><font face="Times">float <b>fov</b>;</font>
+
+<p><font face="Times">float <b>pixelAspectRatio</b>;</font>
+
+<p><font face="Times">float <b>nearPlane</b>;</font>
+
+<p><font face="Times">float <b>farPlane</b>;</font>
+
+<p><font face="Times">RtPoint <b>sBasis</b>;</font>
+
+<p><font face="Times">RtPoint <b>tBasis</b>;</font>
+
+<p><font face="Times">RtPoint <b>uBasis</b>;</font>
+
+<p><font face="Times">RtMatrix <b>preTransform</b>;</font>
+
+<p><font face="Times">RtMatrix <b>transform</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=307></td>
+
+<td nowrap><font face="Times">globalWindowNum</font></td>
+
+<td><font face="Times">Server global window number</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">windowResource</font></td>
+
+<td><font face="Times">Camera's RenderMan resource token</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">projectionType</font></td>
+
+<td><font face="Times">Camera's projection type</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">contextToken</font></td>
+
+<td><font face="Times">Camera's RenderMan context token</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">worldShape</font></td>
+
+<td><font face="Times">Top of the shape hierarchy viewed by the camera</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">lightList</font></td>
+
+<td><font face="Times">Global N3DLight List</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">Camera's delegate</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">backgroundColor</font></td>
+
+<td><font face="Times">Color filled in bounds behind 3D imaging</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">hider</font></td>
+
+<td><font face="Times">The hider used for interactive rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.degenerate</font></td>
+
+<td><font face="Times">YES if the N3DCamera is 0 width or height</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.windowChanged</font></td>
+
+<td><font face="Times">YES if camera changed windows</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.needsWindow</font></td>
+
+<td><font face="Times">YES if camera isn't in a window's view hierarchy</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.basisChanged</font></td>
+
+<td><font face="Times">YES if camera's coordinates changed</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.canRender</font></td>
+
+<td><font face="Times">YES if the camera has all resources for rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.usePreTM</font></td>
+
+<td><font face="Times">YES if <b>transform</b> is premultiplied by <b>preTransform</b> when rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.doFlush</font></td>
+
+<td><font face="Times">YES if the <b>render</b> method sends a <b>flushRIB</b> message</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.inWorldBlock</font></td>
+
+<td><font face="Times">YES if inside <b>WorldBegin()</b>...<b>WorldEnd()</b> block</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cameraFlags.drawBackground</font></td>
+
+<td><font face="Times">YES if <b>backgroundColor</b> is filled in before rendering</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">projectionRectangle.l</font></td>
+
+<td><font face="Times">Horizontal coordinate of left edge of projection rectangle</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">projectionRectangle.r</font></td>
+
+<td><font face="Times">Horizontal coordinate of right edge of projection rectangle</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">projectionRectangle.t</font></td>
+
+<td><font face="Times">Vertical coordinate of top edge of projection rectangle</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">projectionRectangle.b</font></td>
+
+<td><font face="Times">Vertical coordinate of bottom edge of projection rectangle</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">eyePoint, viewPoint</font></td>
+
+<td><font face="Times">Endpoints of viewing vector</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">rollAngle</font></td>
+
+<td><font face="Times">Angle of negative rotation about viewing vector</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">fov</font></td>
+
+<td><font face="Times">Angle of viewing frustum</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">pixelAspectRatio</font></td>
+
+<td><font face="Times">Width/height ratio of pixels</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">nearPlane</font></td>
+
+<td><font face="Times">Distance from eye to near clipping plane</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">farPlane</font></td>
+
+<td><font face="Times">Distance from eye to far clipping plane</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">sBasis</font></td>
+
+<td><font face="Times">Vector defining camera's horizontal axis</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">tBasis</font></td>
+
+<td><font face="Times">Vector defining camera's vertical axis</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">uBasis</font></td>
+
+<td><font face="Times">Vector defining camera's longitudinal axis</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">preTransform</font></td>
+
+<td><font face="Times">Matrix for premultiplication</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">transform</font></td>
+
+<td><font face="Times">Matrix for world-to-camera transformation</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Rendering RIB</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">render</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderSelf:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFlushRIB:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesFlushRIB</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">flushRIB</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Drawing PostScript</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lockFocus</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">unlockFocus</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawPS::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawSelf::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Background color</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBackgroundColor:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">backgroundColor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDrawBackgroundColor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesDrawBackgroundColor</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying the frame rectangle</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">moveBy::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">moveTo::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rotateBy:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rotateTo:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFrame:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeBy::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeTo::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the shape hierarchy</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setWorldShape:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">worldShape</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing global lights</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addLight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeLight:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lightList</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Picking</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectShapesIn:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Projection rectangle</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setProjectionRectangle::::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getProjectionRectangle::::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Selecting projection type</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setProjection:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">projectionType</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Pretransform matrix</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPreTransformMatrix:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getPreTransformMatrix:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setUsePreTransformMatrix:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">usesPreTransformMatrix</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Eye position manipulation</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEyeAt:toward:roll:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getEyeAt:toward:roll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">moveEyeBy:::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rotateEyeBy::about:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Clipping planes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setClipPlanesNear:far:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getClipPlanesNear:far:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Field of view</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFieldOfViewByAngle:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFieldOfViewByFocalLength:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">fieldOfView</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Pixel aspect ratio</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPixelAspectRatio:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pixelAspectRatio</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Converting coordinates</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">convertPoints:count:fromSpace:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">convertPoints:count:toWorld:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Frame number</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">frameNumber</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Printing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">canPrintRIB</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Copying RIB</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyRIBCode:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting world attributes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">worldBegin:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">worldEnd:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting and getting the delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the hider</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">hider</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setHider:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSurfaceTypeForAll:chooseHider:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Rendering photorealistically</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderAsEPS</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">renderAsTIFF</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">numCropWindows</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cropInRects:nRects:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">awake</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addLight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLight:</b><i>aLight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds <i>aLight</i> to the N3DCamera's light list and sets it to be a global light.&nbsp; Global lights are rendered before all other N3DShapes in the scene viewed by the camera; thus, they potentially illuminate the entire scene (depending on the type of the light).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If <i>aLight</i> is in a shape hierarchy, it remains in that hierarchy, and its origin is determined by any transformations applied by the hierarchy.&nbsp; If not, its origin is the origin of the world coordinate system.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lightList</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeLight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setGlobal:</b> (N3DLight),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isGlobal</b> (N3DLight)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>awake</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after unarchiving to allow the N3DCamera to perform additional initialization.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>backgroundColor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXColor)<b>backgroundColor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the background color--the color filled behind all drawing, both 2D and 3D, performed by the camera.&nbsp; The default value is NX_COLORBLACK.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawBackgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>canPrintRIB</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>canPrintRIB</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES.&nbsp; This method is invoked for each View in a View hierarchy when printing to determine if any RIB needs to be rendered by the PhotoRealistic RenderMan renderer.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>convertPoints:count:fromSpace:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:</b>(RtPoint *)<i>points</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(int)<i>n</i></font><br>
+<font face="Times"><b>fromSpace:</b><i>aShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Converts the elements in <i>points</i>, an array of RtPoints specified in the coordinate system of <i>aShape</i>, to the two-dimensional (Display PostScript) coordinate system of the receiver.&nbsp; On return, the first two elements of each RtPoint in <i>points</i> represents an x-y coordinate pair in the receiver's coordinate system; the third element should be ignored.&nbsp; Returns <b>self</b>, and by reference, the transformed points.</font>
+
+<p><font face="Times">This method may be useful for hit detection, for direct manipulation of N3DShapes displayed in the N3DCamera, and for positioning PostScript drawing relative to N3DShapes displayed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:count:toWorld:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>convertPoints:count:toWorld:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:</b>(NXPoint *)<i>mcoords</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>count:</b>(int)<i>pointCount</i></font><br>
+<font face="Times"><b>toWorld:</b>(RtPoint *)<i>wcoords</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Converts each 2D point in <i>mcoords</i> from the receiver's coordinate system to a pair of 3D points in world-coordinates.&nbsp; For each 3D point pair returned in <i>wcoords</i>, the first point's z-value places it at the near clipping plane, and the second point's z-value places it at the far clipping plane.&nbsp; <i>wcoords</i> should point to an array of RtPoints large enough to hold twice <i>pointCount</i>.</font>
+
+<p><font face="Times">Returns <b>self</b> and, by reference in <i>wcoords,</i> the 3D point pairs.&nbsp; A NULL pointer returned in <i>wcoords</i> indicates that the N3DCamera has been unable to convert the points.</font>
+
+<p><font face="Times">This method may be useful for hit detection, for direct manipulation of N3DShapes displayed in the N3DCamera, and for positioning shapes relative to PostScript drawing.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>convertPoints:count:fromSpace:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copyRIBCode:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copyRIBCode:</b>(NXStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Copies the RIB code generated by the receiver to <i>stream</i>.&nbsp; Use this method to generate data for a &quot;.rib&quot; file or an NX_RIBPasteboardType.&nbsp; The RIB code copied to <i>stream</i> includes that generated by the receiver and by any visible shapes in its world shape's hierarchy.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>cropInRects:nRects:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cropInRects:</b>(NXRect *)<i>theRects</i> <b>nRects:</b>(int)<i>rectCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> and, by reference in <i>theRects</i>, an array of <i>rectCount</i> rectangles representing horizontal strips of the camera's area. This method is used by the kit when rendering on multiple rendering hosts.&nbsp; Override this method if you want an N3DCamera's image to be divided in some other way for rendering on multiple hosts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numCropWindows</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's delegate.&nbsp; An N3DCamera's delegate will be notified by a <b>camera:didRenderStream:tag:frameNumber:</b> message when a frame generated by the <b>renderAsEPS</b> or <b>renderAsTIFF </b>methods has been rendered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsEPS</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsTIFF</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>camera:didRenderStream:tag:frameNumber:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesDrawBackgroundColor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesDrawBackgroundColor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the background color will be drawn in the bounds rectangle by <b>drawSelf::</b> before any other rendering or drawing is done in the N3DCamera; returns NO otherwise.&nbsp; The default return value is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesFlushRIB</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesFlushRIB</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the N3DCamera's <b>render</b> method flushes the RIB pipeline, waiting to return until all rendering is complete.&nbsp; RIB is flushed by sending a <b>flushRIB</b> message after rendering the N3DCamera's global lights, world shape, and shape hierarchy. The default return value is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flushRIB</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushRIB:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>drawPS::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawPS:</b>(NXRect *)<i>rects</i> <b>:</b>(int)<i>nRects</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Abstract method for PostScript drawing in an N3DCamera.&nbsp; Override this method rather than <b>drawSelf::</b> to do PostScript drawing in an N3DCamera.&nbsp; This method is invoked by N3DCamera's <b>drawSelf::</b> method, which passes along its <i>rects</i> and <i>nRects</i> arguments; thus you can structure the code in this method exactly as you would the code in a View's <b>drawSelf::</b> method. PostScript drawing is done &quot;on the glass&quot; in front of any RenderMan drawing in the view.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>drawSelf::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:</b>(const NXRect *)<i>rects</i> <b>:</b>(int)<i>nRects</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden by N3DCamera to perform both PostScript and RenderMan drawing each time the camera is displayed.&nbsp; This method first draws the current background color if the N3DCamera is set to do so.&nbsp; It then redraws all shapes in the N3DCamera's shape hierarchy, clipping the rendering to the first rectangle in <i>rects</i>, if any.&nbsp; Finally, it invokes <b>drawPS::</b> to do PostScript drawing in the View.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Unlike other View subclasses, you don't override this method to do custom drawing in a subclass of N3DCamera.&nbsp; Instead, you override the abstract method <b>drawPS::</b>.&nbsp; If you override this method, be sure to invoke <b>drawSelf::</b> on <b>super</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawPS::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawBackgroundColor:</b></font><img src="../../../Images/c2C.gif" width=3 height=4> <font face="Times">- <b>setBackgroundColor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fieldOfView</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>fieldOfView</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the field of view for the N3DCamera:&nbsp; the angle in degrees of the viewing frustum.&nbsp; The default field of view is 40 degrees.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByAngle:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByFocalLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>flushRIB</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flushRIB</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Assures that all rendering is completed before execution continues.&nbsp; This method is comparable to the Application Kit function <b>NXPing()</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesFlushRIB</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushRIB:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>frameNumber</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>frameNumber</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns 1.&nbsp; This method is invoked when rendering to get the value to pass in the RenderMan <b>RiFrame()</b> function.&nbsp; It's overridden by N3DMovieCamera for multiple frame animation.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>frameNumber</b> (N3DMovieCamera)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the N3DCamera and its associated storage.&nbsp; Doesn't free the camera's world shape or list of global lights.&nbsp; Invokes <b>free </b>on <b>super</b> and returns the value returned by that message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getClipPlanesNear:far:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getClipPlanesNear:</b>(float *)<i>aNearPlane</i> <b>far:</b>(float *)<i>aFarPlane</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> and, by reference, the distances from the eye point to the clipping planes for the camera's viewing frustum. <i>aNearPlane</i> and <i>aFarPlane</i> should each be allocated to the size of a single float.&nbsp; The values returned represent the distance in world coordinates along a line extending through the eye-to-view-point vector, with the origin (0.0) at the eye point.&nbsp; The default values are 0.01 (near) and 1000.0 (far).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setClipPlanesNear:far:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getEyeAt:toward:roll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getEyeAt:</b>(RtPoint *)<i>eyePoint</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>toward:</b>(RtPoint *)<i>viewPoint</i></font><br>
+<font face="Times"><b>roll:</b>(float *)<i>rollAngle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> and, by reference in <i>eyePoint</i> and <i>viewPoint</i>, the eye-to-view-point vector.&nbsp; The values returned are in world coordinates.&nbsp; <i>rollAngle</i> indicates rotation about this vector, with positive values representing counterclockwise rotation (looking through the camera) and negative values representing clockwise rotation.&nbsp; The default <i>eyePoint</i> is (0.0, 0.0, 0.0)--the origin of the world coordinate system.&nbsp; The default <i>viewPoint</i> is (0.0, 0.0, 1.0)--viewing along the z-axis.&nbsp; The default <i>rollAngle</i> is 0.0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEyeAt:toward:roll:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getPreTransformMatrix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPreTransformMatrix:</b>(RtMatrix)<i>theMatrix</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> and, in <i>theMatrix</i>, the camera's pretransform matrix.&nbsp; By default, a camera has no pretransform matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUsePreTransformMatrix:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>usesPreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getProjectionRectangle::::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProjectionRectangle:</b>(float *)<i>left</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float *)<i>right</i></font><br>
+<font face="Times"><b>:</b>(float *)<i>top</i></font><br>
+<font face="Times"><b>:</b>(float *)<i>bottom</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns <b>self</b> and, by reference in <i>left</i>, <i>right</i>, <i>top</i>, and <i>bottom</i>, the RenderMan screen window extent.&nbsp; These are the values passed to the RenderMan <b>RiScreenWindow()</b> function when the camera renders.&nbsp; The default values are -1.0 (<i>left</i>), 1.0 (<i>right</i>), 1.0 (<i>top</i>), and -1.0 (<i>bottom</i>).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProjectionRectangle::::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>hider</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(N3DHider)<b>hider</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiver's N3DHider.&nbsp; The returned value represents the technique used to arrange objects in the N3DCamera's image.&nbsp; The 3D Kit defines three hider types (in the header file <b>3Dkit/next3d.h</b>):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">N3D_HiddenRendering</font><br>
+<font face="Times">N3D_InOrderRendering</font><br>
+<font face="Times">N3D_NoRendering</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">See &quot;Determining Rendering Order&quot; in the class description for a discussion of the hider types.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHider:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invokes <b>initFrame:</b> with NULL as the argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>fRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the N3DCamera by first invoking <b>initFrame:</b> on <b>super</b>, then setting instance variables and starting the context for 3D rendering with Interactive RenderMan.</font>
+
+<p><font face="Times">This method sets the N3DCamera's context token to that of the N3DContextManager's main context.&nbsp; It allocates a default world shape, sets the background color to NX_COLORBLACK, sets the global window number to zero, and sets the projection type to N3D_Perspective.&nbsp; It sets the eye point to (0.0, 0.0, 0.0) and sets the view point to (0.0, 0.0, 1.0).&nbsp; This aims the camera directly along the z-axis from the origin of world coordinates, the RenderMan default for camera position.&nbsp; It sets the near clipping plane to 0.01 and the far clipping plane to 1000.0.</font>
+
+<p><font face="Times">This method is the designated initializer for N3DCamera.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lightList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lightList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the List object that manages the N3DCamera's global light sources--N3DLight objects that illuminate the entire scene viewed by the camera.&nbsp; N3DCamera allocates this list lazily, the first time you invoke <b>addLight:</b>.&nbsp; You may want to get at objects in this list for certain lighting effects--like turning lights on or off.&nbsp; You shouldn't add objects to or remove objects from this list using List methods; instead use N3DCamera's <b>addLight:</b> and <b>removeLight:</b> methods.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeLight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isGlobal</b> (N3DLight),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setGlobal:</b> (N3DLight)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>lockFocus</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>lockFocus</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Locks PostScript focus on the View, then invokes the RenderMan <b>RiDisplay()</b> function to focus rendering on the window and frame buffer in which the camera is drawn.&nbsp; It also recalculates the projection rectangle to assure that 3D rendering occurs within the correct camera coordinate system.&nbsp; Returns the value returned by <b>super</b>'s <b>lockFocus</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unlockFocus</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>moveBy::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveBy:</b>(NXCoord)<i>deltaX</i> <b>:</b>(NXCoord)<i>deltaY</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden to ensure that adjustments to the camera's two-dimensional (PostScript) coordinate system are reflected in its three-dimensional (RenderMan) coordinate system.</font>
+
+<p><font face="Times">This method repositions the view within its superview's coordinate system by invoking super's <b>moveBy::</b> method.&nbsp; It then recalculates the 3D coordinate system by invoking <b>RiDisplay()</b> and adjusting the projection rectangle to match the new extent of the 2D coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveTo::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>moveEyeBy:::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveEyeBy:</b>(float)<i>sDistance</i> <b>:</b>(float)<i>tDistance</i> <b>:</b>(float)<i>uDistance</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Moves the camera along its own axes.&nbsp; <i>sDistance</i> determines the horizontal movement, <i>tDistance</i> determines vertical movement, and <i>uDistance</i> determines movement along the axis defined by the eye-to-view-point vector.&nbsp; See the class description for an illustration of these camera axes.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveBy::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveTo::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>moveTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveTo:</b>(NXCoord)<i>x</i> <b>:</b>(NXCoord)<i>y</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden to ensure that adjustments to the camera's two-dimensional (PostScript) coordinate system are reflected in its three-dimensional (RenderMan) coordinate system.</font>
+
+<p><font face="Times">This method repositions the view within its superview's coordinate system by invoking super's <b>moveTo::</b> method.&nbsp; It then recalculates the 3D coordinate system by invoking <b>RiDisplay()</b> and adjusting the projection rectangle to match the new origin of the 2D coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveBy::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>numCropWindows</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>numCropWindows</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of horizontal rectangles that the camera image will be divided into for PhotoRealistic RenderMan rendering on multiple hosts.&nbsp; This method is invoked by the 3D Kit when printing; the return value is determined by the number of rendering hosts selected.</font>
+
+<p><font face="Times">Override this method if you want the N3DCamera's image to be rendered in some other number of rectangles.&nbsp; You might, for example, want the user to be able to select the number and size of divisions of an image to be rendered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cropInRects:nRects:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numSelectedHosts</b> (N3DRenderPanel)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>pixelAspectRatio</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>pixelAspectRatio</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the pixel aspect ratio for the N3DCamera.&nbsp; The default value is 1.0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPixelAspectRatio:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>projectionType</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(N3DProjectionType)<b>projectionType</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the projection type for the N3DCamera.&nbsp; The projection type may be either N3D_Perspective (the default) or N3D_Orthographic, defined in the header file <b>3Dkit/next3d.h</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProjection:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads an instance of N3DCamera from <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>awake</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeLight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeLight:</b><i>aLight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes <i>aLight</i> from the N3DCamera's light list by invoking List's <b>removeObject:</b> method and sending <i>aLight</i> a <b>setGlobal: </b>message with NO as the argument.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addLight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lightList</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>render</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Renders the camera, its world shape, and any shapes in the world shape's hierarchy.&nbsp; This method is invoked by N3DCamera's <b>drawSelf::</b> method to perform 3D rendering whenever the camera is displayed.&nbsp; Invoke this method directly if you want the camera to perform only 3D drawing; be sure to lock focus on the camera before invoking <b>render</b> directly from your code.</font>
+
+<p><font face="Times">This method clips 3D rendering to the rectangle returned by <b>getVisibleRect:</b>.&nbsp; It calls <b>RiFrameBegin()</b>, invoking the camera's <b>frameNumber</b> method for the argument to this function.&nbsp; It sets up the projection type and applies the camera's transformations, then invokes the <b>worldBegin:</b> method on <b>self</b>.&nbsp; It then does camera-specific rendering by invoking the camera's <b>renderSelf: </b>method, and renders the world shape, its descendants, and peers by invoking <b>render:</b> on the world shape.&nbsp; After rendering, it invokes <b>worldEnd:</b>, calls <b>RiFrameEnd()</b>, and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>frameNumber</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldBegin:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldEnd:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderAsEPS</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>renderAsEPS</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Begins photorealistic rendering of the camera's image, and returns a unique integer tag by which the N3DCamera's delegate can identify the rendering job.&nbsp; This method runs the Render panel before rendering begins.&nbsp; The resulting image contains both PostScript and RenderMan drawing.</font>
+
+<p><font face="Times">A photorealistic image is rendered by a separate process and can take some time to complete.&nbsp; The 3D Kit runs the PhotoRealistic RenderMan renderer asynchronously, and signals the N3DCamera's delegate when EPS image data has been generated, using the delegate's <b>camera:didRenderStream:tag:frameNumber:</b> method.&nbsp; The arguments to this method include a tag corresponding to that returned by <b>renderAsEPS</b> when the rendering began, the camera that initiated the rendering, and a stream containing the EPS image.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsTIFF</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>camera:didRenderStream:tag:frameNumber:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderAsTIFF</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>renderAsTIFF</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Begins photorealistic rendering of the camera's image, and returns a unique integer tag by which the N3DCamera's delegate can identify the rendering job.&nbsp; This method runs the Render panel before rendering begins.&nbsp; The resulting image contains only RenderMan drawing.</font>
+
+<p><font face="Times">A photorealistic image is rendered by a separate process and can take some time to complete.&nbsp; The 3D Kit runs the PhotoRealistic RenderMan renderer asynchronously, and signals the N3DCamera's delegate when TIFF image data has been generated, using the delegate's <b>camera:didRenderStream:tag:frameNumber:</b> method.&nbsp; The arguments to this method include a tag corresponding to that returned by <b>renderAsTIFF</b> when the rendering began, the camera that initiated the rendering, and a stream containing the TIFF image.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsEPS</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>camera:didRenderStream:tag:frameNumber:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>renderSelf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>(RtToken)<i>context</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Does nothing, returns <b>self</b>.&nbsp; Override this abstract method to do camera-specific rendering in the N3DCamera.&nbsp; This method is invoked by N3DCamera's <b>render</b> method before the shapes in the world shape's hierarchy are rendered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawPS::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rotateBy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateBy:</b>(NXCoord)<i>deltaAngle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden by N3DCamera to prevent the view's 2D (PostScript) coordinate system from being rotated.&nbsp; Does nothing, returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateTo:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rotateEyeBy::about:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateEyeBy:</b>(float)<i>dElev</i> <b>:</b>(float)<i>dAzim</i> <b>about:</b>(RtPoint)<i>pivotPtr</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Rotates the camera horizontally and vertically about the pivot point.&nbsp; This method performs this rotation by first performing an s-axis (horizontal) rotation by <i>dElev</i>, followed by a t-axis (vertical) rotation by <i>dAzim</i> of the eye vector.&nbsp; Both rotations are about <i>pivotPtr</i>, an RtPoint specified in world coordinates.&nbsp; See the class description for an illustration of the camera axes.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>moveEyeBy:::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rotateTo:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateTo:</b>(NXCoord)<i>angle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden by N3DCamera to prevent the 2D (PostScript) coordinate system from being rotated.&nbsp; Does nothing and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>rotateBy:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectShapesIn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectShapesIn:</b>(const NXRect *)<i>selectionRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a List object containing N3DShapes visible in <i>selectionRect</i>.&nbsp; Only shapes that return YES in response to <b>isSelectable </b>are included in the List.&nbsp; <i>selectionRect</i> is in the 2D (PostScript) coordinate system of the receiving camera.&nbsp; The List object returned belongs to the Camera.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isSelectable</b> (N3DShape class),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSelectable:</b> (N3DShape class)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b>(NXColor)<i>color</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the background color of the N3DCamera.&nbsp; The background color is drawn behind all other drawing--both RenderMan and PostScript--if the <b>clearFrame</b> flag is set.&nbsp; By default, the background color is NX_COLORBLACK.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawBackgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setClipPlanesNear:far:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setClipPlanesNear:</b>(float)<i>aNearPlane</i> <b>far:</b>(float)<i>aFarPlane</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the distances from the eye point to the clipping planes for the camera's viewing frustum.&nbsp; <i>aNearPlane</i> and <i>aFarPlane </i>represent distances from the eye point along a line extending through the eye-to-view-point vector.&nbsp; RI_EPSILON (a constant defined in the header file <b>ri/ri.h</b>) is the minimum value allowed for either argument; if either is smaller, RI_EPSILON is substituted.&nbsp; RI_INFINITY (also defined in <b>ri/ri.h</b>) is the maximum value allowed for either argument; if either is larger, RI_INFINITY is substituted.&nbsp; <i>aNearPlane</i> should always be less than <i>aFarPlane</i>--no 3D drawing can appear in the camera otherwise.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getClipPlanesNear:far:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>theDelegate</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the N3DCamera's delegate.&nbsp; <i>theDelegate</i> implements the method <b>camera:didRenderStream:tag:frameNumber:</b>, the method for getting photorealistic images rendered by <b>renderAsEPS</b> and <b>renderAsTIFF</b> methods.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDrawBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDrawBackgroundColor:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, the background color will be drawn in the bounds rectangle before any other drawing is done in the N3DCamera. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>backgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesDrawBackgroundColor</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBackgroundColor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setEyeAt:toward:roll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEyeAt:</b>(RtPoint)<i>fromPoint</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>toward:</b>(RtPoint)<i>toPoint</i></font><br>
+<font face="Times"><b>roll:</b>(float)<i>aRollAngle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes the eye-to-view-point vector.&nbsp; <i>toPoint</i> is made the camera's view point, and <i>fromPoint</i> is set as the eye point.&nbsp; The standard camera transformation is then applied to rotate the camera by <i>aRollAngle</i> degrees around its eye-to-view-point vector. See the class description for a discussion of the camera coordinates and the eye-to-view-point vector.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getEyeAt:toward:roll:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFieldOfViewByAngle:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByAngle:</b>(float)<i>viewAngle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the field of view to <i>viewAngle</i>, the angle of the camera's viewing frustum in degrees.&nbsp; <i>viewAngle</i> should be between 0 and 180 degrees.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fieldOfView</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByFocalLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFieldOfViewByFocalLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByFocalLength:</b>(float)<i>aFocalLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Calculates and sets the field of view as a function of focal length:&nbsp; the distance between the projection rectangle (the <i>screen window</i> in RenderMan terminology) and the eye point.&nbsp; The RenderMan standard actually fixes a camera's focal length at 1.0. Thus, if <i>aFocalLength</i> is greater than 1.0, this method zooms the camera's lens; if less than 1.0, this method widens the camera's lens.&nbsp; This method achieves the effect of setting focal length by calculating the N3DCamera's field of view from <i>aFocalLength</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fieldOfView</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFieldOfViewByAngle:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFlushRIB:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushRIB:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, the camera's <b>render</b> method sends a <b>flushRIB</b> message to <b>self</b> after the camera and world shape hierarchy have been rendered.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doesFlushRIB</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flushRIB</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFrame:</b>(const NXRect *)<i>fRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden to ensure that adjustments to the camera's two-dimensional (PostScript) coordinate system are reflected in its three-dimensional (RenderMan) coordinate system.</font>
+
+<p><font face="Times">This method repositions and resizes the view within its superview's coordinate system by invoking <b>super</b>'s <b>setFrame:</b> method. It then recalculates the 3D coordinate system by invoking <b>RiDisplay()</b> and adjusting the projection rectangle to match the new extent of the 2D coordinate system.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setHider:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHider:</b>(N3DHider)<i>theHider</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's N3DHider.&nbsp; <i>theHider</i> represents the technique used to arrange objects in the N3DCamera's image.&nbsp; The 3D Kit defines three N3DHider types in the header file <b>3Dkit/next3d.h</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">N3D_HiddenRendering</font><br>
+<font face="Times">N3D_InOrderRendering</font><br>
+<font face="Times">N3D_NoRendering</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">See &quot;Determining Rendering Order&quot; in the class description for a discussion of the hider types.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hider</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setPixelAspectRatio:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPixelAspectRatio:</b>(float)<i>theRatio</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's pixel aspect ratio to <i>theRatio</i>.&nbsp; The ratio for images rendered on most displays and printers is 1.0--the default setting.&nbsp; Use this method when rendering images for output on devices with non-square pixels.&nbsp; Values less than 1.0 indicate horizontal stretching of the pixel; values greater than 1.0 indicate vertical stretching.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pixelAspectRatio</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setPreTransformMatrix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreTransformMatrix:</b>(RtMatrix)<i>theMatrix</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the N3DCamera's pretransform matrix.&nbsp; <i>theMatrix</i> represents a 3D transformation that will be applied to the camera before its transform matrix is applied.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUsePreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>usesPreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setProjection:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProjection:</b>(N3DProjectionType)<i>aProjection</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the projection type for the N3DCamera.&nbsp; <i>aProjection</i> may be N3D_Perspective or N3D_Orthographic; these are defined in the header file <b>3Dkit/next3d.h</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>projectionType</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setProjectionRectangle::::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProjectionRectangle:</b>(float)<i>left</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(float)<i>right</i></font><br>
+<font face="Times"><b>:</b>(float)<i>top</i></font><br>
+<font face="Times"><b>:</b>(float)<i>bottom</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the camera's projection rectangle (the <i>screen window</i> in RenderMan terminology).&nbsp; These values are used in calls to the RenderMan <b>RiScreenWindow()</b> function when rendering and when converting points between the camera coordinate system and other coordinate systems.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProjectionRectangle::::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setSurfaceTypeForAll:chooseHider:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSurfaceTypeForAll:</b>(N3DSurfaceType)<i>surface</i> <b>chooseHider:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the surface type for all shapes in the world shape's hierarchy.&nbsp; <i>surface</i> may be one of the N3DSurfaceTypes, defined in the header file <b>3Dkit/next3d.h</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">N3D_PointCloud</font><br>
+<font face="Times">N3D_WireFrame</font><br>
+<font face="Times">N3D_ShadedWireFrame</font><br>
+<font face="Times">N3D_FacetedSolids</font><br>
+<font face="Times">N3D_SmoothSolids</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, this method chooses the hider type most appropriate to <i>surface</i>: N3D_InOrder for N3D_PointCloud, N3D_WireFrame, and N3D_ShadedWireFrame; N3D_HiddenRendering for N3D_FacetedSolids and N3D_SmoothSolids.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setUsePreTransformMatrix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUsePreTransformMatrix:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the receiver to apply its pretransform matrix before applying its transform matrix.&nbsp; When pretransformation is applied to the camera, it is transformed by the pretransform matrix and then by the transform matrix.&nbsp; By default, a camera has no pretransform matrix.&nbsp; Use the <b>setPreTransformMatrix:</b> method to set the pretransform matrix, then use this method to apply that matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreTransformMatrix:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>usesPreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setWorldShape:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWorldShape:</b><i>a3DShape</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the receiver's world shape to <i>a3DShape</i>.&nbsp; Returns the previous world shape.&nbsp; This method doesn't apply the surface type set for the world shape and its hierarchy by a previous call to <b>setSurfaceTypeForAll:chooseHider:</b>--you must do so explicitly by again invoking that method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSurfaceTypeForAll:chooseHider:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldShape</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sizeBy::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeBy:</b>(NXCoord)<i>deltaWidth</i> <b>:</b>(NXCoord)<i>deltaHeight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden to ensure that adjustments to the camera's 2D (PostScript) coordinate system are reflected in its 3D (RenderMan) coordinate system.</font>
+
+<p><font face="Times">This method repositions and resizes the view within its superview's coordinate system by invoking <b>super</b>'s <b>sizeBy::</b> method.&nbsp; It then recalculates the 3D coordinate system by invoking <b>RiDisplay()</b> and adjusting the projection rectangle to match the new extent of the 2D coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo:</b>(NXCoord)<i>width</i> <b>:</b>(NXCoord)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Overridden to ensure that adjustments to the camera's 2D (PostScript) coordinate system are reflected in its 3D (RenderMan) coordinate system.</font>
+
+<p><font face="Times">This method resizes the view within its superview's coordinate system by invoking <b>super</b>'s <b>sizeBy::</b> method.&nbsp; It then recalculates the 3D coordinate system by invoking <b>RiDisplay()</b> and adjusting the projection rectangle to match the new extent of the 2D coordinate system.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeBy::</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>unlockFocus</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>unlockFocus</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Disables 3D rendering in the camera, then sends an <b>unlockFocus</b> message to <b>super</b>, returning the value returned by that message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lockFocus</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawPS:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf::</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderSelf:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>render</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>usesPreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>usesPreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the receiver applies its pretransform matrix before applying its transform matrix.&nbsp; Returns NO if the receiver applies only its transform matrix.&nbsp; By default, N3DCamera applies only the transform matrix.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPreTransformMatrix:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPreTransformMatrix:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setUsePreTransformMatrix</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>worldBegin:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldBegin:</b>(RtToken)<i>theContext</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Calls the RenderMan function <b>RiWorldBegin()</b>.&nbsp; Override this method to place other RenderMan function calls before <b>RiWorldBegin()</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">You need to override this method to declare macros for use in photorealistic rendering.&nbsp; Macros are declared between the RenderMan procedures <b>RiMacroBegin()</b> and <b>RiMacroEnd()</b>.</font>
+
+<p><font face="Times">One simple use of macros in the 3D Kit is to have a world shape load a RIB file as a macro.&nbsp; To do so, you could implement the following <b>createRIBMacro</b> method in your N3DShape subclass, and invoke it when setting the camera's world shape:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp;&nbsp;&nbsp; *ribFile;&nbsp; /* name of source file for RIB code */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">RtToken ribFileResource, ribMacro; /* tokens for file and macro */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- createRIBMacro</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">ribFileResource = RiResource(ribFile, RI_ARCHIVE, RI_FILEPATH,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&amp;ribFile, RI_NULL);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">ribMacro = RiMacroBegin(ribFile, RI_NULL);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">RiReadArchive(ribFileResource, NULL, RI_NULL);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">RiMacroEnd();</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your N3DShape's <b>renderSelf:</b> method would be implemented as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- renderSelf:camera</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">RiMacroInstance(ribMacro, RI_NULL);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, the macro would be valid only in the Interactive Renderer context--that is, in the display context.&nbsp; To apply the macro when printing, you'd write a <b>worldBegin:</b> method like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- worldBegin:(RtToken)context</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">[super worldBegin:context];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">if (NXDrawingStatus != NX_DRAWING)</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[worldShape createRIBMacro];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can also override <b>worldBegin:</b> to call RenderMan functions for setting camera options--such as <b>RiDepthOfField()</b>, <b>RiShutter()</b>, <b>RiExposure()</b>, and so on.&nbsp; Options are declared before the <b>RiWorldBegin()</b> call, so a <b>worldBegin:</b> method to set depth of field would be coded as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- worldBegin:(RtToken)context</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">RiDepthOfField(myFstop, myFocalLength, myFocalDistance);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">[super worldBegin:context];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldEnd:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>worldEnd:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldEnd:</b>(RtToken)<i>theContext</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Calls the RenderMan procedure <b>RiWorldEnd()</b>.&nbsp; You can override this method to clean up after a camera has rendered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldBegin:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>worldShape</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>worldShape</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the N3DCamera's world shape.&nbsp; By default, the camera allocates an N3DShape as its world shape.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setWorldShape:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the receiving N3DCamera to <i>stream</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>camera:didRenderStream:tag:frameNumber:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>camera:</b><i>theCamera</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>didRenderStream:</b>(NXStream *)<i>imageStream</i></font><br>
+<font face="Times"><b>tag:</b>(int)<i>theJob</i></font><br>
+<font face="Times"><b>frameNumber:</b>(int)<i>currentFrame</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked by the 3D Kit when PhotoRealistic RenderMan rendering finishes.&nbsp; Your application initiates photorealistic rendering by invoking N3DCamera's <b>renderAsEPS</b> or <b>renderAsTIFF</b> method.&nbsp; Each time one of these methods is invoked, it returns a unique integer.&nbsp; The delegate can compare this number with the integer tag <i>theJob</i> to identify a rendering job.</font>
+
+<p><font face="Times">Your delegate can handle the image returned by <i>imageStream</i> in a number of ways.&nbsp; It can, for example, write <i>imageStream</i> to a file or use it to initialize an NXImage:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- camera:theCamera didRenderStream:(NXStream *)imageStream</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">tag:(int)theJob frameNumber:(int)currentFrame</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">myImage = [[NXImage alloc] initFromStream:imageStream];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>currentFrame</i> represents the number returned by the initiating camera's <b>frameNumber</b> method.&nbsp; If <i>theCamera</i> is an N3DMovieCamera or subclass thereof, the rendering methods will produce all the frames for the scene; thus <i>currentFrame </i>reflects the frame number of the image being returned.&nbsp; If <i>theCamera</i> is an N3DCamera or subclass (other than N3DMovieCamera), the rendering methods produce a single frame; thus, <i>currentFrame</i> is usually 1.</font>
+
+<p><font face="Times">Photoreal rendering can take some time.&nbsp; If an application exits before a rendering job is finished, this method won't be called and the rendered image will be lost.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>frameNumber</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsEPS</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>renderAsTIFF</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

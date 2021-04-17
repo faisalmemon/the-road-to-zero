@@ -1,0 +1,773 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXSpellServer.rtf -->
+<!-- Date: Sun Jun 28 20:01:16 1998 -->
+<head>
+<title>NXSpellServer</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXSpellServer"></a><font face="Helvetica" size="+2"><b>NXSpellServer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXSpellServer.h</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NXSpellServer class gives you a way to make your particular spelling checker a service that's available to any application. A <i>service</i> is an application that declares its availability in a standard way, so that any other applications that wish to use it can do so.&nbsp; (See the discussion of &quot;Services&quot; under &quot;Other Features,&quot; later in this chapter.)</font>
+
+<p><font face="Times">The spelling checker bundled with NEXTSTEP makes itself available in this way.&nbsp; If you build a spelling checker that makes use of the NXSpellServer class and list it as an available service, then users of any application that makes use of NXSpellChecker or includes a Services menu will see your spelling checker as one of the available dictionaries, along with the one provided by NeXT.</font>
+
+<p><font face="Times">To make use of NXSpellServer, you write a small program that creates an NXSpellServer instance and a delegate that responds to messages asking it to find a misspelled word and to suggest guesses for a misspelled word.&nbsp; Send the NXSpellServer <b>registerLanguage:</b> messages to tell it the languages your delegate can handle.</font>
+
+<p><font face="Times">The program that runs your spelling checker should not be built as an Application Kit application, but as a simple program. Suppose you supply spelling checkers under the vendor name &quot;Acme.&quot;&nbsp; Suppose the file containing the code for your delegate is called AcmeEnglishSpellChecker.&nbsp; Then the following might be your program's <b>main</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void main()</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">NXSpellServer *aServer = [[NXSpellServer alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">if ([aServer registerLanguage:&#34;English&#34; byVendor:&#34;Acme&#34;]) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[aServer setDelegate:[AcmeEnglishSpellChecker new]];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[aServer run];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;Unexpected death of Acme SpellChecker!\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;Unable to check in Acme SpellChecker.\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your delegate is an instance of a custom subclass.&nbsp; (It's simplest to make it a subclass of Object, but that's not a requirement.) Given a text stream, your delegate must be able to find a misspelled word by implementing the method <b>spellServer:findMisspelledWord:length:inLanguage:inTextStream:startingAt:wordCount:countOnly:</b>.&nbsp; Usually, this method also reports the number of words it has scanned, but that isn't mandatory.</font>
+
+<p><font face="Times">Optionally, the delegate may also suggest corrections for misspelled words.&nbsp; It does so by implementing the method <b>spellServer:suggestGuessesForWord:inLanguage:</b></font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Service Availability Notice</b></font>
+
+<p><font face="Times">When there's more than one spelling checker available, the user selects the one desired.&nbsp; The application that requests a spelling check uses an NXSpellChecker object, and it provides a Spelling Panel; in the panel there's a pop-up list of available spelling checkers.&nbsp; Your spelling checker appears in that list if it has a <i>service descriptor</i>.</font>
+
+<p><font face="Times">A service descriptor is an entry in a text file called <b>services</b>.&nbsp; Usually it's located within the bundle that also contains your spelling checker's executable file.&nbsp; The bundle (or directory) that contains the services file must have a name ending in &quot;.service&quot; or &quot;.app&quot;.&nbsp; The system looks for service bundles in the directories <b>~/Apps</b>,&nbsp; <b>/LocalApps</b>, and <b>/NextApps</b>.</font>
+
+<p><font face="Times">A service availability notice has a standard format, illustrated in the following example for the Acme spelling checker:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Spell Checker:&nbsp; Acme</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Language:&nbsp; French</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Language:&nbsp; English</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Executable:&nbsp; franglais.daemon</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first line identifies the type of service; for a spelling checker, it must say &quot;Spell Checker:&quot; followed by your vendor name. The next line contains the English name of a language your spelling checker is prepared to check.&nbsp; The language should be one of those registered with NeXT Developer Support.&nbsp;&nbsp; If your program can check more than one language, use an additional line for each additional language.&nbsp; The last line of a descriptor gives the name of the service's executable file.&nbsp; (It requires a complete path if it's in a different directory.)</font>
+
+<p><font face="Times">When there's a service descriptor for your Acme spelling checker and also a service descriptor for the checker provided with NEXTSTEP, a user looking at the Spelling Panel's pop-up list would see:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">English (Acme)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">English (NeXT)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">French (Acme)</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Illustrative Sequence of Messages to an NXSpellServer</b></font>
+
+<p><font face="Times">The act of checking spelling usually involves the interplay of objects in two classes: the user application's NXSpellChecker (which responds to interactions with the user) and your spelling checker's NXSpellServer (which provides the application interface for your spelling checker).&nbsp; You can see the interaction between the two in the following list of steps involved in finding a misspelled word.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The user of an application selects a menu item to request a spelling check.&nbsp; The application sends a message to its NXSpellChecker object.&nbsp; The NXSpellChecker in turn sends a corresponding message to the appropriate NXSpellServer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The NXSpellServer receives the message asking it to check the spelling of a text stream.&nbsp; It forwards the message to its delegate.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The delegate searches for a misspelled word.&nbsp; If it finds one, it returns YES and identifies the word's location in the text stream.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The NXSpellServer receives a message asking it to suggest guesses for the correct spelling of a misspelled word, and forwards the message to its delegate.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As the delegate finds each possible correction, it sends an <b>addGuess:</b> message to the NXSpellServer, causing it to append each new word to a list of guesses.&nbsp; When the delegate method returns, the NXSpellServer returns the completed list to the NXSpellChecker that initiated the request.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The NXSpellServer doesn't know what the user does with the errors its delegate has found or with the guesses its delegate has proposed.&nbsp; (Perhaps the user corrects the document, perhaps by selecting a correction from the NXSpellChecker's display of guesses; but that's outside the NXSpellServer's purview.) However, if the user presses the Learn or Forget buttons (thereby causing the NXSpellChecker to revise the user's word list), the NXSpellServer receives a notification of the word thus learned or forgotten.&nbsp; It's up to you whether your spell checker acts on this information.&nbsp; If the user presses the Ignore button, the NXSpellServer is not notified (but the next time that word occurs in the text, the method <b>isInUserDictionary:caseSensitive:</b> will report YES rather than NO).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Once the NXSpellServer delegate has reported a misspelled word, it has completed its search.&nbsp; Of course, it's likely that the user's application will then send a new message, this time asking the NXSpellServer to check a text stream that is in fact the part of the text it didn't get to earlier.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Registering your service</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">registerLanguage:byVendor:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Starting your service</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">run</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Checking user dictionaries</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isInUserDictionary:caseSensitive:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Receiving alternatives</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addGuess:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addGuess:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addGuess:</b>(const char *)<i>guess</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Appends a word to the list of possible corrections for a misspelled word.&nbsp; The delegate's implementation of <b>spellServer:suggestGuessesForWord:inLanguage:</b> should invoke this method in order to append each new guess that it finds to the list that the NXSpellServer is compiling.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXSpellServer's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isInUserDictionary:caseSensitive:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isInUserDictionary:</b>(const char *)<i>word</i> <b>caseSensitive:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reports whether a word is in the user's list of learned words, or the document's list of words to ignore.&nbsp; The first argument is a word to be checked.&nbsp; The second is YES when the comparison is to be case-sensitive.</font>
+
+<p><font face="Times">Returns YES if the word is acceptable to the user.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>registerLanguage:byVendor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>registerLanguage:</b>(const char *)<i>language</i> <b>byVendor:</b>(const char *)<i>vendor</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notifies the NXSpellServer of a language your spelling checker can check.&nbsp; The argument <i>language</i> is the English name of a language on NeXT's list of languages.&nbsp; The argument <i>vendor</i> identifies the vendor (to distinguish your spelling checker from those that others may offer for the same language).&nbsp; If your spelling checker supports more than one language, it should invoke this method once for each language.&nbsp; Registering a language/vendor combination causes it to appear in the Spelling Panel's pop-up labeled &quot;Dictionary&quot;.&nbsp; Returns YES when the language is registered, NO if for some reason it can't be registered.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>run</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>run</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Starts a loop in which the NXSpellServer awaits requests for its services.&nbsp; This loop normally runs forever.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Appoints the object identified in the argument as the delegate of your NXSpellServer.&nbsp; Since the delegate is where the real work is done, this is an essential step before your program sends the NXSpellServer its <b>run</b> message.&nbsp; Returns the delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The real work of checking is done not by the NXSpellServer but by its delegate.&nbsp; The method <b>sender:findMisspelledWord:... </b>does the actual checking.&nbsp; The method <b>sender:suggestGuessesForWord:...</b> is optional; if implemented, it supplies a list of possible corrections for a misspelled word.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>spellServer:didForgetWord:inLanguage:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>spellServer:</b>(NXSpellServer *)<i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>didForgetWord</b>:(const char *)<i>word</i></font><br>
+<font face="Times"><b>inLanguage:</b>(const char *)<i>language</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification to the NXSpellServer's delegate that the user has pressed <b>Forget</b> in an NXSpellChecker's Spelling Panel (and presumably the NXSpellChecker has removed the word from the user's list of acceptable words).&nbsp; If the delegate maintains a similar auxiliary word list, it may wish to edit its list accordingly.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>spellServer:didLearnWord:inLanguage:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>spellServer:didLearnWord:inLanguage:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>spellServer:</b>(NXSpellServer *)<i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>didLearnWord:</b>(const char *)<i>word</i></font><br>
+<font face="Times"><b>inLanguage:</b>(const char *)<i>language</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification to the NXSpellServer's delegate that the user has pressed <b>Learn</b> in an NXSpellChecker's Spelling Panel (and presumably the NXSpellChecker has removed the word from the user's list of acceptable words).&nbsp; If the delegate maintains a similar auxiliary word list, it may wish to edit it accordingly.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>spellServer:didForgetWord:inLanguage:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>spellServer:findMisspelledWord:length:inLanguage:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Helvetica"><b>inTextStream:startingAt:wordCount:countOnly:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>spellServer:</b>(NXSpellServer *)<i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>findMisspelledWord:</b>(int *)<i>start</i></font><br>
+<font face="Times"><b>length:</b>(int *)<i>length</i></font><br>
+<font face="Times"><b>inLanguage:</b>(const char *)<i>language</i></font><br>
+<font face="Times"><b>inTextStream:</b>(id &lt;NXReadOnlyTextStream&gt;)<i>textStream</i></font><br>
+<font face="Times"><b>startingAt:</b>(int)<i>startPosition</i></font><br>
+<font face="Times"><b>wordCount:</b>(int *)<i>number</i></font><br>
+<font face="Times"><b>countOnly:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Searches the text stream for a misspelled word.&nbsp; <i>textStream</i> identifies the text stream to be checked.&nbsp; <i>startPosition</i> is the offset of the current character.&nbsp; <i>language</i> identifies the language of the text stream.</font>
+
+<p><font face="Times"><i>start</i>, <i>length</i>, and <i>number</i> are pointers to values that the method will set.&nbsp; The method identifies a misspelled word by putting its offset in the text stream into <i>start</i> and its length into <i>length</i>.&nbsp; These values (like <i>startPosition</i>) are the number of characters, which may be less than the offset in bytes if the text stream contains multibyte characters.&nbsp; The method puts the number of words it has checked into <i>number</i>.&nbsp; Thus, <i>number</i> will contain the number of words that precede the misspelled word, or the number of words in the entire text end if no word is misspelled.&nbsp; If for some reason the method is unable to count words, it should set <i>number</i> to</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1.</font>
+
+<p><font face="Times">When <i>flag</i> is YES, the method simply counts the words from <i>startingPoint</i> to the end of the text stream, without checking their spelling.</font>
+
+<p><font face="Times">When the method finds a misspelled word, it should then invoke the NXSpellServer's method <b>isInUserDictionary:caseSensitive:</b> to discover whether the word is acceptable to the user or to the document.&nbsp; It should end its search and return YES only if it has found a word that is not acceptable to either of them.</font>
+
+<p><font face="Times">Returns YES if a misspelled word has been found, and sets <i>start</i> and <i>length</i> to identify the misspelling.&nbsp; Returns NO if the search reaches the end of the text stream without encountering a misspelled word, or whenever <i>flag</i> is YES.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>spellServer:suggestGuessesForWord:inLanguage:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>spellServer:</b>(NXSpellServer *)sender</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>suggestGuessesForWord:</b>(const char *)<i>word</i></font><br>
+<font face="Times"><b>inLanguage:</b>(const char *)<i>language</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Searches for words that (by whatever criterion it chooses to adopt) seem possible corrections for the misspelled example it receives as <i>word</i>.&nbsp; For each candidate that it finds, it sends an <b>addGuess:</b> message to the NXSpellServer object, which takes care of accumulating the suggested words.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

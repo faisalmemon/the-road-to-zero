@@ -1,0 +1,1347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSCharacterSetClassCluster.rtf -->
+<!-- Date: Sun Jun 28 19:55:47 1998 -->
+<head>
+<title>NSCharacterSetClassCluster</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSCharacterSet Class Cluster</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Cluster Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">An NSCharacterSet object represents a set of Unicode characters. The NSString and NSScanner classes use NSCharacterSets to group characters together for searching operations, so that they can find any of a particular set of characters during a search. The cluster's two public classes, NSCharacterSet and NSMutableCharacterSet, declare the programmatic interface for static and dynamic character sets, respectively.</font>
+
+<p><font face="Times">The objects you create using these classes are referred to as <i>character set objects</i> (and when no confusion will result, merely as <i>character sets</i>). Because of the nature of class clusters, character set objects are not actual instances of the NSCharacterSet or NSMutableCharacterSet classes but of one of their private subclasses. Although a character set object's class is private, its interface is public, as declared by these abstract superclasses, NSCharacterSet and NSMutableCharacterSet. (See &quot;Class Clusters&quot; in the introduction to the Foundation Kit for more information on class clusters and creating subclasses within a cluster.) The character set classes adopt the NSCopying and NSMutableCopying protocols, making it convenient to convert a character set of one type to the other.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Using a Character Set</b></font>
+
+<p><font face="Times">Character set objects are value objects, in that they don't perform any tasks. The NSString and NSScanner classes define methods that take NSCharacterSets as arguments so that they can find any of several characters. For example, this code excerpt finds the range of the first uppercase letter in <b>myString</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *myString = @&#34;some text in an NSString...&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSRange letterRange;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">letterRange = [myString rangeOfCharacterFromSet:[NSCharacterSet</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">uppercaseLetterCharacterSet]];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>letterRange</b>.<b>location</b> is equal to the index of the first &quot;N&quot; in &quot;NSString&quot; after <b>rangeOfCharacterFromSet:</b> is invoked. If the first letter of the string were &quot;S&quot; then <b>letterRange.location</b> would be 0.</font>
+
+<p><font face="Times">See the NSScanner class cluster specification for an example using an NSScanner.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Building a Character Set</b></font>
+
+<p><font face="Times">NSCharacterSet provides methods to quickly create &quot;standard&quot; character sets, such as letters (uppercase or lowercase), decimal digits, whitespace, and so on.&nbsp; You can use a standard character set as a starting point for building your own custom set by creating an immutable standard set and making a mutable copy of it.&nbsp; For example, to create a character set containing letters, decimal digits, and basic punctuation, you could use this code:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myCharSet = [[NSCharacterSet alphanumericCharacterSet] mutableCopy];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myCharSet addCharactersInString:@&#34;;:,.&#34;;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">You can also start from scratch by using <b>alloc</b> and <b>init</b> to create an empty character set.</font>
+
+<p><font face="Times">If your application frequently uses a custom character set, you'll want to save its definition in a resource file and load that instead of explicitly adding individual characters each time you need to create the set.&nbsp; You can save a character set by getting its bitmap representation (an NSData object) and saving that object to a file:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *filename = @&#34;/some/file&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSData *charSetRep = [myCharSet bitmapRepresentation];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[charSetRep writeToFile:filename atomically:YES];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To read a character set file, load it into an NSData object and use <b>characterSetWithBitmapRepresentation:</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">charSetRep = [NSData dataWithContentsOfFile:filename];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myCharSet = [NSCharacterSet</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">characterSetWithBitmapRepresentation:charSetRep];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Notes on Unicode Support</b></font>
+
+<p><font face="Times">The NSCharacterSet classes don't fully support Unicode at this time. Only the low 256 character values, corresponding to the NEXTSTEP character set, are implemented. The definitions of the standard character sets defined by NSCharacterSet will change in the future to include the full set of Unicode characters. String objects created from C strings work properly with character set objects as they're currently implemented, and both will continue to work as NEXTSTEP support for the Unicode character encoding increases.</font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSCharacterSet</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCopying</font><br>
+<font face="Times">NSMutableCopying</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSCharacterSet.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSCharacterSet class declares the programmatic interface for an object that manages a set of Unicode characters (see the NSString class cluster specification for information on Unicode).&nbsp; NSCharacterSet's two primitive methods--<b>characterIsMember:</b> and <b>bitmapRepresentation</b>--provide the basis for all other instance methods in its interface.&nbsp; A subclass of NSCharacterSet needs only to override these methods for proper behavior.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSMutableCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopy</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating a standard character set</font></td>
+
+<td><font face="Times">+ alphanumericCharacterSet</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ controlCharacterSet</font><br>
+<font face="Times">+ decimalDigitCharacterSet</font><br>
+<font face="Times">+ decomposableCharacterSet</font><br>
+<font face="Times">+ illegalCharacterSet</font><br>
+<font face="Times">+ letterCharacterSet</font><br>
+<font face="Times">+ lowercaseLetterCharacterSet</font><br>
+<font face="Times">+ nonBaseCharacterSet</font><br>
+<font face="Times">+ uppercaseLetterCharacterSet</font><br>
+<font face="Times">+ whitespaceCharacterSet</font><br>
+<font face="Times">+ whitespaceAndNewlineCharacterSet</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating a custom character set</font></td>
+
+<td><font face="Times">+ characterSetWithRange:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ characterSetWithCharactersInString:</font><br>
+<font face="Times">+ characterSetWithBitmapRepresentation:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Testing set membership</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">characterIsMember:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Inverting a character set</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">invertedSet</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting a binary representation</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">bitmapRepresentation</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>alphanumericCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>alphanumericCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing the uppercase and lowercase NEXTSTEP alphabetic characters (a-z, A-Z, other alphabetic characters such as &eacute;, &Eacute;, &ccedil;, &Ccedil;, and so on) and the decimal digit characters (0-9).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>letterCharacterSet</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>decimalDigitCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>characterSetWithBitmapRepresentation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>characterSetWithBitmapRepresentation:</b>(NSData *)<i>data</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing characters determined by the bitmap representation <i>data</i>.&nbsp; This method is useful for creating a character set object with data from a file or other external data source.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>bitmapRepresentation</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>characterSetWithRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>characterSetWithRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing characters whose Unicode values are given by <i>aRange</i>.&nbsp; <i>aRange.location</i> is the value of the first character, and <i>aRange.location</i> + <i>aRange.length</i></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">1 is the value of the last. If <i>aRange.length</i> is 0, an empty character set is returned.</font>
+
+<p><font face="Times">For example, this code excerpt creates a character set object containing the lowercase English alphabetic characters:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSCharacterSet *lcLetters;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcLetters = [NSCharacterSet</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">characterSetWithRange:(NSRange){(unsigned int) 'a', 26}];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>characterSetWithCharactersInString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>characterSetWithCharactersInString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing the characters in <i>aString</i>. If <i>aString</i> is empty, an empty character set is returned. <i>aString</i> must not be <b>nil</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>controlCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>controlCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing the control characters (characters with decimal Unicode values 0 to 31 and 127 to 159).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decimalDigitCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>decimalDigitCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only decimal digit characters (0-9).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>alphanumericCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>decomposableCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>decomposableCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing all individual Unicode characters that can also be represented as composed character sequences. Composed character sequences are simply letters with accents for the currently supported subset of Unicode (decimal values 0 through 255). See the NSString class cluster description for a brief introduction to composed character sequences.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nonBaseCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>illegalCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>illegalCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing the illegal Unicode values.&nbsp; See <i>The Unicode Standard:&nbsp; Worldwide Character Encoding</i> for details on illegal Unicode values.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>letterCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>letterCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing the uppercase and lowercase NEXTSTEP alphabetic characters (a-z, A-Z, other alphabetic characters such as &eacute;, &Eacute;, &ccedil;, &Ccedil;, and so on).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>alphanumericCharacterSet</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lowercaseLetterCharacterSet</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>uppercaseLetterCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>lowercaseLetterCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>lowercaseLetterCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only lowercase NEXTSTEP alphabetic characters (a-z, other alphabetic characters such as &eacute;, &ccedil;, and so on).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>uppercaseLetterCharacterSet</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>letterCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>nonBaseCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>nonBaseCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an empty character set. There are no non-base characters in the subset of Unicode currently supported.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>decomposableCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>uppercaseLetterCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>uppercaseLetterCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only uppercase NEXTSTEP alphabetic characters (A-Z, other alphabetic characters such as &Eacute;, &Ccedil;, and so on).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lowercaseLetterCharacterSet</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>letterCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>whitespaceAndNewlineCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>whitespaceAndNewlineCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only whitespace characters (space and tab) and the newline character.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>whitespaceCharacterSet</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>whitespaceCharacterSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSCharacterSet *)<b>whitespaceCharacterSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only in-line whitespace characters (space and tab).&nbsp; This set doesn't contain the newline or carriage return characters.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>whitespaceAndNewlineCharacterSet</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>characterIsMember:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>characterIsMember:</b>(unichar)<i>aCharacter</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if <i>aCharacter</i> is in the receiving character set, NO if it isn't.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>bitmapRepresentation</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSData *)<b>bitmapRepresentation</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSData object encoding the receiving character set in binary format.&nbsp; This format is suitable for saving to a file or otherwise transmitting or archiving.</font>
+
+<p><font face="Times">A bitmap representation is an byte array of 2<sup>16</sup> bits (that is, 8192 bytes). The value of the bit at position 2<i><sup>n</sup></i> represents the presence of the character with decimal Unicode value <i>n</i>. To add a character with decimal Unicode value <i>n</i> to a bitmap representation, use a statement such as:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bitmapRep[n &gt;&gt; 3] |= (((unsigned)1) &lt;&lt; (n &amp; 7));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To remove that character:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bitmapRep[n &gt;&gt; 3] &amp;= ~(((unsigned)1) &lt;&lt; (n &amp; 7));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To test for the presence of that character, use an expression such as:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(bitmapRep[n &gt;&gt; 3] &amp; (((unsigned)1) &lt;&lt; (n &amp; 7)))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>characterSetWithBitmapRepresentation:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>invertedSet</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSCharacterSet *)<b>invertedSet</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a character set containing only characters that <i>don't</i> exist in the receiver.&nbsp; Inverting an immutable character set is much more efficient that inverting a mutable character set.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>invert</b> (NSMutableCharacterSet)</font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSMutableCharacterSet</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSCharacterSet : NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCopying (NSCharacterSet)</font><br>
+<font face="Times">NSMutableCopying (NSCharacterSet)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSCharacterSet.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSMutableCharacterSet class declares the programmatic interface to objects that manage a modifiable set of Unicode characters.&nbsp; NSMutableCharacterSet defines no primitive methods; subclasses must override all methods declared by this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSMutableCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopy</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Adding and removing characters</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">addCharactersInRange:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">removeCharactersInRange:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">addCharactersInString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">removeCharactersInString:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Combining character sets</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">formIntersectionWithCharacterSet:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">formUnionWithCharacterSet:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Inverting a character set</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">invert</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addCharactersInRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>addCharactersInRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds the characters whose integer values are given by <i>aRange</i> to the receiver.&nbsp; <i>aRange.location</i> is the value of the first character to add, and <i>aRange.location</i> + <i>aRange.length</i></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">1 is the value of the last.&nbsp; If <i>aRange.length</i> is 0, this method has no effect.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeCharactersInRange:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCharactersInString:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>addCharactersInString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>addCharactersInString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds the characters in <i>aString</i> to those in the receiver.&nbsp; If <i>aString</i> is empty, this method has no effect.&nbsp; <i>aString</i> must not be <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeCharactersInString:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCharactersInRange:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>formIntersectionWithCharacterSet:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>formIntersectionWithCharacterSet:</b>(NSCharacterSet *)<i>otherSet</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Modifies the receiver so that it contains only those characters that exist in both the receiver and in <i>otherSet</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>formUnionWithCharacterSet:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>formUnionWithCharacterSet:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>formUnionWithCharacterSet:</b>(NSCharacterSet *)<i>otherSet</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Modifies the receiver so that it contains all characters that exist in either the receiver or <i>otherSet</i>, barring duplicates.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>formIntersectionWithCharacterSet:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>invert</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>invert</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Replaces all of the characters in the receiver with all the characters it didn't previously contain. Inverting a mutable character set is much less efficient that inverting an immutable character set.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>invertedSet</b> (NSCharacterSet)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>removeCharactersInRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>removeCharactersInRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Removes from the receiver the characters whose integer values are given by <i>aRange</i>.&nbsp; <i>aRange.location</i> is the value of the first character to add, and <i>aRange.location</i> + <i>aRange.length</i></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">1 is the value of the last.&nbsp; If <i>aRange.length</i> is 0, this method has no effect.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCharactersInRange:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeCharactersInString:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>removeCharactersInString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>removeCharactersInString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Removes the characters in <i>aString</i> from those in the receiver.&nbsp; If <i>aString</i> is empty, this method has no effect.&nbsp; <i>aString </i>must not be <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCharactersInString:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeCharactersInRange:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

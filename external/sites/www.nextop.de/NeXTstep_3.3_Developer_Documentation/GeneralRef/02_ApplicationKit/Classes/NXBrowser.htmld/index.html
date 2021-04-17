@@ -1,0 +1,4103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXBrowser.rtf -->
+<!-- Date: Sun Jun 28 20:00:31 1998 -->
+<head>
+<title>NXBrowser</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXBrowser"></a><font face="Helvetica" size="+2"><b>NXBrowser</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Control : View : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXBrowser.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">NXBrowser provides a user interface for displaying and selecting items from a list of data, or from hierarchically organized lists of data such as directory paths.&nbsp; When working with a hierarchy of data, the levels are displayed in columns, which are numbered from left to right, beginning with 0.&nbsp; Each column consists of a ScrollView or ClipView containing a Matrix filled with NXBrowserCells.&nbsp; NXBrowser relies on a delegate to provide the data in its NXBrowserCells.&nbsp; See the BrowserCell class description for more on its implementation.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Browser Selection</b></font>
+
+<p><font face="Times">An entry in an NXBrowser's column can be either a branch node (such as a directory) or a leaf node (such as a file).&nbsp; When the user selects a single branch node entry in a column, the NXBrowser sends itself the <b>addColumn</b> message, which messages its delegate to load the next column.&nbsp; The user's selection can be represented as a character string, much like a UNIX file's pathname; however, the separator can be set to any character, not just `/'.&nbsp; An NXBrowser can be set to allow selection of multiple entries in a column, or to limit selection to a single entry.&nbsp; When set for multiple selection, it can also be set to limit multiple selection to leaf nodes only, or to allow selection of both types of nodes together.</font>
+
+<p><font face="Times">As a subclass of Control, NXBrowser has a target object and action message.&nbsp; Each time the user selects one or more entries in a column, the action message is sent to the target.&nbsp; NXBrowser also adds an action to be sent when the user double-clicks on an entry, which allows the user to select items without any action being taken, and then double-click to invoke some useful action such as opening a file.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>User Interface Features</b></font>
+
+<p><font face="Times">The user interface features of an NXBrowser can be changed in a number of ways.&nbsp; Columns in an NXBrowser may have up and down scroll buttons, scroll bars, both, or neither; the NXBrowser itself may or may not have left and right scroll buttons or a scroll bar.&nbsp; You generally shouldn't create an NXBrowser without scrollers; if you do, you must make sure the bounds rectangle of the NXBrowser is large enough that all its rows and columns can be displayed.&nbsp; An NXBrowser's columns may be bordered and titled, bordered and untitled, or unbordered and untitled.&nbsp; A column's title may be taken from the selected entry in the column to its left, or may be provided explicitly by the NXBrowser or its delegate.&nbsp; Interface Builder provides easier ways to set many of the user interface features described previously.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>NXBrowser's Delegate</b></font>
+
+<p><font face="Times">NXBrowser requires a delegate to provide it with data for display.&nbsp; The delegate is responsible for providing the data and for setting each item as a branch or leaf node, enabled or disabled.&nbsp; It can also receive notification of events like scrolling and requests for validation of columns that may have changed.&nbsp; You can implement one of three delegate types--normal, lazy, or very lazy--depending on your needs for performance and memory use.&nbsp; An NXBrowser can determine what type of delegate it has by which methods it responds to.&nbsp; To implement a delegate, you implement the normal, lazy, or very lazy methods described below.&nbsp; Two methods, <b>browser:fillMatrix:inColumn:</b> and <b>browser:getNumRowsInColumn:</b>, are mutually exclusive; you can implement one or the other, but not both.</font>
+
+<p><font face="Times">A normal delegate loads an entire column of its NXBrowser at once, with the <b>browser:fillMatrix:inColumn:</b> method.&nbsp; A normal delegate is useful for small sets of data, since it can quickly load each set without much delay, and since each set takes up little memory.&nbsp; A normal delegate creates all of the Cells in a column and fills them with appropriate information, including the title for the Cell, whether it's a node or a leaf, and whether it's enabled or not.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Though called &quot;normal,&quot; a normal delgate is not really the most commonly useful.&nbsp; As stated, it's primary useful for small, static sets of data.&nbsp; Lazy and very lazy delegates, described below, are much more flexible, and often end up being easier to program, since data only has to be accessed as it's needed by the NXBrowser.</font>
+
+<p><font face="Times">A lazy delegate creates an entire column for an NXBrowser, but only fills the Cells in the column as requested by the NXBrowser.&nbsp; It must implement both the <b>browser:fillMatrix:inColumn:</b> and <b>browser:loadCell:atRow:inColumn:</b> methods. When filling a column, it only needs to create the Cells, though it may actually fill them in partially or completely, perhaps setting only the title in order to sort the items.&nbsp; A lazy delegate is useful for fairly large sets of data that would take a long time to load completely.&nbsp; For example, a file system would be well served by a lazy delegate; it could fill each column with the names of all files in that directory, but only when the NXBrowser is about to display a particular Cell would the delegate check whether the file for that Cell is actually a directory (to set the Cell as a node or leaf), and whether the user has permission to access that file or directory (to set the Cell as enabled or disabled).</font>
+
+<p><font face="Times">A very lazy delegate is responsible only for informing its NXBrowser how many items are in a particular column and for loading each Cell on request, with the <b>browser: getNumRowsInColumn:</b> and <b>browser:loadCell:atRow:inColumn:</b> methods.&nbsp; Very lazy delegates make spare use of memory by not loading a Cell for an entry until it's about to be displayed; this is useful for large, potentially open-ended data spaces that are already sorted, or simply don't need to be sorted.&nbsp; A very lazy delegate is also a good candidate for browsing a file system, provided that the file names can be loaded in the proper positions in a browser column based on their ordering.</font>
+
+<p><font face="Times">An NXBrowser's delegate is also useful for manipulating the data in the NXBrowser on the request of another object.&nbsp; For example, a panel may have a browser with some buttons for adding and deleting entries.&nbsp; Instead of having the entire column reloaded when an entry is added or deleted, the delegate can directly access the NXBrower's Matrix for the selected column, adding or removing Cells, and then invoking NXBrowser's <b>displayColumn:</b> method to redraw that column only.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id&nbsp; <b>target</b>;</font>
+
+<p><font face="Times">id <b>delegate</b>;</font>
+
+<p><font face="Times">SEL <b>action</b>;</font>
+
+<p><font face="Times">SEL <b>doubleAction</b>;</font>
+
+<p><font face="Times">id <b>matrixClass</b>;</font>
+
+<p><font face="Times">id <b>cellPrototype</b>;</font>
+
+<p><font face="Times">unsigned short <b>pathSeparator</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">target</font></td>
+
+<td><font face="Times">The object notified by NXBrowser when one or more items are selected in a column.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The object providing the data which is browsed by the NXBrowser.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">action</font></td>
+
+<td><font face="Times">The message sent to the target when one or more entries are selected in a column.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">doubleAction</font></td>
+
+<td><font face="Times">The message sent to the target when an entry in the NXBrowser is double-clicked.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">matrixClass</font></td>
+
+<td><font face="Times">The class used to instantiate the matrices in the columns of NXBrowser; Matrix by default.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cellPrototype</font></td>
+
+<td><font face="Times">A Cell that is copied to create new Cells in the NXBrowser's Matrices; NXBrowserCell by default.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">pathSeparator</font></td>
+
+<td><font face="Times">The character which separates the substrings of a path (see <b>getPath:ToColumn:</b>, <b>setPath:</b>).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing and freeing an NXBrowser</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Target and action</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">action</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">target</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDoubleAction:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doubleAction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting component classes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMatrixClass:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellClass:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCellPrototype:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cellPrototype</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting NXBrowser behavior</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMultipleSelectionEnabled:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isMultipleSelectionEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBranchSelectionEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isBranchSelectionEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEmptySelectionEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isEmptySelectionEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reuseColumns:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptsFirstResponder</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptArrowKeys:andSendActionMessages:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getTitleFromPreviousColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Configuring controls</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">useScrollBars:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">useScrollButtons:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setHorizontalScrollButtonsEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">areHorizontalScrollButtonsEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setHorizontalScrollerEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isHorizontalScrollerEnabled</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Setting the NXBrowser's appearance</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMinColumnWidth:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">minColumnWidth</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMaxVisibleColumns:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">maxVisibleColumns</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">numVisibleColumns</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">firstVisibleColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastVisibleColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">lastColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">separateColumns:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnsAreSeparated</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating columns</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">loadColumnZero</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isLoaded</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reloadColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">displayColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">displayAllColumns</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setLastColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectAll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedColumn</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">columnOf:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">validateVisibleColumns</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating column titles</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTitled:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isTitled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTitle:ofColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">titleOfColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getTitleFrame:ofColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">titleHeight</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawTitle:inRect:ofColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clearTitleInRect:ofColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Scrolling an NXBrowser</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollColumnsLeftBy:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollColumnsRightBy:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollColumnToVisible:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollUpOrDown:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scrollViaScroller:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reflectScroll:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">updateScroller</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Event handling</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mouseDown:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">keyDown:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doClick:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doDoubleClick:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting Matrices and Cells</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getLoadedCellAtRow:inColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">matrixInColumn:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedCell</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getSelectedCells:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting column frames</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getFrame:ofColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getFrame:ofInsideOfColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating paths</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPathSeparator:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPath:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getPath:toColumn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Drawing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawSelf::</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Resizing the NXBrowser</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeTo::</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeToFit</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Arranging an NXBrowser's components</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">tile</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-acceptArrowKeys:andSendActionMessages:%5D"></a><font face="Helvetica"><b>acceptArrowKeys:andSendActionMessages:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptArrowKeys:</b>(BOOL)<i>acceptFlag</i> <b>andSendActionMessages:</b>(BOOL)<i>sendFlag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets NXBrowser handling of arrow key input.&nbsp; If <i>acceptFlag</i> is YES, then the keyboard arrow keys move the selection whenever the NXBrowser or one of its subviews is the first responder; if <i>acceptFlag</i> is NO, arrow key input has no effect. Further, if <i>sendFlag</i> is YES, then when an arrow key is pressed, the NXBrowser's action message is sent as though the user had clicked on the new selection; if <i>sendFlag</i> is NO, then arrow keys only move the selection (if they are enabled).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method replaces the <b>acceptArrowKeys:</b> method from NEXTSTEP Release 2.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptsFirstResponder</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-acceptsFirstResponder%5D"></a><font face="Helvetica"><b>acceptsFirstResponder</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>acceptsFirstResponder</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXBrowser accepts arrow key input, NO otherwise.&nbsp; The default setting is NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptArrowKeys:andSendActionMessages:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-action%5D"></a><font face="Helvetica"><b>action</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>action</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action sent to the target by the NXBrowser when the user makes a selection in one of its columns.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-addColumn%5D"></a><font face="Helvetica"><b>addColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds a column to the right of the last column in the NXBrowser and, if necessary, scrolls the NXBrowser so that the new column is visible.&nbsp; Your code should never invoke this method; it's invoked as needed by <b>doClick:</b> and <b>keyDown:</b> when the user selects a single branch node entry in the NXBrowser, and by s<b>etPath:</b> when it matches a path substring with a branch node entry.&nbsp; Override this method if you need the NXBrowser to do any additional updating when a column is added, but be sure to send this message to <b>super</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadColumnZero</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reloadColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-areHorizontalScrollButtonsEnabled%5D"></a><font face="Helvetica"><b>areHorizontalScrollButtonsEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>areHorizontalScrollButtonsEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if horizontal scroll buttons are used by the NXBrowser and are enabled, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollButtonsEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isHorizontalScrollerEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollerEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-cellPrototype%5D"></a><font face="Helvetica"><b>cellPrototype</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellPrototype</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXBrowser's prototype Cell.&nbsp; This Cell is copied to create new Cells in the columns of the NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellPrototype:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-clearTitleInRect:ofColumn:%5D"></a><font face="Helvetica"><b>clearTitleInRect:ofColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clearTitleInRect:</b>(const NXRect *)<i>aRect</i> <b>ofColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Clears the title displayed in <i>aRect</i> above <i>column.</i>&nbsp; Your code shouldn't invoke this method directly; it's sent whenever a column title needs to be cleared.&nbsp; You can override this method if you draw your own column titles.&nbsp; <i>aRect</i> is in the NXBrowser's coordinate system.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-columnOf:%5D"></a><font face="Helvetica"><b>columnOf:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>columnOf:</b><i>matrix</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the column containing <i>matrix</i>; the leftmost (root) column is 0.&nbsp; Returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no column contains <i>matrix</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>matrixInColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-columnsAreSeparated%5D"></a><font face="Helvetica"><b>columnsAreSeparated</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>columnsAreSeparated</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if columns are separated by a bezeled bar; NO if they're separated by a black line.&nbsp; If the NXBrowser is set to display column titles, its columns are automatically separated by bezels.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>separateColumns:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-delegate%5D"></a><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the delegate of the NXBrowser, the object that provides data for the NXBrowser and responds to certain notification messages.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-displayAllColumns%5D"></a><font face="Helvetica"><b>displayAllColumns</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>displayAllColumns</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes all columns currently visible in the NXBrowser to be redisplayed.&nbsp; This method is useful for redisplaying the NXBrowser after manipulating it with display disabled in the window (for instance, if Cells in some of the columns are deleted). Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>displayColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-displayColumn:%5D"></a><font face="Helvetica"><b>displayColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>displayColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Validates and displays column number <i>column</i>.&nbsp; <i>column</i> must already be loaded.&nbsp; This method is useful for updating the NXBrowser after manipulating <i>column</i> with display disabled in the window.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>displayAllColumns</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-doClick:%5D"></a><font face="Helvetica"><b>doClick:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doClick:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method.&nbsp; This is the action message sent to the NXBrowser by a column's Matrix when a mouse-down event occurs in a column.&nbsp; It sets the NXBrowser's last column to that of the Matrix where the click occurred, and removes any columns to the right that were previously loaded in the NXBrowser.&nbsp; If a single branch node entry is selected by the event, this method sends <b>addColumn</b> to <b>self</b> to display the corresponding data in the column to the right.&nbsp; It also sends the NXBrowser's action message to its target.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">You may want to override this method to add specific behavior for mouse clicks.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doDoubleClick:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-doDoubleClick:%5D"></a><font face="Helvetica"><b>doDoubleClick:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doDoubleClick:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method.&nbsp; This is the action message sent to the NXBrowser by a column's Matrix when a double-click occurs in a column.&nbsp; This method simply sends the double-click action message to the target; if no double-click action message is set, it sends the regular (single-click) action.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">You may want to override this method to add specific behavior for double-click events.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doClick:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-doubleAction%5D"></a><font face="Helvetica"><b>doubleAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>doubleAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action sent by the NXBrowser to its target when the user double-clicks an entry.&nbsp; If no double-click action message has been set, this method returns the regular (single-click) action.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doDoubleClick:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-drawSelf::%5D"></a><font face="Helvetica"><b>drawSelf::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:</b>(const NXRect *)<i>rects</i> <b>:</b>(int)<i>rectCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Draws the NXBrowser, loading column 0 if it has not been loaded.&nbsp; Override this method if you change the way NXBrowser draws itself.&nbsp; Your code should never invoke this method; it's invoked by the <b>display</b> method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>display</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-drawTitle:inRect:ofColumn:%5D"></a><font face="Helvetica"><b>drawTitle:inRect:ofColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawTitle:</b>(const char *)<i>title</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>inRect:</b>(const NXRect *)<i>aRect</i></font><br>
+<font face="Times"><b>ofColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your code should never invoke this method.&nbsp; It's invoked whenever the NXBrowser needs to draw a column title.&nbsp; You may override it if you want your own column titles drawn.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-firstVisibleColumn%5D"></a><font face="Helvetica"><b>firstVisibleColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>firstVisibleColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the leftmost visible column.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastVisibleColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the NXBrowser and all the objects it manages:&nbsp; ScrollViews, Matrices, Cells, scroll Buttons, prototypes, and so on. Returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getFrame:ofColumn:%5D"></a><font face="Helvetica"><b>getFrame:ofColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRect *)<b>getFrame:</b>(NXRect *)<i>theRect</i> <b>ofColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the rectangle (in NXBrowser coordinates) containing <i>column</i>; the pointer is returned both explicitly by the method and by reference in <i>theRect</i>.&nbsp; The returned rectangle includes the bezel area surrounding the column.&nbsp; If column isn't currently loaded or displayed, this method returns NULL, without changing the coordinates of the rectangle represented in <i>theRect</i>.&nbsp; It also returns NULL if <i>theRect</i> is NULL.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getFrame:ofInsideOfColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getFrame:ofInsideOfColumn:%5D"></a><font face="Helvetica"><b>getFrame:ofInsideOfColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRect *)<b>getFrame:</b>(NXRect *)<i>theRect</i> <b>ofInsideOfColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the rectangle (in NXBrowser coordinates) containing the &quot;inside&quot; of column number <i>column</i>; the pointer is returned both explicitly by the method and by reference in <i>theRect.</i>&nbsp; The &quot;inside&quot; is defined as the area in the column that contains the Cells and only that area (that is, no bezels).&nbsp; If <i>column</i> isn't currently loaded or displayed, this method returns NULL, without changing the coordinates of the rectangle represented in <i>theRect</i>.&nbsp; It also returns NULL if <i>theRect</i> is NULL<i>.</i></font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getFrame:ofColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getLoadedCellAtRow:inColumn:%5D"></a><font face="Helvetica"><b>getLoadedCellAtRow:inColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getLoadedCellAtRow:</b>(int)<i>row</i> <b>inColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Cell at <i>row</i> in <i>column</i>, if that column is currently in the NXBrowser.&nbsp; This method creates and loads the Cell if necessary.&nbsp; It's the safest way to get a particular Cell in a column, since lazy delegates don't load every Cell in a Matrix and very lazy delegates don't even create all Cells until they're displayed.&nbsp; This method is preferred to the Matrix method <b>cellAt::</b>. If the specified <i>column</i> isn't in the NXBrowser, or if <i>row</i> doesn't exist in <i>column</i>, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:loadCellAtRow:inColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getPath:toColumn:%5D"></a><font face="Helvetica"><b>getPath:toColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(char *)<b>getPath:</b>(char *)<i>thePath</i> <b>toColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the string representing the path to <i>column</i>, both explicitly and by reference in <i>thePath</i>.&nbsp; Before invoking this method, you must allocate sufficient memory to accept the entire path string, and set <i>thePath</i> as a pointer to that memory.&nbsp; If <i>column</i> isn't loaded or <i>thePath</i> is a null pointer, this method returns NULL.</font>
+
+<p><font face="Times">The path is constructed by concatenating the string values in the selected Cells in each column, preceding each with the path separator.&nbsp; For example, consider a path separator &quot;@&quot; and an NXBrowser with two columns.&nbsp; If the selected Cell in the left column has the string value &quot;fowl&quot; and the selected Cell in the right column has the string value &quot;duck,&quot; the resulting path is &quot;@fowl@duck.&quot;&nbsp; If there is no selection in the NXBrowser, the path will be &quot;&quot; (an empty string--not &quot;@&quot;).&nbsp; The default pathSeparator is the slash character (&quot;/&quot;).</font>
+
+<p><font face="Times">If multiple selection is enabled and there are multiple Cells selected, this method returns the path of the last (that is, the lowest) Cell in the last column.&nbsp; Once the path is retrieved, the selected Cells can all be retrieved with <b>getSelectedCells:</b>, and their titles used with the path to manipulate the data they represent.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pathSeparator</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getSelectedCells:%5D"></a><font face="Helvetica"><b>getSelectedCells:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fills the provided List with the Cells in the NXBrowser that are selected.&nbsp; The previous contents of <i>aList</i> are not altered; your code should be sure <i>aList</i> is empty before invoking this method.&nbsp; If <i>aList</i> is <b>nil</b>, this method creates a List from the zone of the Matrix containing the Cells and returns it.&nbsp; Returns <i>aList</i>, or the created List.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getTitleFrame:ofColumn:%5D"></a><font face="Helvetica"><b>getTitleFrame:ofColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRect *)<b>getTitleFrame:</b>(NXRect *)<i>theRect</i> <b>ofColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the rectangle (in NXBrowser coordinates) enclosing the title of column number <i>column</i>, both explicitly and by reference in <i>theRect</i>.&nbsp; If the NXBrowser isn't displaying titles or if the specified column isn't loaded, returns this method returns NULL.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-getTitleFromPreviousColumn:%5D"></a><font face="Helvetica"><b>getTitleFromPreviousColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTitleFromPreviousColumn:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the NXBrowser so that each column takes its title from the string value in the selected Cell in the column to its left, leaving column 0 untitled; use <b>setTitle:ofColumn:</b> to give column 0 a title.&nbsp; This method affects the receiver only when it is titled (that is, when <b>isTitled</b> returns YES).</font>
+
+<p><font face="Times">By default, the NXBrowser is set to get column titles from the previous column.&nbsp; Send this message with NO as the argument if your delegate implements the <b>browser:titleOfColumn:</b> method or if you use the <b>setTitle:ofColumn:</b> method to set all column titles.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:ofColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:titleOfColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-initFrame:%5D"></a><font face="Helvetica"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>frameRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new instance of NXBrowser with a bounds of <i>frameRect</i>.&nbsp; The initialized NXBrowser is set to have column titles, to get titles from previous columns, and to use scrollbars.&nbsp; The minimum column width is set to 100 and the path separator is set to the slash (&quot;/&quot;) character.&nbsp; The NXBrowser is set not to clip.&nbsp; This method invokes the <b>tile</b> method to arrange the components of the NXBrowser (titles, scroll bars, Matrices, and so on).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isBranchSelectionEnabled%5D"></a><font face="Helvetica"><b>isBranchSelectionEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isBranchSelectionEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if a branch node can be selected, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBranchSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isEmptySelectionEnabled%5D"></a><font face="Helvetica"><b>isEmptySelectionEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEmptySelectionEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if it is possible to have no Cells selected, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEmptySelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isHorizontalScrollerEnabled%5D"></a><font face="Helvetica"><b>isHorizontalScrollerEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isHorizontalScrollerEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXBrowser uses a horizontal Scroller (instead of Buttons), and if that Scroller is enabled, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollerEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollButtonsEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isMultipleSelectionEnabled%5D"></a><font face="Helvetica"><b>isMultipleSelectionEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isMultipleSelectionEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if more than one leaf node can be selected, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMultipleSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isLoaded%5D"></a><font face="Helvetica"><b>isLoaded</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isLoaded</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if any of the NXBrowser's columns are loaded.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadColumnZero</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-isTitled%5D"></a><font face="Helvetica"><b>isTitled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isTitled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXBrowser's columns are displayed with titles above them; NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTitleFromPreviousColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-keyDown:%5D"></a><font face="Helvetica"><b>keyDown:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>keyDown:</b>(NXEvent *)<i>theEvent</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Handles arrow key events.&nbsp; This method is invoked when the NXBrowser or one of its subviews is the first responder.&nbsp; If the NXBrowser has been set to accept arrow keys, and the key represented in <i>theEvent</i> is an arrow key, this method scrolls through the NXBrowser in the direction indicated.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptArrowKeys:andSendActionMessages:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>acceptsFirstResponder</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mouseDown:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-lastColumn%5D"></a><font face="Helvetica"><b>lastColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>lastColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the last loaded column in the NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastVisibleColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-lastVisibleColumn%5D"></a><font face="Helvetica"><b>lastVisibleColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>lastVisibleColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the rightmost visible column.&nbsp; This may be less than the value returned by <b>lastColumn</b> if the NXBrowser has been scrolled left.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>firstVisibleColumn</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-loadColumnZero%5D"></a><font face="Helvetica"><b>loadColumnZero</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>loadColumnZero</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Loads and displays data in column 0 of the NXBrowser, unloading any columns to the right that were previously loaded.&nbsp; Invoke this method to force the NXBrowser to be loaded; for example, after initializing the NXBrowser, when changing delegates, or when changing the data set managed by the delegate.&nbsp; You may want to override this method if you subclass NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reloadColumn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-matrixInColumn:%5D"></a><font face="Helvetica"><b>matrixInColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>matrixInColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Matrix found in column number <i>column</i>.&nbsp; Returns <b>nil</b> if column number <i>column</i> isn't loaded in the NXBrowser.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-maxVisibleColumns%5D"></a><font face="Helvetica"><b>maxVisibleColumns</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>maxVisibleColumns</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the maximum number of visible columns allowed.&nbsp; No matter how many loaded columns the NXBrowser contains, or how large the NXBrowser is made (for example, by resizing its window), it will never display more than this number of columns.&nbsp; If the number of loaded columns can exceed the value returned by this method, the NXBrowser must display left and right scroll buttons.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaxVisibleColumns:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>numVisibleColumns</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollerEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollButtonsEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-minColumnWidth%5D"></a><font face="Helvetica"><b>minColumnWidth</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>minColumnWidth</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the minimum width of a column in PostScript points (rounded to the nearest integer).&nbsp; No column will be smaller than the returned value unless the NXBrowser itself is smaller than that.&nbsp; The default setting is 100 points.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinColumnWidth:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-mouseDown:%5D"></a><font face="Helvetica"><b>mouseDown:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mouseDown:</b>(NXEvent *)<i>theEvent</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Handles a mouse down in the NXBrowser's left or right scroll buttons.&nbsp; Override this method if you need to to any special event processing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>keyDown:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-numVisibleColumns%5D"></a><font face="Helvetica"><b>numVisibleColumns</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>numVisibleColumns</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of columns which can be visible at the same time in the NXBrowser (that is, the current width, in columns, of the NXBrowser).&nbsp; This may be less than the value returned by <b>maxVisibleColumns</b> if the window containing the NXBrowser has been resized.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaxVisibleColumns:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>maxVisibleColumns:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-reflectScroll:%5D"></a><font face="Helvetica"><b>reflectScroll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reflectScroll:</b><i>clipView</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method updates scroll bars in the column containing <i>clipView</i>.&nbsp; Scroll bars are enabled if a column contains more data than can be displayed at once and disabled if the column can display all data.&nbsp; You should never need to invoke this method, but you may want to override it.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>useScrollBars:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-reloadColumn:%5D"></a><font face="Helvetica"><b>reloadColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reloadColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reloads the previously loaded column number <i>column</i> by sending a message to the delegate to update the Cells in its Matrix, then reselecting the previously selected Cell if it's still in the Matrix.&nbsp; You should never send this message for a column that hasn't been loaded (you can check for this with the <b>lastColumn</b> method).&nbsp; Redraws the column and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-reuseColumns:%5D"></a><font face="Helvetica"><b>reuseColumns:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reuseColumns:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the NXBrowser saves a column's Matrix and ClipView or ScrollView when the column is removed, and whether it then reuses these subviews when the column is reloaded.&nbsp; If <i>flag</i> is YES, the NXBrowser reuses columns for somewhat faster display of columns as they are reloaded.&nbsp; If <i>flag</i> is NO, the NXBrowser frees columns as they're unloaded, reducing average memory use.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-scrollColumnsLeftBy:%5D"></a><font face="Helvetica"><b>scrollColumnsLeftBy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnsLeftBy:</b>(int)<i>shiftAmount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the columns in the NXBrowser left by <i>shiftAmount</i> columns, making higher numbered columns visible.&nbsp; If <i>shiftAmount </i>exceeds the number of loaded columns to the right of the first visible column, then the columns scroll left to make the last loaded column visible.&nbsp; Redraws and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnsRightBy:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-scrollColumnsRightBy:%5D"></a><font face="Helvetica"><b>scrollColumnsRightBy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnsRightBy:</b>(int)<i>shiftAmount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the columns in the NXBrowser right by <i>shiftAmount</i> columns, making lower numbered columns visible.&nbsp; If <i>shiftAmount </i>exceeds the number of columns to the left of the first visible column, then the columns scroll right until column 0 is visible. Redraws and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnsLeftBy:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-scrollColumnToVisible:%5D"></a><font face="Helvetica"><b>scrollColumnToVisible:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollColumnToVisible:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the NXBrowser to make column number <i>column</i> visible.&nbsp; If there's no <i>column</i> in the NXBrowser, this method scrolls to the right as far as possible.&nbsp; Redraws and returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-scrollUpOrDown:%5D"></a><font face="Helvetica"><b>scrollUpOrDown:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollUpOrDown:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls a column up or down.&nbsp; Your code shouldn't send this message; NXBrowser receives it from a column's scroll buttons. You may want to override it to perform additional updating.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-scrollViaScroller:%5D"></a><font face="Helvetica"><b>scrollViaScroller:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scrollViaScroller:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Scrolls the NXBrowser's columns left or right based on the position of the Scroller sending the message.&nbsp; Your code shouldn't send this message, but you may want to override it.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-selectAll:%5D"></a><font face="Helvetica"><b>selectAll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectAll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects all entries in the last column loaded in the NXBrowser if multiple selection is allowed.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMultipleSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-selectedCell%5D"></a><font face="Helvetica"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there is a selection, returns the last selected Cell.&nbsp; &quot;Last,&quot; in this context, means furthest to the right and lowest in the column.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getSelectedCells:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-selectedColumn%5D"></a><font face="Helvetica"><b>selectedColumn</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedColumn</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the column number of the rightmost column containing a selected Cell.&nbsp; This won't be the last column if the selected Cell isn't a leaf.&nbsp; Returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if no column in the NXBrowser contains a selected Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-sendAction%5D"></a><font face="Helvetica"><b>sendAction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends the NXBrowser's action to its target and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-separateColumns:%5D"></a><font face="Helvetica"><b>separateColumns:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>separateColumns:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets NXBrowser so that columns have bezeled borders separating them; if NO, the borders are removed.&nbsp; When titles are set to display (by <b>setTitled:</b>), columns are automatically separated.&nbsp; Redraws the NXBrowser and returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setAction:%5D"></a><font face="Helvetica"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the action of the NXBrowser.&nbsp; <i>aSelector</i> is the selector for the message sent to the NXBrowser's target when a mouse-down event occurs in a column of the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doClick</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setBranchSelectionEnabled:%5D"></a><font face="Helvetica"><b>setBranchSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBranchSelectionEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the user can select multiple branch and leaf node entries.&nbsp; If <i>flag</i> is YES and multiple selection is enabled (by <b>setMultipleSelectionEnabled:</b>), then multiple branch and leaf node entries can be selected.&nbsp; By default, a user can choose only multiple leaf node entries when multiple entry selection is enabled.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method replaces the <b>allowBranchSel:</b> method from NEXTSTEP Release 2.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isBranchSelectionEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMultipleSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setCellClass:%5D"></a><font face="Helvetica"><b>setCellClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the class of Cell used when adding Cells to a Matrix in a column of the NXBrowser.&nbsp; <i>classId</i> must be the value returned when sending the <b>class</b> message to NXBrowserCell or a subclass of NXBrowserCell.&nbsp; Since an NXBrowser always has its Matrices copy prototype Cells, this method simply makes a prototype, sends it an <b>init</b> message, and records that prototype. Returns <b>self</b>.</font>
+
+<p><font face="Times">You shouldn't use Control's class method <b>setCellClass:</b> with an NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellPrototype:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setCellPrototype:%5D"></a><font face="Helvetica"><b>setCellPrototype:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellPrototype:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets <i>aCell</i> as the Cell prototype copied when adding Cells to the Matrices in the columns of NXBrowser.&nbsp; <i>aCell</i> must be an instance of NXBrowserCell or a subclass of NXBrowserCell.&nbsp; Each Matrix gets its own copy of <i>aCell</i> to use as a prototype, and will free that copy when the Matrix is freed.&nbsp; Returns the previous Cell prototype if <i>aCell</i> is an instance of either NXBrowserCell or a subclass of NXBrowserCell; otherwise, returns <b>nil</b>.</font>
+
+<p><font face="Times">You shouldn't use Control's class method <b>setCellClass:</b> with an NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cellPrototype</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCellClass:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setDelegate:%5D"></a><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the delegate of the NXBrowser to <i>anObject</i> and returns <b>self</b>.&nbsp; If <i>anObject</i> is of a class that implements the methods indicated in the class description for a normal, lazy, or very lazy delegate, it's set as the NXBrowser's delegate; otherwise, the delegate is set to <b>nil</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setDoubleAction:%5D"></a><font face="Helvetica"><b>setDoubleAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the double-click action of the NXBrowser.&nbsp; <i>aSelector</i> is the selector for the action message sent to the target when a double-click occurs in one of the columns of the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doDoubleClick:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setEmptySelectionEnabled:%5D"></a><font face="Helvetica"><b>setEmptySelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEmptySelectionEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, the NXBrowser can display without any Cells selected; if <i>flag</i> is NO, then there must always be at least one Cell selected.&nbsp; By default, the setting is NO, and NXBrowser selects the first item in the first column.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEmptySelectionEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMultipleSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setEnabled:%5D"></a><font face="Helvetica"><b>setEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Enables the NXBrowser when <i>flag</i> is YES; disables it when <i>flag</i> is NO.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEnabled</b> (Control)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setHorizontalScrollButtonsEnabled:%5D"></a><font face="Helvetica"><b>setHorizontalScrollButtonsEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollButtonsEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the NXBrowser to use left and right scroll buttons.&nbsp; Generally, you should allow your NXBrowser to scroll horizontally unless your data is nonhierarchical, thus limited to a single column, or restricted so that the NXBrowser will always display enough columns for all data. Returns <b>self</b>.</font>
+
+<p><font face="Times">This method, along with <b>setHorizontalScrollerEnabled:</b>, replaces the <b>hideLeftAndRightScrollButtons:</b> method from NEXTSTEP Release 2.&nbsp; In order to completely remove horizontal scrolling Controls, invoke both methods with arguments of NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollerEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areHorizontalScrollButtonsEnabled</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setHorizontalScrollerEnabled:%5D"></a><font face="Helvetica"><b>setHorizontalScrollerEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollerEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, sets the NXBrowser to use a horizontal Scroller.&nbsp; Generally, you should allow your NXBrowser to scroll horizontally unless your data is nonhierarchical, thus limited to a single column, or restricted so that the NXBrowser will always display enough columns for all data. Returns <b>self</b>.</font>
+
+<p><font face="Times">This method, along with <b>setHorizontalScrollButtonsEnabled:</b>, replaces the <b>hideLeftAndRightScrollButtons:</b> method from NEXTSTEP Release 2.&nbsp; In order to completely remove horizontal scrolling Controls, invoke both methods with arguments of NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setHorizontalScrollButtonsEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areHorizontalScrollButtonsEnabled</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setLastColumn:%5D"></a><font face="Helvetica"><b>setLastColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLastColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes column number <i>column</i> the last column loaded and displayed by the NXBrowser.&nbsp; Removes any columns to the right of <i>column</i> from the NXBrowser, and scrolls columns in the NXBrowser to make the new last column visible if it wasn't previously. If column number <i>column</i> isn't already loaded, this method does nothing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lastColumn</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setMatrixClass:%5D"></a><font face="Helvetica"><b>setMatrixClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMatrixClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the class of Matrix used when adding new columns to the NXBrowser.&nbsp; <i>classId</i> must be the value returned by sending the <b>class</b> message to Matrix or a subclass of Matrix; otherwise this method retains the previous setting for the NXBrowser's Matrix class.&nbsp; NXBrowser initializes the Matrix of a new column with the <b>initFrame:mode:prototype: numRows:numCols:</b> method. Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setMaxVisibleColumns:%5D"></a><font face="Helvetica"><b>setMaxVisibleColumns:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaxVisibleColumns:</b>(int)<i>columnCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the maximum number of columns that may be displayed by the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">To set the number of columns displayed in a new NXBrowser, first send it a <b>setMinColumnWidth:</b> message with a small argument (1, for example) to ensure that the desired number of columns will fit in the NXBrowser's frame.&nbsp; Then invoke this method to set the number of columns you want your NXBrowser to display.&nbsp; The minimum column width may then be reestablished to its desired value.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>maxVisibleColumns</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinColumnWidth:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setMinColumnWidth:%5D"></a><font face="Helvetica"><b>setMinColumnWidth:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMinColumnWidth:</b>(int)<i>columnWidth</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the minimum width for each column to <i>columnWidth</i>.&nbsp; If the new minimum width is different from the previous one, this method also redisplays the NXBrowser with columns set to the new width.&nbsp; <i>columnWidth</i> is measured in PostScript points rounded to the nearest integer.&nbsp; The default setting is 100.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>minColumnWidth</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setMultipleSelectionEnabled:%5D"></a><font face="Helvetica"><b>setMultipleSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMultipleSelectionEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the user can select multiple entries in a column.&nbsp; If <i>flag</i> is YES, the user can choose any number of leaf entries in a column (or leaf and branch entries in a column if enabled by <b>setBranchSelectionEnabled:</b>).&nbsp; By default, the user can choose just one entry in a column at a time.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method replaces the <b>allowMultiSel:</b> method from NEXTSTEP Release 2.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isMultipleSelectionEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBranchSelectionEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setPath:%5D"></a><font face="Helvetica"><b>setPath:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b>(const char *)<i>aPath</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parses <i>aPath</i>--a string consisting of one or more substrings separated by the path separator--and selects column entries in the NXBrowser that match the substrings.&nbsp; If the first character in <i>aPath</i> is the path separator, this method begins searching for matches in column 0; otherwise, it begins searching in the last column loaded.&nbsp; If no column is loaded, this method loads column 0 and begins the search there.&nbsp; While parsing the current substring, it tries to locate a matching entry in the search column.&nbsp; If it finds an exact match, this method selects that entry and moves to the next column (loading the column if necessary) to search for the next substring.</font>
+
+<p><font face="Times">If this method finds a valid path (one in which each substring is matched by an entry in the corresponding column), it returns <b>self</b>.&nbsp; If it doesn't find an exact match on a substring, it stops parsing <i>aPath</i> and returns <b>nil</b>; however, column entries that it has already selected remain selected.</font>
+
+<p><font face="Times">Your code should never try to set a path or select items by sending Cell selection messages to the Matrices in the NXBrowser's columns.&nbsp; This bypasses every mechanism that allows the NXBrowser to update its display and load columns and Cells properly.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPath:toColumn</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pathSeparator</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPathSeparator</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:selectCell:inColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setPathSeparator:%5D"></a><font face="Helvetica"><b>setPathSeparator:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPathSeparator:</b>(unsigned short)<i>charCode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the character used as the path separator; the default is the slash character (&quot;/&quot;).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getPath:toColumn</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPath:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setTarget:%5D"></a><font face="Helvetica"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the target of the NXBrowser.&nbsp; This is the object that will receive action messages when the user clicks or double-clicks on items in the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setTitle:ofColumn:%5D"></a><font face="Helvetica"><b>setTitle:ofColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:</b>(const char *)<i>aString</i> <b>ofColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the title of column number <i>column</i> in the NXBrowser to <i>aString</i>.&nbsp; If column <i>column</i> isn't loaded, this method does nothing. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTitleFromPreviousColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:TitleOfColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-setTitled:%5D"></a><font face="Helvetica"><b>setTitled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>flag</i> is YES, columns display titles and are separated by bezeled borders.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTitleFromPreviousColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:ofColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:TitleOfColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-sizeTo::%5D"></a><font face="Helvetica"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo:</b>(NXCoord)<i>width</i> <b>:</b>(NXCoord)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resizes the NXBrowser to the new <i>width</i> and <i>height</i>.&nbsp; Usually sent by the NXBrowser's Window.&nbsp; Override this method if your subclass of NXBrowser need to do any special updating when resized.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-sizeToFit%5D"></a><font face="Helvetica"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resizes the NXBrowser to contain all the columns and Controls displayed in it.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-target%5D"></a><font face="Helvetica"><b>target</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the target for the NXBrowser's action message.&nbsp; This object receives action messages when the user clicks or double-clicks on items in the NXBrowser.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget</b>:,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleAction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleAction:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-tile%5D"></a><font face="Helvetica"><b>tile</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tile</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Arranges the various subviews of NXBrowser--Scrollers, columns, titles, and so on--without redrawing.&nbsp; Your code shouldn't send this message.&nbsp; It's invoked any time the appearance of the NXBrowser changes; for example, when scroll Buttons or scroll bars are set, a column is added, and so on.&nbsp; Override this method if your code changes the appearance of the NXBrowser (for example, if you draw your own titles above columns).&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-titleHeight%5D"></a><font face="Helvetica"><b>titleHeight</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXCoord)<b>titleHeight</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the height of titles drawn above the columns of the NXBrowser.&nbsp; Override this method if you display your own titles above the NXBrowser's columns.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-titleOfColumn:%5D"></a><font face="Helvetica"><b>titleOfColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>titleOfColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the title string displayed above column number <i>column</i>.&nbsp; If that column isn't loaded in the NXBrowser, returns NULL.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-updateScroller%5D"></a><font face="Helvetica"><b>updateScroller</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateScroller</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Updates the horizontal Scroller to reflect the position of the visible columns of the NXBrowser.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-useScrollBars:%5D"></a><font face="Helvetica"><b>useScrollBars:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>useScrollBars:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets NXBrowser to use scroll bars for its columns based on <i>flag</i>.&nbsp; If <i>flag</i> is YES and the NXBrowser was previously set to use only scroll Buttons, this method causes the scroll Buttons to display at the base of the scroll bars.&nbsp; By default, NXBrowser uses scroll bars without Buttons; send <b>useScrollButtons:</b> to also have Buttons at the bottoms of the Scrollers.&nbsp; This method redraws the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>useScrollButtons:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-useScrollButtons:%5D"></a><font face="Helvetica"><b>useScrollButtons:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>useScrollButtons:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the NXBrowser to use scroll Buttons for its columns based on <i>flag</i>.&nbsp; If <i>flag</i> is YES and the NXBrowser was previously set to use scroll bars, this method causes scroll buttons to display at the base of the scroll bars; otherwise the Buttons are displayed underneath each column.&nbsp; To get only Buttons under the columns, send <b>useScrollBars:</b> with NO as the argument, then send this message with YES as the argument.&nbsp; This method redraws the NXBrowser.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>useScrollBars:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-validateVisibleColumns%5D"></a><font face="Helvetica"><b>validateVisibleColumns</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateVisibleColumns</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Validates the columns visible in the NXBrowser by invoking the delegate method <b>browser:columnIsValid:</b> for all visible columns.&nbsp; Use this method to confirm that the entries displayed in each visible column are valid before redrawing.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:columnIsValid:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:columnIsValid:%5D"></a><font face="Helvetica"><b>browser:columnIsValid:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>browser:</b><i>sender</i> <b>columnIsValid:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method is invoked by NXBrowser's <b>validateVisibleColumns</b> method to determine whether the contents currently loaded in column number <i>column</i> need to be updated.&nbsp; This is useful for data sets that may change over time, such as files in a file system, or lists from a shared set of data that others can change.&nbsp; Returns YES if the contents are valid; NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:selectCell:inColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browserDidScroll:%5D"></a><font face="Helvetica"><b>browserDidScroll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browserDidScroll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notifies the delegate when the browser has finished scrolling horizontally.&nbsp; This can be useful for aligning other user interface items with the columns of the browser (for example, an icon path or a series of pop-up lists).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browserDidScroll:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:fillMatrix:inColumn:%5D"></a><font face="Helvetica"><b>browser:fillMatrix:inColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>browser:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>fillMatrix:</b><i>matrix</i></font><br>
+<font face="Times"><b>inColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked by the NXBrowser to query a normal or lazy browser for the contents of <i>column.</i>&nbsp; This method should create NXBrowserCells by sending <b>addRow</b> or <b>insertRowAt:</b> messages to <i>matrix</i>.&nbsp; The NXBrowser will resize them to fit in the Matrix--you can't control the size of an NXBrowserCell.&nbsp; Returns the number of items in <i>column</i>.</font>
+
+<p><font face="Times">A normal delegate should create each NXBrowserCell and send them the messages <b>setLoaded:</b> and <b>setLeaf:</b>, and <b>setEnabled: </b>if necessary.&nbsp; A lazy delegate marks Cells as loaded only when they are about to be displayed; however, it may create and partially fill in information (such as the title), saving only the time-consuming operations for an actual request to load an individual Cell.</font>
+
+<p><font face="Times">If you implement this method, don't implement the delegate method <b>browser:getNumRowsInColumn:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:loadCell:atRow:inColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:getNumRowsInColumn:%5D"></a><font face="Helvetica"><b>browser:getNumRowsInColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>browser:</b><i>sender</i> <b>getNumRowsInColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by very lazy delegates, this method is invoked by the NXBrowser to ask the delegate for the number of rows in column number <i>column</i>.&nbsp; This method allows the NXBrowser to resize its scroll bar for a column without loading all the Cells in that column.&nbsp; Returns the number of rows in <i>column</i>.</font>
+
+<p><font face="Times">If you implement this method, don't implement the delegate method <b>browser:fillMatrix:inColumn:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:loadCell:atRow:inColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:loadCell:atRow:inColumn:%5D"></a><font face="Helvetica"><b>browser:loadCell:atRow:inColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>loadCell:</b><i>cell</i></font><br>
+<font face="Times"><b>atRow:</b>(int)<i>row</i></font><br>
+<font face="Times"><b>inColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Implemented by lazy and very lazy delegates.&nbsp; This method loads the entry in the provided NXBrowserCell <i>cell</i> for the specified row and column in the NXBrowser.&nbsp; The NXBrowser will resize the Cell to fit in the Matrix--you can't control the size of an NXBrowserCell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">A lazy delegate should send a <b>setLoaded:</b> message to <i>cell</i> at load time; it can send <b>setLeaf:</b>, <b>setStringValue:</b> and <b>setEnabled: </b>messages at load time or later.&nbsp; A very lazy delegate should send <b>setLoaded:</b>, <b>setLeaf:</b>, and <b>setStringValue:</b> messages to <i>cell </i>at load time, and <b>setEnabled:</b> when needed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:fillMatrix:inColumn:</b> (delegate method),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:getNumRowsInColumn:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:selectCell:inColumn:%5D"></a><font face="Helvetica"><b>browser:selectCell:inColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>browser:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>selectCell:</b>(const char *)<i>entry</i></font><br>
+<font face="Times"><b>inColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Asks NXBrowser's delegate to validate and select an entry in column number <i>column</i>.&nbsp; This method should load the Cell corresponding to <i>entry</i> if necessary, send it <b>setLoaded:</b> and <b>setLeaf:</b> messages as needed to indicate its state, and send the column's Matrix a <b>selectCell:</b> or <b>selectCellAt::</b> message to select that Cell.&nbsp; If there is no Cell corresponding to <i>entry</i>, the selection should be cleared by sending <b>selectCellAt::</b> to the Matrix with</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 and</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 as the arguments.&nbsp; Returns YES if the method successfully selects the Cell corresponding to <i>entry</i> in <i>column</i>; NO otherwise.</font>
+
+<p><font face="Times">If the delegate doesn't implement this method, the NXBrowser searches for entries by scanning through the entire list of Cells in the column.&nbsp; This will always work properly for NXBrowsers that browse static data.&nbsp; However, if the data can change while the NXBrowser is in use (for example, if a new file is created or deleted), this method allows the delegate to find that new data and add it to the column, or to find out that it no longer exists (or that its status has changed) and mark it as disabled or remove the Cell altogether with Matrix's <b>removeRowAt:andFree:</b> method (be sure to free the Cell).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browser:columnIsValid:</b> (delegate method),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>matrixInColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCellAt:: </b>(Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRowAt:andFree:</b> (Matrix)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browser:titleOfColumn:%5D"></a><font face="Helvetica"><b>browser:titleOfColumn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>browser:</b><i>sender</i> <b>titleOfColumn:</b>(int)<i>column</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked by NXBrowser to get the title for <i>column</i> from the delegate.&nbsp; This method is invoked if the delegate implements it, but only when the NXBrowser is titled and has received a <b>getTitleFromPreviousColumn:</b> message with NO as the argument.&nbsp; By default, the NXBrowser makes each column title the string value of the selected Cell in the previous column.&nbsp; Returns the string representing the title belonging above <i>column</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getTitleFromPreviousColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitle:ofColumn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTitled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXBrowser-browserWillScroll:%5D"></a><font face="Helvetica"><b>browserWillScroll:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browserWillScroll:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method notifies the delegate when the browser is about to scroll horizontally.&nbsp; This can be useful for hiding other user interface items to prepare for aligning them with the columns of the browser (for example, an icon path or a series of pop-up lists).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>browserDidScroll:</b> (delegate method)</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

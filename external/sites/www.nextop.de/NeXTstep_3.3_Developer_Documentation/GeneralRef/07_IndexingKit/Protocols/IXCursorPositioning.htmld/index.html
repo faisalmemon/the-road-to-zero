@@ -1,0 +1,526 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Protocols/IXCursorPositioning.rtf -->
+<!-- Date: Sun Jun 28 20:06:00 1998 -->
+<head>
+<title>IXCursorPositioning</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXCursorPositioning</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Adopted By:</b></font></td>
+
+<td><font face="Times">IXBTreeCursor</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">btree/protocols.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocol Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The IXCursorPositioning protocol defines methods for locating an item in a key space.&nbsp; A <i>key space</i> is an ordered set of all possible keys of a particular type.&nbsp; An example of an integer key space is the natural ordering of integers; one key space of type <b>char *</b> is the lexical ordering of all ASCII strings; another key space of type <b>char *</b> is the case insensitive lexical ordering of all ASCII strings.&nbsp; The range of a key space may be restricted by a maximum key length.</font>
+
+<p><font face="Times">Key spaces are generally used to store values, each key being associated with exactly one value.&nbsp; Consider a key space that associates string-valued keys with personnel records.&nbsp; Say the key contains the last name of the employee, followed by a comma, followed by the first name.&nbsp; Using an IXBTreeCursor, the record for an employee named Jane Draper could be found as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IXBTreeCursor *cursor;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; found;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *aKey = &#34;Draper,Jane&#34;;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* the null terminator is included in the length by convention */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">found = [cursor setKey:(void *)aKey andLength:1+strlen(aKey)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>setKey:andLength:</b> returns YES if the cursor successfully locates a value for the given key.&nbsp; The cursor will remain positioned at that key following the operation, and subsequent messages to the cursor may either access that value, or move the cursor to another position.&nbsp; For example, telling the cursor to write a value in the example above would overwrite Jane Draper's record, and telling the cursor to remove the value would remove her record from the key space.&nbsp; Telling the cursor to move to the next key in the key space would cause it to access a different employee's record.&nbsp; The cursor is therefore like an agent in the key space; it can move about and operate on the values associated with keys.</font>
+
+<p><font face="Times">If the <b>setKey:andLength:</b> in the preceding example returned NO, it would indicate that there was no record associated with the key &quot;Draper,Jane&quot;; the cursor would nevertheless be positioned at that key.&nbsp; This may be between two existing records, before the first record, or after the last existing record.&nbsp; Subsequent messages to the cursor may cause it to slide forward to the next key with an associated record.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Sliding and Insertion</b></font>
+
+<p><font face="Times">A cursor at a position with no key can't access a value there.&nbsp; If the cursor is asked to access a value anyway, it has two options:&nbsp; try to find a value, or indicate that it can't access one.&nbsp; Where it makes sense, a cursor should try to find a value by sliding forward in the key space to the next actual key.&nbsp; When this isn't possible or desirable, the cursor should indicate that it can't find or access a value, by raising the IX_NotFoundError exception.</font>
+
+<p><font face="Times">Suppose the IXBTreeCursor above is asked to look for Anne Draper instead of Jane, and that there is no record for Anne Draper; also, there are no records whose keys would fall between Anne Draper and Jane Draper.&nbsp; The IXBTreeCursor will position itself <i>before</i> Jane's key and return NO:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aKey = &#34;Draper,Anne&#34;;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">found = [cursor setKey:(void *)aKey andLength:1+strlen(aKey)];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In this case, <b>found</b> will be NO, indicating that there is no key with the value &quot;Draper,Anne&quot;.&nbsp; If the IXBTreeCursor is asked to read the value of either the key or the personnel record, the key will slide forward to Jane's record and return that data.&nbsp; For example, on determining that there is no record with the key &quot;Draper,Anne&quot;, the program could send <b>getKey:andLength:</b> to find out where the cursor actually landed.&nbsp; In this case, the cursor will move forward to Jane Draper's record, and return the key &quot;Draper,Jane&quot;, along with its length.&nbsp; This lets the program know that the cursor landed before Jane's record (and incidentally finds the record the program was actually interested in).</font>
+
+<p><font face="Times">If the IXBTreeCursor is asked to write a value at a location where there is none, the value and the key are added to the key space.&nbsp; Since the cursor is where it should be for the key being added, it can simply create a key and store the record under the key.&nbsp; There will then be an entry in the IXBTree for Anne Draper.&nbsp; This is exactly how an insertion is performed with a cursor: set the key position with <b>setKey:andLength:</b>, and if the return value is NO, a write message immediately following will insert the value provided under the key.</font>
+
+<p><font face="Times">If the IXBTreeCursor is asked to write inside or to remove the record at a location where there is no key, there's a problem. Since there is no record, and since writing into part of a record or removing it would change data that the programmer probably doesn't want altered (namely, the record for the next actual key), the IXBTreeCursor will indicate that there is no value to write into by raising IX_NotFoundError.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Iteration and Partial Lookup</b></font>
+
+<p><font face="Times">A cursor can be explicitly told to slide forward with the <b>setNext</b> method, which returns YES if there is a next key and the cursor has moved there, and NO if the cursor was already at the last key and has moved past it.&nbsp; By sending a <b>setFirst</b> message to a cursor, which positions it at the first key (if there is one), and then many <b>setNext</b> messages, it's possible to iterate over the entire set of keys and values stored in the key space.&nbsp; The same can be done in reverse order with <b>setLast</b> and <b>setPrevious</b>.</font>
+
+<p><font face="Times">Cursor sliding and iteration can be used together to perform partial lookups, where the goal is to find all records whose keys lie within a certain range; for example, finding all employees whose last name is Draper.&nbsp; This can be done by positioning the cursor at the lowest valued key, and moving it forward until the key becomes greater than the greatest valued desired.&nbsp; For example, to find all employees whose last name is Draper:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL&nbsp; found;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *aKey, *lastName;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp;&nbsp; aLength;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* Tell the cursor to find the first record whose key starts with</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* &#34;Draper,&#34;.&nbsp; Notice the comma at the end; this is to make sure</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* the last name is matched exactly.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aKey = lastName = &#34;Draper,&quot;;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[cursor setKey:(void *)aKey andLength:1+strlen(aKey)];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* This forces the cursor to move to a real key if it didn't hit</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* one, which is probably the case.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">found = [cursor getKey:&amp;(void *)aKey andLength:&amp;aLength];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* While the key contains the last name we're looking for,</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* keep processing.&nbsp; If the range were integers from 10-100,</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* aKey would be an int *, *aKey would be set to 10 for</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* the setKey:andLength: method above, and this test</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* would be (*aKey &lt;= 100).</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (YES == found) {</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">while (strncmp(aKey, lastName, strlen(lastName)) &gt;= 0) {</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">processRecordAtCursor(cursor); /* process the record&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">found = [cursor setNext];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* go to the next one&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">if (found == NO) break;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* at end of key space */</font><br>
+<img src="../../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">[cursor getKey:&amp;(void *)aKey andLength:&amp;aLength];</font><br>
+<img src="../../../Images/sp.gif" width=138 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Absolute positioning</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setKey:andLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getKey:andLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Relative positioning</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFirst</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setNext</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setLast</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPrevious</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Checking positioning success</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isMatch</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getKey:andLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>getKey:</b>(void **)<i>aKey</i> <b>andLength:</b>(unsigned int *)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the key defining the cursor's position in its key space, along with the key's length.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function to convert the byte-order of the retrieved key to that of the machine it's running on.</font>
+
+<p><font face="Times">If the cursor is at a key which has a value associated with it, this method returns YES.&nbsp; If the cursor is between two values or before the first one, this method advances the cursor to the key for the next value, returns that key by reference, and returns YES.&nbsp; If the cursor is beyond the last key, this method returns NO, and the contents of <i>aKey</i> and <i>aLength</i> aren't set.</font>
+
+<p><font face="Times"><i>aKey</i> isn't guaranteed to remain the same after subsequent messages to the cursor, since the cursor reallocate its buffer or may slide as a side effect of a message.&nbsp; Your code should copy their contents if it needs to save them.&nbsp; Your code should <i>not</i> write into <i>aKey</i>;&nbsp; doing so will corrupt the cursor.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKey:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isMatch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isMatch</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isMatch</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the cursor is on a key with an associated value, NO if the cursor is between two values or past either end of the set of values.</font>
+
+<p><font face="Times">If the cursor isn't on a key with a value, then trying to get a key or read a value can cause the cursor to move forward to the next key with a value before reading the key or value, or raise IX_ArgumentError if the cursor can't move (because it's at the end of the key space).&nbsp; Any attempt to write into or remove a nonexistent value will raise IX_ArgumentError.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKey:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKey:andLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFirst</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setFirst</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there is at least one value associated with a key, this method positions the cursor at the first element's key and returns YES. Otherwise it returns NO, and any attempt to remove or read a value at the cursor's position will raise IX_ArgumentError.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNext</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLast</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrevious</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setKey:andLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setKey:</b>(void *)<i>aKey</i> <b>andLength:</b>(unsigned int)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the current position of the cursor to that specified by <i>aKey</i> and <i>aLength</i>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function before invoking this method, to convert the byte-order of the key to big-endian (the standard byte-order for the Indexing Kit).</font>
+
+<p><font face="Times">If a value is associated with <i>aKey</i>, returns YES.&nbsp; Otherwise returns NO.&nbsp; If there is no value with a key before <i>aKey</i>, this method positions the cursor before the first value.&nbsp; If there is no value with a key after <i>aKey</i>, this method positions the cursor beyond the last values.</font>
+
+<p><font face="Times">If this method returns NO, then any attempt to write into or remove a value at the cursor's position will raise IX_ArgumentError, and any attempt to read a key or value will cause the cursor to move to the key for the next value before reading the key or value, or raise IX_ArgumentError if the cursor can't move (because it's at the end of the key space).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKey:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isMatch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setLast</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setLast</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there is at least one value associated with a key, this method positions the cursor at the last element's key and returns YES. Otherwise it returns NO, and any attempt to remove or read a value at the cursor's position will raise IX_ArgumentError.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrevious</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFirst</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNext</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setNext</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setNext</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the cursor's position to the next key with an associated value.&nbsp; Returns YES if there is a next element, and NO if the cursor is already positioned at the end of the key space.&nbsp; If this method returns NO, then any attempt to remove or read a value at the cursor's position will raise IX_ArgumentError.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFirst</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLast</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setPrevious</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setPrevious</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setPrevious</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the cursor's position to the previous key with an associated value.&nbsp; Returns YES if there is a previous element, and NO if the cursor was positioned at the beginning of the key space and has moved to a position before the first key.&nbsp; If this method returns NO, then any attempt to read a value will cause the cursor to move to the next key with a value, or raise IX_ArgumentError if the cursor can't move (because it's at the end of the key space).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setLast</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFirst</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNext</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

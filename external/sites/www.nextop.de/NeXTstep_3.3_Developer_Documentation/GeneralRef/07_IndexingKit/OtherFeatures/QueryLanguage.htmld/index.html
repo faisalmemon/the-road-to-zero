@@ -1,0 +1,586 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/OtherFeatures/QueryLanguage.rtf -->
+<!-- Date: Sun Jun 28 20:05:55 1998 -->
+<head>
+<title>QueryLanguage</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>The Indexing Kit Query Language</b></font>
+
+<p><font face="Times">The Indexing Kit defines a declarative query language for expressing assertions about objects.&nbsp; The query language can be used to select objects from collections such as those in an IXFileFinder or IXRecordManager.&nbsp; It can also be used to test assertions against attributable objects such as instances of IXAttributeParser or IXFileRecord.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Queries</b></font>
+
+<p><font face="Times">Queries are assertions comprising simple predicates and boolean operators.&nbsp; A predicate is made of literal values, operators, and attributes.&nbsp; An attribute is a value provided by the object being examined.&nbsp; For example, in a set of students, one attribute might be the student's age, another might be his or her home state, and another his or her grade point average.&nbsp; Some informal predicates based on these attributes are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Age is greater than 20.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Grade point average is 4.0.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Home state is Michigan.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These predicates also use literal values (20, 4.0, and &quot;Michigan&quot;) and operators (greater than and equals).&nbsp; The possible literal values and operators are defined by the query language, but attributes are defined by the programmer and represent the return values of Objective C methods that take no arguments and return a single scalar value (an integer, floating-point number, or null-terminated string).</font>
+
+<p><font face="Times">Combining the predicates listed above with logical operators to form logical expressions gives:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Age is greater than 20 <i>and</i> grade point average is 4.0.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Age is over 20 <i>or</i> home state is Michigan.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Home state is Michigan and grade point average is <i>not</i> 4.0.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Age is greater than 20 <i>and</i> home state is Michigan, and grade point average is <i>not</i> 4.0.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A query expression is evaluated against an evaluation context that supplies the objects to be examined by the query.&nbsp; The result of the query is the object or set of objects from the evaluation context that satisfy the query expression.&nbsp; During query evaluation, each object supplied by the context is examined:&nbsp; The attributes named in the expression are bound to the attributes of the object, and the assertion is evaluated.&nbsp; If the assertion proves true, the object is included in the result.</font>
+
+<p><font face="Times">Note that all of the values in a query can be bound (that is, they can be constant values), but this results in an expression that's either always true or always false.&nbsp; An expression that's always true will select all objects supplied by the evaluation context, while one that's always false will select none.&nbsp; For example, &quot;5 is greater than 3&quot; is always true, so a query consisting of this assertion will always select every object supplied by the context.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Types</b></font>
+
+<p><font face="Times">There are four data types in the query language:&nbsp; <i>boolean</i>, <i>number</i>, <i>string</i>, and <i>vector</i>.&nbsp; A type called <i>regular expression</i> is also defined as a sub</font><img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">type of string.&nbsp; There are no type constructors, so it isn't possible to define new types.</font>
+
+<p><font face="Times">The first three types, boolean, number, and string, are scalar.&nbsp; Scalar values are coerced to other types as needed.&nbsp; Numbers can become strings, as generated by <b>sprintf()</b>; they can also become boolean values in the manner of C:&nbsp; 0 is <b>false</b>, any other value is <b>true</b>.&nbsp; When passed to an arithmetic or boolean operator, a string is scanned for a numeric representation, or converted to 0 if none is found.&nbsp; Boolean <b>false</b> is coerced to the number 0, while boolean <b>true</b> is coerced to the number 1.</font>
+
+<p><font face="Times">A regular expression is a string interpreted as a pattern for matching other strings.&nbsp; Two forms of regular expression notation are provided: the standard regular expression notation, as described in the UNIX manual page for <b>ed</b>(1), and the Bourne shell notation for specifying patterns in filenames, as described in the UNIX manual page for <b>sh</b>(1).</font>
+
+<p><font face="Times">The only composite type in the query language is the vector.&nbsp; A vector is a weighted set of unique scalar values, usually strings. Vectors often arise from the evaluation of attributes, since attribute values are typically generated by <i>attribute parsers</i> from unstructured text.&nbsp; For more information on attribute parsers, see the IXAttirbuteParser class specification.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Symbols</b></font>
+
+<p><font face="Times">The Indexing Kit query language defines three kinds of symbols:&nbsp; literals, operators, and attributes.&nbsp; Symbols are delimited by white space and commas, as well as by the parentheses associated with operators.&nbsp; The query language is case-sensitive, except for strings given to the <b>parse()</b> operator (see below).</font>
+
+<p><font face="Times">A <i>literal</i> is a scalar value, like a number or a string, that's specified in the query.&nbsp; Literal values can be expressed for all of the query language's data types.&nbsp; The boolean literals are <b>yes</b>, <b>true</b>, <b>no</b>, and <b>false</b>.&nbsp; Numbers can simply be written in integer or floating-point form:&nbsp; 0,</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1, 27.35.&nbsp; Strings are indicated by balanced pairs of quotation marks (single or double), or by the <b>quote() </b>operator (described below).&nbsp; To include a closing delimiter in a string, precede it with a backslash.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;This is a string with a \&#34; quotation mark in it&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">'This is \'too'</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">quote(This string contains an embedded \) parenthesis)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Other escape sequences allowed in strings are:&nbsp; `\n' (newline), `\r' (carriage return), `\t' (tab), `\f' (form feed), `\b' (space), `\\' (backslash), and `\<i>nnn</i>', where <i>n</i> is any octal digit.&nbsp; Vectors of strings may be introduced with the <b>parse()</b> operator.</font>
+
+<p><font face="Times"><i>Operators</i> denote actions that are performed during the compilation or evaluation of a query, like adding two numbers or parsing a string.&nbsp; Operators are formed with a name and a pair of parentheses, much like functions in C.&nbsp; A fixed set of operators is defined by the query language; there is no way to define a new operator.</font>
+
+<p><font face="Times"><i>Attributes</i> are values supplied by the object being examined; an attribute name may be supplied wherever a literal value is expected.&nbsp; An attribute is associated with an Objective C method selector; the attribute's name is bound to a value by sending the selector to the object being examined.&nbsp; Legal attribute names include any otherwise undefined symbols; that is, any unquoted alphanumeric string that isn't an operator name or object name.&nbsp; By convention, they usually begin with a capital letter. <b>Content</b>, <b>Age</b>, and <b>Publisher</b> are examples of legal attribute names.&nbsp; <b>Content</b> is a special attribute, described in the section &quot;Predefined Attributes.&quot;</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Operators</b></font>
+
+<p><font face="Times">Operators take one or more arguments and produce a single result.&nbsp; The query language operators fall into six categories: literal, projection, arithmetic, relational, boolean, and search.&nbsp; The behavior of an operator often depends on the types of its arguments, which must be enclosed in parentheses and delimited by white space or punctuation.</font>
+
+<p><font face="Times">A <i>literal operator</i> takes a single argument and produces a literal result.&nbsp; <b>quote()</b>, as mentioned above, creates a string from the text in its parentheses.&nbsp; <b>regex()</b> and <b>shell()</b> both transform the text between their parentheses into regular expressions.&nbsp; <b>regex() </b>builds regular expressions from Berkeley regular expression strings, and <b>shell()</b> builds regular expressions from Bourne shell expansion notation.&nbsp; For example, the following two expressions result in the same regular expression:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">regex(term.*)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">shell(term*)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The last transform operator is <b>parse()</b>, which produces a vector of strings derived from its argument text.&nbsp; The <b>parse()</b> operator is analogous to the IXAttributeParser class; in fact, the query language implements the <b>parse()</b> operator with IXAttributeParser. By default, <b>parse()</b> folds the case of its operand; this can be turned off with IXAttributeReader's <b>setFoldsCase:</b> method.&nbsp; See the IXAttributeParser and IXAttributeReader class specifications for more information.</font>
+
+<p><font face="Times">There's only one <i>projection operator</i>, <b>project()</b>.&nbsp; It takes two arguments, the second of which is the result of a <b>parse() </b>expression.&nbsp; The first argument is an attribute, which the <b>project()</b> operator extracts from the parsed text.&nbsp; In the example below, the <b>project()</b> operator extracts the <b>Name</b> attribute from the Attribute Reader Format text:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">project(Name parse({\\rtf0 {\\zd Name}{\\\z Jane Draper\\za1}}))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the absence of the <b>project()</b> operator, the <b>Default</b> attribute is extracted from the result of a <b>parse()</b> by whatever operator takes it as an argument.</font>
+
+<p><font face="Times"><b>add()</b>, <b>sub()</b>, <b>mul()</b>, <b>div()</b>, and <b>neg()</b> are the <i>arithmetic operators</i>:&nbsp; add, subtract, multiply, divide, and negate, respectively.&nbsp; All of these, except for <b>neg()</b>, require two scalar arguments; <b>neg()</b> allows only one.&nbsp; These operators coerce their arguments to double-precision floating-point numbers, and produce a numeric result.</font>
+
+<p><font face="Times">The <i>relational operators</i> are <b>gt()</b>, <b>ge()</b>, <b>eq()</b>, <b>ne()</b>, <b>lt()</b>, and <b>le()</b>:&nbsp; greater than, greater than or equal to, equal, not equal, less than, and less than or equal to, respectively.&nbsp; These operators perform the expected comparisons with numbers and booleans, and lexical comparisons on strings, so that, for example, &quot;graze&quot; is less than &quot;style.&quot;&nbsp; All of these operators produce a boolean result, and require two scalar arguments.&nbsp; <b>eq()</b> and <b>ne()</b> perform pattern-matching when one of their arguments is a regular expression.&nbsp; When operands of differing types are passed to a relational operator, both operands are coerced to numbers.</font>
+
+<p><font face="Times">The <i>boolean operators</i> perform logical operations on scalar values, or on the results of search operations.&nbsp; When applied to scalar values, they coerce the values to boolean type and produce the appropriate logical result.&nbsp; The <b>or()</b> and <b>and()</b> operators perform logical disjunction and conjunction, respectively.&nbsp; With a single scalar argument, <b>not()</b> performs logical inversion.&nbsp; With two scalar arguments, <b>not()</b> is a shorthand for <b>and()</b> with the second argument logically inverted; that is, <b>not(</b><i>a b</i><b>)</b> is equivalent to <b>and(</b><i>a</i> <b>not(</b><i>b</i><b>))</b>.&nbsp; The application of boolean operators to search operations is described below.</font>
+
+<p><font face="Times">The example predicates given earlier can be expressed in the query language using the relational and set operators.&nbsp; Naming the attributes Age, GPA, and HomeState, we have:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">gt(Age 20)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">eq(GPA 4.0)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">eq(HomeState &#34;Michigan&#34;)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Combining these predicates with boolean operators, we get the following compound assertions:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">and(gt(Age 20), eq(GPA 4.0))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">or(gt(Age 20), eq(HomeState &#34;Michigan&#34;)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">not(eq(HomeState &#34;Michigan&#34;), eq(GPA 4.0))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">not(and(gt(Age 20), eq(HomeState &#34;Michigan&#34;)), eq(GPA 4.0))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The last group of operators, the <i>search operators</i>, provide a general and powerful searching capability.&nbsp; They take either one or two arguments, which may be strings or vectors of strings, and search for a <i>subject</i> string (or strings) in a <i>target</i> body of text. When two arguments are supplied, the first is the target of the search, and the second is the subject.&nbsp; When one argument is supplied, the <b>Default</b> attribute of the object being examined is the target of the search, and the argument is the subject.</font>
+
+<p><font face="Times">The three search operators are <b>whole()</b>, <b>prefix()</b>, and <b>within()</b>.&nbsp; Each matches strings in a different way.&nbsp; <b>whole()</b> indicates that full-term matches are desired:&nbsp; the desired string will only match one in the attribute if they match exactly from beginning to end.&nbsp; <b>prefix()</b> indicates that the requested value need only match the beginning part of the attribute's value.&nbsp; <b>within()</b> performs a substring search:&nbsp; a value can match any portion of the attribute's value.</font>
+
+<p><font face="Times">Here are some examples of search expressions involving strings (HomeState is assumed to be a string-valued attribute):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">prefix(HomeState &#34;Mi&#34;)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(HomeState regex(Mi.*))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expressions above all search for objects whose HomeState begins with &quot;Mi&quot;--this can be used to find abbreviations of state names as well as full names.&nbsp; They will match values like &quot;Michigan&quot; and &quot;Mississippi,&quot; but will also match any word beginning with &quot;Mi,&quot; like &quot;Misery.&quot;&nbsp; For this particular example, a more careful search would be better:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">or(eq(HomeState &#34;Michigan&#34;), eq(HomeState &#34;Mi&#34;))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">or(whole(HomeState &#34;Michigan&#34;), whole(HomeState parse(Mi))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These two examples explicitly check for the full name of the state, or for its abbreviation.&nbsp; The first example has the weakness of being case-sensitive; the abbreviation must be exactly &quot;Mi&quot; to match.&nbsp; The second example, by using the <b>parse()</b> operator, takes advantage of case folding (which is done by default, but can be turned off), so that &quot;Mi&quot;, &quot;MI&quot;, and &quot;mi&quot; will all match.</font>
+
+<p><font face="Times">When the target of a search is a vector and the subject is a string, the search is satisfied by a match between the subject and one or more elements of the target.&nbsp; When the target is a string and the subject is a vector, the search requires a match between the target and zero, one, or all of the elements of the subject; the desired interpretation is indicated by applying a unary boolean operator to the search expression, as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">applying unary <b>not()</b> requires that none of the subject elements match</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">applying unary <b>or()</b> requires that at least one of the subject elements match</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">applying unary <b>and()</b> requires that all of the subject elements match</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the absence of an explicit application of a unary boolean operator, <b>and()</b> is assumed.&nbsp; When both the target and subject are vectors, the search requires a match between at least one element of the target and zero, one, or all of the elements of the subject; the desired interpretation is indicated by applying one of the unary boolean operators, as mentioned above.</font>
+
+<p><font face="Times">Consider the following expressions:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(parse(small dog))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(Default and(parse(small dog)))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(Pets parse(small dog))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two expressions above are equivalent.&nbsp; They search for objects whose <b>Default</b> attribute contains both &quot;small&quot; and &quot;dog.&quot;&nbsp; The third is similar, except that it searches the <b>Pets</b> attribute.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(or(parse(small dog)))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(Pets or(parse(small dog)))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expressions above search for objects containing the words &quot;small&quot; or &quot;dog&quot;; only one need be present.&nbsp; The first expression searches the <b>Default</b> attribute, while the second searches the <b>Pets</b> attribute.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">prefix(parse(small dog))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">prefix(or(parse(small dog)))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">within(parse(small dog))</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">within(or(parse(small dog)))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>prefix()</b> expressions above search for objects whose <b>Default</b> attribute contains words <i>beginning</i> with &quot;small&quot; and &quot;dog&quot;--for example, &quot;smallpox&quot; or &quot;doggerel.&quot;&nbsp; The <b>within()</b> expressions search for objects containing the sequences &quot;small&quot; or &quot;dog&quot; as substrings--words like &quot;smallish,&quot; &quot;dismally,&quot; &quot;endogen,&quot; or &quot;underdog.&quot;&nbsp; The first example of each pair finds objects that have a match for each word, while the second finds objects that have a match for either.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">within(&#34;The beasts of the Mohave desert, the Russian steppes,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">and the Serengeti plain&#34; Location)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The example above illustrates a different kind of search, in which objects whose Location attribute is a substring of the string on the left (such as &quot;Russian steppes&quot;).&nbsp; This is useful for finding objects related to a particular fragment of text.</font>
+
+<p><font face="Times">The search operators differ from the other operators in that, as a side effect, they may assign weights to the objects returned by the query, as a measure of probable relevance.&nbsp; That is, in addition to producing a boolean result used in evaluating the assertion, a search operator may produce a weight providing an heuristic measure of the likely relevance of the match.&nbsp; The weights are derived from vector targets; weights for the results of several search operators are averaged.</font>
+
+<p><font face="Times">A variation on the weighting algorithm is used when subject terms occur more than once within a <b>parse()</b> operator.&nbsp; In that case, weights are assigned to the subject terms, and are used to filter the weights derived from the target.&nbsp; The algorithm used for weighting the subject terms is determined by the weighting type assigned to the IXAttributeParser used to process the <b>parse() </b>operator.&nbsp; One particularly useful application of this mechanism is similarity searching.&nbsp; To begin with, a large piece of representative text is placed within a <b>parse()</b> as the search subject, and a unary <b>or()</b> is applied to the search result.&nbsp; The query will select all objects containing matches for one or more of the subject terms, and the target vector weightings are filtered by the subject vector weightings.&nbsp; This is semantically equivalent to the statistical correlation searching performed by numerous commercial products under the name &quot;similarity searching.&quot;</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Predefined Attributes</b></font>
+
+<p><font face="Times">The query language implicitly defines one attribute, <b>Default</b>.&nbsp; Any tokens that aren't explicitly assigned to another attribute are assigned to <b>Default</b> by IXAttributeParser.&nbsp; Parsing can generate many attributes based on keywords, such as Title, Author, PublicationDate, and so on.&nbsp; None of these is guaranteed to be generated for a body of text, so <b>Default</b> covers the general case.</font>
+
+<p><font face="Times">If a query expression is evaluated against an IXFileFinder, the expression can also use the <b>Content</b> attribute.&nbsp; <b>Content</b> is defined as the entire unparsed contents of a file, and can be used for literal substring search with an IXFileFinder.&nbsp; Here are some examples of its use:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">eq(Content &#34;small dog&#34;)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">whole(Content &#34;small dog&#34;)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expressions above are equivalent, and search for files whose contents are exactly &quot;small dog&quot;.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">prefix(Content &#34;small dog&#34;)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">within(Content &#34;small dog&#34;)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expressions above search for the literal phrase &quot;small dog&quot; at the beginning of the file and anywhere in the file, respectively.</font>
+
+<p><font face="Times">The IXFileRecord class also defines a set of attributes, which can be specified in a query against an IXFileFinder or against a single IXFileRecord.&nbsp; The <b>Content</b> attribute isn't available in queries evaluated against an IXFileRecord, as that class doesn't have any way of actually reading the file's contents.&nbsp; Here are the attributes defined for IXFileRecords:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Attribute Name</b></font></td>
+
+<td><font face="Helvetica"><b>Description &amp; Type</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileName</font></td>
+
+<td><font face="Times">The file's relative pathname (string)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">BaseName</font></td>
+
+<td><font face="Times">The last component of the file's pathname (string)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileType</font></td>
+
+<td><font face="Times">The file's type (string); for example, &quot;rtf&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileDevice</font></td>
+
+<td><font face="Times">The file's logical device number (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileInode</font></td>
+
+<td><font face="Times">The file's inode number (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileMode</font></td>
+
+<td><font face="Times">The file's permissions (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileCount</font></td>
+
+<td><font face="Times">The number of hard links to the file (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileOwner</font></td>
+
+<td><font face="Times">The file owner's user id (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileGroup</font></td>
+
+<td><font face="Times">The file group's group id (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">FileSize</font></td>
+
+<td><font face="Times">The file's physical size, in bytes (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">AccessTime</font></td>
+
+<td><font face="Times">The time the file was last accessed (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ModifyTime</font></td>
+
+<td><font face="Times">The time the file's contents were last changed (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ChangeTime</font></td>
+
+<td><font face="Times">The time the file's status was last changed (number)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">UnixType</font></td>
+
+<td><font face="Times">The file type, as defined in <b>sys/stat.h</b> (number)</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

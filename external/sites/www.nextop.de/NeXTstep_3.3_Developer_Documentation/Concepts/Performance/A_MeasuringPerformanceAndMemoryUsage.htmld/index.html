@@ -1,0 +1,414 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/A_MeasuringPerformanceAndMemoryUsage.rtf -->
+<!-- Date: Sun Jun 28 19:36:55 1998 -->
+<head>
+<title>A_MeasuringPerformanceAndMemoryUsage</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Measuring Performance and Memory Usage</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b>Measuring Performance</b></font>
+
+<p><font face="Times">By just using your application you may already have a sense of where the problem lies--for example, load times are too long, redraw time is too long, or maybe response time is sluggish.&nbsp; In fact, this information is organized along those lines since specific techniques are often useful in solving each of those problems.&nbsp; However, there are a number of tools that can be used to get a qualitative and quantitative sense of where the cycles are being consumed within your application.&nbsp; The purpose of this section is to elaborate on them.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>gprof</b></font>
+
+<p><font face="Times">The standard profiling tool in the UNIX</font><font size="-2"><sup>&reg;</sup></font><font face="Times">world is <b>gprof</b>, and it's an excellent tool for understanding where in your process the cycles are being consumed.&nbsp; It generates a call graph for your application showing how many times a given function was called, and how much time was spent in that function and the function's descendents (that is, functions called by the given function).&nbsp; By analyzing the output from <b>gprof</b> you can quickly identify those areas where it makes sense to focus your optimization efforts.&nbsp; To use <b>gprof</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Compile the application using <b>make profile</b>.&nbsp; This compiles your program with the <b>-pg</b> option, which indicates profiling and generates an executable file named <b>appName.profile</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Run the application.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">When you exit, a file named <b>gmon.out</b> will be placed in your home directory.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Run <b>gprof</b> to create the profile:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">gprof appName.profile/appName gmon.out &gt;profile</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Use your favorite editor to examine the profile file.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Or if you want to print the file, type</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=156 height=1><font face="Courier" size="-1">gprof appName.profile/appName gmon.out |enscript</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See the UNIX manual page on <b>gprof</b> for an explanation of the output of <b>gprof</b> and its many options.</font>
+
+<p><font face="Times">However, there's one extremely important caveat with <b>gprof</b>:&nbsp; It does not measure the time spent by the Window Server on your behalf, because <b>gprof</b> only measures time spent within a given process.&nbsp; Effectively this means that <b>gprof</b> is not very useful in measuring time spent drawing, which is a serious problem because drawing time often accounts for the bulk of the total time.&nbsp; You must use other techniques to analyze the drawing time.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Qualitatively Measuring Drawing Performance</b></font>
+
+<p><font face="Times">There are two command-line arguments that can be used to quickly get a qualitative sense of your drawing performance:&nbsp; NXAllWindowsRetained and NXShowPS.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>NXAllWindowsRetained</b></font>
+
+<p><font face="Times">The command-line argument NXAllWindowsRetained is extremely useful for identifying situations in which you're doing unnecessary drawing.&nbsp; NXAllWindowsRetained makes all your windows visible, and they're made retained so all drawing is done directly on the screen.&nbsp; Hence, by visual inspection, you can see all of the drawing that's going on in your application.&nbsp; NXAllWindowsRetained is often a good first step in diagnosing performance problems.&nbsp; To use NXAllWindowsRetained, launch your application from a Terminal window, giving NXAllWindowsRetained as an argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">appName -NXAllWindowsRetained YES</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>NXShowPS</b></font>
+
+<p><font face="Times">The command-line argument NXShowPS is a useful aid in diagnosing inefficient drawing, because it writes all the Display PostScript</font><font size="-2"><sup>&reg;</sup></font><font face="Times">code going to the Window Server out to <b>stderr</b> as well.&nbsp; While use of NXAllWindowsRetained will diagnose unnecessary drawing, use of NXShowPS will diagnose inefficient drawing.&nbsp; While the volume of PostScript code is often a bit overwhelming, you should look for things like multiple erases, clips, and so on.&nbsp; To use this option, launch your program from a Terminal window, giving NXShowPS as an argument:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">appName -NXShowPS YES</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For finer-grain inspection, use the <b>showps</b> and <b>shownops</b> commands within GDB to accomplish the equivalent of NXShowPS for selected portions of your application.&nbsp; In practice, this is more useful than using NXShowPS for your entire application, since you're typically interested only in the PostScript code being emitted as a result of a particular method.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Quantitatively Measuring Drawing Performance</b></font>
+
+<p><font face="Times">To get hard numbers on the time being consumed by an application in preparation for drawing, or by the Window Server on your behalf when it's executing drawing commands, you must use interval timing.&nbsp; There are two standard techniques:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Bracket the relevant code with calls to <b>gettimeofday()</b> and calculate the elapsed time.&nbsp; Note that this will represent the &quot;wall time,&quot; which is, after all, what the user cares about; it'll account for time spent within your application as well as within the Server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Bracket the relevant code with calls to <b>getrusage()</b> and <b>PSusertime()</b> to calculate the elapsed CPU time spent within your process, and the time spent within the Server on behalf of your application's PostScript context.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To illustrate these two techniques, we've provided you with a simple Timing class that provides methods that implement the two techniques (see <b>ListingsForTimingClass.rtf</b>).&nbsp; To use the Timing class, you create an instance of the class, send a message to the object when you want to begin timing, and then send another message to it when you want to end timing.&nbsp; It'll keep track of the number of times the timing interval has been entered and the cumulative elapsed time.</font>
+
+<p><font face="Times">Below are two methods from the Timing class that are used to calculate elapsed wall time.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-wallEnter</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cumTimesEntered++;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime,&amp;tzone);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">synctime = realtime.tv_sec +realtime.tv_usec/1.0E6;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-wallLeave</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">double eTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime,&amp;tzone);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">eTime = (-synctime + realtime.tv_sec</font><br>
+<img src="../../Images/sp.gif" width=255 height=1><font face="Courier" size="-1">+ realtime.tv_usec /1.0E6) - tare;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cumWallTime += eTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-tare</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">struct timezone tzone1;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">struct timeval realtime1;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">struct timeval realtime2;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime1,&amp;tzone1);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">NXPing();</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">gettimeofday(&amp;realtime2,&amp;tzone1);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">tare = (-realtime1.tv_sec + realtime2.tv_sec) +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">(-realtime1.tv_usec+ realtime2.tv_usec)/1.0E6;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This approach is reasonably accurate, assuming the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">There are no other active processes on the machine (usually true).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The unit of work being done is large enough that the round-trip overhead doesn't consume most of the time.&nbsp; The purpose of <b>tare</b> is to account for the round-trip time and measurement latency.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You're not seriously affected by the timing variance this puts into your program (that is, don't do this in production code!)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The following two methods illustrate the approach of using <b>getrusage()</b> and <b>PSusertime()</b> to calculate the time spent within your process, and the time spent within the Server on behalf of your application's PostScript context.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-psEnter</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cumTimesEntered++;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">PSusertime(&amp;stime);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">getrusage(RUSAGE_SELF,&amp;rtime);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">synctime = (rtime.ru_utime.tv_sec +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">rtime.ru_stime.tv_sec) +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">(rtime.ru_utime.tv_usec +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">rtime.ru_stime.tv_usec)</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">/1.0E6;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-psLeave</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">int et;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">double appTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">double psTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">getrusage(RUSAGE_SELF,&amp;rtime);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">appTime&nbsp; = ((rtime.ru_utime.tv_sec +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">rtime.ru_stime.tv_sec) +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">(rtime.ru_utime.tv_usec +</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">rtime.ru_stime.tv_usec)</font><br>
+<img src="../../Images/sp.gif" width=199 height=1><font face="Courier" size="-1">/1.0E6) -synctime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cumAppTime += appTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">PSusertime(&amp;et);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">psTime = ((et-stime)/1000.0);</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">cumPSTime += psTime;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">In this case, <b>appTime</b> represents the elapsed CPU time spent in the process and in the system on behalf of the process, and <b>psTime</b> represents the CPU time spent in the Server on your behalf.&nbsp; The equation (<b>psTime</b>/(<b>appTime</b> +<b>psTime</b>)) will give you the percentage of the time spent in the Server.</font>
+
+<p><font face="Times">The second approach is very useful for seeing the breakdown between application time and Server time within a chunk of code.&nbsp; For example, you can use this to answer questions like, &quot;While wrapping and drawing a page of text, how much time is spent in the Server and how much time in the application?&quot;&nbsp; You can then decide whether to go after the Server time with <b>showps</b> and timing your graphics operations, or go after the application time with <b>gprof</b>.</font>
+
+<p><font face="Times">Either technique is extremely useful in understanding where the time is going, so you can then focus on solving the relevant problem.&nbsp; With either approach you should be sure to average over many trials to get an accurate value.&nbsp; You should also be sure to remove all timing code from production code.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Measuring Memory Usage</b></font>
+
+<p><font face="Times">When measuring memory usage, you need to measure not only the amount of memory consumed by your process, but also the amount of memory consumed by the Window Server on your application's behalf.&nbsp; The tools described in this section allow you to measure both.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>ps</b></font>
+
+<p><font face="Times">The UNIX utility <b>ps</b> is useful for only a gross measure of how much memory is consumed by your process.&nbsp; Because of the Mach virtual memory model, the numbers reported by <b>ps</b> are extremely inflated.&nbsp; For example, every program has a large stack allocated to it, but only the pages that are actually touched ever come into existence in RAM or in the swapfile.&nbsp; They're created zero-filled on demand.&nbsp; However, the total amount of virtual memory allocated for your stack shows up in your virtual process size.&nbsp; The shared libraries also appear in your virtual and resident sizes. Mapped files can also increase virtual sizes without increasing the resident size appreciably.&nbsp; The best use of the virtual size is finding substantial VM leaks.&nbsp; For most other purposes, resident size is what counts.</font>
+
+<p><font face="Times">The <b>ps</b> utility is mostly useful in diagnosing large memory leaks.&nbsp; By running <b>ps -ux</b> in a Terminal window at periodic intervals, and comparing the virtual and resident sizes of your application at the two points in time, you may be able to identify large memory leaks within your application.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>size</b></font>
+
+<p><font face="Times">The UNIX utility <b>size</b> is useful for determining the size of the various portions of your executable file (text, data, interface segments, and so on) on disk.&nbsp; For more information, see the UNIX manual page for <b>size</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>MallocDebug</b></font>
+
+<p><font face="Times">The <b>MallocDebug</b> application is the best source for detailed information on your application's use of the malloc heap. <b>MallocDebug</b> lets you dynamically view a list of all the heap data your application has allocated, sorted by size, zone, allocation time or the stack backtrace at the time of allocation.&nbsp; <b>MallocDebug</b> lets you find memory leaks with the press of a single button.&nbsp; This tool also lets you see which heap items are accessed for a particular operation, so that you can divide your data into zones for better locality of reference.&nbsp; For more information, see <b>/NextLibrary/Documentation/NextDev/DevTools/08_MallocDebug</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Winfo</b></font>
+
+<p><font face="Times">The application <b>Winfo</b> is an extremely useful tool for measuring memory consumed by your application in the form of window backing stores within the Window Server.&nbsp; <b>Winfo</b> graphically shows you all the windows your app has created, both on-screen and off-screen, and how much memory those windows consume.&nbsp; In addition, windows that have been promoted to having color or alpha are highlighted for easy detection.&nbsp; The application is available from NeXT technical support and on various archive servers.</font>
+
+<p><font face="Helvetica" size="+1"><b>-NXShowAllWindows</b></font>
+
+<p><font face="Times">To measure how your application uses off-screen windows, run your application with the option &#34;-NXShowAllWindows YES&#34;.&nbsp; This forces all the off-screen windows to be visible on screen.&nbsp; Look for redundant bitmap caches, or caches for images you rarely use.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

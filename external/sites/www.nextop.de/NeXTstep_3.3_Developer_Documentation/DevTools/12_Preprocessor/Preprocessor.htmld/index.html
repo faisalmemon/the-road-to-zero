@@ -1,0 +1,3730 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/DevTools/12_Preprocessor/Preprocessor.rtf -->
+<!-- Date: Sun Jun 28 19:51:10 1998 -->
+<head>
+<title>Preprocessor</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>12</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>The GNU C Preprocessor</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The GNU C preprocessor is a macro processor the C compiler uses to transform your program before actual compilation.&nbsp; It's called a macro processor because it allows you to define macros, which are brief abbreviations for longer constructs.</font>
+
+<p><font face="Times">The C preprocessor provides the following four facilities:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Inclusion of header files.&nbsp; These are files of declarations that can be substituted into your program.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macro expansion.&nbsp; You can define and use macros, which are abbreviations for arbitrary fragments of C code.&nbsp; The C preprocessor will replace the macros with their definitions throughout the program.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Conditional compilation.&nbsp; Using special preprocessor commands, you can include or exclude parts of the program according to various conditions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Line control.&nbsp; If you use a program to combine or rearrange source files into an intermediate file which is then compiled, you can use line control to inform the compiler of where each source line originally came from.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">C preprocessors vary in their implementation details.&nbsp; This section describes the GNU C preprocessor, which provides a superset of the features of ANSI-standard C.</font>
+
+<p><font face="Times">ANSI-standard C requires the rejection of many harmless constructs commonly used by today's C programs.&nbsp; Such incompatibility would be inconvenient for users, so the GNU C preprocessor is configured to accept these constructs by default. To get ANSI-standard C you would use the options <b>-trigraphs</b>, <b>-undef</b>, and <b>-pedantic</b>, although in practice the consequences of having strict ANSI Standard C may make it undesirable to do this.&nbsp; See the section &quot;Invoking the C Preprocessor&quot; for&nbsp; more information.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Global Transformations</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Most C preprocessor features are inactive unless you give specific commands to request their use.&nbsp; But there are three transformations that the preprocessor always makes on all the input it receives, even in the absence of commands:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">C comments (and Objective C comments) are replaced with single spaces.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Backslash-newline sequences are deleted.&nbsp; This feature allows you to break long lines for cosmetic purposes without changing their meaning.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Predefined macro names are replaced with their expansions (see the section &quot;Predefined Macros&quot;).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first two transformations are done <i>before</i> nearly all other parsing and before preprocessor commands are recognized.&nbsp; Thus, for example, you can split a line cosmetically with backslash-newline anywhere (except when trigraphs are in use; see below).</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*/ # /*</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*/ defi\</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ne FO\</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">O 10\</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">20</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">is equivalent to <b>#define FOO 1020</b>.&nbsp; You can even split an escape sequence with backslash-newline.&nbsp; For example, you can split <b>&quot;foo\bar&quot;</b> between the backslash and the <b>b</b> to get</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&#34;foo\\</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bar&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This behavior is unclean: in all other contexts, a backslash can be inserted in a string constant as an ordinary character by writing a double backslash, and this creates an exception.&nbsp; But the ANSI C standard requires it.&nbsp; (Strict ANSI C doesn't allow newlines in string constants, so this isn't considered a problem.)</font>
+
+<p><font face="Times">There are a few exceptions to all three transformations:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">C comments and predefined macro names aren't recognized inside an <b>#include</b> command in which the file name is delimited with <b>&lt;</b> and <b>&gt;</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">C comments and predefined macro names are never recognized within a character or string constant.&nbsp; (Strictly speaking, this is the rule rather than an exception.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Backslash-newline may not safely be used within an ANSI trigraph (trigraphs are converted before backslash-newline is deleted).&nbsp; If you write what looks like a trigraph with a backslash-newline inside, the backslash-newline is deleted as usual, but it is then too late to recognize the trigraph.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">This exception is relevant only if you use the <b>-trigraphs</b> option to enable trigraph processing.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Preprocessor Commands</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Most preprocessor features are active only if you use preprocessor commands to request their use.</font>
+
+<p><font face="Times">Preprocessor commands are lines in your program that start with <b>#</b>.&nbsp; The <b>#</b> is followed by an identifier that's the command name. For example, <b>#define</b> is the command that defines a macro.&nbsp; White-space characters are allowed before and after the <b>#</b>.</font>
+
+<p><font face="Times">The set of valid command names is fixed.&nbsp; Programs can't define new preprocessor commands.</font>
+
+<p><font face="Times">Some command names require arguments; these make up the rest of the command line and must be separated from the command name by one or more white-space characters.&nbsp; For example, <b>#define</b> must be followed by a macro name and the intended expansion of the macro.</font>
+
+<p><font face="Times">A preprocessor command normally can't be more than one line.&nbsp; It may be split cosmetically with backslash-newline, but that has no effect on its meaning.&nbsp; Comments containing newlines can also divide the command into multiple lines, but the comments are changed to spaces before the command is interpreted.&nbsp; The only way a significant newline can occur in a preprocessor command is within a string constant or character constant.&nbsp; (Note that most C compilers that might be applied to the output from the preprocessor do not accept string or character constants containing newlines.)</font>
+
+<p><font face="Times">The <b>#</b> and the command name can't come from a macro expansion.&nbsp; For example, if <b>foo</b> is defined as a macro expanding to <b>define</b>, that doesn't make <b>#foo</b> a valid preprocessor command.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Header Files</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Header files can contain C declarations and macro definitions that are to be shared by more than one source file.&nbsp; You request the inclusion of a header file in a source file by using the C preprocessor command <b>#include</b> (or more typically in the NEXTSTEP environment, the Objective C preprocessor command <b>#import</b>).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Uses of Header Files</b></font>
+
+<p><font face="Times">Header files serve two kinds of purposes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">System header files declare the interfaces to parts of the operating system.&nbsp; You include them in your program to supply the definitions you need to invoke system calls and libraries.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Your own header files contain declarations for interfaces between the source files of your program.&nbsp; Each time you have a group of related declarations and macro definitions, all or most of which are needed in several different source files, it's a good idea to create a header file for them.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Including a header file produces the same results in C compilation as copying the header file into each source file that needs it. But such copying would be time-consuming and error-prone.&nbsp; With a header file, the related declarations appear in only one place.&nbsp; If they need to be changed, they can be changed in one place, and programs that include the header file will automatically use the new version when recompiled.</font>
+
+<p><font face="Times">By convention, names of header files end with the extension &quot;.h&quot;.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The #include Command</b></font>
+
+<p><font face="Times">Both user and system header files are included using the preprocessor command <b>#include</b>.&nbsp; It has three variants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#include &lt;</b><i>file</i><b>&gt;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This variant is used for system header files.&nbsp; It searches for a file named <i>file</i> in a list of directories specified by you, then in a standard list of system directories.&nbsp; You specify directories to search for header files with the command option <b>-I</b> (see the section &quot;Invoking the C Preprocessor&quot;).&nbsp; The option <b>-nostdinc</b> inhibits searching the standard system directories; in this case only the directories you specify are searched.</font>
+
+<p><font face="Times">The parsing of this form of <b>#include</b> is slightly special because comments are not recognized within the <b>&lt;</b><i>file</i><b>&gt; </b>argument.&nbsp; Thus, in <b>#include &lt;x/*y&gt;</b> the <b>/*</b> doesn't start a comment and the command specifies inclusion of a system header file named <b>x/*y</b>.&nbsp; (Of course, a header file with such a name is unlikely to exist on a UNIX-based system, where shell wildcard features would make it hard to manipulate.)</font>
+
+<p><font face="Times">The <i>file</i> argument may not contain a <b>&gt;</b> character, although it may contain a <b>&lt;</b> character.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#include &#34;</b><i>file</i><b>&#34;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This variant is used for header files of your own program.&nbsp; It searches for a file named <i>file</i> first in the current directory, then in the same directories used for system header files.&nbsp; The current directory is tried first because it's presumed to be the location of the files of the program being compiled.&nbsp; (If the <b>-I-</b> option is used, the special treatment of the current directory is inhibited.)</font>
+
+<p><font face="Times">The <i>file</i> argument may not contain <b>&#34;</b> characters.&nbsp; If backslashes occur within <i>file</i>, they are considered ordinary text characters, not escape characters.&nbsp; None of the character escape sequences appropriate to string constants in C are processed.&nbsp; Thus, <b>#include &#34;x\n\\y&#34;</b> specifies a file name containing three backslashes.&nbsp; It isn't clear why this behavior is ever useful, but the ANSI standard specifies it.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#include</b> <i>anything else</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This variant is called a computed <b>#include</b>.&nbsp; Any <b>#include</b> command whose argument doesn't fit the above two forms is a computed <b>#include</b>.&nbsp; The text <i>anything else</i> is checked for macro calls, which are expanded.&nbsp; When this is done, the result must fit one of the above two variants.</font>
+
+<p><font face="Times">This feature allows you to define a macro that controls the file name to be used at a later point in the program.&nbsp; One application of this is to allow a site-configuration file for your program to specify the names of the system header files to be used.&nbsp; This can help in porting the program to various operating systems in which the necessary system header files are found in different places.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>#include</b> command directs the C preprocessor to scan the specified file as input before continuing with the rest of the current file.&nbsp; The output from the preprocessor will contain the output already generated, followed by the output resulting from the included file, followed by the output that comes from the text after the <b>#include</b> command.&nbsp; Included files can themselves contain <b>#include</b> commands to include other files.</font>
+
+<p><font face="Times">Included files are not limited to declarations and macro definitions, although those are the typical uses.&nbsp; Any fragment of a C program can be included from another file.&nbsp; The include file could even contain the beginning of a statement that is concluded in the containing file, or the end of a statement that was started in the including file.&nbsp; However, a comment or a string or character constant may not start in the included file and finish in the including file.&nbsp; An unterminated comment, string constant or character constant in an included file is considered to end (with an error message) at the end of the file.</font>
+
+<p><font face="Times">The line following the <b>#include</b> command is always treated as a separate line by the C preprocessor, even if the included file lacks a final newline.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The Objective C language equivalent of <b>#include</b> is <b>#import</b>; the only difference is that <b>#import</b> doesn't include a file more than once, no matter how many <b>#import</b> commands try to include it.&nbsp; You should feel free to use <b>#import</b> in your code, but be aware that it isn't defined as part of ANSI-standard C.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Multiple Inclusion of Header Files</b></font>
+
+<p><font face="Times">Very often one header file includes another, which can result in a certain header file being included more than once.&nbsp; This may lead to errors if the header file defines structure types or typedefs, and in any event is wasteful.&nbsp; For these reasons, you should try to avoid multiple inclusion of a header file.</font>
+
+<p><font face="Times">The standard way to prevent multiple inclusion of a file is to enclose the entire real contents of the file in a conditional, like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifndef __FILE_FOO_SEEN__</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define __FILE_FOO_SEEN__</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">the entire file</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif /* __FILE_FOO_SEEN__ */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The macro <b>__FILE_FOO_SEEN__</b> indicates that the file has been included once already; its name begins with <b>__</b> to avoid conflicts with user programs, and it contains the name of the file and some additional text to avoid conflicts with other header files.</font>
+
+<p><font face="Times">Alternatively (if compatibility with non-NeXT platforms isn't an issue), you can ensure that each file is included only once simply by using the Objective C <b>#import</b> command instead of the <b>#include</b> command.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Precompiled Header Files</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A precompiled header is a C header file that has been preprocessed and parsed, thereby improving compile time and reducing symbol table size.&nbsp; The macros and external declarations from the original header are sorted to enable fast lookup. A new implementation of the C preprocessor can use precompiled headers in place of standard headers.</font>
+
+<p><font face="Times">In most cases, the use of precompiled headers is transparent.&nbsp; Precompiled headers are simple enough to use that most projects require no conversion at all, or can be converted in a day or less.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using Precompiled System Header Files</b></font>
+
+<p><font face="Times">The precompiled version of a header file has a &quot;.p&quot; extension, rather than the standard &quot;.h&quot; extension.&nbsp; You should <i>not</i> refer to <b>appkit.p</b> in your source files; just use <b>appkit.h</b> and the preprocessor will use the precompiled form if it's available and appropriate.</font>
+
+<p><font face="Times">When the preprocessor encounters an include directive, it automatically looks for a precompiled version of the header.&nbsp; If one is found, it checks whether the context is equivalent to the context in which the precompiled header was built--if it is, the precompiled header is used.&nbsp; However, if any of the following problems occur, the non-precompiled form is included instead:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A header which was included by the precompiled header could not be found in the filesystem to verify its modification time, or the modification time did not match.&nbsp; In practice, this never occurs for precompiled headers that are part of the release, and occurs only rarely when programmers build their own precompiled headers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A macro was defined when the precompiled header was built, but is not defined in the current context.&nbsp; This is only a problem if the macro was actually referenced somewhere in the precompiled header.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A macro was undefined when the precompiled header was built, but is defined in the current context.&nbsp; This is only a problem if there might have been an invocation of the macro in the precompiled header.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Compile-time warnings (described at the end of this file) indicate the nature of any problems that occur.&nbsp; However, you need to compile with the <b>-Wprecomp</b> option in order for these warnings to be displayed.</font>
+
+<p><font face="Times">If you're developing a small project, you don't need to bother building your own precompiled headers--just use the precompiled system headers <b>appkit.p</b> and <b>mach.p</b>.&nbsp; It's easy to create your own precompiled headers if you wish to do so, however, as described in the next section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Creating Your Own Precompiled Header Files</b></font>
+
+<p><font face="Times">You create a precompiled header by passing the new <b>-precomp</b> switch to <b>cc</b>. Depending on the context(s) in which the header is used, <b>-D</b> switches should also be passed to <b>cc</b>, as explained below.</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">% cc -precomp foo.h -o foo.p</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">We say a header is &quot;context dependent&quot; if the definitions in the header may change depending on the context in which it is included.&nbsp; Most uses of conditional compilation and macro expansions cause context dependence.&nbsp; For instance, the following header is context dependent:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifdef DEBUG</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int a;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int b;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The context at any point is determined by the macros that are defined there.&nbsp; A precompiled header must be created in a context equivalent to that where it is used.&nbsp; By passing switches to the preprocessor, any set of macros can be predefined, creating a context in which the precompiled header is built.&nbsp; This is done by passing a <b>-D</b> switch for each macro in the context.</font>
+
+<p><font face="Times">A precompiled header built from &quot;system headers&quot; typically requires no <b>-D</b> switches, because programmers usually include system headers in a context independent way.&nbsp; For instance, the public appkit headers contain almost no preprocessor conditionals; clients cannot change declarations in headers by defining macros. So the command to build a precompiled header from <b>appkit.h</b> is:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">% cc -precomp appkit.h -o appkit.p</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">But if you must use a header <b>bar.h</b> in a context where FOO is defined, you should build the precompiled header as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">% cc -precomp -DFOO bar.h -o bar.p</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You should also pass any preprocessor switches, such as <b>-I</b>, that you use in your project.</font>
+
+<p><font face="Times">By making precompiled headers bigger (that is, containing more headers), a given C file may include fewer precompiled headers, and will generally compile faster. However, the bigger a precompiled header is, the more likely that name conflicts will occur.</font>
+
+<p><font face="Times">For example, if you were to combine all the headers for a project, including system headers, into a single precompiled header, it is quite possible that there would be a name conflict.&nbsp; There may be a macro defined that happens to match one of your local identifiers, or there may be a public struct declared that happens to match one of your private struct names.&nbsp; Such conflicts manifest themselves as preprocessing errors, syntax errors, or semantic errors. The conflicts may be resolved by renaming identifiers, or removing a conflicting header from the precompiled header.</font>
+
+<p><font face="Times">Another disadvantage to big precompiled headers is file dependencies.&nbsp; If all of the C files in a project depend on a single precompiled header which in turn depends on all headers in the project, then changing a header requires recompilation of the entire project.&nbsp; A better approach is to build a precompiled header containing all the system headers used by a project, and perhaps also a separate precompiled header for the local headers in the project. We recommend that during development, while local headers are changing, precompiled headers be used only for system files.&nbsp; When local headers have stabilized, they may be combined into a precompiled header.</font>
+
+<p><font face="Times">A precompiled header is dependent on all the files it includes.&nbsp; A Make dependency rule can be constructed similar to the way rules are constructed for source files (see the Make rule for <b>depend:</b> in <b>Makefile.common</b>). The following rule builds a precompiled header from a header:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.h.p:</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">cc -precomp $(CFLAGS) $*.h $*.p</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A precompiled header records absolute path names for all the headers that went into it. These paths are then checked when the precompiled header is used. Therefore a precompiled header should be built in the same directory in which it is to be used, and all the headers that went into the precompiled header must not be moved or modified.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Troubleshooting</b></font>
+
+<p><font face="Times">The Release 3 preprocessor and parser are required in order to use precompiled headers, and there are several incompatibilities with the Release 2 preprocessor and parser.&nbsp; For example, preprocessing errors and syntax errors are in a slightly different format.</font>
+
+<p><font face="Times">Only rarely will you have trouble building a precompiled header. The most common problem you might encounter is that the header doesn't parse; this is often because the header does not include other headers it depends on, so that there are undefined types. Another typical problem is conflicting definitions, which can be solved by renaming identifiers or removing a header from the precompiled header.</font>
+
+<p><font face="Times">The following list describes the compile-time warnings that may occur when using a precompiled header (currently you must compile with the <b>-Wprecomp</b> option in order for these warnings to be displayed):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>could not use precompiled header `<i>header</i>.p'</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The precompiled header could not be used for one of the reasons below.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>macro `<i>macro</i>' undefined</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The macro was defined when the precompiled header was built, but is not defined in the current context.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>macro `<i>macro</i>' defined</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The macro was undefined when the precompiled header was built, but is defined in the current context. This error can often be avoided by importing precompiled headers in the source file before any other headers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></b></font></td>
+
+<td><font face="Times"><b>macro `<i>macro</i>' defined by `<i>header</i>.p' conflicts with precomp</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">A previously included precompiled header defines a macro differently than does the current precompiled header being processed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>macro `<i>macro</i>' defined on command line conflicts with precomp</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Similar to the previous warning, except that the earlier definition of the macro occurred on the command line.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>macro `macro' redefined, locations of the conflict are:</b></font><br>
+<font face="Times"><b><i>header1</i>.h:23</b></font><br>
+<font face="Times"><b><i>header2</i>.h:47 (within the precompiled header)</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The macro has been defined in two different ways in two different precompiled headers</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>#ifdef `<i>SYM</i>' not defined when precompiled</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">A symbol was defined for the inclusion of this precompiled header, but was not when the header was precompiled.&nbsp; Since this symbol is used in an #ifdef, the precompiled header does not contain all the source code desired by the including context.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>`<i>header</i>.h' has different date than in precomp</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The modification time of the header on the disk does not match the modification time of the header when the precompiled header was built.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>could not find `<i>header</i>.h'</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The header which was included by the precompiled header could not be found on the disk to verify its modification time.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>could not use precomp `<i>header</i>.p' (incorrect version)</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">It was discovered that the version of the referenced precompiled header is incompatible with the compiler, possibly signifying a corrupt or obsolete <b>header.p</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>explicit reference to precompiled `header.p' failed</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Although the inclusion of headers with a &quot;.p&quot; suffix is discouraged due to portability considerations, it is legal to explicitly reference precompiled headers.&nbsp; The above error is generated if the precompiled header could not be typechecked properly.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Macros</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A macro is an abbreviation you define once and then use later.&nbsp; This section describes some important features associated with macros in the C preprocessor.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Simple Macros</b></font>
+
+<p><font face="Times">A simple macro is a kind of abbreviation--it's a name that stands for a fragment of code.&nbsp; Simple macros are sometimes referred to as <i>manifest constants</i>.</font>
+
+<p><font face="Times">Before you can use a macro, you must define it explicitly with the <b>#define</b> command.&nbsp; <b>#define</b> is followed by the name of the macro and then the code it should be an abbreviation for.&nbsp; For example,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define BUFFER_SIZE 1020</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">defines a macro named <b>BUFFER_SIZE</b> as an abbreviation for the text <b>1020</b>.&nbsp; With this definition in effect, the C preprocessor would expand the following statement</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">foo = (char *) xmalloc (BUFFER_SIZE);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">to</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">foo = (char *) xmalloc (1020);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The definition must be a single line; however, it may not end in the middle of a multiline string constant or character constant.</font>
+
+<p><font face="Times">For readability, uppercase is used for macro names by convention.&nbsp; Programs are easier to read when it's possible to tell at a glance which names are macros.</font>
+
+<p><font face="Times">Normally, a macro definition must be a single line (although you can always split a long macro definition cosmetically with backslash-newline).&nbsp; There's one exception:&nbsp; Newlines can be included in the macro definition if they're within a string or character constant.&nbsp; It isn't possible for a macro definition to contain an unbalanced quote character; the definition automatically extends to include the matching quote character that ends the string or character constant.&nbsp; Comments within a macro definition may contain newlines (which make no difference, since the comments are entirely replaced with spaces regardless of their contents).</font>
+
+<p><font face="Times">Aside from the above, there is no restriction on what can go in a macro body.&nbsp; Parentheses need not balance, and the body need not resemble valid C code.&nbsp; (Of course, you might get error messages from the C compiler when you use the macro.)</font>
+
+<p><font face="Times">The C preprocessor scans your program sequentially, so macro definitions take effect at the place you write them.&nbsp; Therefore, the following input to the C preprocessor</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">foo = X;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define X 4</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bar = X;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">produces as output:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">foo = X;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bar = 4;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After the preprocessor expands a macro name, the macro's definition body is appended to the front of the remaining input, and the check for macros continues.&nbsp; Therefore, the macro body can contain other macros.&nbsp; For example, after the following definitions</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define BUFSIZE 1020</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define TABLESIZE BUFSIZE</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the name <b>TABLESIZE</b> when used in the program would go through two stages of expansion, resulting ultimately in <b>1020</b>.</font>
+
+<p><font face="Times">This isn't the same as defining <b>TABLESIZE</b> to be <b>1020</b>.&nbsp; The <b>#define</b> for <b>TABLESIZE</b> uses exactly the body you specify--in this case, <b>BUFSIZE</b>--and doesn't check to see whether it too is the name of a macro.&nbsp; It's only when you use <b>TABLESIZE </b>that the result of its expansion is checked for more macro names.&nbsp; See the section &quot;Cascaded Use of Macros.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Macros that Take Arguments</b></font>
+
+<p><font face="Times">A simple macro always stands for exactly the same text, each time it's used.&nbsp; Macros can be more flexible when they accept arguments.&nbsp; Arguments are fragments of code that you supply each time the macro is used.&nbsp; These fragments are included in the expansion of the macro according to the directions in the macro definition.</font>
+
+<p><font face="Times">To define a macro that takes arguments, you use the <b>#define</b> command with a list of parameters in parentheses after the name of the macro.&nbsp; The parameters may be any valid C identifiers separated by commas (and optionally, by white-space characters). The left parenthesis must follow the macro name immediately, with no space in between.</font>
+
+<p><font face="Times">For example, here's a macro that computes the minimum of two numeric values:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define min(X, Y)&nbsp; ((X) &lt; (Y) ? (X) : (Y))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that this isn't the best way to define a &quot;minimum&quot; macro in GNU C (see the section &quot;Duplication of Side Effects&quot; for more information).</font>
+
+<p><font face="Times">To use a macro that takes arguments, you write the name of the macro followed by a list of arguments in parentheses, separated by commas.&nbsp; The number of arguments you give must match the number of parameters in the macro definition.&nbsp; The following examples show the use of the macro <b>min</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">min (1, 2)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">min (x + 28, *p)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The expansion text of the macro depends on the arguments you use.&nbsp; Each of the macro's parameters is replaced, throughout the macro definition, with the corresponding argument.&nbsp; Using the same macro <b>min</b> defined above, <b>min (1, 2)</b> expands to</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">((1) &lt; (2) ? (1) : (2))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where <b>1</b> has been substituted for <b>X</b> and <b>2</b> for <b>Y</b>.</font>
+
+<p><font face="Times">Likewise, <b>min (x + 28, *p)</b> expands into</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">((x + 28) &lt; (*p) ? (x + 28) : (*p))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Parentheses in the arguments must balance; a comma within parentheses doesn't end an argument.&nbsp; However, there's no requirement for brackets or braces to balance; thus, if you want to supply</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">array[x = y, x + 1]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">as an argument, you would write it as</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">array[(x = y, x + 1)]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">After the arguments are substituted into the macro body, the entire result is appended to the front of the remaining input, and the check for macros continues.&nbsp; Therefore, the arguments can contain other macros, either with or without arguments, or even the same macro.&nbsp; The macro body can also contain other macros.&nbsp; For example, <b>min (min (a, b), c)</b> expands into</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">((((a) &lt; (b) ? (a) : (b))) &lt; (c)</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">? (((a) &lt; (b) ? (a) : (b)))</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">: (c))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Line breaks shown here for clarity wouldn't actually be generated.</font>
+
+<p><font face="Times">If you use the macro name followed by something other than a left parenthesis (after ignoring any spaces, tabs, and comments that follow), it isn't considered a macro invocation, and the preprocessor doesn't change what you've written.&nbsp; Therefore, it's possible for the same name to be a variable or function in your program as well as a macro, and you can choose in each instance whether to refer to the macro (if an argument list follows) or the variable or function (if an argument list doesn't follow).</font>
+
+<p><font face="Times">Such dual use of one name could be confusing and should be avoided except when the two meanings are effectively synonymous:&nbsp; that is, when the name is both a macro and a function and the two have similar effects.&nbsp; You can think of the name simply as a function; use of the name for purposes other than calling it (such as, to take the address) will refer to the function, while calls will expand the macro.&nbsp; For example, you can use a function named <b>min</b> in the same source file that defines the macro.&nbsp; If you write <b>&amp;min</b> with no argument list, you refer to the function.&nbsp; If you write <b>min (x, bb)</b>, with an argument list, the macro is expanded.&nbsp; If you write <b>(min) (a, bb)</b>, where the name <b>min</b> isn't followed by a left parenthesis, the macro isn't expanded; rather, the function <b>min</b> is called.</font>
+
+<p><font face="Times">A name can't be defined as both a simple macro and a macro with arguments.</font>
+
+<p><font face="Times">In the definition of a macro with arguments, the list of argument names must follow the macro name immediately with no space in between.&nbsp; If there is a space after the macro name, the macro is defined as taking no arguments, and the rest of the name is taken to be the expansion.&nbsp; The reason for this is that it's often useful to define a macro that takes no arguments and whose definition begins with an identifier in parentheses.&nbsp; This rule about spaces makes it possible for you to do either this (which defines <b>FOO</b> to take an argument and expand into minus the reciprocal of that argument)</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define FOO(x) - 1 / (x)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">or this (which defines <b>FOO</b> to take no argument and always expand into <b>(x) - 1 / (x)</b>):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define FOO (x) - 1 / (x)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It matters only in the macro definition whether there's a space before the left parenthesis; when you use the macro, it doesn't matter if there are spaces there or not.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Predefined Macros</b></font>
+
+<p><font face="Times">Several standard macros are predefined, some by ANSI C and some as extensions.&nbsp; Their names all start and end with double underscores.</font>
+
+<p><font face="Times">The following predefined macros are part of the ANSI C standard:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__FILE__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to the name of the current input file, in the form of a C string constant.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__BASE_FILE__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to the name of the main input file, in the form of a C string constant.&nbsp; This is the source file that was specified as an argument when the C compiler was invoked.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__LINE__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to the current input line number, in the form of a decimal integer constant.&nbsp; (Note that although this is considered a predefined macro, its definition changes with each new line of source code.)</font>
+
+<p><font face="Times">This and <b>__FILE__</b> are useful in generating an error message to report an inconsistency detected by the program; the message can state the source line at which the inconsistency was detected.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">fprintf (stderr,</font><br>
+<img src="../../Images/sp.gif" width=263 height=1><font face="Courier" size="-1">&#34;Internal error: negative string length &#34;</font><br>
+<img src="../../Images/sp.gif" width=263 height=1><font face="Courier" size="-1">&#34;%d at %s, line %d.&#34;</font><br>
+<img src="../../Images/sp.gif" width=263 height=1><font face="Courier" size="-1">length, __FILE__, __LINE__);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">An <b>#include</b> command changes the expansions of <b>__FILE__</b> and <b>__LINE__</b> to correspond to the included file.&nbsp; At the end of that file, when processing resumes on the input file that contained the <b>#include</b> command, the expansions of <b>__FILE__</b> and <b>__LINE__</b> revert to the values they had before the <b>#include</b> (but <b>__LINE__</b> is then incremented by one as processing moves to the line after the <b>#include</b>).</font>
+
+<p><font face="Times">The expansions of both <b>__FILE__</b> and <b>__LINE__</b> are altered if a <b>#line</b> command is used.&nbsp; See the section &quot;Combining Source Files.&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__DATE__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to a string constant that describes the date on which the preprocessor is being run.&nbsp; The string constant contains 15 characters and looks like &quot;Tue Jun 02 1992&quot;.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__TIME__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to a string constant that describes the time at which the preprocessor is being run.&nbsp; The string constant contains 12 characters and looks like &quot;23:59:01 EDT&quot;.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__STDC__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to the constant 1, to signify that this is ANSI-standard C.&nbsp; (Whether that's actually true depends on what C compiler will operate on the output from the preprocessor.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following predefined macros are GNU C extensions to the ANSI C standard:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__GNUC__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined if and only if this is GNU C.&nbsp; Moreover, it's defined only when the entire GNU C compiler is in use; if you invoke the preprocessor directly, <b>__GNUC__</b> is undefined.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__STRICT_ANSI__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined if and only if the <b>-ansi</b> switch was specified when GNU C was invoked.&nbsp; Its definition is the null string.&nbsp; This macro exists primarily to direct certain GNU header files not to define traditional UNIX constructs that are incompatible with ANSI C.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__VERSION__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro expands to a string describing the version number of the compiler.&nbsp; The string is normally a sequence of decimal numbers separated by periods, such as <b>&quot;1.18&quot;</b>.&nbsp; The main use of this macro is to incorporate the version number into a string constant.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__OPTIMIZE__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined in optimizing compilations.&nbsp; It causes certain GNU header files to define alternative macro definitions for some system library functions.&nbsp; It's unwise to refer to or test the definition of this macro unless you make sure that programs will execute with the same effect regardless.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__CHAR_UNSIGNED__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined if and only if the data type <b>char</b> is unsigned on the target machine.&nbsp; Its purpose is to cause the standard header file <b>limit.h</b> to work correctly.&nbsp; It's bad practice to refer to this macro yourself; instead, refer to the standard macros defined in <b>limit.h</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following macros are defined in NEXTSTEP:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__OBJC__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined when compiling Objective C &quot;.m&quot; files.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__GNU__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined when compiling &quot;.m&quot;, &quot;.c&quot;, or &quot;.s&quot; files.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__ASSEMBLER__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined when compiling &quot;.s&quot; files.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__STRICT_BSD__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined if and only if the <b>-bsd</b> switch was specified when GNU C was invoked.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>__MACH__</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">This macro is defined if Mach system calls are supported.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Nonstandard Predefined Macros</b></font>
+
+<p><font face="Times">The C preprocessor normally has several predefined macros that vary between machines because their purpose is to indicate what type of system and machine is in use.&nbsp; This section lists some that are useful on NEXTSTEP computers.</font>
+
+<p><font face="Times">Some nonstandard predefined macros describe the operating system in use.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>unix</b></font></td>
+
+<td><font face="Times">Predefined on UNIX systems.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>BSD</b></font></td>
+
+<td><font face="Times">Predefined on versions of Berkeley UNIX 4.3BSD.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Other nonstandard predefined macros describe the kind of CPU.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>mc68000</b></font></td>
+
+<td><font face="Times">Predefined on most computers whose CPU is a Motorola 68000, 68010, 68020, 68030, or 68040.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Yet other nonstandard predefined macros describe the manufacturer of the system.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>NeXT</b></font></td>
+
+<td><font face="Times">Predefined on a NeXT computer.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These predefined symbols aren't only nonstandard, they're contrary to the ANSI standard because their names don't start with underscores.&nbsp; The <b>-ansi</b> option, which requests complete support for ANSI C, inhibits the definition of these predefined symbols.</font>
+
+<p><font face="Times">This tends to make <b>-ansi</b> useless, since many programs depend on the customary nonstandard predefined symbols.&nbsp; Even system header files check them and will generate incorrect declarations if they do not find the names that are expected.&nbsp; You might think that the header files supplied for a specific computer type would not need to test what machine they are running on, because they can simply assume it is of that variety; but often they do, and they do so using the customary names.&nbsp; As a result, very few C programs will compile with <b>-ansi</b>.&nbsp; We intend to avoid such problems on the GNU system.</font>
+
+<p><font face="Times">What, then, should you do in an ANSI C program to test the type of machine it will run on?</font>
+
+<p><font face="Times">GNU C offers a parallel series of symbols for this purpose, whose names are made from the customary ones by adding <b>__</b> at the beginning and end.&nbsp; Thus, the symbol <b>__vax__</b> would be available on a VAX, and so on.</font>
+
+<p><font face="Times">The set of nonstandard predefined names in the GNU C preprocessor is controlled (when <b>cpp</b> is itself compiled) by the macro <b>CPP_PREDEFINES</b>, which should be a string containing -D options, separated by spaces.&nbsp; For example, on the Sun 3, we use the following definition:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define CPP_PREDEFINES &#34;-Dmc68000 -Dsun -Dunix -Dm68k&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This macro is usually specified in <b>tm.h</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Stringification</b></font>
+
+<p><font face="Times">&quot;Stringification&quot; means turning a code fragment into a string constant whose contents are the text for the code fragment.&nbsp; For example, stringifying <b>foo (z)</b> results in <b>&#34;foo (z)&#34;</b>.</font>
+
+<p><font face="Times">In the C preprocessor, stringification is an option available when macro arguments are substituted into the macro definition.&nbsp; In the body of the definition, when an argument name appears, the character <b>#</b> before the name specifies stringification of the corresponding argument when it's substituted at that point in the definition.&nbsp; The same argument may be substituted in other places in the definition without stringification if the argument name appears in those places with no <b>#</b>.</font>
+
+<p><font face="Times">Here's an example of a macro definition that uses stringification:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define WARN_IF(EXP)&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">do { if (EXP) fprintf (stderr, &#34;Warning: &#34; #EXP &#34;\n&#34;); }</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (0)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here the argument for <b>EXP</b> is substituted once as given, into the <b>if</b> statement, and once as stringified, into the argument to <b>fprintf</b>.&nbsp; The <b>do</b> and <b>while (0)</b> make it possible to write <b>WARN_IF (ARG);</b> (see the section &quot;Swallowing the Semicolon&quot;).</font>
+
+<p><font face="Times">The stringification feature is limited to transforming one macro argument into one string constant:&nbsp; There's no way to combine the argument with other text and then stringify it all together.&nbsp; But the example above shows how an equivalent result can be obtained in ANSI-standard C using the feature that adjacent string constants are concatenated as one string constant.&nbsp; The preprocessor stringifies <b>EXP</b>'s argument into a separate string constant, resulting in text like</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">do { if (x == 0) fprintf (stderr, &#34;Warning: &#34; &#34;x == 0&#34; &#34;\n&#34;); }</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (0)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">but the C compiler then sees three consecutive string constants and concatenates them into one, producing:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">do { if (x == 0) fprintf (stderr, &#34;Warning: x == 0\n&#34;); }</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (0)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Stringification in C involves more than putting double quotes around the fragment; it's necessary to put backslashes in front of all double quotes, and all backslashes in string and character constants, in order to get a valid C string constant with the proper contents.&nbsp; Thus, stringifying <b>p = &#34;foo\n&#34;;</b> results in <b>&#34;p = \&#34;foo\\n\&#34;;&#34;</b>.&nbsp; However, backslashes that aren't inside string or character constants aren't duplicated:&nbsp; <b>\n</b> by itself stringifies to <b>&#34;\n&#34;</b>.</font>
+
+<p><font face="Times">White-space characters (including comments) in the text being stringified are handled according to the following rules:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">All leading and trailing white-space characters are ignored.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Any sequence of white-space characters in the middle of the text is converted to a single space in the stringified result.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Concatenation</b></font>
+
+<p><font face="Times">Concatenation means joining two strings into one.&nbsp; In the context of macro expansion, concatenation refers to joining two lexical units into one longer one.&nbsp; Specifically, an argument to the macro can be concatenated with another argument or with fixed text to produce a longer name.&nbsp; The longer name might be the name of a function, variable or type, or a C keyword; it might even be the name of another macro, in which case it will be expanded.</font>
+
+<p><font face="Times">When you define a macro, you request concatenation with the special operator <b>##</b> in the macro body.&nbsp; When the macro is invoked, arguments are substituted.&nbsp; Then all <b>##</b> operators are deleted, along with any white-space characters next to them (including white-space characters that are part of an argument).&nbsp; The result is to concatenate the syntactic tokens on either side of the <b>##</b>.</font>
+
+<p><font face="Times">Consider a C program that interprets named commands.&nbsp; There probably needs to be a table of commands, perhaps an array of structures declared as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct command</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void (*function) ();</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct command commands[] =</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{ &#34;quit&#34;, quit_command},</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{ &#34;help&#34;, help_command},</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It would be cleaner not to have to give each command name twice, once in the string constant and once in the function name.&nbsp; A macro that takes the name of a command as an argument can make this unnecessary.&nbsp; The string constant can be created with stringification, and the function name by concatenating the argument with &quot;_command&quot;:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define COMMAND(NAME)&nbsp; { #NAME, NAME ## _command }</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct command commands[] =</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">COMMAND (quit),</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">COMMAND (help),</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The usual case of concatenation is concatenating two names (or a name and a number) into a longer name.&nbsp; But this isn't the only valid case.&nbsp; It's also possible to concatenate two numbers (or a number and a name, such as <b>1.5</b> and <b>e3</b>) into a number. Also, multicharacter operators such as <b>+=</b> can be formed by concatenation.&nbsp; In some cases it's even possible to piece together a string constant.&nbsp; However, two pieces of text that don't together form a valid lexical unit cannot be concatenated.&nbsp; For example, concatenation with <b>x</b> on one side and <b>+</b> on the other isn't meaningful because those two characters can't fit together in any lexical unit of C.&nbsp; Although the ANSI standard says that such an attempt at concatenation is undefined, the GNU C preprocessor handles it as follows:&nbsp; it puts the <b>x</b> and <b>+</b> side by side with no particular special results.</font>
+
+<p><font face="Times">The C preprocessor converts comments to whitespace before macros are even considered.&nbsp; Therefore, you cannot create a comment by concatenating <b>/</b> and <b>*</b>: the <b>/*</b> sequence that starts a comment is not a lexical unit, but rather the beginning of a &quot;long&quot; space character.&nbsp; You can freely use comments next to a <b>##</b> in a macro definition, or in arguments that will be concatenated, because the comments will be converted to spaces at first sight, and concatenation will later discard the spaces.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Undefining Macros</b></font>
+
+<p><font face="Times">To undefine a macro means to cancel its definition.&nbsp; This is done with the <b>#undef</b> command.&nbsp; <b>#undef</b> is followed by the macro name to be undefined.</font>
+
+<p><font face="Times">Like definition, undefinition occurs at a specific point in the source file, and it applies starting from that point.&nbsp; The name ceases to be a macro name, and from that point on it's treated by the preprocessor as if it had never been a macro name.</font>
+
+<p><font face="Times">For example,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define FOO 4</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">x = FOO;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#undef FOO</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">x = FOO;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">expands into</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">x = 4;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">x = FOO;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In this example, <b>FOO</b> must be a variable or function as well as (temporarily) a macro, in order for the result of the expansion to be valid C code.</font>
+
+<p><font face="Times">The same form of <b>#undef</b> command will cancel definitions with arguments or definitions that don't expect arguments.&nbsp; The <b>#undef</b> command has no effect when used on a name not currently defined as a macro.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Redefining Macros</b></font>
+
+<p><font face="Times">Redefining a macro means defining (with <b>#define</b>) a name that is already defined as a macro.</font>
+
+<p><font face="Times">A redefinition is trivial if the new definition is transparently identical to the old one.&nbsp; You probably wouldn't deliberately write a trivial redefinition, but they can happen automatically when a header file is included more than once (see the section &quot;Header Files&quot;), so they're accepted silently and without effect.</font>
+
+<p><font face="Times">Nontrivial redefinition is considered likely to be an error, so it provokes a warning message from the preprocessor.&nbsp; However, sometimes it's useful to change the definition of a macro in mid-compilation.&nbsp; You can inhibit the warning by undefining the macro with <b>#undef</b> before the second definition.</font>
+
+<p><font face="Times">In order for a redefinition to be trivial, the new definition must exactly match the one already in effect, with two possible exceptions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whitespace may be added or deleted at the beginning or the end.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Whitespace may be changed in the middle (but not inside strings).&nbsp; However, it may not be eliminated entirely, and it may not be added where there was no whitespace previously.&nbsp; Remember, comments count as whitespace.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Pitfalls and Subtleties of Macros</b></font>
+
+<p><font face="Times">This section describes some special rules that apply to macros and macro expansion, and points out certain cases in which the rules have counterintuitive consequences that you must watch out for.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Improperly Nested Constructs</b></font>
+
+<p><font face="Times">Recall that when a macro is invoked with arguments, the arguments are substituted into the macro body and the result is checked, together with the rest of the input file, for more macros.</font>
+
+<p><font face="Times">It's possible to piece together a macro invocation coming partially from the macro body and partially from the arguments.&nbsp; For example,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define double(x) (2*(x))</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define call_with_1(x) x(1)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">would expand <b>call_with_1 (double)</b> into <b>(2*(1))</b>.</font>
+
+<p><font face="Times">Macro definitions don't have to have balanced parentheses.&nbsp; By writing an unbalanced left parenthesis in a macro body, it's possible to create a macro invocation that begins inside the macro body but ends outside it.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define strange(file) fprintf (file, &#34;%s %d&#34;,</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">strange(stderr) p, 35)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This bizarre example expands to</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">fprintf (stderr, &#34;%s %d&#34;, p, 35)</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Unintended Grouping of Arithmetic</b></font>
+
+<p><font face="Times">You may have noticed that in most of the macro definition examples shown above, each occurrence of a macro argument name has parentheses around it.&nbsp; In addition, another pair of parentheses usually surround the entire macro definition.&nbsp; This section discusses why it's best to write macros that way.</font>
+
+<p><font face="Times">Suppose you define a macro</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define ceil_div(x, y) (x + y - 1) / y</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">whose purpose is to divide, rounding up.&nbsp; (One use for this operation is to compute how many <b>int</b>'s are needed to hold a certain number of <b>char</b>s.)&nbsp; Then suppose it's used as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">a = ceil_div (b &amp; c, sizeof (int));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This expands into</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">a = (b &amp; c + sizeof (int) - 1) / sizeof (int);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">which doesn't do what's intended.&nbsp; The operator-precedence rules of C make this equivalent to:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">a = (b &amp; (c + sizeof (int) - 1)) / sizeof (int);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">But what we want is:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">a = ((b &amp; c) + sizeof (int) - 1)) / sizeof (int);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Defining the macro as follows provides the desired result:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define ceil_div(x, y) ((x) + (y) - 1) / (y)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, unintended grouping can happen in another way.&nbsp; Consider <b>sizeof ceil_div(1, 2)</b>.&nbsp; This has the appearance of a C expression that would compute the size of the type of <b>ceil_div (1, 2)</b>, but in fact it means something very different.&nbsp; Here's what it expands to:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sizeof ((1) + (2) - 1) / (2)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This would take the size of an integer and divide it by 2.&nbsp; The precedence rules have put the division outside the <b>sizeof()</b> when it was intended to be inside.</font>
+
+<p><font face="Times">Parentheses around the entire macro definition can prevent such problems.&nbsp; Here's the recommended way to define <b>ceil_div</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define ceil_div(x, y) (((x) + (y) - 1) / (y))</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Swallowing the Semicolon</b></font>
+
+<p><font face="Times">Often it's desirable to define a macro that expands into a compound statement.&nbsp; Consider, for example, the following macro, which advances a pointer across space characters:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define SKIP_SPACES (p, limit)&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{ register char *lim = (limit); \</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (p != lim) {&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (*p++ != ' ') {&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">p-; break; }}}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here backslash-newline is used to split the macro definition, which must be a single line, so that it resembles the way such C code would appear if not part of a macro definition.</font>
+
+<p><font face="Times">An invocation of this macro might be <b>SKIP_SPACES (p, lim)</b>.&nbsp; Strictly speaking, the invocation expands to a compound statement, which is a complete statement with no need for a semicolon to end it.&nbsp; But it looks like a function call.&nbsp; So it minimizes confusion if you can use it like a function call, writing a semicolon afterward:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SKIP_SPACES (p, lim);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">But this can cause trouble before <b>else</b> statements, because the semicolon is actually a null statement.&nbsp; Suppose you write</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (*p != 0)</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">SKIP_SPACES (p, lim);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else . . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The presence of two statements--the compound statement and a null statement--in between the <b>if</b> condition and the <b>else</b> makes invalid C code.</font>
+
+<p><font face="Times">The definition of the macro <b>SKIP_SPACES</b> can be altered to solve this problem, using a <b>do</b> ... <b>while</b> statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define SKIP_SPACES (p, limit)&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">do { register char *lim = (limit);&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (p != lim) {&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (*p++ != ' ') {&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">p-; break; }}}&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while (0)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Now <b>SKIP_SPACES (p, lim);</b> expands into one statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">do {. . .} while (0);</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Duplication of Side Effects</b></font>
+
+<p><font face="Times">Many C programs define a macro <b>min</b> (for &quot;minimum&quot;), like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define min(X, Y)&nbsp; ((X) &lt; (Y) ? (X) : (Y))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When you use this macro with an argument containing a side effect (as shown here)</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">next = min (x + y, foo (z));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">it expands as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">next = ((x + y) &lt; (foo (z)) ? (x + y) : (foo (z)));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where <b>x + y</b> has been substituted for <b>X</b> and <b>foo (z)</b> for <b>Y</b>.</font>
+
+<p><font face="Times">The function <b>foo</b> is used only once in the statement as it appears in the program, but the expression <b>foo (z)</b> has been substituted twice into the macro expansion.&nbsp; As a result, <b>foo</b> might be called two times when the statement is executed.&nbsp; If it has side effects or if it takes a long time to compute, the results might not be what you intended.&nbsp; Therefore <b>min</b> is an &quot;unsafe&quot; macro.</font>
+
+<p><font face="Times">One way to solve this problem is to define <b>min</b> in a way that computes the value of <b>foo (z)</b> only once.&nbsp; The C language offers no standard way to do this, but it can be done with GNU C extensions as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define min(X, Y)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">({ typeof (X) __x = (X), __y = (Y);&nbsp;&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">(__x &lt; __y) ? __x : __y; })</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you don't wish to use GNU C extensions, the only solution is to be careful when using the macro <b>min</b>.&nbsp; For example, you can calculate the value of <b>foo (z)</b>, save it in a variable, and use that variable in <b>min</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define min(X, Y)&nbsp; ((X) &lt; (Y) ? (X) : (Y))</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int tem = foo (z);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">next = min (x + y, tem);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Self-Referential Macros</b></font>
+
+<p><font face="Times">A self-referential macro is one whose name appears in its definition.&nbsp; A special feature of ANSI-standard C is that the self-reference isn't considered a macro invocation.&nbsp; It's passed into the preprocessor output unchanged.</font>
+
+<p><font face="Times">Consider the following example (assume that <b>foo</b> is also a variable in your program):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo (4 + foo)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Following the ordinary rules, each reference to <b>foo</b> will expand into <b>(4 + foo)</b>; then this will be rescanned and will expand into <b>(4 + (4 + foo))</b>; and so on until it causes a fatal error (memory full) in the preprocessor.</font>
+
+<p><font face="Times">However, the special rule about self-reference cuts this process short after one step, at <b>(4 + foo)</b>.&nbsp; Therefore, this macro definition has the possibly useful effect of causing the program to add 4 to the value of <b>foo</b> wherever <b>foo</b> is referred to.</font>
+
+<p><font face="Times">In most cases, it's a bad idea to take advantage of this feature.&nbsp; A person reading the program who sees that <b>foo</b> is a variable won't expect that it's a macro as well.&nbsp; The reader will come across the identifier <b>foo</b> in the program and think its value should be that of the variable <b>foo</b>, whereas in fact the value is 4 greater.</font>
+
+<p><font face="Times">The special rule for self-reference applies also to indirect self-reference.&nbsp; This is the case where a macro X expands to use a macro <b>y</b>, and <b>y</b>'s expansion refers to the macro <b>x</b>.&nbsp; The resulting reference to <b>x</b> comes indirectly from the expansion of <b>x</b>, so it's a self-reference and isn't further expanded.&nbsp; Thus, after</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define x (4 + y)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define y (2 * x)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>x</b> would expand into <b>(4 + (2 * x))</b>.</font>
+
+<p><font face="Times">But suppose <b>y</b> is used elsewhere, not from the definition of <b>x</b>.&nbsp; Then the use of <b>x</b> in the expansion of <b>y</b> isn't a self-reference because <b>x</b> isn't in progress.&nbsp; So it does expand.&nbsp; However, the expansion of <b>x</b> contains a reference to <b>y</b>, and that's an indirect self-reference now because <b>y</b> is in progress.&nbsp; The result is that <b>y</b> expands to <b>(2 * (4 + y))</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Separate Expansion of Macro Arguments</b></font>
+
+<p><font face="Times">We have explained that the expansion of a macro, including the substituted arguments, is scanned over again for macros to be expanded.</font>
+
+<p><font face="Times">What really happens is more subtle:&nbsp; First each argument text is scanned separately for macros.&nbsp; Then the results of this are substituted into the macro body to produce the macro expansion, and the macro expansion is scanned again for macros to expand.</font>
+
+<p><font face="Times">The result is that the arguments are scanned twice to expand macros in them.</font>
+
+<p><font face="Times">Most of the time, this has no effect.&nbsp; If the argument contained any macros, they're expanded during the first scan.&nbsp; The result therefore contains no macros, so the second scan doesn't change it.&nbsp; If the argument were substituted as given, with no prescan, the single remaining scan would find the same macros and produce the same results.</font>
+
+<p><font face="Times">You might expect the double scan to change the results when a self-referential macro is used in an argument of another macro (see the section &quot;Self-Referential Macros&quot; above); the self-referential macro would be expanded once in the first scan, and a second time in the second scan.&nbsp; But this isn't what happens.&nbsp; The self-references that don't expand in the first scan are marked so that they won't expand in the second scan either.</font>
+
+<p><font face="Times">The prescan isn't done when an argument is stringified or concatenated.&nbsp; (More precisely, stringification and concatenation use the argument as written, in unprescanned form.&nbsp; The same argument would be used in prescanned form if it's substituted elsewhere without stringification or concatenation.)&nbsp; Thus,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define str(s) #s</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo 4</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">str (foo)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">expands to <b>&#34;foo&#34;</b>.&nbsp; Once more, prescan has been prevented from having any noticeable effect.</font>
+
+<p><font face="Times">The prescan does make a difference in three special cases:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Nested invocations of a macro</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macros that invoke other macros that stringify or concatenate</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macros whose expansions contain unshielded commas</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Nested invocations of a macro occur when a macro's argument contains an invocation of that very macro.&nbsp; For example, if <b>f</b> is a macro that expects one argument, <b>f (f (1))</b> is a nested pair of invocations of <b>f</b>.&nbsp; The desired expansion is made by expanding <b>f (1) </b>and substituting that into the definition of <b>f</b>.&nbsp; The prescan causes the expected result to happen.&nbsp; Without the prescan, <b>f (1)</b> itself would be substituted as an argument, and the inner use of <b>f</b> would appear during the main scan as an indirect self-reference and wouldn't be expanded.&nbsp; Here, the prescan cancels an undesirable side effect of the special rule for self-referential macros.</font>
+
+<p><font face="Times">But prescan causes trouble in certain other cases of nested macro calls.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo&nbsp; a,b</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define bar(x) lose(x)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define lose(x) (1 + (x))</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bar(foo)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">We would like <b>bar(foo)</b> to turn into <b>(1 + (foo))</b>, which would then turn into <b>(1 + (a,b))</b>.&nbsp; But instead, <b>bar(foo)</b> expands into <b>lose(a,b)</b>, and you get an error because <b>lose</b> requires a single argument.&nbsp; In this case, the problem is easily solved by the same parentheses that ought to be used to prevent misnesting of arithmetic operations:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo (a,b)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define bar(x) lose((x))</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The problem is more serious when the operands of the macro aren't expressions (for example, when they are statements).&nbsp; Then parentheses are unacceptable because they would make for invalid C code:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo { int a, b; ... }</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In GNU C you can shield the commas using the <b>({</b>&nbsp; . . . <b>})</b> construct, which turns a compound statement into an expression:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo ({ int a, b; ... })</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Or you can rewrite the macro definition to avoid such commas:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo { int a; int b; ... }</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There's also one case where prescan is useful.&nbsp; It's possible to use prescan to expand an argument and then stringify it--if you use two levels of macros.&nbsp; Let's add a new macro <b>xstr</b> to the example shown above:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define xstr(s) str(s)</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define str(s) #s</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo 4</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">xstr (foo)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This expands to <b>&#34;4&#34;</b>, not <b>&#34;foo&#34;</b>.&nbsp; The reason for the difference is that the argument of <b>xstr</b> is expanded at prescan (because <b>xstr </b>doesn't specify stringification or concatenation of the argument).&nbsp; The result of prescan then forms the argument for <b>str</b>.&nbsp; <b>str </b>uses its argument without prescan because it performs stringification; but it can't prevent or undo the prescanning already done by <b>xstr</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Cascaded Use of Macros</b></font>
+
+<p><font face="Times">A cascade of macros occurs when one macro's body contains a reference to another macro (a very common practice).&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define BUFSIZE 1020</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define TABLESIZE BUFSIZE</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This isn't at all the same as defining <b>TABLESIZE</b> to be <b>1020</b>.&nbsp; The <b>#define</b> for <b>TABLESIZE</b> uses exactly the body you specify--in this case, <b>BUFSIZE</b>--and doesn't check to see whether it too is the name of a macro.</font>
+
+<p><font face="Times">It's only when you <i>use</i> <b>TABLESIZE</b> that the result of its expansion is checked for more macro names.</font>
+
+<p><font face="Times">This makes a difference if you change the definition of <b>BUFSIZE</b> at some point in the source file.&nbsp; <b>TABLESIZE</b>, defined as shown, will always expand using the definition of <b>BUFSIZE</b> that's currently in effect:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define BUFSIZE 1020</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define TABLESIZE BUFSIZE</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#undef BUFSIZE</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define BUFSIZE 37</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Now <b>TABLESIZE</b> expands in two stages to <b>37</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Inability to Define a Macro that Produces a # Character</b></font>
+
+<p><font face="Times">You can't use the GNU C preprocessor to define macros that produce <b>#</b> characters.&nbsp; For instance, the following is illegal:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define linkmacro(numBytes) link #numBytes,a6</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that you can use the <b>#</b> character inside a string or character constant, as shown here:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define PrintSharp() printf(&#34;#&#34;)</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Macro Arguments inside String Constants</b></font>
+
+<p><font face="Times">The GNU C preprocessor doesn't substitute macro arguments that appear inside string constants.&nbsp; For example, the following macro will produce the output <b>&#34;a&#34;</b> no matter what the argument <b>a</b> is:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define foo(a) &#34;a&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>-traditional</b> option directs GNU CC to handle such cases (among others) in the traditional non-ANSI way.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Conditionals</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In a macro processor, a conditional is a command that allows part of the program to be ignored during compilation, on some conditions.&nbsp; In the C preprocessor, a conditional can test either an arithmetic expression or whether a name is defined as a macro.</font>
+
+<p><font face="Times">A conditional in the C preprocessor resembles an <b>if</b> statement in C, but it's important to understand the difference between them.&nbsp; The condition in an <b>if</b> statement is tested during the execution of your program.&nbsp; Its purpose is to allow your program to behave differently from run to run, depending on the data it's operating on.&nbsp; The condition in a preprocessor conditional command is tested when your program is compiled.&nbsp; Its purpose is to allow different code to be included in the program depending on the situation at the time of compilation.</font>
+
+<p><font face="Times">There are three reasons to use a conditional:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A program may need to use different code depending on the target machine or operating system.&nbsp; In some cases, the code for one operating system may be erroneous on another operating system; for example, it might refer to library routines that don't exist on the other system.&nbsp; When this happens, it isn't enough to avoid executing the invalid code:&nbsp; Merely having it in the program makes it impossible to link the program and run it.&nbsp; With a preprocessor conditional, the offending code can be effectively excised from the program when it isn't valid.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You may want to be able to compile the same source file into two different programs.&nbsp; Sometimes the difference between the programs is that one makes frequent time-consuming consistency checks on its intermediate data while the other doesn't.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A conditional whose condition is always false is a good way to exclude code from the program but keep it for future reference.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Most programs intended to run only on a NeXT computer won't need to use preprocessor conditionals.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Syntax of Conditionals</b></font>
+
+<p><font face="Times">A conditional in the C preprocessor begins with a conditional command:&nbsp; <b>#if</b>, <b>#ifdef</b>, or <b>#ifndef</b>.&nbsp; These and a few related commands are described in the following sections.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The #if Command</b></font>
+
+<p><font face="Times">The <b>#if</b> command in its simplest form consists of</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>#if</b> <i>expression</i></font><br>
+<font face="Times"><i>conditional-text</i></font><br>
+<font face="Times"><b>#endif</b>&nbsp;&nbsp; /* <i>expression</i> */</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The comment following the <b>#endif</b> isn't required, but it makes the code easier to read.&nbsp; Such comments should always be used, except in short conditionals that aren't nested.&nbsp; (Although you can put anything at all after the <b>#endif</b> and it will be ignored by the GNU C preprocessor, only comments are acceptable in ANSI Standard C.)</font>
+
+<p><font face="Times"><i>expression</i> is a C expression of type <b>int</b>, subject to stringent restrictions.&nbsp; It may contain:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Integer constants, which are all regarded as <b>long</b> or <b>unsigned long</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Character constants, which are interpreted according to the character set and conventions of the machine and operating system on which the preprocessor is running.&nbsp; The GNU C preprocessor uses the C data type <b>char</b> for these character constants; therefore, whether some character codes are negative is determined by the C compiler used to compile the preprocessor.&nbsp; If it treats <b>char</b> as signed, then character codes large enough to set the sign bit will be considered negative; otherwise, no character code is considered negative.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Character constants.&nbsp; The GNU C preprocessor uses the C data type <b>char</b> for these character constants.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Arithmetic operators for addition, subtraction, multiplication, division, bitwise operations, shifts, comparisons, <b>&amp;&amp;</b>, and <b>||</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Identifiers that aren't macros, which are all treated as 0.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macro invocation.&nbsp; All macros in the expression are expanded before actual computation of the expression's value begins.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>sizeof</b> operators and <b>enum</b>-type values aren't allowed.&nbsp; <b>enum</b>-type values, like all other identifiers that aren't taken as macro invocations and expanded, are treated as 0.</font>
+
+<p><font face="Times">The controlled text inside a conditional can include preprocessor commands.&nbsp; Then the commands inside the conditional are obeyed only if that branch of the conditional succeeds.&nbsp; The text can also contain other conditional groups.&nbsp; However, the <b>#if</b>s and <b>#endif</b>s must balance.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The #else Command</b></font>
+
+<p><font face="Times">The <b>#else</b> command can be added to a conditional to provide alternative text to be used if the condition is false:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>#if</b> <i>expression</i></font><br>
+<font face="Times"><i>text-if-true</i></font><br>
+<font face="Times"><b>#else</b>&nbsp;&nbsp;&nbsp; /* not <i>expression</i> */</font><br>
+<font face="Times"><i>text-if-false</i></font><br>
+<font face="Times"><b>#endif</b>&nbsp;&nbsp;&nbsp; /* not <i>expression</i> */</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>expression</i> is nonzero, <i>text-if-true</i> is included; then <b>#else</b> acts like a failing conditional and <i>text-if-false</i> is ignored.&nbsp; If <i>expression</i> is 0, the <b>#if</b> conditional fails and <i>text-if-false</i> is included.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The #elif Command</b></font>
+
+<p><font face="Times">A common use of nested conditionals is to check for more than two possible alternatives:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if X == 1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else /* X != 1 */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if X == 2</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else /* X != 2 */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif /* X != 2 */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif /* X != 1 */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The conditional command <b>#elif</b> (which stands for &quot;else if&quot;) can be used to abbreviate this as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if X == 1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#elif X == 2</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else /* X != 2 and X != 1*/</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif /* X != 2 and X != 1*/</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like <b>#else</b>, <b>#elif</b> goes in the middle of a <b>#if</b>-<b>#endif</b> pair and subdivides it; it doesn't require a matching <b>#endif</b> of its own.&nbsp; Like <b>#if</b>, the <b>#elif</b> command includes an expression to be tested.</font>
+
+<p><font face="Times">The text following the <b>#elif</b> is processed only if the original <b>#if</b>-condition failed and the <b>#elif</b> condition succeeds.&nbsp; More than one <b>#elif</b> can go in the same <b>#if</b>-<b>#endif</b> group.&nbsp; Then the text after each <b>#elif</b> is processed only if the <b>#elif</b> condition succeeds after the original <b>#if</b> and any previous <b>#elif</b>'s within it have failed.&nbsp; <b>#else</b> is allowed after any number of <b>#elif</b>s, but <b>#elif</b> may not follow a <b>#else</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Keeping Deleted Code for Future Reference</b></font>
+
+<p><font face="Times">If you replace or delete part of the program but want to keep the old code around as a comment for future reference, you can simply put <b>#if 0</b> before it and <b>#endif</b> after it.</font>
+
+<p><font face="Times">This works even if the code being turned off contains conditionals, but they must be entire conditionals (balanced <b>#if</b> and <b>#endif</b>).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Conditionals and Macros</b></font>
+
+<p><font face="Times">Conditionals are rarely useful except in connection with macros.&nbsp; A <b>#if</b> command whose expression uses no macros is equivalent to <b>#if 1</b> or <b>#if 0</b>; you may want to determine which one by computing the value of the expression yourself, thus simplifying the code.&nbsp; But when the expression uses macros, its value can vary from compilation to compilation.</font>
+
+<p><font face="Times">For example, here's a conditional that tests the expression <b>BUFSIZE == 1020</b>, where <b>BUFSIZE</b> must be a macro:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if BUFSIZE == 1020</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">printf (&#34;Large buffers!\n&#34;);</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif /* BUFSIZE is large */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The special operator <b>defined</b> may be used in <b>#if</b> expressions to test whether a certain name is defined as a macro.&nbsp; Either <b>defined NAME</b> or <b>defined (NAME)</b> is an expression whose value is 1 if NAME is defined as macro at the current point in the program, and 0 otherwise.&nbsp; For the <b>defined</b> operator it makes no difference what the definition of the macro is; all that matters is whether there's a definition.&nbsp; Thus, for example,</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if defined (vax)&nbsp; defined (ns16000)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">will include the following code if either <b>vax</b> or <b>ns16000</b> is defined as a macro.</font>
+
+<p><font face="Times">If a macro is defined and later undefined with <b>#undef</b>, subsequent use of the <b>defined</b> operator will return 0, because the name is no longer defined.&nbsp; If the macro is defined again with another <b>#define</b>, <b>defined</b> will again return 1.</font>
+
+<p><font face="Times">Conditionals that test just the definedness of one name are very common, so there are two special short conditional commands for this case:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>#ifdef</b> <i>name</i> is equivalent to <b>#if defined (</b><i>name</i><b>)</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>#ifndef</b> <i>name</i> is equivalent to <b>#if ! defined (</b><i>name</i><b>)</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Macro definitions can vary between compilations for any of the following reasons:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Some macros are predefined on each kind of machine.&nbsp; For example, on a NeXT computer the name <b>NeXT</b> is a nonstandard predefined macro.&nbsp; On other machines, it isn't defined.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Many more macros are defined by system header files.&nbsp; Different systems and machines define different macros, or give them different values.&nbsp; It's useful to test these macros with conditionals to avoid using a system feature on a machine where it isn't implemented.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macros are a common way for you to customize a program for different machines or applications.&nbsp; For example, the macro <b>BUFSIZE</b> might be defined in a configuration file for your program that's included as a header file in each source file.&nbsp; You would use <b>BUFSIZE</b> in a preprocessor conditional in order to generate different code depending on the chosen configuration.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Macros can be defined or undefined with <b>-D</b> and <b>-U</b> command options when you compile the program.&nbsp; You can arrange to compile the same source file into two different programs by choosing a macro name to specify which program you want, writing conditionals to test whether or how this macro is defined, and then controlling the state of the macro with compiler command options.&nbsp; See the section &quot;Invoking the C Preprocessor.&quot;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>The #error and #warning Commands</b></font>
+
+<p><font face="Times">The <b>#error</b> command causes the preprocessor to report a fatal error.&nbsp; The rest of the line that follows <b>#error</b> is used as the error message.</font>
+
+<p><font face="Times">You would use <b>#error</b> inside a conditional that detects a combination of parameters that you know the program doesn't support.</font>
+
+<p><font face="Times">For example, if you know that the program won't run properly on a VAX, you might write</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifdef vax</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#error Won't work on Vaxen.&nbsp; See comments at get_last_object.</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Similarly, if you have several configuration parameters that must be set up by the installation in a consistent way, you can use conditionals to detect an inconsistency and report it with <b>#error</b>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#if HASH_TABLE_SIZE % 2 == 0&nbsp; HASH_TABLE_SIZE % 3 == 0&nbsp; \</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">HASH_TABLE_SIZE % 5 == 0</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#error HASH_TABLE_SIZE shouldn't be divisible by a small prime</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>#warning</b> command is like the <b>#error</b> command, but causes the preprocessor to issue a warning and continue preprocessing.&nbsp; The rest of the line that follows <b>#warning</b> is used as the warning message.</font>
+
+<p><font face="Times">You might use <b>#warning</b> in obsolete header files, with a message directing the user to the header file which should be used instead.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Pragmas</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>#pragma</b> command is specified in the ANSI standard to have an arbitrary implementation-defined effect.&nbsp; For example, a <b>#pragma</b> might be used to indicate to the translator the best way to generate code, optimize, or diagnose errors.&nbsp; It may also pass information to the translator about the environment, or add debugging information.</font>
+
+<p><font face="Times">The effect of anything specified in a <b>#pragma</b> is currently limited to the outermost declaration (that is, a function or a global data declaration).</font>
+
+<p><font face="Times">The following pragmas are passed on by the GNU C Preprocessor to the compiler itself:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>#pragma CC_OPT_ON</b></font></td>
+
+<td><font face="Times">Force optimization on.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>#pragma CC_OPT_OFF</b></font></td>
+
+<td><font face="Times">Force optimization off.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>#pragma CC_OPT_RESTORE</b></font></td>
+
+<td><font face="Times">Restore optimization to what was specified on the command line (on if <b>-O</b> was specified, off if not).</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>#pragma CC_WRITABLE_STRINGS</b></font></td>
+
+<td><font face="Times">Place strings in the data segment.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>#pragma CC_NON_WRITABLE_STRINGS</b></font></td>
+
+<td><font face="Times">Place strings in the text segment.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All other <b>#pragma</b> commands are ignored by the CNU C Preprocessor.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Combining Source Files</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">One of the jobs of the C preprocessor is to tell the C compiler the source file and line number that each line of C code came from.</font>
+
+<p><font face="Times">C code can come from multiple source files if you use <b>#include</b> or <b>#import</b>.&nbsp; If you include header files, or if you use conditionals or macros, the line number of a line in the preprocessor output may be different from the line number of the same line in the original source file.&nbsp; Normally you would want both the C compiler (in error messages) and the GDB debugger to use the line numbers of your source file.</font>
+
+<p><font face="Times">The C preprocessor offers a <b>#line</b> command by which you can control this feature explicitly.&nbsp; <b>#line</b> specifies the original line number and source file name for subsequent input in the current preprocessor input file.&nbsp; <b>#line</b> has three variants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#line</b> <i>linenum</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times"><i>linenum</i> is a decimal integer constant.&nbsp; This resets the current line number in the source file to <i>linenum</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#line</b> <i>linenum</i> <b>&#34;</b><i>file</i><b>&#34;</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times"><i>linenum</i> is a decimal integer constant and <b>&#34;</b>file<b>&#34;</b> is a string constant.&nbsp; This resets the line number to <i>linenum</i> and changes the name of the file referred to by <i>file</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>#line</b> <i>macros</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times"><i>macros</i> should be one or more macros that have been defined by earlier preprocessing directives.&nbsp; When the macros have been expanded by the preprocessor, the <b>#line</b> instruction will then resemble one of the first two forms and be interpreted appropriately.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>#line</b> commands alter the results of the <b>__FILE__</b> and <b>__LINE__</b> predefined macros from that point on.&nbsp; See the section &quot;Predefined Macros.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Miscellaneous Preprocessor Commands</b></font>
+
+<p><font face="Times">This section describes two additional preprocessor commands.&nbsp; They aren't very useful, but are mentioned for completeness.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <b>null</b> command consists of a <b>#</b> followed by a newline, with only whitespace (including comments) in between.&nbsp; A null command is understood as a preprocessor command but has no effect on the preprocessor output.&nbsp; The significance of the null command is that an input line consisting of just a <b>#</b> will produce no output, rather than a line of output containing just a <b>#</b>. Some old C programs might contain such lines.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <b>#ident</b> command is supported for compatibility with certain other systems.&nbsp; It is followed by a line of text.&nbsp; On some systems, the text is copied into a special place in the object file; on most systems, the text is ignored and this directive has no effect.&nbsp; Typically <b>#ident</b> is only used in header files supplied with those systems where it is meaningful.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>C Preprocessor Output</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The output from the C preprocessor looks much like the input, except that all preprocessor command lines have been replaced with blank lines and all comments with spaces.&nbsp; White-space characters within a line aren't altered; however, a space is inserted after the expansions of most macros.&nbsp; Also, pragmas are passed through verbatim.</font>
+
+<p><font face="Times">Source file name and line number information is conveyed by lines of the form</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>#</b> <i>linenum file {digit}</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">which are inserted as needed into the middle of the input (but never within a string or character constant).&nbsp; Such a line means that the following line originated in file <i>file</i> at line <i>linenum</i>.&nbsp; <i>Digit</i> is 1 if this is the start of a new include file, and 2 if this marks the completion of an include file (this is how the compiler reports the path of inclusion to a given error).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Invoking the C Preprocessor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Usually you won't have to invoke the C preprocessor explicitly, because the C compiler does so automatically.&nbsp; However, there may be times when you want to use the preprocessor by itself by invoking the <b>cpp</b> command.</font>
+
+<p><font face="Times">The <b>cpp</b> command expects two file names as arguments, <i>infile</i> and <i>outfile</i>.&nbsp; The preprocessor reads <i>infile</i> together with any other files that <i>infile</i> specifies by means of <b>#include</b> or <b>#import</b>.&nbsp; All the output generated by the combined input files is written in <i>outfile</i>.</font>
+
+<p><font face="Times">Either <i>infile</i> or <i>outfile</i> may be <b>-</b>, which as <i>infile</i> means to read from the standard input and as <i>outfile</i> means to write to the standard output.&nbsp; Also, if <i>outfile</i> or both file names are omitted, the standard output and standard input are used for the omitted file names.</font>
+
+<p><font face="Times">Here's a list of command options accepted by the C preprocessor.&nbsp; Most of them can also be given when compiling a C program; they're passed along automatically to the preprocessor when it's invoked by the compiler.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-P</b></font></td>
+
+<td><font face="Times">Inhibit generation of <b>#</b> lines with line-number information in the output from the preprocessor (see the section &quot;C Preprocessor Output&quot;).&nbsp; This might be useful when running the preprocessor on something that isn't C code and that will be sent to a program which might be confused by the <b>#</b> lines.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-C</b></font></td>
+
+<td><font face="Times">Don't discard comments:&nbsp; Pass them through to the output file.&nbsp; Comments appearing in arguments of a macro invocation will be copied to the output before the expansion of the macro.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-trigraphs</b></font></td>
+
+<td><font face="Times">Process ANSI standard trigraph sequences.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-pedantic</b></font></td>
+
+<td><font face="Times">Issue warnings required by the ANSI C standard in certain cases, such as when text other than a comment follows <b>#else</b> or <b>#endif</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-I</b><i>dir</i></font></td>
+
+<td><font face="Times">Add the directory <i>dir</i> to the end of the list of directories to be searched for header files (see the section &quot;The <b>#include</b> Command&quot;).&nbsp; This can be used to override a system header file, substituting your own version, since these directories are searched before the system header file directories.&nbsp; If you use more than one <b>-I</b> option, the directories are scanned in left-to-right order; the standard system directories come later.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-I-</b></font></td>
+
+<td><font face="Times">Any directories specified with <b>-I</b> options before the <b>-I-</b> option are searched only for the case of <b>#include &#34;</b><i>file</i><b>&#34;</b>; they aren't searched for <b>#include &lt;</b><i>file</i><b>&gt;</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">If additional directories are specified with <b>-I</b> options after the <b>-I-</b>, these directories are searched for all <b>#include </b>directives.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">In addition, the <b>-I-</b> option inhibits the use of the current directory as the first search directory for <b>#include &#34;</b><i>file</i><b>&#34;</b>. Therefore, the current directory is searched only if it's requested explicitly with a <b>-I.</b> option.&nbsp; Specifying both <b>-I- </b>and <b>-I.</b> allows you to control precisely which directories are searched before the current one and which are searched after.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-nostdinc</b></font></td>
+
+<td><font face="Times">Don't search the standard system directories for header files.&nbsp; Only the directories you specify with <b>-I</b> options (and the current directory, if appropriate) are searched.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-D</b><i>name</i></font></td>
+
+<td><font face="Times">Predefine <i>name</i> as a macro, with definition <b>1</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>-D</b><i>name</i><b>=</b><i>definition</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=182></td>
+
+<td><font face="Times">Predefine <i>name</i> as a macro, with definition <i>definition</i>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-U</b><i>name</i></font></td>
+
+<td><font face="Times">Don't predefine <i>name</i>.&nbsp; If both <b>-U</b> and <b>-D</b> are specified for one name, the name won't be predefined.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-undef</b></font></td>
+
+<td><font face="Times">Don't predefine any nonstandard macros.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-d</b></font></td>
+
+<td><font face="Times">Produce a list of <b>#define</b> commands for all the macros defined during the execution of the preprocessor, instead of producing the normal preprocessing output.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-M</b></font></td>
+
+<td><font face="Times">Produce a rule suitable for <b>make</b> describing the dependencies of the main source file, instead of outputting the result of preprocessing.&nbsp; The preprocessor produces one <b>make</b> rule containing the object file name for that source file, a colon, and the names of all the included files.&nbsp; If there are many included files then the rule is split into several lines using backslash-newline.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><font face="Times">This feature is used in automatic updating of makefiles.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-MD</b></font></td>
+
+<td><font face="Times">This is similar to <b>-M</b>, but the dependency information is written to files with names made by replacing &quot;.c&quot; with &quot;.d&quot; at the end of the input file names.&nbsp; This is in addition to compiling the file as specified; <b>-MD</b> doesn't inhibit ordinary compilation the way <b>-M</b> does.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-MM</b></font></td>
+
+<td><font face="Times">This is similar to <b>-M</b>, but mentions only the files included with <b>#include &#34;</b><i>file</i><b>&#34;</b>.&nbsp; System header files included with <b>#include &lt;</b><i>file</i><b>&gt;</b> are omitted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-MMD</b></font></td>
+
+<td><font face="Times">This is similar to <b>-MM</b>, but mentions only user header files, not system header files.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-H</b></font></td>
+
+<td><font face="Times">Print the name of each header file used, in addition to other normal activities.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>-i</b><i>file</i></font></td>
+
+<td><font face="Times">Process <i>file</i> as input, discarding the resulting output, before processing the regular input file.&nbsp; Because the output generated from <i>file</i> is discarded, the only effect of <b>-i</b><i>file</i> is to make the macros defined in <i>file</i> available for use in the main input.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

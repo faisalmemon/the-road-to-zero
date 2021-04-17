@@ -1,0 +1,1706 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Classes/DBFetchGroup.rtf -->
+<!-- Date: Sun Jun 28 20:04:19 1998 -->
+<head>
+<title>DBFetchGroup</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBFetchGroup</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/DBFetchGroup.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A DBFetchGroup routes data from a DBRecordList to the user interface objects that display its contents.&nbsp; It also routes flow in the reverse direction, when the user edits the displays.&nbsp; A DBFetchGroup belongs to a DBModule; each DBModule has at least one DBFetchGroup.&nbsp; A DBFetchGroup contains a set of DBAssociations; each maps one database property to be fetched (a DBExpression) to an element of the application program, usually an element of the user interface, such as a TextField, a DBImageView, or a column within a DBTableView.</font>
+
+<p><font face="Times">If your application relies on the Database Kit's standard facilities, you will not need to make explicit use of DBFetchGroup.&nbsp; In Interface Builder, you need only drag an instance of DBModule off the palette and make connections between it and elements of your user interface.&nbsp; At run time, the necessary DBFetchGroups and their various DBAssociations will be created for you automatically.</font>
+
+<p><font face="Times">A DBModule's prime (and perhaps only) fetch group is called its <i>root fetch group</i>.&nbsp; The module may also require one or more subordinate fetch groups.&nbsp; Whenever the expression being fetched traverses a one-to-many relationship, the DBModule requires separate DBRecordLists, each with its own DBFetchGroup.&nbsp; The fetch groups are in a hierarchy that corresponds to the data being fetched.</font>
+
+<p><font face="Times">For example, suppose your application has a scrollable display of customers; for each customer there is a list of orders; for each order there's a list of items in the order.&nbsp; As the user selects a customer, the order display must be updated to show that customer's orders.&nbsp; As the user selects an order, the item display must be updated to show that order's line items.&nbsp; The synchronization is managed by a set of three DBFetchGroups, each with its own DBRecordList.&nbsp; The root DBFetchGroup manages data for the customer display.&nbsp; Subordinate to it, a second DBFetchGroup keeps the order display in step with the currently selected customer.&nbsp; And subordinate to that, a third DBFetchGroup keeps the line-item display in step with the currently selected order.</font>
+
+<p><font face="Times">Whenever there's a fetch, the DBFetchGroup takes care of updating the display to reflect the data newly arrived in the record list.&nbsp; Similarly, when the user edits a control, the DBFetchGroup updates the record list, and then notifies any other elements that may be displaying the same property.&nbsp;&nbsp; The first fetch of a DBFetchGroup causes a <b>setProperties:ofSource</b>: message to be sent to its DBRecordList.</font>
+
+<p><font face="Times">The DBFetchGroup also manages a second kind of user-interface state:&nbsp; the current record and the current selection (which may be one record or several).&nbsp; The notion of &quot;current record&quot; exists because controls can display one value at a time, although a record list can contain many records.&nbsp; The current record is the one displayed in a TextField or a DBImageView.&nbsp; The fetch group remembers which record in the record list is the current record.&nbsp; The designation of a current record can be changed by the user or under program control.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The DBFetchGroup's current record and selected record list are independent of the cursor of a DBRecordSteam or DBRecordList.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Multiple Selection</b></font>
+
+<p><font face="Times">In an object that can display a list of values, such as an NXBrowser or a DBTableView, the user can make a multiple selection. Shift-click selects additional records without deselecting those already selected.&nbsp; They don't have to be contiguous.&nbsp; But when there is a multiple selection, no record is the current record, and subordinate displays keyed to the current record are cleared.</font>
+
+<p><font face="Times">The DBFetchGroup relies on objects in the user interface (such as the DBTableView) to represent multiple selection to the user.&nbsp; The DBFetchGroup will make use of multiple-selection information (as in <b>deleteCurrentSelection</b>), but does not manage it.&nbsp; If your application needs to set a multiple selection, it should send the appropriate DBTableView one of its selection-setting messages.&nbsp; Then, to keep the DBFetchGroup synchronized with change in selection at the DBTableView, it must send the following messages:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[theTableView dataSource] tableViewDidChangeSelection:theTableView];</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><img src="../../../Images/sp.gif" width=11 height=1><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initEntity:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Reporting current context</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">module</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">entity</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordList</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordCount</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Controlling current selection</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAutoSelect:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doesAutoSelect</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCurrentRecord:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clearCurrentRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedRowAfter:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">redisplayEverything</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating contents</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deleteCurrentSelection</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertNewRecordAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">fetchContentsOf:usingQualifier:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Dealing with changes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">hasUnsavedChanges</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">validateCurrentRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">saveChanges</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">discardChanges</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Using associations</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addExpression:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">makeAssociationFrom:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">takeValueFromAssociation:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addAssociation:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeAssociation:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Using a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addAssociation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addAssociation:</b><i>newAssociation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds an association to the list of associations that govern the DBFetchGroup's selection of rows.&nbsp; The argument <i>newAssociation </i>is a DBAssociation object.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addExpression:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addExpression:</b><i>newExpression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the DBProperties-conforming object <i>anExpression</i> to the list of expressions that the DBFetchGroup will fetch from the database.&nbsp; Typically, you add instances of DBExpression, although it's also possible to add property objects that are gotten from a database model.</font>
+
+<p><font face="Times">When you add an expression object to a DBFetchGroup, the DBFetchGroup &quot;owns&quot; the object and is responsible for freeing it. If you don't want to surrender control of your expression objects, you should create a copies of them (and pass the copies in invocations of this method).&nbsp; If you're adding a model property, then you <i>must</i> copy it first (or, better, use a DBExpression to cover it).</font>
+
+<p><font face="Times">Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>clearCurrentRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clearCurrentRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deselects the currently selected record (or records), so that there is no selected record.&nbsp; DBAssociations that may have been involved in the formerly selected records are notified of the change.&nbsp; Returns <b>self</b>.&nbsp; However, if there is no permission to change the rows of the DBFetchGroup's DBRecordList, the method has no effect and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>currentRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>currentRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the position (index number) of the current record in the DBFetchGroup's DBRecordList.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBFetchGroup's delegate.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deleteCurrentSelection</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deleteCurrentSelection</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deletes the currently selected row (or rows) from the DBFetchGroup's DBRecordList.&nbsp; Following the deletion, no rows are selected.&nbsp; All DBAssociations are notified of the change.</font>
+
+<p><font face="Times">Returns <b>self</b>.&nbsp; However, if no rows were selected, or there is no permission to change the rows of the DBFetchGroup's DBRecordList, the method has no effect and returns <b>nil</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>discardChanges</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>discardChanges</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Terminates any editing changes currently in progress for this DBFetchGroup and recursively for any of its subordinate DBFetchGroups.&nbsp; All the DBAssociations involved are notified so that they can update the display accordingly.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>doesAutoSelect</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>doesAutoSelect</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if autoselection is in effect.&nbsp; When this flag has been set to YES, following each fetch through the DBFetchGroup, the first retrieved record is selected; following a delete, the first remaining record after the first deleted record is selected. When the flag is NO, following fetch or delete, no record is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>entity</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>entity</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBEntity to which the DBFetchGroup belongs.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchContentsOf:usingQualifier:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchContentsOf:</b><i>aSource</i> <b>usingQualifier:</b><i>aQualifier</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the content of the current DBRecordList by records fetched from the database.&nbsp; Any editing in progress for this fetch group is terminated and changes are lost.&nbsp; The argument <i>aSource</i> may be nil, in which case all records in the DBFetchGroup's entity are fetched.&nbsp; If <i>aSource</i> is a DBValue containing NULL, the effect is to clear the DBRecordList without fetching any new records.</font>
+
+<p><font face="Times">Alternatively, <i>aSource</i> may be a DBValue that specifies a relationship.&nbsp; For example, suppose the relationship joins the entity called Department to the entity called Employees,&nbsp; containing the employees belonging to each department.&nbsp; The DBValue may contain a specific value for the property &quot;Department Number&quot; and also the entity to which it is joined (Employees).&nbsp; Records will be fetched for all employees in the indicated department, using the key value of Department Number as a foreign key that qualifies the selection of records from Employees.</font>
+
+<p><font face="Times">The argument <i>aQualifier</i> is a DBQualifier that further restricts the records that will be fetched.</font>
+
+<p><font face="Times">If the parent DBModule's delegate responds to <b>fetchGroupWillFetch:</b>, it is notified.&nbsp; Similarly, after the fetch, if the DBModule's delegate responds to <b>fetchGroupDidFetch</b>:, it is a notified.&nbsp; Provided the fetch is successful, the various DBAssociations are notified that the contents of their views has changed, so they can redraw themselves.&nbsp; The current record index is set to 0 (the index of the first record).&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>hasUnsavedChanges</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>hasUnsavedChanges</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if there are unsaved changes in this DBFetchGroups's DBRecordList, or in any of its subordinate DBRecordLists, and NO otherwise.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initEntity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initEntity:</b><i>anEntity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes an instance of DBFetchGroup.&nbsp; The fetch group thus initialized will coordinate fetches for the owning DBModule from the DBEntity named <i>anEntity</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>insertNewRecordAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>insertNewRecordAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Instructs the DBFetchGroup's DBRecordList to insert a new record at the position indicated by <i>index</i>.&nbsp; When <i>index</i> is negative, the method appends the new record (that is, inserts it at the end of the DBRecordList instance.</font>
+
+<p><font face="Times">Returns YES if the DBRecordList is able to comply, and NO otherwise.&nbsp; A NO return may arise if the application has no authorization to modify rows, if no records have been fetched, or if for any reason the DBRecordList returns NO.</font>
+
+<p><font face="Times">If the DBFetchGroup has appointed a delegate and the delegate implements the method <b>fetchGroup:didInsertRecordAt:</b>, the method <b>insertNewRecordAt:</b> notifies the delegate.&nbsp; The delegate may then fill in default values in the new record.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>makeAssociationFrom:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>makeAssociationFrom:</b><i>anExpr</i> <b>to:</b><i>aView</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates a new instance of DBAssociation for the destination DBFetchGroup.&nbsp; The new association will link the DBExpression <i>anExpr</i> (an expression to be fetched) with the user interface object <i>aView</i> where the data is displayed.&nbsp; Returns the new DBAssociation.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>module</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>module</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBModule instance to which the receiving DBFetchGroup belongs.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the DBFetchGroup.&nbsp; Fetch groups that are created automatically are given names that match the names assigned in the model.&nbsp; Fetch groups that were created by the application and initialized (for example, by <b>initEntity:</b>) remain unnamed until explicitly named by <b>setName:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setName:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>recordCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of records in the DBFetchGroup's DBRecordList.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBRecordList instance that the receiving DBFetchGroup serves.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>redisplayEverything</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>redisplayEverything</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes redisplay of all the fields governed by the DBFetchGroup's DBAssociations.&nbsp; (The redisplay is prompted by sending all the DBAssociations a notification that the contents changed, and they respond in the same way as for any other change to their contents.)&nbsp; As a side effect, this method checks the value of the current record index, and, if it is out of range, sets it to the index of the last record.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeAssociation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeAssociation:</b><i>anAssociation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the indicated association from the DBFetchGroup's list of associations.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>saveChanges</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveChanges</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Saves changes made to any of the records governed by the receiving DBFetchGroup and any subordinate DBFetchGroups. Before saving, the method terminates any editing that may have been in progress in the affected DBFetchGroups.&nbsp; After saving, notifies the DBModule's delegate that the save took place.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectedRowAfter:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>selectedRowAfter:</b>(unsigned int)<i>previousRow</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the index of the first selected row that is located after the row specified by <i>previousRow</i>.&nbsp; (Ordinarily, there is one selected row, also known as the current row.&nbsp; But under some conditions the user may select multiple rows.&nbsp; In that case, the return is the index of the first of them.)</font>
+
+<p><font face="Times">If no row is selected, or the only selected rows occur earlier than <i>previousRow</i>, returns DB_NoIndex (which other methods interpret to mean &quot;after the last record&quot;).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setAutoSelect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutoSelect:</b><i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Enables or disables autoselection, according to whether <i>flag</i> is YES or NO.&nbsp; When autoselection is enabled, following each fetch through the DBFetchGroup, the first retrieved record is selected; following a delete, the first remaining record after the first deleted record is selected.&nbsp; When <i>flag</i> is NO, following fetch or delete, no record is selected.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setCurrentRecord:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCurrentRecord:</b>(unsigned int)<i>newIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the index of the current record to <i>newIndex</i>.&nbsp; However, if the proposed value is less than the index of the first record, sets it to the first record; if the proposed value is greater than the last record, sets it the last record.&nbsp; If executing this method changes the current record index, the DBFetchGroup's DBAssociations are notified that the selection changed (and can update the display accordingly).&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>anObject</i> the DBFetchGroup's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setName:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the name of the DBFetchGroup.&nbsp; This method is invoked automatically when the fetch group is created, and your application will need to call it explicitly only if you explicitly create a new fetch group.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>name</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>takeValueFromAssociation:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>takeValueFromAssociation:</b><i>anAssociation</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Takes a value from the part of the display governed by <i>anAssociation</i>, and inserts it in the corresponding position in the DBFetchGroup's DBRecordList.&nbsp; The method then updates the display of other displayed fields that are governed by other DBAssociations belonging to the same DBFetchGroup.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>validateCurrentRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>validateCurrentRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if changes that have been proposed for the current record are valid (or if there is no current record).</font>
+
+<p><font face="Times">The validation is done in two stages.&nbsp; If there is a TextField editor for the field that changed, it reviews the changes first.&nbsp; If the TextField editor says NO, that's the return.&nbsp; If there is no text field editor, or the editor raises no objection to the change, the task of validation is passed to the DBModule's delegate.&nbsp; (Each DBFetchGroup is owned by a DBModule.) Whatever the delegate returns becomes the return for this method.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroup:didInsertRecordAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroup:</b><i>fetchGroup</i> <b>didInsertRecordAt:</b>(int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification that the DBFetchGroup <i>fetchGroup</i> has inserted a record in its DBRecordList at the position indicated by <i>index</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroup:willDeleteRecordAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroup:</b><i>fetchGroup</i> <b>willDeleteRecordAt:</b>(int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when the DBFetchGroup <i>fetchGroup</i> is about to delete the record at <i>index</i> from the DBRecordList.&nbsp; The notification is sent by the DBFetchGroup method <b>deleteCurrentSelection</b>.&nbsp; The notification gives the delegate a chance to note the fact (for example, to adjust its count of records, or to record information about the deleted record).&nbsp; It doesn't matter what this method returns, since the calling method ignores the result.&nbsp; The behavior of <b>fetchGroup:willDeleteRecordAt:</b> is simply a notification, without an opportunity to intercede.&nbsp; But it's sent in advance of the actual deletion so that the delegate method can--if desired--take a look at the record before it's gone.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroup:willFailForReason:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBFailureResponse)<b>fetchGroup:</b><i>fetchGroup</i> <b>willFailForReason:</b>(DBFailureCode)<i>code</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when a failure is reported from the DBRecordList owned by <i>fetchGroup</i>.&nbsp; The reason for failure is encoded as one of the following DBFailureCodes:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_ReasonUnknown = 0</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_RecordBusy</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_RecordStreamNotReady</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_RecordHasChanged</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_RecordLimitReached</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_NoRecordKey</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_RecordKeyNotUnique</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_NoAdaptor</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_AdaptorError</font><br>
+<img src="../../../Images/sp.gif" width=5 height=1><font face="Times">DB_TransactionError</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The failure response that is returned must be one of the following constants, declared as type DBFailureResponse in the header file <b>dbkit/enums.h</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NotHandled</font></td>
+
+<td><font face="Times">Displays a default attention panel but takes no other action</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_Abort</font></td>
+
+<td><font face="Times">Terminates the operation that encountered the error in its present state, and displays an attention panel</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_Continue</font></td>
+
+<td><font face="Times">Ignores the problem; permits the action to continue if possible.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the delegate does not implement this method, the effect is the same as returning DB_NotHandled.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroup:willValidateRecordAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>fetchGroup:</b><i>fetchGroup</i> <b>willValidateRecordAt:</b>(int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notification that the DBFetchGroup <i>fetchGroup</i>, while preparing to save its DBRecordList, has reached the point at which it would be appropriate to insert validity checks on the record indicated by <i>index</i>.&nbsp; These might include checks for internal consistency between fields, or even checks that require a separate query to the database.&nbsp; Validation for a single fields (&quot;Is this a valid phone number?&quot; or &quot;Is this in a valid format for a telephone number?&quot;) should be handled when a field editor notices that the user has changed a field's display (see the DBModule delegate method <b>textWillChange:</b>).</font>
+
+<p><font face="Times">If your implementation of <b>fetchGroup:willValidateRecordAt:</b> returns YES (or if your delegate doesn't respond to that method), the record is treated as valid.&nbsp; If it returns NO, the record is treated as invalid, the attempt to save records fails, and the user is notified by an attention panel.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroupDidFetch:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroupDidFetch:</b><i>fetchGroup</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when <i>fetchGroup</i> has completed a fetch from the database.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroupDidSave:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroupDidSave:</b><i>fetchGroup</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when <i>fetchGroup</i> has completed a save to the database.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroupWillChange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroupWillChange:</b><i>fetchGroup</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when <i>fetchGroup</i> is about to record change based on input from the user interface.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroupWillFetch:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchGroupWillFetch:</b><i>fetchGroup</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when <i>fetchGroup</i> is about to fetch data from the database.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchGroupWillSave:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>fetchGroupWillSave:</b><i>fetchGroup</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked when <i>fetchGroup</i> is about to save the contents of the fetch group to the database.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

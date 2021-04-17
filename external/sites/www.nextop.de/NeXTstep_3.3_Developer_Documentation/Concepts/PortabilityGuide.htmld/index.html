@@ -1,0 +1,927 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/PortabilityGuide.rtf -->
+<!-- Date: Sun Jun 28 19:37:06 1998 -->
+<head>
+<title>PortabilityGuide</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Building Portable NEXTSTEP Applications</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The operating system, client processes, development tools, and software libraries that comprise NEXTSTEP are standard for all computers on which NEXTSTEP runs.&nbsp; This means that, in general, when you port your NEXTSTEP application to a new computer, you won't have to redesign your code to achieve expected behavior.&nbsp; All the pieces are there, and as they work on one machine, so will they work on every other.</font>
+
+<p><font face="Times">If you follow the NEXTSTEP user interface guidelines and avoid hard-wired data values, then your application will probably be portable:&nbsp; It should run properly on all configurations of a given architecture and should need only to be recompiled to run on a new architecture.&nbsp; But few applications are perfect.&nbsp; Yours might fall prey to the differences between computers, requiring a bit of fine-tuning before it will work with a new configuration or on a new architecture.&nbsp; It's anticipated that all such necessary changes will be of the type that generalize your code--you should rarely need to &quot;special-case&quot; your code to adapt to a particular computer.</font>
+
+<p><font face="Times">This paper describes some of the differences between computers that can run NEXTSTEP and suggests ways to avoid configuration- or architecture-specific code that could make your application non-portable.&nbsp; It's divided into two parts:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The first part discusses differences between hardware configurations, such as differences in screen size and color capability, or between types of keyboards.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The second part deals with differences in data representation between computer&nbsp; architectures.&nbsp; Almost all problems that arise in this arena can be cured by adhering to the tenets of good programming.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Hardware Considerations</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Every computer on which NEXTSTEP runs will certainly possess the three hardware pieces that have come to be regarded as obligatory:&nbsp; a screen, a keyboard, and a mouse.&nbsp; However, the attributes of these devices aren't the same on all computers.&nbsp; The sound capabilities of computers also vary widely.&nbsp; The following sections describe the facilities that allow your application to query a computer for the attributes of its hardware devices, and warn against assumptions about the computer's configuration that can make your application less portable.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Screen</b></font>
+
+<p><font face="Times">Not all screens are the same size, nor do they provide the same color support.&nbsp; Therefore, a portable application shouldn't depend on a particular screen size or color capability.</font>
+
+<p><font face="Times">To guarantee that windows appear on-screen in an appropriate manner, your application should always place them relative to the edges of the screen, rather than in absolute positions.&nbsp; Interface Builder's Size Inspector can be used to set the position of a window relative to the edges of a screen, so when the window is displayed, it automatically appears in the expected place.&nbsp; If a window or panel must have a minimum size, try to keep it at a reasonable value (computer screens are usually at least 640</font> <img src="../Images/cB4.gif" width=8 height=7> <font face="Times">480 pixels).&nbsp; Non-resizable windows and panels should be given similar consideration about their sizes.</font>
+
+<p><font face="Times">The Window class guarantees that windows are displayed in such a way that the user can manipulate them.&nbsp; If a window's position would result in its title bar being off-screen, the window will move itself enough so that the title bar does appear. Similarly, if a window is so tall that its resize bar would be below the bottom of the screen, the window will change its height to show the resize bar.&nbsp; All of Window's placement and movement methods perform this forcing to the screen, so if you need a standard window that's not visible, you should use the <b>orderOut:</b> method to remove it from the screen list, rather than trying to position the window out of the screen's bounds.</font>
+
+<p><font face="Times">To handle the different color capabilities of screens, your application should use the NXImage class for bitmapped images. NXImage automatically uses the most appropriate image representation for a given screen.&nbsp; You should also make use the View method <b>shouldDrawColor</b>.&nbsp; This method lets application choose appropriate grayscale equivalents of colors (to avoid dithering on a grayscale screen, for example).</font>
+
+<p><font face="Times">If you need more control over screen information than that provided by the above facilities, you can use the NXScreen structure, which represents the attributes of a screen.&nbsp; This structure is declared in <b>appkit/screens.h</b>.&nbsp; The Application Kit's Application and Window classes provide methods that return the NXScreen structures that represent the screens that are available to your application.</font>
+
+<p><font face="Times">For more information on using the Application, Window, View, and NXImage classes in handling different screen configurations, see the specifications of those classes in <b>/NextLibrary/Documentation/NextDev/GeneralRef/02_ApplicationKit</b>.&nbsp; For more information on using Interface Builder, see <i>NEXTSTEP Development Tools and Techniques</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Mouse</b></font>
+
+<p><font face="Times">All mice have at least one button--some have two.&nbsp; If your application was designed for a NeXT Computer, you may have used the second button that all NeXT mice have.&nbsp; This obviously subverts portability to a configuration that has a one-button mouse.</font>
+
+<p><font face="Times">You should never depend on having a two-button mouse; the NeXT user interface guidelines urge you to ignore the second button on a NeXT mouse.&nbsp; However, a slightly less strict reading of the rule has it that at the very least, you must make sure that all second-button operations can be performed through some other method.&nbsp; For example, if you use the second button to create a &quot;special&quot; selection, you might provide a menu item that acts on the current selection to turn it into such a selection, or use the Shift or Alternate key to signal this behavior on a mouse click.</font>
+
+<p><font face="Times">If your application needs to know the type of mouse (or other pointing device, such as a tablet) that's attached to the computer, the <b>NXEventSystemInfo()</b> function can be used.&nbsp; This function describes the computer's input devices, including the type of mouse (see&nbsp; <b>/NextLibrary/Documentation/NextDev/ReleaseNotes/EventStatusDriver.rtf</b> and the header file <b>bsd/dev/ev_types.h</b> for more information).&nbsp; Unfortunately, NEXTSTEP doesn't provide any functions or methods through which you can specifically query for the number of mouse buttons.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Keyboard</b></font>
+
+<p><font face="Times">The keyboard, like the mouse, can't be queried for its attributes.&nbsp; However, you generally don't need to know how a keyboard is laid out--for example, whether it has a number pad as well as number keys.&nbsp; What you do need to know is what character was generated when the user pressed a key.</font>
+
+<p><font face="Times">The NXEventData structure, defined in <b>dpsclient/event.h</b>, describes a keyboard event in its <b>key</b> substructure.&nbsp; The description is twofold:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <i>key code</i> describes the key that was pressed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <i>character code</i> describes the character that was generated.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These two attributes, which sound similar, aren't necessarily the same.&nbsp; For example, the &quot;1&quot; key that's typically found in the top row of the keyboard generates the same character code as the &quot;1&quot; in the number pad, but they have two different key codes, since they are, physically, two different keys.</font>
+
+<p><font face="Times">A keyboard event's key code is described in a single field, <b>key.keyCode</b>.&nbsp; The event's character code is a combination of two fields in the <b>key</b> substructure:&nbsp; <b>key.charSet</b>, which identifies a set of characters (such as ASCII or Symbol), and <b>key.charCode</b>, which indicates the character in the set.&nbsp; For portability, you should never use the <b>keyCode</b> field since, by its nature, it's keyboard-dependent.&nbsp; For example, the key code for the letter &quot;a&quot; on one keyboard might be different from that on another. However, when the user presses &quot;a&quot;, the same character code (in other words, the same <b>charSet</b> and <b>charCode</b> combination) will be generated regardless of the type of keyboard.</font>
+
+<p><font face="Times">The set of character codes doesn't necessarily distinguish all key codes; as demonstrated in the number pad example above, there may be two key codes that are represented by the same character code.&nbsp; Thus, by using only character codes you may lose some keyboard-specific precision, but you gain portability.&nbsp; There are keyboard-independent ways to get certain information, though.&nbsp; For example, you can check for a key on the numeric keypad by masking the event record's <b>flags</b> field with the NX_NUMERICPADMASK mask.</font>
+
+<p><font face="Times">As with the mouse, the <b>NXEventSystemInfo()</b> function can be used to determine what type of keyboard is attached to the computer (see the online release note <b>/NextLibrary/Documentation/NextDev/ReleaseNotes/EventStatusDriver.rtf</b> and the header file <b>bsd/dev/ev_types.h</b> for more information).&nbsp; If your application requires keyboard-specific information (as some terminal emulators do, for example), contact NeXT Developer Support.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Sound</b></font>
+
+<p><font face="Times">The sound capabilities of different computers vary considerably.&nbsp; You can't assume that a particular computer will be able to play a sound created on another computer.&nbsp; If NEXTSTEP's sound software can't play a sound, the function or method will simply return an error code; the inability to play a sound should never cause your application to crash.</font>
+
+<p><font face="Times">For information about determining the sound capabilities of a host machine at run time, see the online release notes.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Data Representation Considerations</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Beyond concern with a computer's configuration, you must consider platform-specific differences when recompiling your application for a new architecture. One of the most fundamental differences between computer architectures is how data is represented.&nbsp; These differences fall into four arenas:&nbsp; datum size, byte alignment, byte order, and argument passing.&nbsp; The following paragraphs describe these properties and suggest ways to avoid the simple problems that arise from their differences. More complicated situations are examined in &quot;External Data&quot; and &quot;Internal Data,&quot; below.</font>
+
+<p><font face="Times">Certain NEXTSTEP kits require special consideration; the Indexing Kit, for example, maps file-based data directly into memory, which causes problems when the in-memory representations of data vary among computer architectures.&nbsp; If a kit has its own idiomatic portability issues, there will be a notice in the introduction to that kit's reference material, and the specific methods and functions requiring special care will have notes about how to use them in a portable manner.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Datum Size</b></font>
+
+<p><font face="Times">Datum sizes, or the amounts of memory that are devoted to single items of the various data types, aren't the same for all computers.&nbsp; Although almost every computer represents (as examples) a <b>char</b> in one byte, a <b>short</b> in two, and <b>int</b>s and <b>float</b>s in four, these sizes aren't mandated.&nbsp; Thus, you should never assume how much memory is needed to store the data that you allocate.&nbsp; In other words, you should never use hard-wired values in a call to a memory allocation function (such as <b>malloc()</b>); instead, use the <b>sizeof</b> operator to programmatically discover the size of a datum.&nbsp; This also applies to structures and unions, since different alignment restrictions (see below) can force them to be different sizes on different machines.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Byte Alignment</b></font>
+
+<p><font face="Times">Some computers demand that the starting address (the first byte) of a value fall on a particular boundary.&nbsp; For example, a computer that uses <i>natural boundaries</i> expects the address of a value be divisible by the number of bytes that it takes to represent the value:&nbsp; the address of a two-byte value must be divisible by two, the address of a four-byte value must be divisible by four, and so on.&nbsp; In general, this isn't a concern to the programmer because the compiler and C allocation routines guarantee that all memory allocations, whether static or dynamic, will be on appropriate boundaries.&nbsp; However, there are two situations in which the compiler and C functions can't help you:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By casting the data type of a pointer, you can write data into an illegal location.&nbsp; This is explained further in the section &quot;Internal Data,&quot; below; briefly, you can avoid this error by never casting a data pointer to which you're writing data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you redefine the memory allocation functions, you're on your own.&nbsp; Most visible of these--and most typically reimplemented--is <b>malloc()</b> (and <b>realloc()</b>, and so on), but also included are the zone-allocation functions that make up the NXZone facility.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Byte Order</b></font>
+
+<p><font face="Times">A datum of a type that can't be represented in a single byte is given as a series of consecutive bytes.&nbsp; If the most significant byte is given first, then the computer is said to be &quot;big-endian&quot;; if the least significant byte is first, then it's a &quot;little-endian&quot; machine. Byte order is only a concern when you're reading or writing &quot;external&quot; data.&nbsp; The data that your application creates and uses whiles it's running will by nature be ordered correctly.</font>
+
+<p><font face="Times">If you use the data-reading and -writing mechanisms described in the section &quot;External Data,&quot; below, your application may never need to know whether its running on a big- or little-endian machine.&nbsp; However, there are some situations in which this determination is essential.&nbsp; For this, the C preprocessor macros _ _BIG_ENDIAN_ _ and _ _LITTLE_ENDIAN_ _ can be examined:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifdef __BIG_ENDIAN__</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* do something for big-endian data */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* do something for little-endian data */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Datum Format</b></font>
+
+<p><font face="Times">Like alignment restrictions, the form that a data type is given on one architecture may vary from that given on another.&nbsp; The general rule with regard to the internal format of any datum is:&nbsp; Never rely on it.&nbsp; <i>Always</i> use field names for structures and unions, and don't assume that you can pick apart a <b>float</b>'s mantissa and exponent directly (there are library functions to do this).</font>
+
+<p><font face="Times">The format of structure bitfields is particularly variable from architecture to architecture.&nbsp; You should use bitfields only for data items that will remain entirely internal.&nbsp; If a structure is going to be written to or read from a file, you should avoid using bitfields unless absolutely necessary.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Argument Passing</b></font>
+
+<p><font face="Times">The data that you pass as arguments to a function must be put somewhere so the function can retrieve it.&nbsp; Some computers place argument data (contiguously) on the stack, while others put arguments in CPU registers, for which there is no notion of contiguity.&nbsp; As long as a function always refers to its arguments symbolically, the difference between the stack and register approaches is inconsequential.&nbsp; However, a function that steps through its arguments by incrementing (or decrementing) a data pointer--thus assuming that the arguments are being passed on the stack--won't be portable.</font>
+
+<p><font face="Times">Functions that take a determinate number of arguments should never need to use the data-pointer approach.&nbsp; But if you're designing a function that takes a variable number of arguments--a function in the style of <b>printf()</b>, for example--you may be tempted to read the arguments by setting and moving a data pointer.&nbsp; The correct approach to reading an indeterminate number of arguments is to use the <b>stdarg</b> macros provided by the standard C library.&nbsp; These macros are included in your program by importing the file <b>stdarg.h</b>; they're described under <b>varargs</b> in section 3 of the UNIX manual.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>External Data</b></font>
+
+<p><font face="Times">The problems of external data--data that's read from an external source--arise primarily from differences in byte-order:&nbsp; Data written on a little-endian machine will be swapped when it's read on a big-endian machine (and vice versa).&nbsp; All NEXTSTEP data-communication mechanisms (such as those provided by the Application Kit's pasteboard and data link objects, and the distributed objects paradigm) automatically transform data that's transmitted between applications to the correct byte-order; thus, inter-application communication is taken care of.</font>
+
+<p><font face="Times">What you need to be concerned with is data that your application reads and writes directly.&nbsp; The rule is simple:&nbsp; If you're reading and writing multi-byte data, you should <i>always</i> use typed streams.&nbsp; The typed stream functions recognize the byte-order differences between machines and can identify the sort of machine on which a particular stream of data was written.&nbsp; Typed streams are comprehensively described in Chapter 3, &quot;Common Classes and Functions,&quot; of the <i>NEXTSTEP General Reference </i>(<b>/NextLibrary/Documentation/NextDev/GeneralRef/03_Common</b>); the typed stream functions are declared in the header file <b>objc/typedstream.h</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Previous versions of NEXTSTEP documentation for the <b>NXRead()</b> and <b>NXWrite()</b> functions give an example which ignores this portability issue, and uses these functions to store a multi-byte structure.&nbsp; That example should not be considered a proper use for <b>NXRead()</b> and <b>NXWrite()</b>.</font>
+
+<p><font face="Times">Given typed streams as the rule, then, you should be aware that there are a few exceptions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">One-byte data (such as ASCII strings) can be written and read through any of the usual C functions, such as <b>read()</b> and <b>write()</b>.&nbsp; Writing ASCII through a typed stream isn't wrong, but it is somewhat inefficient.&nbsp; Of course, this slackening of the typed stream rule depends on the immutability of one-byte data on different machines (in other words, you must be sure that one-byte data on one machine isn't going to be two-byte data on another).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Bitfields in a structure, even when written through a typed stream, will be improperly represented.&nbsp; The use of bitfields in a file format is strongly discouraged.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">File formats that already exist and that weren't written through typed streams can't be read through typed streams.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following sections describe solutions to the bitfield and existing file format problems.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reading and Writing Structure Bitfields</b></font>
+
+<p><font face="Times">Structure bitfields can help you conserve memory when your application is running.&nbsp; However, they're a poor choice with regard to storing data in a file, since neither the compiler nor typed streams resolve the order of contiguous bitfields to match the endian-ness of the computer.&nbsp; If you don't do anything to correct this situation, a series of bitfields that are written on a big-endian machine will be ordered differently when read on a little-endian machine, and vice-versa.&nbsp; The best solution to this problem is to avoid it altogether.&nbsp; If, for efficiency or compatibility reasons, your application must be able to read and write structure bitfields, you have two general options:&nbsp; modify the routines that read and write the structure, or redefine the structure itself.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b><i>Approach 1:&nbsp; Modify the Read and Write Routines</i></b></font>
+
+<p><font face="Times">By modifying the routines that read and write particular structures, you can change the way the structure is represented externally.&nbsp; Thus, you can make sure that the external representation is portable.&nbsp; For example, consider the following class declaration:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Dog : Mammal</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">short age;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct _dogFlags {</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canWalk:1;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canTalk:1;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int whiskerCount:10;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int PAD:20;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} dogFlags;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* ... */</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>name</b> and <b>age</b> instance variables will be written and read correctly by the typed stream functions, but the bitfields won't be. To write the object and ensure its portability, you can define the <b>write:</b> method to &quot;expand&quot; the bitfields into full-byte values and then write the expanded data:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- write:(NXTypedStream *stream)</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super write:stream];</font>
+
+<p><img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Create variables for the &#34;expanded&#34; bitfield data. */</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned char canWalkHolder = dogFlags.canWalk;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned char canTalkHolder = dogFlags.canTalk;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned int whiskerCountHolder = dogFlags.whiskerCount;</font>
+
+<p><img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Write the data. */</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NXWriteTypes(stream, &#34;*sCCI&#34;, name, &amp;age, &amp;canWalkHolder,</font><br>
+<img src="../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">&amp;canTalkHolder, &amp;whiskerCountHolder);</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You would, of course, have to create an analogous <b>read:</b> method.&nbsp; Note that the data type of the variables that hold the expanded bitfield data must be big enough to represent the values that the bitfields contain.</font>
+
+<p><font face="Times">By writing expanded bitfield data, the external representation of an object or structure may waste some space (compared to the internal representation), but unless you're writing thousands of items the waste is insignificant.&nbsp; Also, this is the only approach that's guaranteed to be portable with regard to bitfield layout, whatever machine the application is run on.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b><i>Approach 2:&nbsp; Redefine the Structure</i></b></font>
+
+<p><font face="Times">A quicker but less elegant (and discouraged) solution is to redefine the structure to accommodate the endian-ness of the machine.&nbsp; This means predicating the order of the bitfields according to the machine's byte order:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Dog : Mammal</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">short age;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct _dogFlags {</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifdef __BIG_ENDIAN__</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canWalk:1;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canTalk:1;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int whiskerCount:10;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int PAD:20;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#else</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int PAD:20;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int whiskerCount:10;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canTalk:1;</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned int canWalk:1;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} dogFlags;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* ... */</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This approach works transparently when used in the following manner:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The bitfield structure is always read or written with the typed streams mechanism.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The bitfield structure is designed so that its total size in bits is equal to one of the standard unsigned integer types:&nbsp; 8 (<b>unsigned char</b>), 16 (<b>unsigned short int</b>), 32 (<b>unsigned int</b> and <b>unsigned long int</b>).&nbsp; This involves using pad fields to fill out the structure, and never using zero-width fields to force alignment.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A multi-byte bitfield structure is treated as its size-equivalent integral type when reading or writing it, instead of as an array of <b>char</b>s.&nbsp; This allows the typed streams mechanism to perform byte-swapping if needed.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For example, the <b>dogFlags</b> bitfield structure above is 32 bits, and would be written with this function call in Dog's <b>write: </b>method:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* The proper way to write a bitfield structure. Since dogFlags</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* is written as an unsigned int, NXWriteTypes() swaps it</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* automatically if needed.</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXWriteTypes(stream, &#34;*sI&#34;, &amp;name, &amp;age, &amp;dogFlags);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you don't use typed streams, you need to use the byte-swapping functions described later in this paper to swap the structure before writing and after reading it.&nbsp; In either case, you should always make sure that your bitfields are of a total size in bits equal to one of the standard unsigned integer types.</font>
+
+<p><font face="Times">Although reversing the bitfield declaration is a quick way to solve the bitfield problem, you should be warned that it may not be a permanent solution:&nbsp; some future architecture may define a new way of representing bitfields, and you may have to revisit your code to add another branch to the endian predicate.&nbsp; In general, you should use the first approach (modifying the archival routines) rather than reversing bitfields.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Reading Existing Files</b></font>
+
+<p><font face="Times">If your application defines its own (non-ASCII) file format, but doesn't use typed streams to read and write these files, you may have to rewrite the file-reading and -writing routines to accommodate the endian-ness of the machine that your application is running on.&nbsp; NEXTSTEP provides a suite of byte-swapping functions that convert individual data items.&nbsp; These functions come in two varieties--those that always swap, and those that only swap if needed--for integer and floating-point data types.&nbsp; These functions may be used by including <b>architecture/byte_order.h</b>.</font>
+
+<p><font face="Times">An &quot;always-swap&quot; function for an integer value takes an integer, swaps the order of the bytes it comprises, and returns the swapped value.&nbsp; There are four such functions, one for each integer type:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">short <b>NXSwapShort(</b>short <i>x</i><b>)</b></font><br>
+<font face="Times">int <b>NXSwapInt(</b>int <i>x</i><b>)</b></font><br>
+<font face="Times">long int <b>NXSwapLong(</b>long int <i>x</i><b>)</b></font><br>
+<font face="Times">long long int <b>NXSwapLongLong(</b>long long int <i>x</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These functions each take a single argument and return a single value.&nbsp; The value that you pass as the argument can be used to store the value that's returned, as shown in the following example:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Swap the order of the bytes in a given int. */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">givenInt = NXSwapInt(givenInt);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The &quot;always-swap&quot; functions for floating-point values are slightly more complex.&nbsp; Some processors modify the value of a floating-point number if that value is invalid, so the swap functions for floating-point values can't simply return <b>float</b> or <b>double</b>. To get around this problem, the types <b>NXSwappedFloat</b> and <b>NXSwappedDouble</b> are defined and used by the floating-point swap functions.&nbsp; The following functions are used to convert floating-point values to and from the corresponding swapped types:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NXSwappedFloat <b>NXConvertHostFloatToSwapped(</b>float <i>f</i><b>)</b></font><br>
+<font face="Times">NXSwappedDouble <b>NXConvertHostDoubleToSwapped(</b>double <i>d</i><b>)</b></font><br>
+<font face="Times">float <b>NXConvertSwappedFloatToHost(</b>NXSwappedFloat <i>sf</i><b>)</b></font><br>
+<font face="Times">double <b>NXConvertSwappedDoubleToHost(</b>NXSwappedDouble <i>sd</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The floating-point swap functions, then, take a single argument of type <b>NXSwappedFloat</b> or <b>NXSwappedDouble</b>, and return a value of the same type:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">NXSwappedFloat <b>NXSwapFloat(</b>NXSwappedFloat <i>sf</i><b>)</b></font><br>
+<font face="Times">NXSwappedDouble <b>NXSwapDouble(</b>NXSwappedDouble <i>sd</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A second set of functions (called <i>predicated</i> functions) also take single data items of a particular type, but they're defined to swap the byte order only if the endian-ness indicated in the function name doesn't match the endian-ness of the machine the code is being compiled for.&nbsp; As explained in a later section, determining the endian-ness of data is up to you.&nbsp; There are four groups of these functions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>NXSwapBig</b><i>Type</i><b>ToHost()</b></font><br>
+<font face="Times"><b>NXSwapLittle</b><i>Type</i><b>ToHost()</b></font><br>
+<font face="Times"><b>NXSwapHost</b><i>Type</i><b>ToBig()</b></font><br>
+<font face="Times"><b>NXSwapHost</b><i>Type</i><b>ToLittle()</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">where <i>Type</i> is one of the six multi-byte data types (there are 24 of these functions in all). <b>NXSwapBigIntToHost()</b>, for example, would swap on a little-endian (i386 family) machine, but would do nothing on a big-endian (MC68000 family) machine.&nbsp; For floating-point types, the functions in the first pair each take an argument of type <b>NXSwappedFloat</b> or <b>NXSwappedDouble</b> and return a <b>float</b> or <b>double</b>, respectively.&nbsp; The second pair reverses this, each taking an argument of type <b>float</b> or <b>double</b> and returning an <b>NXSwappedFloat</b> or <b>NXSwappedDouble</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b><i>How to Use the Byte-Swapping Functions</i></b></font>
+
+<p><font face="Times">Regardless of which set of byte-swapping functions you use, you must determine the endian-ness of the data that you want to convert.&nbsp; To use the always-swap functions, you must also know the endian-ness of the host computer; you would use these functions only if the format of the given data and that of the host aren't the same.&nbsp; The predicated functions determine the host format for you and swap if the format indicated by the function's name doesn't match that of the host.</font>
+
+<p><font face="Times">In the following example of the always-swap functions, it's been determined (by one of the methods given in the next section) that the data being read is in big-endian format.&nbsp; The bytes are swapped if the host is little-endian:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define COUNT 1024</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int buf[COUNT];</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int byteCount, itemCount;</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* aStream is open to a file that contains big-endian integer data. */</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">byteCount = NXRead(aStream, (void *)buf, sizeof(buf)))</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">itemCount = byteCount / sizeof(int);</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifdef __LITTLE_ENDIAN__</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Swap if this is a little-endian machine. */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">while (itemCount--) {</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">buf[itemCount] = NXSwapInt(buf[itemCount]);</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b><i>How to Determine Endian-ness of External Data</i></b></font>
+
+<p><font face="Times">As mentioned above, you need to know the endian-ness of a datum whether you're using the always-swap functions or the predicated functions.&nbsp; You can't simply ask a datum for its byte-order, so how do you determine which format it's in?</font>
+
+<p><font face="Times">One approach is to assume that files created by a certain application are of one endian-ness.&nbsp; For example, if you're reading existing data that was written by a NEXTSTEP application prior to the release of NEXTSTEP 3.1, you can be sure that it's in big-endian format.&nbsp; This is because NEXTSTEP, until now, only ran on NeXT Computers, and all existing NeXT Computers are big-endian.&nbsp; However, if you accept the guarantee that a file format is always of one endian-ness and not the other, then you must stick with that endian-ness when you write the data back to a file (so it can be read again).&nbsp; Thus, for example, you would use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> functions to swap data that you've just read, and convert it back through the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> functions just before you write it. For applications running on a host with an endian-ness opposite that of the file format being used, this results in a performance penalty for both reading and writing that file format.</font>
+
+<p><font face="Times">You don't have to adhere to the assumed-big-endian rule if your application inserts a &quot;magic number&quot; in the files that it writes. Magic numbers are used to confirm the identity, format, or version of a file, and can also be used to determine whether the file as it lies on disk is in the same or the opposite endian-ness as the host machine.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* MY_MAGIC is the first long int in the file. If the value read</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* from the file doesn't match, swap it and try again. The magic</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* number shouldn't be byte-symmetric; for example, it shouldn't be</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* 0x50404050, as swapping results in the same number.</font><br>
+<img src="../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define MY_MAGIC 0x50ab40cd</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define COUNT 1024</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">BOOL fileNeedsSwapping;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">long int magicNumber;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int buf[COUNT];</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int byteCount, itemCount;</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Assuming the file is opened onto aStream */</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">byteCount = NXRead(aStream, &amp;magicNumber, sizeof(magicNumber));</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (sizeof(magicNumber) != byteCount)</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* error */</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (MY_MAGIC == magicNumber) fileNeedSwapping = NO;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">magicNumber = NXSwapLong(magicNumber);</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (MY_MAGIC == magicNumber) fileNeedsSwapping = YES;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else /* bad file? */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Now read the rest of the data. */</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">byteCount = NXRead(aStream, (void *)buf, sizeof(buf));</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">itemCount = byteCount / sizeof(int);</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if (fileNeedsSwapping) {</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">while (itemCount--)</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">buf[itemCount] = NXSwapInt(buf[itemCount]);</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Checking for endian-ness mismatch allows the routine to work for hosts of either endian-ness reading the file.&nbsp; This approach permits maximum performance in all possible cases:&nbsp; writing an entire file is always at normal speed regardless of host endian-ness, but reading is only slower when there's an endian-ness mismatch between the file format and the host.&nbsp; The only complication is that if an application writes into an existing file, it must remember the original endian-ness of that file and alter its output accordingly.</font>
+
+<p><font face="Times">Since magic numbers are used to store several kinds of information, care should be taken in choosing a number for a particular version of a file format.&nbsp; Magic numbers should also never be byte-symmetric or mirror images of other magic numbers.&nbsp; If your application will be reading files created by other applications, you'll need to check what magic numbers they use.&nbsp; You should choose a magic number far from the range for file formats you intend to support.&nbsp; When file formats are revised, their magic numbers are often merely incremented instead of re-assigned; if you've chosen a magic number 1 greater than the file format's, you could come into conflict with that format's magic number when it's updated.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Internal Data</b></font>
+
+<p><font face="Times">Internal data--data that your application creates and uses while it's running--shouldn't be a problem as long as you adhere to a few principles:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Always refer to the elements in a data structure by name.&nbsp; Because of possible byte-alignment padding, the distance between contiguous elements in a data structure (in other words, the elements in a <b>struct</b>, or the instance variables in an object) may be different on different computers.&nbsp; You should never try to access these elements by moving a pointer inside the structure.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Be scrupulous about pointer types:&nbsp; use character pointers to point to characters, integer pointers to point to integers, and so on.&nbsp; For example, if you've allocated an integer array and then read the elements of the array through a character pointer, the data that you read may differ as the computer is big-endian or little-endian.&nbsp; If you must manipulate data of an unknown type through a pointer, use a pointer to <b>void</b> instead of a pointer to <b>char</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Never write the &quot;wrong&quot; type of data by recasting a pointer.&nbsp; As a demonstration, the following code will break an application running on a computer that expects data on natural boundaries:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* Create a character array and a pointer to the array. */</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">char buffer[6];</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">char *bufptr = buffer;</font>
+
+<p><img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* Write a character into the array and increment the pointer. */</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">*bufptr++ = 'd';</font>
+
+<p><img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* Write an integer into the array; THE PROGRAM WILL CRASH. */</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">*((int *)bufptr) = 10;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The example is trying to use the character array as a data structure.&nbsp; A better approach is to create a <b>struct</b> to store the data:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* Create a struct that contains a character and an integer. */</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">struct shoeSize {</font><br>
+<img src="../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">char width;</font><br>
+<img src="../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">int length;</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">} aShoe;</font>
+
+<p><img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">aShoe.width = 'd';</font><br>
+<img src="../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">aShoe.length = 10;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Memory-mapped Data</b></font>
+
+<p><font face="Times">NEXTSTEP's Mach operating system allows files to be mapped directly into the address space of a process, turning external data directly into internal data.&nbsp; For performance reasons, you may want or need your application to access file-based data by mapping the file.&nbsp; If you do this, there are two things you should do to make your file format portable:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Always use a magic number to record the endian-ness of the file's data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To skirt your way around alignment restrictions, always pad data elements so they lie on natural alignment boundaries.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first point has been well covered in the previous section.&nbsp; The second, however, deserves some explanation.&nbsp; As an example, let's assume you have the following structure declaration for use with mapped files:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct _mappedFile {</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned long int magicNumber;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned long int numRecords;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">addressRecord addresses[0];</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} mappedFile;</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">mappedFile *myFile;&nbsp; /* a pointer should align on a 32-bit boundary */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The idea is that the application will map a file into <b>myFile</b>, directly accessing the file's data in memory (swapping each datum upon access if needed).&nbsp; In order to avoid any alignment restriction problems, the as-yet-undefined <b>addressRecord</b> type should declare all of its fields on the most natural alignment boundaries.&nbsp; For example, 32-bit <b>int</b>s should lie on 4-byte boundaries, 64-bit <b>double</b>s should be on 8-byte boundaries, and so on.&nbsp; When using character arrays, it's best to declare them in multiples of 4 or 8 bytes, to avoid having to keep track of running offsets.&nbsp; Bitfields should be avoided altogether if possible, as using them requires detailed knowledge of how the compiler lays them out--which may differ between processor architectures.</font>
+
+<p><font face="Times">Here, then, is the <b>addressRecord</b> type:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef _addressRecord {</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char lastName[32];&nbsp;&nbsp;&nbsp; /* multiple of 4 chars */</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char firstName[32];</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char street[32];</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char city[32];</font>
+
+<p><img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char state[2];</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char PAD[2];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* forces alignment to unsigned long int */</font>
+
+<p><img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct _phone {</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned long int area;&nbsp;&nbsp; /* kept apart to allow convenient */</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned long int prefix; /* access to each part */</font><br>
+<img src="../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">unsigned long int phone;</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} phone;</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} addressRecord;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note the use of the <b>PAD</b> field after <b>state</b>, which forces the next structure field to be aligned on a natural <b>unsigned long int </b>(32-bit) boundary.&nbsp; The phone number is stored in separate <b>long int</b>s, even though each could fit into a <b>short int</b>.&nbsp; Although groups of two <b>short int</b>s would each make 32 bits, keeping all fields (and the entire structure) on 32-bit boundaries guarantees that there will be no alignment restriction problems when this file is memory-mapped on some new architecture.&nbsp; The phone number could also be stored as an array of characters, or as a single <b>unsigned long int</b>; the form chosen depends on space considerations and on how the data will be used.</font>
+
+<p><font face="Times">Note also that the entire structure fits into a multiple of 4 bytes, so that the following structure will begin on a natural boundary for most basic datum sizes.&nbsp; If this structure contained any <b>double</b>s, it would be better declared as fitting into a multiple of 8 bytes.&nbsp; Keeping alignment at its most general at every level of declaration within a mapped file guarantees that the file format will be maximally portable.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

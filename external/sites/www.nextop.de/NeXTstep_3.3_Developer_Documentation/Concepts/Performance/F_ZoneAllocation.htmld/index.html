@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/F_ZoneAllocation.rtf -->
+<!-- Date: Sun Jun 28 19:37:00 1998 -->
+<head>
+<title>F_ZoneAllocation</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Zone Allocation</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The Mach operating system utilizes a paged virtual memory management system.&nbsp; Because of this, it's possible to simultaneously run several applications which may each require more memory than is physically present on the system.&nbsp; When an application references information, the system determines if the memory page containing that information is in main memory.&nbsp; If it's not, a page in main memory is stored to the disk, and the page with the requested information is read in.&nbsp; This swapping of memory pages to the disk is orders of magnitude slower than a direct memory reference.&nbsp; <i>Zone allocation</i> is a programming technique used to group related data together to increase the likelyhood that the page containing requested information is already resident in memory.&nbsp; (A zone is memory area--typically a set of memory pages--containing related data.)&nbsp; Zone allocation also gives the programmer the ability to keep unrelated data from diluting the amount of related data grouped together on a single page.&nbsp; The goal of zone allocation is to minimize the number of virtual memory pages that must be resident in main memory for any given operation, thus minimizing swapping activity and maximizing execution speed.</font>
+
+<p><font face="Times">As an example, consider a text editor that allocates a structure for every line the user types, and frees this structure every time the user deletes the line.&nbsp; Imagine that the user edits three documents, each of which is small enough to fit on a single virtual memory page.&nbsp; If the user switches back and forth between the documents, and makes changes to each document, the application will almost certainly end up with pieces of each document on at least three memory pages (and perhaps many more, if it allocated storage for other things as well).&nbsp; Now, when the user scrolls from one line to another, the application will touch every page, and thus will require all of these pages in main memory.&nbsp; If any one of those virtual memory pages gets swapped out, it will soon need to be swapped back in, regardless of which document the user is editing.&nbsp; Ideally, this text editor should keep all the information for one document together, preferably on one memory page.&nbsp; Then, when the system swaps in the memory page for any given line in the document, it is swapping in the memory page for <i>every</i> line in the document.&nbsp; It also is not bringing in a lot of information that it will not soon use.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Strategy</b></font>
+
+<p><font face="Times">A program must allocate memory from a previously created zone.&nbsp; One zone (known as the default zone) is automatically created for each program.&nbsp; This zone is used by the standard library <b>malloc()</b> function, by most Unix functions, and for most class instances created with a <b>new</b> method.&nbsp; All NEXTSTEP applications also have a zone that the Objective C run-time system creates for some rarely used data that it maintains.</font>
+
+<p><font face="Times">If you want to use zone allocation to optimize your application's memory page usage, you will need to create additional zones.&nbsp; Your goal should be to partition memory along the lines that it is used in your application.&nbsp; Often a natural division is to dedicate a zone to each open document, or to each window.</font>
+
+<p><font face="Times">Zones are equally useful for keeping related information in main memory, <b>and for keeping rarely used or unrelated information out of main memory</b>.&nbsp; Related information that is allocated from a zone will be relatively densely packed onto a set of memory pages, so a reference to one piece of data will probably page in a lot of related data, and further references to the related data are less likely to require paging activity.&nbsp; In addition, by allocating unrelated or infrequently used objects from another zone, you prevent them from sharing a page with frequently used data.&nbsp; For example, every Application Kit panel (such as the PageLayout panel) is allocated from its own zone.&nbsp; If a panel is allocated from the default zone, there is a high probability that it will end up sharing a virtual memory page with at least one data structure that is frequently referenced.&nbsp; Thus, the panel takes up space in main memory even when you have no need for it.</font>
+
+<p><font face="Times">In this way, zones have a sort of &#34;inverse&#34; performance effect:&nbsp; Putting a panel's data structures in its own zone not only speed up that panel, but even more importantly reduce the working set for the rest of the application.&nbsp; Its probably correct to assume that most of the default zone will usually be resident, because it holds such a mixture of different data.&nbsp; Thus one goal might be to make the default zone as small as possible, making sure that any data in the default zone is used during common operation of the application.&nbsp; In this model, the benefit of moving a panel into its own zone is not so much to make the panel faster, but to get its memory out of the general pool of the default zone, so as not to dilute this hot zone with chunks of panel data that are never used once the panel is dismissed.</font>
+
+<p><font face="Times">So what should you keep in mind while designing a zone usage strategy for your application?&nbsp; Ideally, zones should be moderate in size; excessively large zones may fail to group related data onto a small number of pages.&nbsp; In fact, in the case of a single zone which is very large, the zone allocation algorithm reduces to a standard (non zone) allocation algorithm with its inherent problems of fragmentation across many pages.&nbsp; However, there are limits to how much benefit you can derive from zone allocation if your program really requires a large data set.&nbsp; If your application frequently touches all the memory it allocates, your program will require every page to be resident regardless of how you allocate memory.&nbsp; For example, if a large spreadsheet recalculation affects every cell of the spreadsheet, every virtual memory page containing a cell will eventually be paged in, and allocating different cells from different zones will not help you.&nbsp; (This is not always true because of cell dependencies, data size, and recalculation order, but it is an adequate generalization.)&nbsp; Remember, though, that you can minimize the page count for a recalculation if the pages containing cells for one document do not contain cells for unrelated documents or graphics and other data.</font>
+
+<p><font face="Times">You should also not create a large number of frequently used zones that have very little information in them.&nbsp; The free space from a memory page of one zone will not be available for allocation from other zones.&nbsp; An exception to this is child zones, mentioned later in this document.&nbsp; Child zones obtain memory from the parent zone, and thus they may share memory pages.</font>
+
+<p><font face="Times">If your application frequently both allocates and frees a certain type of object, there are a few strategies you might consider.&nbsp; First, consider a separate zone for these objects.&nbsp; Freeing tends to fragment memory, and it may be best to prevent such objects from fragmenting other zones.&nbsp; Second, freeing takes a bit of time, because the freed memory must be coalesced into the free memory pool.&nbsp; Rather than issue a large number of <b>free</b> calls for a lot of small objects, you might create a temporary zone that can't free memory.&nbsp; (The ability to free allocated memory is an option when you create a zone with <b>NXCreateZone()</b>.)&nbsp; Such a zone will allocate memory very quickly, but can only grow in size, so you should only use this technique in specific circumstances where you will soon destroy the zone.&nbsp; When you are done with the objects that occupy the zone, you simply destroy it with a single call to <b>NXDestroyZone()</b>.&nbsp; <b>Be careful when pursuing such a strategy that you know which objects will go into the zone to be destroyed.</b>&nbsp; Many Application Kit objects depend on having their <b>free</b> methods called so they can deallocate resources held in other servers, such as the Window Server or the Pasteboard Server.&nbsp; Application Kit objects should never be reaped by destroying the zone they inhabit.&nbsp; If you use <b>NXDestroyZone()</b> be sure you know that the objects in that zone do not depend on having their <b>free</b> methods called for proper deallocation.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Child Zones</b></font>
+
+<p><font face="Times">A child zone is a zone within a normal zone.&nbsp; Child zones allow you to further control the grouping of data within a zone.&nbsp; For example, consider once again a text editor which creates a zone for each open document.&nbsp; A child zone can be used to group dynamically allocated data that is heavily used within a single document.&nbsp; If you dynamically allocate elements of a list to keep track of data for each line in the text editor, you can allocate the list elements from a child zone to keep them from being spread across many pages belonging to the document.&nbsp; You can then access every element in the list without touching a large number of the document's memory pages.</font>
+
+<p><font face="Times">Child zones can provide the benefit of zone allocation without requiring a full memory page per zone.&nbsp; A normal zone is always an integral number of pages in size, and unused space in the zone is unavailable to other zones.&nbsp; However, several child zones can reside on a single memory page belonging to a common parent zone.&nbsp; You can choose a granularity value other than a multiple of the virtual memory page size when creating a child zone.&nbsp; However, choosing a very small value will allow the child zone to become excessively fragmented within its parent zone.&nbsp; Child zones can only be created from normal zones; a child zone can't have children.</font>
+
+<p><font face="Times">A child zone can be merged back into its parent zone using <b>NXMergeZone()</b>.&nbsp; When you merge a child zone back into its parent, the data allocated from the child remains unchanged, but the memory then belongs to the parent zone.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Usage</b></font>
+
+<p><font face="Times">The default zone is returned by <b>NXDefaultMallocZone()</b>.&nbsp; You will need to create additional zones to optimize your application's memory page usage.&nbsp; When you create a new zone using <b>NXCreateZone()</b>, you need to specify a starting size for the zone, an allocation granularity, and whether the zone can free the memory allocated from it.&nbsp; Granularity is the amount by which the zone grows and shrinks; a good value for a normal (non child) zone is the size of a virtual memory page, defined by the global variable <b>vm_page_size</b> (from <b>&lt;mach.h&gt;</b>).&nbsp; Code to create a new zone for your own objects would look something like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">#import &lt;zone.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">#import &lt;mach.h&gt;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">typedef struct {</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">float foo1, foo2, foo3;</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">} Thing;</font>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">NXZone *newZone;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">Thing *newThing;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Thing is your own structure */</font>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">newZone = NXCreateZone(vm_page_size, vm_page_size, YES);</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">newThing = NXZoneMalloc(newZone, sizeof(Thing));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Note that if you use the standard C library <b>malloc()</b>, the returned storage is allocated from the default zone.&nbsp; Thus, the following two lines have essentially the same functionality:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">newThing = malloc(sizeof(Thing));</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">newThing = NXZoneMalloc(NXDefaultMallocZone(), sizeof(Thing));</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When you free memory that you allocated from a specific zone, you normally use the <b>NXZoneFree()</b> function for the best performance.&nbsp; However, you can also use the standard <b>free()</b> function for any allocated memory, and it will free the memory for the correct zone.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Zones and the Application Kit</b></font>
+
+<p><font face="Times">You can allocate Application Kit objects from specific zones.&nbsp; In NEXTSTEP 1.0, object allocation and initialization were grouped together in variations of the <b>new</b> method.&nbsp; With NEXTSTEP 2.0, allocation and initialization were separated to give you the ability to specify the zone from which an object is allocated.&nbsp; The <b>new</b> method still works, but it is considered obsolete, and its use is discouraged.&nbsp; (Each Application Kit class inherits a <b>new</b> method to create a new object.&nbsp; This method typically allocates space for the new object from the default zone, and then initializes the new object using the <b>init</b> instance method.)&nbsp; To create a new object in your own zone, send the class object an <b>allocFromZone:</b> message (which is an Object class method), specifying your own zone.&nbsp; Then send the new object an <b>init</b> (or similar) message.&nbsp; For example, to create a new Text object in your own zone:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">myText = [[Text allocFromZone:myZone] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Very often you may not want to specify an explicit zone for an object; rather, you may want it to be allocated from the zone of a related object.&nbsp; For example, let's say you have a subclass of View called a FooView.&nbsp; Your FooView may need a subview, and it makes most sense to put the FooView's subview in the same zone with the FooView.&nbsp; You can get the zone for an object by invoking Object's <b>zone</b> method.&nbsp; In this case, your FooView designated initializer <b>initFrame:</b> method would look something like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">- initFrame:(const NXRect *)frameRect</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[super initFrame:frameRect];</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">fooSubview = [[View allocFromZone:[self zone]] initFrame:NULL];</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">[self addSubview:fooSubview];</font><br>
+<img src="../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The fact that you can determine the zone of any object with the <b>zone</b> method, or the zone of any malloced data with <b>NXZoneFromPointer()</b> makes it very easy to propagate zone allocation through a tree of objects.&nbsp; These features eliminate the need to add a &#34;zone&#34; argument to every method and function to pass along the right zone to use for any allocation that may happen along the way.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Measurement</b></font>
+
+<p><font face="Times">The <b>MallocDebug</b> application allows you to view the various objects and other data allocated in your applications zones.&nbsp; Examining this data will often reveal wasteful allocation, or suggest ways to group the memory into zones.&nbsp; In addition to listing these nodes, <b>MallocDebug</b> can also let you dynamically track exactly which malloced objects are touched by particular operations in your program.&nbsp; This is a powerful feature for understanding what data can data is used together.</font>
+
+<p><font face="Times">The success of the zone strategy is somewhat &#34;all or nothing&#34;.&nbsp; To illustrate,&nbsp; let's say you move a particular panel into its own zone.&nbsp; You intend that when the panel is not visible, the memory in this zone should not be used, and its pages should be free to migrate out of physical memory.&nbsp; However, even if&nbsp; 99% of the data in that zone is not used, it only takes an access to one small data item to keep its whole page in RAM.&nbsp; Once common pitfall is to have all the data for a panel in its own zone, but fail to ever page out those pages because the panel is updated to reflect changes in the selection even when it is not visible.</font>
+
+<p><font face="Times"><b>MallocDebug</b> is very helpful in verifying whether your zones are really working, because it allows you to see a list of nodes accessed in a particular zone.&nbsp; Thus you can dismiss a panel and then monitor whether any data in that Panel's zone is subsequently touched.&nbsp; <b>MallocDebug</b> identifies a piece of data in the zone by the stack backtrace at the time of allocation, and the stack backtrace at the time it was touched.&nbsp; This shows you who allocated the data (and therefore what it is) and why it is being touched.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Synopsis</b></font>
+
+<p><font face="Times">void *<b>NXZoneMalloc</b>(NXZone *<i>zonep</i>, size_t <i>size</i>)</font><br>
+<font face="Times">void *<b>NXZoneCalloc</b>(NXZone *<i>zonep</i>, size_t <i>numElems</i>, size_t <i>byteSize</i>)</font><br>
+<font face="Times">void *<b>NXZoneRealloc</b>(NXZone *<i>zonep</i>, void *<i>ptr</i>, size_t <i>size</i>)</font><br>
+<font face="Times">void <b>NXZoneFree</b>(NXZone *<i>zonep</i>, void *<i>ptr</i>)</font><br>
+<font face="Times">NXZone *<b>NXDefaultMallocZone</b>(void)</font><br>
+<font face="Times">NXZone *<b>NXCreateZone</b>(size_t <i>startSize</i>, size_t <i>granularity</i>, int <i>canFree</i>)</font><br>
+<font face="Times">NXZone *<b>NXCreateChildZone</b>(NXZone *<i>parentZone</i>, size_t <i>startSize</i>,</font><br>
+<img src="../../Images/sp.gif" width=12 height=1><font face="Times">size_t <i>granularity</i>, int <i>canFree</i>)</font><br>
+<font face="Times">void <b>NXMergeZone</b>(NXZone *<i>zonep</i>)</font><br>
+<font face="Times">void <b>NXDestroyZone</b>(NXZone *<i>zonep</i>)</font><br>
+<font face="Times">NXZone *<b>NXZoneFromPtr</b>(void *<i>ptr</i>)</font><br>
+<font face="Times">void <b>NXZonePtrInfo</b>(void *<i>ptr</i>)</font><br>
+<font face="Times">int <b>NXMallocCheck</b>(void)</font><br>
+<font face="Times">void <b>NXNameZone</b>(NXZone *<i>zonep</i>, char *<i>name</i>)</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

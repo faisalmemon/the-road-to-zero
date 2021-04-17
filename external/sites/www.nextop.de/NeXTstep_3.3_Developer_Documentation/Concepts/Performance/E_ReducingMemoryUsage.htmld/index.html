@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Performance/E_ReducingMemoryUsage.rtf -->
+<!-- Date: Sun Jun 28 19:36:59 1998 -->
+<head>
+<title>E_ReducingMemoryUsage</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Reducing Memory Usage</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Memory usage is the most critical performance issue on NEXTSTEP platforms.&nbsp; An operating system with virtual memory can be a double-edged sword.&nbsp; While virtual memory is a key component to building a useful multitasking user environment, when there is not enough physical memory to satisfy all the applications, servers, and deamons, the resulting paging can be very frustrating to the user.</font>
+
+<p><font face="Times">When using NEXTSTEP, users typically use a number of applications in concert.&nbsp; Features like drag-and-drop, Object Links and Services further serve to tie applications together.&nbsp; The result is that the overall performance of the system is as important as the individual performance of a particular application.&nbsp; To achieve good system performance, it's essential that applications be &#34;good citizens&#34; of virtual memory.&nbsp; It isn't acceptable for an application to create panels that the user will never see at startup time, or build bitmap caches of images that are rarely drawn, or that could be drawn about as quickly with userpaths or other PostScript.&nbsp; As CPU speed increases, there are fewer and fewer areas where trading off using more memory for less CPU is appropriate.&nbsp; When you are faced with such a tradeoff, consider carefully whether the excess memory used really brings a substantial benefit to the user.&nbsp; <b>When in doubt, lean towards saving memory.</b></font>
+
+<p><font face="Times">The following are some tips concerning memory usage.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Bitmaps and Off-Screen Windows</b></font>
+
+<p><font face="Times">A common performance optimization is to create off-screen window using NXImage objects, draw into them once, and then composite on-screen.&nbsp; As mentioned earlier, you should use this technique judiciously, since it can consume a lot of memory in the Window Server.&nbsp; Consider using user paths as an alternative when possible.&nbsp; Perhaps most important, create these NXImages only as you need them, and remember to free them when you're done with them.</font>
+
+<p><font face="Times">To look for unnecessary off-screen windows, run your application with the option &#34;-NXShowAllWindows YES&#34; to force all windows on-screen.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Garbage Collection</b></font>
+
+<p><font face="Times">Remember you're the garbage collector for your application.&nbsp; Objects will not get freed unless you explicitly free them. If you're done with an object, free it!&nbsp; Remember also that if an object's instance variables point off to other objects or <b>malloc</b>'ed memory, you may need to explicitly free them as well (that is, freeing an object doesn't necessarily free its instance variables).&nbsp; In general, the Application Kit classes free their instance variables as appropriate (for example, freeing a Window frees all of the Views within that Window's view hierarchy).&nbsp; However, when you create a subclass of an Application Kit class and add instance variables, you'll need to override the <b>free</b> method for that class and do the following:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">-free</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* free new instance variables */</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* . . . */</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* now do what your super class would normally do */</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">return [super free];</font><br>
+<img src="../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If your application seems to grow over time, check to be sure that objects are freed when no longer needed. Alternatively, see if you can reuse existing objects.</font>
+
+<p><font face="Times">The <b>MallocDebug</b> application is extremely useful for finding memory leaks.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>NXUniqueString()</b></font>
+
+<p><font face="Times">The Application Kit provides a number of functions (<b>NXUniqueString()</b>, <b>NXUniqueStringNoCopy()</b>, and some others) that create unique strings which are allocated once and then can be shared.&nbsp; The unique strings created are of type NXAtom, which means that they can be compared using <b>==</b> rather than <b>strcmp</b>.&nbsp; Creating the strings is quick because the strings are kept in a hash table.&nbsp; Once created, the strings are read-only and should not be deallocated.</font>
+
+<p><font face="Times">Use of unique strings can pay off handsomely in cases where you have read-only strings and there's repetitive use of the same string.&nbsp; A perfect example of their use is in the mail summary window in Mail.&nbsp; The strings contained in the date and name fields should be instances of unique strings, since they're read-only and the same string is used many times.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>loadNibSection:owner:withNames:</b></font>
+
+<p><font face="Times">As mentioned earlier, if you don't use the names generated by Interface Builder, you can reduce the amount of memory associated with reading in an interface section by using the <b>loadNibSection:owner:withNames:</b> method, passing NO as the argument for <b>withNames:</b>.&nbsp; See the earlier section &quot;Improving Launch Times of the Application and Panels&quot; for more information.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Lazy Creation of Objects</b></font>
+
+<p><font face="Times">You can reduce the working size of your application by not instantiating objects until you need them.&nbsp; This is particularly true if the object is used infrequently or not at all unless the user takes a particular action.&nbsp; By not instantiating the object until you need it, your application doesn't grow until it's absolutely necessary to do so.</font>
+
+<p><font face="Times">Along these lines, be sure to place each window or panel in its own Interface Builder document.&nbsp; It is extremely wasteful to have many panels and windows all in the same nib file, because all these objects are loaded in to memory and instantiated when any of them is used.</font>
+
+<p><font face="Times">In addition almost all windows in an application should be made deferred and &#34;one-shot&#34; in Interface Builder's Window inspector.&nbsp; This means that the actual backing store for the window will be created only when it is needed, and freed when the window is taken from the screen.&nbsp; Only windows that are very expensive to draw should not be one-shot. This is especially a win for panel, which are often dismissed from the screen and remain invisible for a long time. Since color application icons cause most panels to be promoted to 16-bit depth, it is much better to allow the one-shot mechanism to deallocate the backing store when the panel is closed, providing an immediate pool of free memory to the system, than to force the system to write these pages into the swapfile for later retrieval.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Zone Allocation</b></font>
+
+<p><font face="Times">Zone allocation is a powerful feature that allows you to group your application's heap data onto different sets of pages, or zones.&nbsp;&nbsp; This reduces the working set for various operations within your application.&nbsp; See <b>ZoneAllocation.rtf</b> for more information about using zones.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>A Note on Symbols</b></font>
+
+<p><font face="Times">It's worth noting that compiling with or without symbols has no effect on the in-memory size of your application.&nbsp; When the compiler generates symbols, they're put in a section at the end of the executable file.&nbsp; However, they're only brought into memory by the debugger.&nbsp; Thus, while stripping your program will significantly reduce the size of your application on the disk, it'll have no effect on memory usage or performance.</font>
+
+<p><font face="Times">On the subject of compiler flags, using the <b>-O</b> (optimization) option can yield potential gains in performance, as well as somewhat smaller code, so you should always compile your production version with optimization turned on.&nbsp; In fact, as long as the code is also compiled with symbols, you can debug the optimized code, although be warned that the optimization sometimes fools GDB.</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

@@ -1,0 +1,2575 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/ObjectiveC/2_ObjC/CoreObjC.rtfd -->
+<!-- Date: Sun Jun 28 19:36:29 1998 -->
+<head>
+<title>CoreObjC</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>2</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>The Objective C Language</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter describes the Objective C language as it's implemented for the NEXTSTEP development environment and discusses the principles of object-oriented programming as they're implemented in Objective C.&nbsp; It covers all the basic features that the language adds to standard C.&nbsp; The next chapter continues the discussion by taking up more advanced and less commonly used language features.</font>
+
+<p><font face="Times">Objective C syntax is a superset of standard C syntax, and its compiler works for both C and Objective C source code.&nbsp; The compiler recognizes Objective C source files by a &quot;.m&quot; extension, just as it recognizes files containing only standard C syntax by a &quot;.c&quot; extension.&nbsp; As implemented for NEXTSTEP, the Objective C language is fully compatible with ANSI standard C.</font>
+
+<p><font face="Times">Objective C can also be used as an extension to C++.&nbsp; At first glance, this may seem superfluous since C++ is itself an object-oriented extension of C.&nbsp; But C++ was designed primarily as &quot;a better C,&quot; and not necessarily as a full-featured object-oriented language.&nbsp; It lacks some of the possibilities for object-oriented design that dynamic typing and dynamic binding bring to Objective C.&nbsp; At the same time, it has useful language features not found in Objective C.&nbsp; When you use the two languages in combination, you can assign appropriate roles to the features found in each and take advantage of what's best in both.&nbsp; Chapter 5, &quot;Programming in Objective C,&quot; has more on combining C++ with Objective C.</font>
+
+<p><font face="Times">Because object-oriented programs postpone many decisions from compile time to run time, object-oriented languages depend on a run-time system for executing the compiled code.&nbsp; The run-time system for the Objective C language is discussed in Chapter 4.&nbsp; This chapter and the next present the language, but touch on important elements of the run-time system as they're important for understanding language features.&nbsp; NeXT has modified the GNU C compiler to also compile Objective C and provides its own run-time system.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Objects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As the name implies, object-oriented programs are built around <i>objects</i>.&nbsp; An object associates data with the particular operations that can use or affect that data.&nbsp; In Objective C, these operations are known as the object's <i>methods</i>; the data they affect are its <i>instance variables</i>.&nbsp; In essence, an object bundles a data structure (instance variables) and a group of procedures (methods) into a self-contained programming unit.</font>
+
+<p><font face="Times">For example, through the NEXTSTEP Application Kit, you can produce an object that displays a matrix of cells to users of your application.&nbsp; The cells might be text fields where the user can enter data, a series of mutually exclusive switches, a list of buttons or menu commands, or a bank of sliders.&nbsp; The figure below illustrates some of the different kinds of cells a matrix can contain:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F6.gif" width=399 height=227></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 6</b></font><font face="Times">.&nbsp; Some Matrices</font>
+
+<p><br><br>
+
+<p><font face="Times">A Matrix object has instance variables that define the matrix, including its dimensions and coordinates, the font used to display character strings in the cells, the arrangement of cells into rows and columns, and what to do when a cell is selected.&nbsp; A Matrix also has methods that do such things as alter its size, change its position on-screen, add and remove cells, highlight a particular cell, and set the color that's displayed between cells.</font>
+
+<p><font face="Times">Each cell in a Matrix is also an object.&nbsp; Cells have instance variables that record their contents and what action to take when the cell is selected.&nbsp; They have methods to determine what the cell looks like and to track the cursor as it moves from cell to cell.</font>
+
+<p><font face="Times">In Objective C, an object's instance variables are internal to the object; you get access to an object's state only through the object's methods.&nbsp; For others to find out something about an object, there has to be a method to supply the information.&nbsp; For example, a Matrix has methods that reveal its size, the currently selected cell, and the current number of columns and rows.</font>
+
+<p><font face="Times">Moreover, an object sees only the methods that were designed for it; it can't mistakenly perform methods intended for other types of objects.&nbsp; Just as a C function protects its local variables, hiding them from the rest of the program, an object hides both its instance variables and its method implementations.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>id</b></font>
+
+<p><font face="Times">In Objective C, objects are identified by a distinct data type, <b>id</b>.&nbsp; This type is defined as a pointer to an object--in reality, a pointer to the object's data (its instance variables).&nbsp; Like a C function or an array, an object is identified by its address.&nbsp; All objects, regardless of their instance variables or methods, are of type <b>id</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id anObject;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For the object-oriented constructs of Objective C, such as method return values, <b>id</b> replaces <b>int</b> as the default data type.&nbsp; (For strictly C constructs, such as function return values, <b>int</b> remains the default type.)</font>
+
+<p><font face="Times">The keyword <b>nil</b> is defined as a null object, an <b>id</b> with a value of 0.&nbsp; <b>id</b>, <b>nil</b>, and the other basic types of Objective C are defined in the header file <b>objc.h</b>, which is located in the <b>objc</b> subdirectory of <b>/NextDeveloper/Headers</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Dynamic Typing</b></font>
+
+<p><font face="Times">The <b>id</b> type is completely nonrestrictive.&nbsp; By itself, it yields no information about an object, except that it is an object.</font>
+
+<p><font face="Times">But objects aren't all the same.&nbsp; A Matrix won't have the same methods or instance variables as an object that represents one of its cells.&nbsp; Cells that display buttons (ButtonCells) won't be exactly like those that display text (TextFieldCells).&nbsp; At some point, a program needs to find more specific information about the objects it contains--what the object's instance variables are, what methods it can perform, and so on.&nbsp; Since the <b>id</b> type designator can't supply this information to the compiler, each object has to be able to supply it at run time.</font>
+
+<p><font face="Times">This is possible because every object carries with it an <b>isa</b> instance variable that identifies the object's <i>class</i>--what kind of object it is.&nbsp; Every Matrix object would be able to tell the run-time system that it is a Matrix.&nbsp; Every ButtonCell can say that it is a ButtonCell.&nbsp; Objects with the same behavior (methods) and the same kinds of data (instance variables) are members of the same class.</font>
+
+<p><font face="Times">Objects are thus <i>dynamically typed</i> at run time.&nbsp; Whenever it needs to, the run-time system can find the exact class that an object belongs to, just by asking the object.&nbsp; Dynamic typing in Objective C serves as the foundation for dynamic binding, discussed later.</font>
+
+<p><font face="Times">The <b>isa</b> pointer also enables objects to introspect about themselves as objects.&nbsp; The compiler doesn't discard much of the information it finds in source code; it arranges most of it in data structures for the run-time system to use.&nbsp; Through <b>isa</b>, objects can find this information and reveal it at run time.&nbsp; An object can, for example, say whether it has a particular method in its repertoire and what the name of its superclass is.</font>
+
+<p><font face="Times">Object classes are discussed in more detail under &quot;Classes&quot; below.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">It's also possible to give the compiler information about the class of an object by statically typing it in source code using the class name.&nbsp; Classes are particular kinds of objects, and the class name can serve as a type name.&nbsp; See &quot;Class Types&quot; later in this chapter and &quot;Static Options&quot; in Chapter 3.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Messages</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To get an object to do something, you send it a <i>message</i> telling it to apply a method.&nbsp; In Objective C, <i>message expressions</i> are enclosed in square brackets:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>[</b><i>receiver message</i><b>]</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The receiver is an object, and the message tells it what to do.&nbsp; In source code, the message is simply the name of a method and any arguments that are passed to it.&nbsp; When a message is sent, the run-time system selects the appropriate method from the receiver's repertoire and invokes it.</font>
+
+<p><font face="Times">For example, this message tells the <b>myMatrix</b> object to perform its <b>display</b> method, which draws the matrix and its cells in a window:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myMatrix display];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Methods can also take arguments.&nbsp; The message below tells <b>myMatrix</b> to change its location within the window to coordinates (30.0, 50.0):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myMatrix moveTo:30.0 :50.0];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here the method name, <b>moveTo::</b>, has two colons, one for each of its arguments.&nbsp; The arguments are inserted after the colons, breaking the name apart.&nbsp; Colons don't have to be grouped at the end of a method name, as they are here.&nbsp; Usually a keyword describing the argument precedes each colon.&nbsp; The <b>getRow:andColumn:ofCell:</b> method, for example, takes three arguments:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp; row, column;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myMatrix getRow:&amp;row andColumn:&amp;column ofCell:someCell];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This method finds <b>someCell</b> in the matrix and puts the row and column where it's located in the two variables provided.</font>
+
+<p><font face="Times">Methods that take a variable number of arguments are also possible, though they're somewhat rare.&nbsp; Extra arguments are separated by commas after the end of the method name.&nbsp; (Unlike colons, the commas aren't considered part of the name.)&nbsp; In the following example, the imaginary <b>makeGroup:</b> method is passed one required argument (<b>group</b>) and three that are optional:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[receiver makeGroup:group, memberOne, memberTwo, memberThree];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like standard C functions, methods can return values.&nbsp; The following example assigns the identifying integer returned by the <b>tag </b>method to a variable also named <b>tag</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp; tag;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">tag = [myMatrix tag];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that a variable and a method can have the same name.</font>
+
+<p><font face="Times">One message can be nested inside another.&nbsp; Here the <b>selectedCell</b> method returns an object that then receives a <b>tag</b> message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int tag = [[myMatrix selectedCell] tag];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A message to <b>nil</b> also is valid,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[nil moveTo:100.0 :22.5];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">but it has no effect and makes little sense.&nbsp; Messages to <b>nil</b> simply return <b>nil</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Receiver's Instance Variables</b></font>
+
+<p><font face="Times">A method has automatic access to the receiving object's instance variables.&nbsp; You don't need to pass them to the method as arguments.&nbsp; For example, the <b>tag</b> method illustrated above takes no arguments, yet it can find the tag for <b>myMatrix</b> and return it. Every method assumes the receiver and its instance variables, without having to declare them as arguments.</font>
+
+<p><font face="Times">This convention simplifies Objective C source code.&nbsp; It also supports the way object-oriented programmers think about objects and messages.&nbsp; Messages are sent to receivers much as letters are delivered to your home.&nbsp; Message arguments bring information from the outside to the receiver; they don't need to bring the receiver to itself.</font>
+
+<p><font face="Times">A method has automatic access only to the receiver's instance variables.&nbsp; If it requires information about a variable stored in another object, it must send a message to the object asking it to reveal the contents of the variable.&nbsp; The <b>selectedCell</b> and <b>tag </b>methods shown above are used for just this purpose.</font>
+
+<p><font face="Times">See &quot;Defining a Class&quot; for more information on referring to instance variables.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Polymorphism</b></font>
+
+<p><font face="Times">As the examples above illustrate, messages in Objective C appear in the same syntactic positions as function calls in standard C.&nbsp; But, because methods &quot;belong to&quot; an object, messages behave differently than function calls.</font>
+
+<p><font face="Times">In particular, an object has access only to the methods that were defined for it.&nbsp; It can't confuse them with methods defined for other kinds of objects, even if another object has a method with the same name.&nbsp; This means that two objects can respond differently to the same message.&nbsp; For example, each kind of object sent a <b>display</b> message could display itself in a unique way. A ButtonCell and a TextFieldCell would respond differently to identical instructions to track the cursor.</font>
+
+<p><font face="Times">This feature, referred to as <i>polymorphism</i>, plays a significant role in the design of object-oriented programs.&nbsp; Together with dynamic binding, it permits you to write code that might apply to any number of different kinds of objects, without your having to choose at the time you write the code what kinds of objects they might be.&nbsp; They might even be objects that will be developed later, by other programmers working on other projects.&nbsp; If you write code that sends a <b>display</b> message to an <b>id</b> variable, any object that has a <b>display</b> method is a potential receiver.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Dynamic Binding</b></font>
+
+<p><font face="Times">A crucial difference between function calls and messages is that a function and its arguments are joined together in the compiled code, but a message and a receiving object aren't united until the program is running and the message is sent. Therefore, the exact method that will be invoked to respond to a message can only be determined at run time, not when the code is compiled.</font>
+
+<p><font face="Times">The precise method that a message invokes depends on the receiver.&nbsp; Different receivers may have different method implementations for the same method name (polymorphism).&nbsp; For the compiler to find the right method implementation for a message, it would have to know what kind of object the receiver is--what class it belongs to.&nbsp; This is information the receiver is able to reveal at run time when it receives a message (dynamic typing), but it's not available from the type declarations found in source code.</font>
+
+<p><font face="Times">The selection of a method implementation happens at run time.&nbsp; When a message is sent, a run-time messaging routine looks at the receiver and at the method named in the message.&nbsp; It locates the receiver's implementation of a method matching the name, &quot;calls&quot; the method, and passes it a pointer to the receiver's instance variables.&nbsp; (For more on this routine, see &quot;How Messaging Works&quot; below.)</font>
+
+<p><font face="Times">The method name in a message thus serves to &quot;select&quot; a method implementation.&nbsp; For this reason, method names in messages are often referred to as <i>selectors</i>.</font>
+
+<p><font face="Times">This <i>dynamic binding</i> of methods to messages works hand-in-hand with polymorphism to give object-oriented programming much of its flexibility and power.&nbsp; Since each object can have its own version of a method, a program can achieve a variety of results, not by varying the message itself, but by varying just the object that receives the message.&nbsp; This can be done as the program runs; receivers can be decided &quot;on the fly&quot; and can be made dependent on external factors such as user actions.</font>
+
+<p><font face="Times">In the Application Kit, for example, users determine which objects receive messages from menu commands like Cut, Copy, and Paste.&nbsp; The message goes to whatever object controls the current selection.&nbsp; An object that displays editable text would react to a <b>copy:</b> message differently than an object that displays scanned images.&nbsp; A Matrix would respond differently than a Cell. Since messages don't select methods (methods aren't bound to messages) until run time, these differences are isolated in the methods that respond to the message.&nbsp; The code that sends the message doesn't have to be concerned with them; it doesn't even have to enumerate the possibilities.&nbsp; Each application can invent its own objects that respond in their own way to <b>copy: </b>messages.</font>
+
+<p><font face="Times">Objective C takes dynamic binding one step further and allows even the message that's sent (the method selector) to be a variable that's determined at run time.&nbsp; This is discussed in the section on &quot;How Messaging Works.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Classes</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An object-oriented program is typically built from a variety of objects.&nbsp; A program based on the NEXTSTEP software kits might use Matrix objects, Window objects, List objects, SoundView objects, Text objects, and many others.&nbsp; Programs often use more than one object of the same kind or <i>class</i>--several Lists or Windows, for example.</font>
+
+<p><font face="Times">In Objective C, you define objects by defining their class.&nbsp; The class definition is a prototype for a kind of object; it declares the instance variables that become part of every member of the class, and it defines a set of methods that all objects in the class can use.</font>
+
+<p><font face="Times">The compiler creates just one accessible object for each class, a <i>class object</i> that knows how to build new objects belonging to the class.&nbsp; (For this reason it's sometimes also called a &quot;factory object.&quot;)&nbsp; The class object is the compiled version of the class; the objects it builds are <i>instances</i> of the class.&nbsp; The objects that will do the main work of your program are instances created by the class object at run time.</font>
+
+<p><font face="Times">All instances of a class have access to the same set of methods, and they all have a set of instance variables cut from the same mold.&nbsp; Each object gets its own instance variables, but the methods are shared.</font>
+
+<p><font face="Times">By convention, class names begin with an uppercase letter (such as &quot;Matrix&quot;); the names of instances typically begin with a lowercase letter (such as &quot;myMatrix&quot;).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Inheritance</b></font>
+
+<p><font face="Times">Class definitions are additive; each new class that you define is based on another class through which it <i>inherits</i> methods and instance variables.&nbsp; The new class simply adds to or modifies what it inherits.&nbsp; It doesn't need to duplicate inherited code.</font>
+
+<p><font face="Times">Inheritance links all classes together in a hierarchical tree with a single class, the Object class, at its root.&nbsp; Every class (but Object) has a <i>superclass</i> one step nearer the root, and any class (including Object) can be the superclass for any number of <i>subclasses</i> one step farther from the root.&nbsp; Figure 7 below illustrates the hierarchy for a few of the classes in the NEXTSTEP Application Kit.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=271 height=125></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 7</b></font><font face="Times">.&nbsp; Some Application Kit Classes</font>
+
+<p><br><br>
+
+<p><font face="Times">This figure shows that the Matrix class is a subclass of the Control class, the Control class is a subclass of View, View is a subclass of Responder, and Responder is a subclass of Object.&nbsp; Inheritance is cumulative.&nbsp; So a Matrix object has the methods and instance variables defined for Control, View, Responder, and Object, as well as those defined specifically for Matrix.&nbsp; This is simply to say that a Matrix object isn't only a Matrix, it's also a Control, a View, a Responder, and an Object.</font>
+
+<p><font face="Times">Every class (but Object) can thus be seen as a specialization or an adaptation of another class.&nbsp; Each successive subclass further modifies the cumulative total of what's inherited.&nbsp; The Matrix class defines only the minimum needed to turn a Control into a Matrix.</font>
+
+<p><font face="Times">When you define a class, you link it to the hierarchy by declaring its superclass; every class you create must be the subclass of another class (unless you define a new root class).&nbsp; Plenty of potential superclasses are available.&nbsp; The NEXTSTEP development environment includes the Object class and several software kits containing definitions for more than 125 different classes.&nbsp; Some are classes that you can use &quot;off the shelf&quot;--incorporate into your program as is.&nbsp; Others you might want to adapt to your own needs by defining a subclass.</font>
+
+<p><font face="Times">Some kit classes define almost everything you need, but leave some specifics to be implemented in a subclass.&nbsp; You can thus create very sophisticated objects by writing only a small amount of code, and reusing work done by the programmers at NeXT.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Object Class</b></font>
+
+<p><font face="Times">Object is the only class without a superclass, and the only one that's in the inheritance path for every other class.&nbsp; That's because it defines the basic framework for Objective C objects and object interactions.&nbsp; It imparts to the classes and instances that inherit from it the ability to behave as objects and cooperate with the run-time system.</font>
+
+<p><font face="Times">A class that doesn't need to inherit any special behavior from another class is nevertheless made a subclass of the Object class. Instances of the class must at least have the ability to behave like Objective C objects at run time.&nbsp; Inheriting this ability from the Object class is much simpler and much more reliable than reinventing it in a new class definition.</font>
+
+<p><font face="Times">Appendix C, &quot;The Object Class,&quot; has a full specification of the root class and describes its methods in detail.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Implementing a new root class is a delicate task and one with many hidden hazards.&nbsp; The class must duplicate much of what the Object class does, such as allocate instances, connect them to their class, and identify them to the run-time system. It's strongly recommended that you use the Object class provided with NEXTSTEP as the root class.&nbsp; This manual doesn't explain all the ins and outs that you would need to know to replace it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Inheriting Instance Variables</b></font>
+
+<p><font face="Times">When a class object creates a new instance, the new object contains not only the instance variables that were defined for its class, but also the instance variables defined for its superclass, and for its superclass's superclass, all the way back to the root Object class.&nbsp; The <b>isa</b> instance variable defined in the Object class becomes part of every object.&nbsp; <b>isa</b> connects each object to its class.</font>
+
+<p><font face="Times">Figure 8 below shows some of a Matrix object's instance variables and where they come from.&nbsp; Note that the variables that make the object a Matrix are added to the ones that make it a Control, and the ones that make it a Control are added to the ones that make it a View, and so on.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=252 height=249></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 8</b></font><font face="Times">.&nbsp; Matrix Instance Variables</font>
+
+<p><br><br>
+
+<p><font face="Times">A class doesn't have to declare instance variables.&nbsp; It can simply define new methods and rely on the instance variables it inherits, if it needs any instance variables at all.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Inheriting Methods</b></font>
+
+<p><font face="Times">An object has access not only to the methods that were defined for its class, but also to methods defined for its superclass, and for its superclass's superclass, all the way back to the root of the hierarchy.&nbsp; A Matrix object can use methods defined in the Control, View, Responder, and Object classes as well as methods defined in its own class.</font>
+
+<p><font face="Times">Any new class you define in your program can therefore make use of the code written for all the classes above it in the hierarchy.&nbsp; This type of inheritance is a major benefit of object-oriented programming.&nbsp; When you use one of the object-oriented kits provided by NEXTSTEP, your programs can take advantage of all the basic functionality coded into the kit classes.&nbsp; You have to add only the code that customizes the kit to your application.</font>
+
+<p><font face="Times">Class objects also inherit from the classes above them in the hierarchy.&nbsp; But because they don't have instance variables (only instances do), they inherit only methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Overriding One Method with Another</b></font>
+
+<p><font face="Times">There's one useful exception to inheritance:&nbsp; When you define a new class, you can implement a new method with the same name as one defined in a class farther up the hierarchy.&nbsp; The new method overrides the original; instances of the new class will perform it rather than the original, and subclasses of the new class will inherit it rather than the original.</font>
+
+<p><font face="Times">For example, the View class defines a <b>display</b> method that Matrix overrides by defining its own version of <b>display</b>.&nbsp; The View method is available to all kinds of objects that inherit from the View class--but not to Matrix objects, which instead perform the Matrix version of <b>display</b>.</font>
+
+<p><font face="Times">Although overriding a method blocks the original version from being inherited, other methods defined in the new class can skip over the redefined method and find the original (see &quot;Messages to <b>self</b> and <b>super</b>,&quot; below, to learn how).</font>
+
+<p><font face="Times">A redefined method can also incorporate the very method it overrides.&nbsp; When it does, the new method serves only to refine or modify the method it overrides, rather than replace it outright.&nbsp; When several classes in the hierarchy define the same method, but each new version incorporates the version it overrides, the implementation of the method is effectively spread over all the classes.</font>
+
+<p><font face="Times">Although a subclass can override inherited methods, it can't override inherited instance variables.&nbsp; Since an object has memory allocated for every instance variable it inherits, you can't override an inherited variable by declaring a new one with the same name.&nbsp; If you try, the compiler will complain.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Abstract Classes</b></font>
+
+<p><font face="Times">Some classes are designed only so that other classes can inherit from them.&nbsp; These <i>abstract classes</i> group methods and instance variables that will be used by a number of different subclasses into a common definition.&nbsp; The abstract class is incomplete by itself, but contains useful code that reduces the implementation burden of its subclasses.</font>
+
+<p><font face="Times">The Object class is the prime example of an abstract class.&nbsp; Although programs often define Object subclasses and use instances belonging to the subclasses, they never use instances belonging directly to the Object class.&nbsp; An Object instance wouldn't be good for anything; it would be a generic object with the ability to do nothing in particular.</font>
+
+<p><font face="Times">In the NEXTSTEP software kits, abstract classes often contain code that helps define the structure of an application.&nbsp; When you create subclasses of these classes, instances of your new classes fit effortlessly into the application structure and work automatically with other kit objects.</font>
+
+<p><font face="Times">(Because abstract classes must have subclasses, they're sometimes also called <i>abstract superclasses</i>.)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Class Types</b></font>
+
+<p><font face="Times">A class definition is a specification for a kind of object.&nbsp; The class, in effect, defines a data type.&nbsp; The type is based not just on the data structure the class defines (instance variables), but also on the behavior included in the definition (methods).</font>
+
+<p><font face="Times">A class name can appear in source code wherever a type specifier is permitted in C--for example, as an argument to the <b>sizeof </b>operator:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int i = sizeof(Matrix);</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Static Typing</b></font>
+
+<p><font face="Times">You can use a class name in place of <b>id</b> to designate an object's type:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Matrix *myMatrix;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Since this way of declaring an object type gives the compiler information about what kind of object it is, it's known as <i>static typing</i>.&nbsp; Just as <b>id</b> is defined as a pointer to an object, objects are statically typed as pointers to a class.&nbsp; Objects are always typed by a pointer.&nbsp; Static typing makes the pointer explicit; <b>id</b> hides it.</font>
+
+<p><font face="Times">Static typing permits the compiler to do some type checking--for example, to warn if an object receives a message that it appears not to be able to respond to--and to loosen some restrictions that apply to objects generically typed <b>id</b>.&nbsp; In addition, it can make your intentions clearer to others who read your source code.&nbsp; However, it doesn't defeat dynamic binding or alter the dynamic determination of a receiver's class at run time.</font>
+
+<p><font face="Times">An object can be statically typed to its own class or to any class that it inherits from.&nbsp; For example, since inheritance makes a Matrix a kind of View, a Matrix instance could be statically typed to the View class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">View *myMatrix;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This is possible because a Matrix is a View.&nbsp; It's more than a View since it also has the instance variables and method capabilities of a Control and a Matrix, but it's a View nonetheless.&nbsp; For purposes of type checking, the compiler will consider <b>myMatrix</b> to be a View, but at run time it will be treated as a Matrix.</font>
+
+<p><font face="Times">See &quot;Static Options&quot; in the next chapter for more on static typing and its benefits.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Type Introspection</b></font>
+
+<p><font face="Times">Instances can reveal their types at run time.&nbsp; The <b>isMemberOf:</b> method, defined in the Object class, checks whether the receiver is an instance of a particular class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [anObject isMemberOf:someClass] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>isKindOf:</b> method, also defined in the Object class, checks more generally whether the receiver inherits from or is a member of a particular class (whether it has the class in its inheritance path):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [anObject isKindOf:someClass] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The set of classes for which <b>isKindOf:</b> returns YES is the same set to which the receiver can be statically typed.</font>
+
+<p><font face="Times">Introspection isn't limited to type information.&nbsp; Later sections of this chapter discuss methods that return the class object, report whether an object can respond to a message, and reveal other information.</font>
+
+<p><font face="Times">See Appendix C, &quot;The Object Class,&quot; for more on <b>isKindOf:</b>, <b>isMemberOf:</b>, and kindred methods.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Class Objects</b></font>
+
+<p><font face="Times">A class definition contains various kinds of information, much of it about instances of the class:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The name of the class and its superclass</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A template describing a set of instance variables</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The declaration of method names and their return and argument types</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The method implementations</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This information is compiled and recorded in data structures made available to the run-time system.&nbsp; The compiler creates just one object, a <i>class object</i>, to represent the class.&nbsp; The class object has access to all the information about the class, which means mainly information about what instances of the class are like.&nbsp; It's able to produce new instances according to the plan put forward in the class definition.</font>
+
+<p><font face="Times">Although a class object keeps the prototype of a class instance, it's not an instance itself.&nbsp; It has no instance variables of its own and it can't perform methods intended for instances of the class.&nbsp; However, a class definition can include methods intended specifically for the class object--<i>class methods</i> as opposed to <i>instance methods</i>.&nbsp; A class object inherits class methods from the classes above it in the hierarchy, just as instances inherit instance methods.</font>
+
+<p><font face="Times">In source code, the class object is represented by the class name.&nbsp; In the following example, the Matrix class returns the class version number using a method inherited from the Object class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int versionNumber = [Matrix version];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, the class name stands for the class object only as the receiver in a message expression.&nbsp; Elsewhere, you need to ask an instance or the class to return the class <b>id</b>.&nbsp; Both respond to a <b>class</b> message:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id aClass = [anObject class];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id matrixClass = [Matrix class];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As these examples show, class objects can, like all other objects, be typed <b>id</b>.&nbsp; But class objects can also be more specifically typed to the Class data type:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Class aClass = [anObject class];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Class matrixClass = [Matrix class];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All class objects are of type Class.&nbsp; Using this type name for a class is equivalent to using the class name to statically type an instance.</font>
+
+<p><font face="Times">Class objects are thus full-fledged objects that can be dynamically typed, receive messages, and inherit methods from other classes.&nbsp; They're special only in that they're created by the compiler, lack data structures (instance variables) of their own other than those built from the class definition, and are the agents for producing instances at run time.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The compiler also builds a &quot;metaclass object&quot; for each class.&nbsp; It describes the class object just as the class object describes instances of the class.&nbsp; But while you can send messages to instances and to the class object, the metaclass object is used only internally by the run-time system.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Creating Instances</b></font>
+
+<p><font face="Times">A principal function of a class object is to create new instances.&nbsp; This code tells the Matrix class to create a new Matrix instance and assign it to the <b>myMatrix</b> variable:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp; myMatrix;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myMatrix = [Matrix alloc];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>alloc</b> method dynamically allocates memory for the new object's instance variables and initializes them all to 0--all, that is, except the <b>isa</b> variable that connects the new instance to its class.&nbsp; For an object to be useful, it generally needs to be more completely initialized.&nbsp; That's the function of an <b>init</b> method.&nbsp; Initialization typically follows immediately after allocation:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myMatrix = [[Matrix alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This line of code, or one like it, would be necessary before <b>myMatrix</b> could receive any of the messages that were illustrated in previous examples in this chapter.&nbsp; The <b>alloc</b> method returns a new instance and that instance performs an <b>init</b> method to set its initial state.&nbsp; Every class object has at least one method (like <b>alloc</b>) that enables it to produce new objects, and every instance has at least one method (like <b>init</b>) that prepares it for use.&nbsp; Initialization methods often take arguments to allow particular values to be passed and have keywords to label the arguments (<b>initFrame:mode:cellClass:numRows:numColumns:</b>, for example, is the method that would most often initialize a new Matrix instance), but they all begin with &quot;init&quot;.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Customization with Class Objects</b></font>
+
+<p><font face="Times">It's not just a whim of the Objective C language that classes are treated as objects.&nbsp; It's a choice that has intended, and sometimes surprising, benefits for design.&nbsp; It's possible, for example, to customize an object with a class, where the class belongs to an open-ended set.&nbsp; In the Application Kit, a Matrix object can be customized with a particular kind of Cell.</font>
+
+<p><font face="Times">A Matrix can take responsibility for creating the individual objects that represent its cells.&nbsp; It can do this when the Matrix is first initialized and later when new cells are needed.&nbsp; The visible matrix that a Matrix object draws on-screen can grow and shrink at run time, perhaps in response to user actions.&nbsp; When it grows, the Matrix needs to be able to produce new objects to fill the new slots that are added.</font>
+
+<p><font face="Times">But what kind of objects should they be?&nbsp; Each Matrix displays just one kind of Cell, but there are many different kinds.&nbsp; The inheritance hierarchy in Figure 9 below shows some of those provided by the Application Kit.&nbsp; All inherit from the generic Cell class:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F5.gif" width=273 height=99></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 9</b></font><font face="Times">.&nbsp; Inheritance Hierarchy for Cells</font>
+
+<p><br><br>
+
+<p><font face="Times">When a Matrix creates new Cell objects, should they be ButtonCells to display a bank of buttons or switches, TextFieldCells to display a field where the user can enter and edit text, or some other kind of Cell?&nbsp; The Matrix must allow for any kind of Cell, even types that haven't been invented yet.</font>
+
+<p><font face="Times">One solution to this problem would be to define the Matrix class as an abstract class and require everyone who uses it to declare a subclass and implement the methods that produce new cells.&nbsp; Because they would be implementing the methods, users of the class could be sure that the objects they created were of the right type.</font>
+
+<p><font face="Times">But this requires others to do work that ought to be done in the Matrix class, and it unnecessarily proliferates the number of classes.&nbsp; Since an application might need more than one kind of Matrix, each with a different kind of Cell, it could become cluttered with Matrix subclasses.&nbsp; Every time you invented a new kind of Cell, you'd also have to define a new kind of Matrix. Moreover, programmers on different projects would be writing virtually identical code to do the same job, all to make up for Matrix's failure to do it.</font>
+
+<p><font face="Times">A better solution, the solution the Matrix class actually adopts, is to allow Matrix instances to be initialized with a kind of Cell--with a class object.&nbsp; It defines a <b>setCellClass:</b> method that passes the class object for the kind of Cell object a Matrix should use to fill empty slots:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myMatrix setCellClass:[ButtonCell class]];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Matrix uses the class object to produce new cells when it's first initialized and whenever it's resized to contain more cells. This kind of customization would be impossible if classes weren't objects that could be passed in messages and assigned to variables.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Variables and Class Objects</b></font>
+
+<p><font face="Times">When you define a new class of objects, you can decide what instance variables they should have.&nbsp; Every instance of the class will have its own copy of all the variables you declare; each object controls its own data.</font>
+
+<p><font face="Times">However, you can't prescribe variables for the class object; there are no &quot;class variable&quot; counterparts to instance variables. Only internal data structures, initialized from the class definition, are provided for the class.&nbsp; The class object also has no access to the instance variables of any instances; it can't initialize, read, or alter them.</font>
+
+<p><font face="Times">Therefore, for all the instances of a class to share data, an external variable of some sort is required.&nbsp; Some classes declare static variables and provide class methods to manage them.&nbsp; (Declaring a variable <b>static</b> in the same file as the class definition limits its scope to just the class--and to just the part of the class that's implemented in the file.&nbsp; Unlike instance variables, static variables can't be inherited by subclasses, unless the subclasses are defined in the same file.)</font>
+
+<p><font face="Times">Static variables help give the class object more functionality than just that of a &quot;factory&quot; producing instances; it can approach being a complete and versatile object in its own right.&nbsp; A class object can be used to coordinate the instances it creates, dispense instances from lists of objects already created, or manage other processes essential to the application.&nbsp; In the limiting case, when you need only one object of a particular class, you can put all the object's state into static variables and use only class methods.&nbsp; This saves the step of allocating and initializing an instance.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">It would also be possible to use external variables that weren't declared <b>static</b>, but the limited scope of static variables better serves the purpose of encapsulating data into separate objects.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Initializing a Class Object</b></font>
+
+<p><font face="Times">If a class object is to be used for anything besides allocating instances, it may need to be initialized just as an instance is. Although programs don't allocate class objects, Objective C does provide a way for programs to initialize them.</font>
+
+<p><font face="Times">The run-time system sends an <b>initialize</b> message to every class object before the class receives any other messages.&nbsp; This gives the class a chance to set up its run-time environment before it's used.&nbsp; If no initialization is required, you don't need to write an <b>initialize</b> method to respond to the message; the Object class defines an empty version that your class can inherit and perform.</font>
+
+<p><font face="Times">If a class makes use of static or global variables, the <b>initialize</b> method is a good place to set their initial values.&nbsp; For example, if a class maintains an array of instances, the <b>initialize</b> method could set up the array and even allocate one or two default instances to have them ready.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Methods of the Root Class</b></font>
+
+<p><font face="Times">All objects, classes and instances alike, need an interface to the run-time system.&nbsp; Both class objects and instances should be able to introspect about their abilities and to report their place in the inheritance hierarchy.&nbsp; It's the province of the Object class to provide this interface.</font>
+
+<p><font face="Times">So that Object's methods won't all have to be implemented twice--once to provide a run-time interface for instances and again to duplicate that interface for class objects--class objects are given special dispensation to perform instance methods defined in the root class.&nbsp; When a class object receives a message that it can't respond to with a class method, the run-time system will see if there's a root instance method that can respond.&nbsp; The only instance methods that a class object can perform are those defined in the root class, and only if there's no class method that can do the job.</font>
+
+<p><font face="Times">For more on this peculiar ability of class objects to perform root instance methods, see the &quot;Class Description&quot; section in Appendix C, &quot;The Object Class.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Class Names in Source Code</b></font>
+
+<p><font face="Times">In source code, class names can be used in only two very different contexts.&nbsp; These contexts reflect the dual role of a class as a data type and as an object:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The class name can be used as a type name for a kind of object.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">Matrix *anObject;</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">anObject = [[Matrix alloc] init];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">Here <b>anObject</b> is statically typed to be a Matrix.&nbsp; The compiler will expect it to have the data structure of a Matrix instance and the instance methods defined and inherited by the Matrix class.&nbsp; Static typing enables the compiler to do better type checking and makes source code more self-documenting.&nbsp; See &quot;Static Options&quot; in the next chapter for details.</font>
+
+<p><font face="Times">Only instances can be statically typed; class objects can't be, since they aren't members of a class, but rather belong to the Class data type.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As the receiver in a message expression, the class name refers to the class object.&nbsp; This usage was illustrated in several of the examples above.&nbsp; The class name can stand for the class object only as a message receiver.&nbsp; In any other context, you must ask the class object to reveal its <b>id</b> (by sending it a <b>class</b> message).&nbsp; The example below passes the Matrix class as an argument in an <b>isKindOf:</b> message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">if ( [anObject isKindOf:[Matrix class]] )</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">It would have been illegal to simply use the name &quot;Matrix&quot; as the argument.&nbsp; The class name can only be a receiver.</font>
+
+<p><font face="Times">If you don't know the class name at compile time but have it as a string at run time, <b>objc_lookUpClass()</b> will return the class object:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">if ( [anObject isKindOf:objc_lookUpClass(aBuffer)] )</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">. . .</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This function returns <b>nil</b> if the string it's passed is not a valid class name.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Class names compete in the same name space as variables and functions.&nbsp; A class and a global variable can't have the same name.&nbsp; Class names are about the only names with global visibility in Objective C.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Defining a Class</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Much of object-oriented programming consists of writing the code for new objects--defining new classes.&nbsp; In Objective C, classes are defined in two parts:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An <i>interface</i> that declares the methods and instance variables of the class and names its superclass</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An <i>implementation</i> that actually defines the class (contains the code that implements its methods)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although the compiler doesn't require it, the interface and implementation are usually separated into two different files.&nbsp; The interface file must be made available to anyone who uses the class.&nbsp; You generally wouldn't want to distribute the implementation file that widely; users don't need source code for the implementation.</font>
+
+<p><font face="Times">A single file can declare or implement more than one class.&nbsp; Nevertheless, it's customary to have a separate interface file for each class, if not also a separate implementation file.&nbsp; Keeping class interfaces separate better reflects their status as independent entities.</font>
+
+<p><font face="Times">Interface and implementation files typically are named after the class.&nbsp; The implementation file has a &quot;.m&quot; suffix, indicating that it contains Objective C source code.&nbsp; The interface file can be assigned any other extension.&nbsp; Because it's included in other source files, the interface file usually has the &quot;.h&quot; suffix typical of header files.&nbsp; For example, the Matrix class would be declared in <b>Matrix.h</b> and defined in <b>Matrix.m</b>.</font>
+
+<p><font face="Times">Separating an object's interface from its implementation fits well with the design of object-oriented programs.&nbsp; An object is a self-contained entity that can be viewed from the outside almost as a &quot;black box.&quot;&nbsp; Once you've determined how an object will interact with other elements in your program--that is, once you've declared its interface--you can freely alter its implementation without affecting any other part of the application.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Interface</b></font>
+
+<p><font face="Times">The declaration of a class interface begins with the compiler directive <b>@interface</b> and ends with the directive <b>@end</b>.&nbsp; (All Objective C directives to the compiler begin with &quot;@&quot;.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@interface</b> <i>ClassName</i> <b>:</b> <i>ItsSuperclass</i></font><br>
+<font face="Times"><b>{</b></font><br>
+<img src="../../../Images/sp.gif" width=18 height=1><font face="Times"><i>instance variable declarations</i></font><br>
+<font face="Times"><b>}</b></font><br>
+<font face="Times"><i>method declarations</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The first line of the declaration presents the new class name and links it to its superclass.&nbsp; The superclass defines the position of the new class in the inheritance hierarchy, as discussed under &quot;Inheritance&quot; above.&nbsp; If the colon and superclass name are omitted, the new class is declared as a root class, a rival to the Object class.</font>
+
+<p><font face="Times">Following the class declaration, braces enclose declarations of <i>instance variables</i>, the data structures that will be part of each instance of the class.&nbsp; Here's a partial list of the instance variables declared in the Matrix class:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; selectedCell;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp; numRows;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp; numCols;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">float&nbsp;&nbsp; backgroundGray;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cellClass;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Methods for the class are declared next, after the braces enclosing instance variables and before the end of the class declaration.&nbsp; The names of methods that can be used by class objects, <i>class methods</i>, are preceded by a plus sign:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ alloc;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The methods that instances of a class can use, <i>instance methods</i>, are marked with a minus sign:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- display;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although it's not a common practice, you can define a class method and an instance method with the same name.&nbsp; A method can also have the same name as an instance variable.&nbsp; This is more common, especially if the method returns the value in the variable.&nbsp; For example, Matrix has a <b>selectedCell</b> method to match its <b>selectedCell</b> instance variable.</font>
+
+<p><font face="Times">Method return types are declared using the standard C syntax for casting one type to another:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)tag;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Argument types are declared in the same way:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setTag:(int)anInt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If a return or argument type isn't explicitly declared, it's assumed to be the default type for methods and messages--an <b>id</b>.&nbsp; The <b>alloc</b>, <b>display</b>, and <b>setTag:</b> methods illustrated above all return <b>id</b>s.</font>
+
+<p><font face="Times">When there's more than one argument, they're declared within the method name after the colons.&nbsp; Arguments break the name apart in the declaration, just as in a message.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- moveTo:(NXCoord)x :(NXCoord)y;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getRow:(int *)aRow andColumn:(int *)aColumn ofCell:aCell;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(NXCoord is a defined type for floating-point values that specify coordinate measurements.)</font>
+
+<p><font face="Times">Methods that take a variable number of arguments declare them using a comma and an ellipsis, just as a function would:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- makeGroup:group, ...;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Importing the Interface</b></font>
+
+<p><font face="Times">The interface file must be included in any source module that depends on the class interface--that includes any module that creates an instance of the class, sends a message to invoke a method declared for the class, or mentions an instance variable declared in the class.&nbsp; The interface is usually included with the <b>#import</b> directive:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &#34;Matrix.h&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This directive is identical to <b>#include</b>, except that it makes sure that the same file is never included more than once.&nbsp; It's therefore preferred, and is used in place of <b>#include</b> in code examples throughout NEXTSTEP documentation.</font>
+
+<p><font face="Times">To reflect the fact that a class definition builds on the definitions of inherited classes, an interface file begins by importing the interface for its superclass:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>#import &#34;</b><i>ItsSuperclass</i><b>.h&#34;</b></font>
+
+<p><font face="Times"><b>@interface</b> <i>ClassName</i> <b>:</b> <i>ItsSuperclass</i></font><br>
+<font face="Times"><b>{</b></font><br>
+<img src="../../../Images/sp.gif" width=18 height=1><font face="Times"><i>instance variable declarations</i></font><br>
+<font face="Times"><b>}</b></font><br>
+<font face="Times"><i>method declarations</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This convention means that every interface file includes, indirectly, the interface files for all inherited classes.&nbsp; When a source module imports a class interface, it gets interfaces for the entire inheritance hierarchy that the class is built upon.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Referring to Other Classes</b></font>
+
+<p><font face="Times">An interface file declares a class and, by importing its superclass, implicitly contains declarations for all inherited classes, from Object on down through its superclass.&nbsp; If the interface mentions classes not in this hierarchy, it must import them explicitly--or, better, declare them with the <b>@class</b> directive:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@class Matrix, List;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This directive simply informs the compiler that &quot;Matrix&quot; and &quot;List&quot; are class names.&nbsp; It doesn't import their interface files.</font>
+
+<p><font face="Times">An interface file mentions class names when it statically types instance variables, return values, and arguments.&nbsp; For example, this declaration</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getCells:(List *)theCells;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">mentions the List class.</font>
+
+<p><font face="Times">Since declarations like this simply use the class name as a type and don't depend on any details of the class interface (its methods and instance variables), the <b>@class</b> directive gives the compiler sufficient forewarning of what to expect.&nbsp; However, where the interface to a class is actually used (instances created, messages sent), the class interface must be imported. Typically, an interface file uses <b>@class</b> to declare classes, and the corresponding implementation file imports their interfaces (since it will need to create instances of those classes or send them messages).</font>
+
+<p><font face="Times">The <b>@class</b> directive minimizes the amount of code seen by the compiler and linker, and is therefore the simplest way to give a forward declaration of a class name.&nbsp; Being simple, it avoids potential problems that may come with importing files that import still other files.&nbsp; For example, if one class declares a statically typed instance variable of another class, and their two interface files import each other, neither class may compile correctly.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Role of the Interface</b></font>
+
+<p><font face="Times">The purpose of the interface file is to declare the new class to other source modules (and to other programmers).&nbsp; It contains all the information they need to work with the class (programmers might also appreciate a little documentation).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Through its list of method declarations, the interface file lets other modules know what messages can be sent to the class object and instances of the class.&nbsp; Every method that can be used outside the class definition is declared in the interface file; methods that are internal to the class implementation can be omitted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It also lets the compiler know what instance variables an object contains and programmers know what variables their subclasses will inherit.&nbsp; Although instance variables are most naturally viewed as a matter of the implementation of a class rather than its interface, they must nevertheless be declared in the interface file.&nbsp; This is because the compiler must be aware of the structure of an object where it's used, not just where it's defined.&nbsp; As a programmer, however, you can generally ignore the instance variables of the classes you use, except when defining a subclass.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Finally, the interface file also tells users how the class is connected into the inheritance hierarchy and what other classes--inherited or simply referred to somewhere in the class--are needed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>The Implementation</b></font>
+
+<p><font face="Times">The definition of a class is structured very much like its declaration.&nbsp; It begins with an <b>@implementation</b> directive and ends with <b>@end</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>@implementation</b> <i>ClassName</i> <b>:</b> <i>ItsSuperclass</i></font><br>
+<font face="Times"><b>{</b></font><br>
+<img src="../../../Images/sp.gif" width=18 height=1><font face="Times"><i>instance variable declarations</i></font><br>
+<font face="Times"><b>}</b></font><br>
+<font face="Times"><i>method definitions</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">However, every implementation file must import its own interface.&nbsp; For example, <b>Matrix.m</b> imports <b>Matrix.h</b>.&nbsp; Because the implementation doesn't need to repeat any of the declarations it imports, it can safely omit:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The name of the superclass</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The declarations of instance variables</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This simplifies the implementation and makes it mainly devoted to method definitions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>#import &#34;</b><i>ClassName</i><b>.h&#34;</b></font>
+
+<p><font face="Times"><b>@implementation</b> <i>ClassName</i></font><br>
+<font face="Times"><i>method definitions</i></font><br>
+<font face="Times"><b>@end</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Methods for a class are defined, like C functions, within a pair of braces.&nbsp; Before the braces, they're declared in the same manner as in the interface file, but without the semicolon.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ alloc</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)tag</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- moveTo:(NXCoord)x :(NXCoord)y</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Methods that take a variable number of arguments handle them just as a functions would:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;stdarg.h&gt;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- getGroup:group, ...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">va_list&nbsp; ap;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">va_start(ap, group);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Referring to Instance Variables</b></font>
+
+<p><font face="Times">By default, the definition of an instance method has all the instance variables of a potential receiving object within its scope.&nbsp; It can refer to them simply by name.&nbsp; Although the compiler creates the equivalent of C structures to store instance variables, the exact nature of the structure is hidden.&nbsp; You don't need either of the structure operators (`<b>.</b>' or `<b>-&gt;</b>') to refer to an object's data. For example, the following method definition refers to the receiver's <b>tag</b> instance variable:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- setTag:(int)anInt</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">tag = anInt;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Neither the receiving object nor its <b>tag</b> instance variable is declared as an argument to this method, yet the instance variable falls within its scope.&nbsp; This simplification of method syntax is a significant shorthand in the writing of Objective C code.</font>
+
+<p><font face="Times">The instance variables of the receiving object are not the only ones that you can refer to within the implementation of a class. You can refer to any instance variable of any object as long as two conditions are met:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The instance variable must be within the scope of the class definition.&nbsp; Normally that means the instance variable must be one that the class declares or inherits.&nbsp; (Scope is discussed in more detail in the next section.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The compiler must know what kind of object the instance variable belongs to.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the instance variable belongs to the receiver (as it does in the <b>setTag:</b> example above), this second condition is met automatically.&nbsp; The receiver's type is implicit but clear--it's the very type that the class defines.</font>
+
+<p><font face="Times">When the instance variable belongs to an object that's not the receiver, the object's type must be made explicit to the compiler through static typing.&nbsp; In referring to the instance variable of a statically typed object, the structure pointer operator (`<b>-&gt;</b>') is used.</font>
+
+<p><font face="Times">Suppose, for example, that the Sibling class declares a statically typed object, <b>twin</b>, as an instance variable:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Sibling : Object</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Sibling *twin;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int gender;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct features *appearance;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As long as the instance variables of the statically typed object are within the scope of the class (as they are here because <b>twin </b>is typed to the same class), a Sibling method can set them directly:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- makeIdenticalTwin</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( !twin ) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">twin = [[Sibling alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">twin-&gt;gender = gender;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">twin-&gt;appearance = appearance;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return twin;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>The Scope of Instance Variables</b></font>
+
+<p><font face="Times">Although they're declared in the class interface, instance variables are more a matter of the way a class is implemented than of the way it's used.&nbsp; An object's interface lies in its methods, not in its internal data structures.</font>
+
+<p><font face="Times">Often there's a one-to-one correspondence between a method and an instance variable, as in the following example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (int)tag</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return tag;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">But this need not be the case.&nbsp; Some methods might return information not stored in instance variables, and some instance variables might store information that an object is unwilling to reveal.</font>
+
+<p><font face="Times">As a class is revised from time to time, the choice of instance variables may change, even though the methods it declares remain the same.&nbsp; As long as messages are the vehicle for interacting with instances of the class, these changes won't really affect its interface.</font>
+
+<p><font face="Times">To enforce the ability of an object to hide its data, the compiler limits the scope of instance variables--that is, limits their visibility within the program.&nbsp; But to provide flexibility, it also lets you explicitly set the scope at three different levels.&nbsp; Each level is marked by a compiler directive:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Directive</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">@private</font></td>
+
+<td><font face="Times">The instance variable is accessible only within the class that declares it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">@protected</font></td>
+
+<td><font face="Times">The instance variable is accessible within the class that declares it and within classes that inherit it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">@public</font></td>
+
+<td><font face="Times">The instance variable is accessible everywhere.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This is illustrated in Figure 10.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F7.gif" width=310 height=249></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 10</b></font><font face="Times">.&nbsp; The Scope of Instance Variables</font>
+
+<p><br><br>
+
+<p><font face="Times">A directive applies to all the instance variables listed after it, up to the next directive or the end of the list.&nbsp; In the following example, the <b>age</b> and <b>evaluation</b> instance variables are private, <b>name</b>, <b>job</b>, and <b>wage</b> are protected, and <b>boss</b> is public.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface Worker : Object</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@private</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int age;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">char *evaluation;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@protected</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id job;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">float wage;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@public</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id boss;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">By default, all unmarked instance variables (like <b>name</b> above) are <b>@protected</b>.</font>
+
+<p><font face="Times">All instance variable that a class declares, no matter how they're marked, are within the scope of the class definition.&nbsp; For example, a class that declares a <b>job</b> instance variable, such as the Worker class shown above, can refer to it in a method definition:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- promoteTo:newPosition</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id old = job;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">job = newPosition;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return old;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Obviously, if a class couldn't access its own instance variables, the instance variables would be of no use whatsoever.</font>
+
+<p><font face="Times">Normally, a class also has access to the instance variables it inherits.&nbsp; The ability to refer to an instance variable is usually inherited along with the variable.&nbsp; It makes sense for classes to have their entire data structures within their scope, especially if you think of a class definition as merely an elaboration of the classes it inherits from.&nbsp; The <b>promoteTo:</b> method illustrated above could just as well have been defined in any class that inherits the <b>job</b> instance variable from the Worker class.</font>
+
+<p><font face="Times">However, there are reasons why you might want to restrict inheriting classes from accessing an instance variable:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Once a subclass accesses an inherited instance variable, the class that declares the variable is tied to that part of its implementation.&nbsp; In later versions, it can't eliminate the variable or alter the role it plays without inadvertently breaking the subclass.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Moreover, if a subclass accesses an inherited instance variable and alters its value, it may inadvertently introduce bugs in the class that declares the variable, especially if the variable is involved in class-internal dependencies.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To limit an instance variable's scope to just the class that declares it, you must mark it <b>@private</b>.</font>
+
+<p><font face="Times">At the other extreme, marking a variable <b>@public</b> makes it generally available, even outside of class definitions that inherit or declare the variable.&nbsp; Normally, to get information stored in an instance variable, other modules must send a message requesting it.&nbsp; However, a public instance variable can be accessed anywhere as if it were a field in a C structure.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Worker *ceo = [[Worker alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ceo-&gt;boss = nil;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that the object must be statically typed.</font>
+
+<p><font face="Times">Marking instance variables <b>@public</b> defeats the ability of an object to hide its data.&nbsp; It runs counter to a fundamental principle of object-oriented programming--the encapsulation of data within objects where it's protected from view and inadvertent error. Public instance variables should therefore be avoided except in extraordinary cases.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>How Messaging Works</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In Objective C, messages aren't bound to method implementations until run time.&nbsp; The compiler converts a message expression,</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>[</b><i>receiver message</i><b>]</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">into a call on a messaging function, <b>objc_msgSend()</b>.&nbsp; This function takes the receiver and the name of the method mentioned in the message--that is, the method selector--as its two principal arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>objc_msgSend(</b><i>receiver</i><b>,</b> <i>selector</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Any arguments passed in the message are also handed to <b>objc_msgSend()</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times"><b>objc_msgSend(</b><i>receiver</i><b>,</b> <i>selector</i><b>,</b> <i>arg1</i><b>,</b> <i>arg2</i><b>,</b> <i>. . .</i><b>)</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The messaging function does everything necessary for dynamic binding:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It first finds the procedure (method implementation) that the selector refers to.&nbsp; Since the same method can be implemented differently by different classes, the precise procedure that it finds depends on the class of the receiver.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It then calls the procedure, passing it the receiving object (a pointer to its data), along with any arguments that were specified for the method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Finally, it passes on the return value of the procedure as its own return value.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The compiler generates calls to the messaging function.&nbsp; You should never call it directly in the code you write.</font>
+
+<p><font face="Times">The key to messaging lies in the structures that the compiler builds for each class and object.&nbsp; Every class structure includes these two essential elements:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A pointer to the superclass.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A class <i>dispatch table</i>.&nbsp; This table has entries that associate method selectors with the class-specific addresses of the methods they identify.&nbsp; The selector for the <b>moveTo::</b> method is associated with the address of (the procedure that implements) <b>moveTo::</b>, the selector for the <b>display</b> method is associated with <b>display</b>'s address, and so on.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a new object is created, memory for it is allocated and its instance variables are initialized.&nbsp; First among the object's variables is a pointer to its class structure.&nbsp; This pointer, called <b>isa</b>, gives the object access to its class and, through the class, to all the classes it inherits from.</font>
+
+<p><font face="Times">These elements of class and object structure are illustrated in Figure 11.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F2.gif" width=283 height=437></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 11</b></font><font face="Times">.&nbsp; Messaging Framework</font>
+
+<p><br><br>
+
+<p><font face="Times">When a message is sent to an object, the messaging function follows the object's <b>isa</b> pointer to the class structure, where it looks up the method selector in the dispatch table.&nbsp; If it can't find the selector there, <b>objc_msgSend()</b> follows the pointer to the superclass and tries to find the selector in its dispatch table.&nbsp; Successive failures cause <b>objc_msgSend()</b> to climb the class hierarchy until it reaches the Object class.&nbsp; Once it locates the selector, it calls the method entered in the table and passes it the receiving object's data structure.</font>
+
+<p><font face="Times">This is the way that method implementations are chosen at run time--or, in the jargon of object-oriented programming, that methods are dynamically bound to messages.</font>
+
+<p><font face="Times">To speed the messaging process, the run-time system caches the selectors and addresses of methods as they are used.&nbsp; There's a separate cache for each class, and it can contain selectors for inherited methods as well as for methods defined in the class. Before searching the dispatch tables, the messaging routine first checks the cache of the receiving object's class (on the theory that a method that was used once may likely be used again).&nbsp; If the method selector is in the cache, messaging is only slightly slower than a function call.&nbsp; Once a program has been running long enough to &quot;warm up&quot; its caches, almost all the messages it sends will find a cached method.&nbsp; Caches grow dynamically to accommodate new messages as the program runs.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Selectors</b></font>
+
+<p><font face="Times">For efficiency, full ASCII names are not used as method selectors in compiled code.&nbsp; Instead, the compiler writes each method name into a table, then pairs the name with a unique identifier that will represent the method at run time.&nbsp; The run-time system makes sure each identifier is unique:&nbsp; No two selectors are the same, and all methods with the same name have the same selector.&nbsp; Compiled selectors are assigned to a special type, SEL, to distinguish them from other data.&nbsp; Valid selectors are never 0.</font>
+
+<p><font face="Times">A compiled selector contains fields of coded information that aid run-time messaging.&nbsp; You should therefore let the system assign SEL identifiers to methods; it won't work to assign them arbitrarily yourself.</font>
+
+<p><font face="Times">The <b>@selector()</b> directive lets Objective C source code refer to the compiled selector, rather than to the full method name. Here the selector for <b>moveTo::</b> is assigned to the <b>mover</b> variable:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL&nbsp; mover;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">mover = @selector(moveTo::);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It's most efficient to assign values to SEL variables at compile time with the <b>@selector()</b> directive.&nbsp; However, in some cases, a program may need to convert a character string to a selector at run time.&nbsp; This can be done with the <b>sel_getUid()</b> function:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">mover = sel_getUid(aBuffer);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Conversion in the opposite direction is also possible.&nbsp; The <b>sel_getName()</b> function returns a method name for a selector:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *method;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">method = sel_getName(mover);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These and other run-time functions are described in the <i>NEXTSTEP General Reference</i> manual.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Methods and Selectors</b></font>
+
+<p><font face="Times">Compiled selectors identify method names, not method implementations.&nbsp; Matrix's <b>display</b> method, for example, will have the same selector as <b>display</b> methods defined in other classes.&nbsp; This is essential for polymorphism and dynamic binding; it lets you send the same message to receivers belonging to different classes.&nbsp; If there were one selector per method implementation, a message would be no different than a function call.</font>
+
+<p><font face="Times">A class method and an instance method with the same name are assigned the same selector.&nbsp; However, because of their different domains, there's no confusion between the two.&nbsp; A class could define a <b>display</b> class method in addition to a <b>display </b>instance method.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Method Return and Argument Types</b></font>
+
+<p><font face="Times">The messaging routine has access to method implementations only through selectors, so it treats all methods with the same selector alike.&nbsp; It discovers the return type of a method, and the data types of its arguments, from the selector.&nbsp; Therefore, except for messages sent to statically typed receivers, dynamic binding requires all implementations of identically named methods to have the same return type and the same argument types.&nbsp; (Statically typed receivers are an exception to this rule, since the compiler can learn about the method implementation from the class type.)</font>
+
+<p><font face="Times">Although identically named class methods and instance methods are represented by the same selector, they can have different argument and return types.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Varying the Message at Run Time</b></font>
+
+<p><font face="Times">The <b>perform:</b>, <b>perform:with:</b>, and <b>perform:with:with:</b> methods, defined in the Object class, take SEL identifiers as their initial arguments.&nbsp; All three methods map directly into the messaging function.&nbsp; For example,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[friend perform:@selector(gossipAbout:) with:aNeighbor];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">is equivalent to:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[friend gossipAbout:aNeighbor];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These methods make it possible to vary a message at run time, just as it's possible to vary the object that receives the message. Variable names can be used in both halves of a message expression:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id&nbsp;&nbsp; helper = getTheReceiver();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">SEL&nbsp; request = getTheSelector();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[helper perform:request];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In this example, the receiver (<b>helper</b>) is chosen at run time (by the fictitious <b>getTheReceiver()</b> function), and the method the receiver is asked to perform (<b>request</b>) is also determined at run time (by the equally fictitious <b>getTheSelector()</b> function).</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times"><b>perform:</b> and its companion methods return an <b>id</b>.&nbsp; If the method that's performed returns a different type, it should be cast to the proper type.&nbsp; (However, casting won't work for all types; the method should return a pointer or a type compatible with a pointer.)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Target-Action Paradigm</b></font>
+
+<p><font face="Times">In its treatment of user-interface controls, the NEXTSTEP Application Kit makes good use of the ability vary both the receiver and the message.</font>
+
+<p><font face="Times">Controls are graphical devices that can be used to give instructions to an application.&nbsp; Most resemble real-world control devices such as buttons, switches, knobs, text fields, dials, menu items, and the like.&nbsp; In software, these devices stand between the application and the user.&nbsp; They interpret events coming from hardware devices like the keyboard and mouse and translate them into application-specific instructions.&nbsp; For example, a button labeled &quot;Find&quot; would translate a mouse click into an instruction for the application to start searching for something.</font>
+
+<p><font face="Times">The Application Kit defines a framework for creating control devices and defines a few &quot;off-the-shelf&quot; devices of its own.&nbsp; For example, the ButtonCell class defines an object that you can assign to a Matrix and initialize with a size, a label, a picture, a font, and a keyboard alternative.&nbsp; When the user clicks the button (or uses the keyboard alternative), the ButtonCell sends a message instructing the application to do something.&nbsp; To do this, a ButtonCell must be initialized not just with an image, a size, and a label, but with directions on what message to send and who to send it to.&nbsp; Accordingly, a ButtonCell can be initialized for an <i>action message</i>, the method selector it should use in the message it sends, and a <i>target</i>, the object that should receive the message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myButtonCell setAction:@selector(reapTheWind:)];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myButtonCell setTarget:anObject];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The ButtonCell sends the message using Object's <b>perform:with:</b> method.&nbsp; All action messages take a single argument, the <b>id</b> of the control device sending the message.</font>
+
+<p><font face="Times">If Objective C didn't allow the message to be varied, all ButtonCells would have to send the same message; the name of the method would be frozen in the ButtonCell source code.&nbsp; Instead of simply implementing a mechanism for translating user actions into action messages, ButtonCells and other controls would have to constrain the content of the message.&nbsp; This would make it difficult for any object to respond to more than one ButtonCell.&nbsp; There would either have to be one target for each button, or the target object would have to discover which button the message came from and act accordingly.&nbsp; Each time you rearranged the user interface, you'd also have to reimplement the method that responds to the action message. This would be an unnecessary complication that Objective C happily avoids.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Avoiding Messaging Errors</b></font>
+
+<p><font face="Times">If an object receives a message to perform a method that isn't in its repertoire, an error results.&nbsp; It's the same sort of error as calling a nonexistent function.&nbsp; But because messaging occurs at run time, the error often won't be evident until the program executes.</font>
+
+<p><font face="Times">It's relatively easy to avoid this error when the message selector is constant and the class of the receiving object is known.&nbsp; As you're programming, you can check to be sure that the receiver is able to respond.&nbsp; If the receiver is statically typed, the compiler will check for you.</font>
+
+<p><font face="Times">However, if the message selector or the class of the receiver varies, it may be necessary to postpone this check until run time. The <b>respondsTo:</b> method, defined in the Object class, determines whether a potential receiver can respond to a potential message.&nbsp; It takes the method selector as an argument, and returns whether the receiver has access to a method matching the selector:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">if ( [anObject respondsTo:@selector(moveTo::)] )</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[anObject moveTo:0.0 :0.0];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">fprintf(stderr, &#34;%s can't be moved\n&#34;, [anObject name]);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>respondsTo:</b> test is especially important when sending messages to objects that you don't have control over at compile time.&nbsp; For example, if you write code that sends a message to an object represented by a variable that others can set, you should check to be sure the receiver implements a method that can respond to the message.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">An object can also arrange to have messages it receives forwarded to other objects, if it can't respond to them directly itself.&nbsp; In that case, it will appear that the object can't handle the message, even though it responds to it indirectly by assigning it to another object.&nbsp; Forwarding is discussed in Chapter 4, &quot;The Run-Time System.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Hidden Arguments</b></font>
+
+<p><font face="Times">When the messaging function finds the procedure that implements a method, it calls the procedure and passes it all the arguments in the message.&nbsp; It also passes the procedure two hidden arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The receiving object.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The selector for the method.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These arguments give every method implementation explicit information about the two halves of the message expression that invoked it.&nbsp; They're said to be &quot;hidden&quot; because they aren't declared in the source code that defines the method.&nbsp; They're inserted into the implementation when the code is compiled.</font>
+
+<p><font face="Times">Although these arguments aren't explicitly declared, source code can still refer to them (just as it can refer to the receiving object's instance variables).&nbsp; A method refers to the receiving object as <b>self</b>, and to its own selector as <b>_cmd</b>.&nbsp; In the example below, <b>_cmd</b> refers to the selector for the <b>strange</b> method and <b>self</b> to the object that receives a <b>strange</b> message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- strange</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id&nbsp; target = getTheReceiver();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">SEL action = getTheMethod();</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ( target == self || action == _cmd )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return nil;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [target perform:action];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>self</b> is the more useful of the two arguments.&nbsp; It is, in fact, the way the receiving object's instance variables are made available to the method definition.</font>
+
+<p><font face="Times">Methods that have no other meaningful return value typically return <b>self</b>, rather than <b>void</b>.&nbsp; This enables messages to be nested in source code.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[[[myMatrix setMode:NX_RADIOMODE] setEnabled:YES] setTag:99];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>self</b> is discussed in more detail in the next section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Messages to self and super</b></font>
+
+<p><font face="Times">Objective C provides two terms that can be used within a method definition to refer to the object that performs the method--<b>self </b>and <b>super</b>.</font>
+
+<p><font face="Times">Suppose, for example, that you define a <b>reposition</b> method that needs to change the coordinates of whatever object it acts on.&nbsp; It can invoke the <b>moveTo::</b> method to make the change.&nbsp; All it needs to do is send a <b>moveTo::</b> message to the very same object that the <b>reposition</b> message itself was sent to.&nbsp; When you're writing the <b>reposition</b> code, you can refer to that object as either <b>self</b> or <b>super</b>.&nbsp; The <b>reposition</b> method could read either:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- reposition</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self moveTo:someX :someY];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">or:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- reposition</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super moveTo:someX :someY];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here <b>self</b> and <b>super</b> both refer to the object receiving a <b>reposition</b> message, whatever object that may happen to be.&nbsp; The two terms are quite different, however.&nbsp; <b>self</b> is one of the hidden arguments that the messaging routine passes to every method; it's a local variable that can be used freely within a method implementation, just as the names of instance variables can be.&nbsp; <b>super</b> is a term that substitutes for <b>self</b> only as the receiver in a message expression.&nbsp; As receivers, the two terms differ principally in how they affect the messaging process:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>self</b> searches for the method implementation in the usual manner, starting in the dispatch table of the receiving object's class.&nbsp; In the example above, it would begin with the class of the object receiving the <b>reposition</b> message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>super</b> starts the search for the method implementation in a very different place.&nbsp; It begins in the superclass of the class that defines the method where <b>super</b> appears.&nbsp; In the example above, it would begin with the superclass of the class where <b>reposition</b> is defined.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Wherever <b>super</b> receives a message, the compiler substitutes another messaging routine for <b>objc_msgSend()</b>.&nbsp; The substitute routine looks directly to the superclass of the defining class--that is, to the superclass of the class sending the message to <b>super</b>--rather than to the class of the object receiving the message.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>An Example</b></font>
+
+<p><font face="Times">The difference between <b>self</b> and <b>super</b> becomes clear in a hierarchy of three classes.&nbsp; Suppose, for example, that we create an object belonging to a class called Low.&nbsp; Low's superclass is Mid; Mid's superclass is High.&nbsp; All three classes define a method called <b>negotiate</b>, which they use for a variety of purposes.&nbsp; In addition, Mid defines an ambitious method called <b>makeLastingPeace</b>, which also has need of the <b>negotiate</b> method.&nbsp; This is illustrated in Figure 12 below:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F8.gif" width=167 height=349></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 12</b></font><font face="Times">.&nbsp; High, Mid, and Low</font>
+
+<p><br><br>
+
+<p><font face="Times">We now send a message to our Low object to perform the <b>makeLastingPeace</b> method, and <b>makeLastingPeace</b>, in turn, sends a <b>negotiate</b> message to the same Low object.&nbsp; If source code calls this object <b>self</b>,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- makeLastingPeace</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self negotiate];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the messaging routine will find the version of <b>negotiate</b> defined in Low, <b>self</b>'s class.&nbsp; However, if source code calls this object <b>super</b>,</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- makeLastingPeace</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super negotiate];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">the messaging routine will find the version of <b>negotiate</b> defined in High.&nbsp; It ignores the receiving object's class (Low) and skips to the superclass of Mid, since Mid is where <b>makeLastingPeace</b> is defined.&nbsp; Neither message finds Mid's version of <b>negotiate</b>.</font>
+
+<p><font face="Times">As this example illustrates, <b>super</b> provides a way to bypass a method that overrides another method.&nbsp; Here it enabled <b>makeLastingPeace</b> to avoid the Mid version of <b>negotiate</b> that redefined the original High version.</font>
+
+<p><font face="Times">Not being able to reach Mid's version of <b>negotiate</b> may seem like a flaw, but, under the circumstances, it's right to avoid it:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The author of the Low class intentionally overrode Mid's version of <b>negotiate</b> so that instances of the Low class (and its subclasses) would invoke the redefined version of the method instead.&nbsp; The designer of Low didn't want Low objects to perform the inherited method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">In sending the message to <b>super</b>, the author of Mid's <b>makeLastingPeace</b> method intentionally skipped over Mid's version of <b>negotiate</b> (and over any versions that might be defined in classes like Low that inherit from Mid) to perform the version defined in the High class.&nbsp; Mid's designer wanted to use the High version of <b>negotiate</b> and no other.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Mid's version of <b>negotiate</b> could still be used, but it would take a direct message to a Mid instance to do it.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Using super</b></font>
+
+<p><font face="Times">Messages to <b>super</b> allow method implementations to be distributed over more than one class.&nbsp; You can override an existing method to modify or add to it, and still incorporate the original method in the modification:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- negotiate</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [super negotiate];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For some tasks, each class in the inheritance hierarchy can implement a method that does part of the job, and pass the message on to <b>super</b> for the rest.&nbsp; The <b>init</b> method, which initializes a newly allocated instance, and the <b>write:</b> method, which archives an object by writing it to a data stream, are designed to work like this.&nbsp; Each <b>write:</b> method has responsibility for writing the instance variables defined in its class.&nbsp; But before doing so, it sends a <b>write:</b> message to <b>super</b> to have the classes it inherits from archive their instance variables.&nbsp; Each version of <b>write:</b> follows this same procedure, so classes write their instance variables in the order of inheritance:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- write:(NXTypedStream *)stream</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super write:stream];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">It's also possible to concentrate core functionality in one method defined in a superclass, and have subclasses incorporate the method through messages to <b>super</b>.&nbsp; For example, every class method that creates a new instance must allocate storage for the new object and initialize its <b>isa</b> pointer to the class structure.&nbsp; This is typically left to the <b>alloc</b> and <b>allocFromZone:</b> methods defined in the Object class.&nbsp; If another class overrides these methods for any reason (a rare case), it can still get the basic functionality by sending a message to <b>super</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Redefining self</b></font>
+
+<p><font face="Times"><b>super</b> is simply a flag to the compiler telling it where to begin searching for the method to perform; it's used only as the receiver of a message.&nbsp; But <b>self</b> is a variable name that can be used in any number of ways, even assigned a new value.</font>
+
+<p><font face="Times">There's a tendency to do just that in definitions of class methods.&nbsp; Class methods are often concerned, not with the class object, but with instances of the class.&nbsp; For example, a method might combine allocation and initialization of an instance:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newTag:(int)anInt</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return [[self alloc] initTag:anInt];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In such a method, it's tempting to send messages to the instance and to call the instance <b>self</b>, just as in an instance method.&nbsp; But that would be an error.&nbsp;&nbsp; <b>self</b> and <b>super</b> both refer to the receiving object--the object that gets a message telling it to perform the method.&nbsp; Inside an instance method, <b>self</b> refers to the instance; but inside a class method, <b>self</b> refers to the class object.</font>
+
+<p><font face="Times">Before a class method can send a message telling <b>self</b> to perform an instance method, it must redefine <b>self</b> to be the instance:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ newTag:(int)anInt andColor:(NXColor)aColor</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">self = [[self alloc] initTag:anInt];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[self setColor:aColor];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The method shown above is a class method, so, initially, <b>self</b> refers to the class object.&nbsp; It's as the class object that <b>self</b> receives the <b>alloc</b> message.&nbsp; <b>self</b> is then redefined to be the instance that <b>alloc</b> returns and <b>initTag:</b> initializes.&nbsp; It's as the new instance that it receives the <b>setColor:</b> message.</font>
+
+<p><font face="Times">To avoid confusion, it's usually better to use a variable other than <b>self</b> to refer to an instance inside a class method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=127 height=1><font face="Courier" size="-1">+ newTag:(int)anInt andColor:(NXColor)aColor</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id newInstance = [[self alloc] initTag:anInt];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[newInstance setColor:aColor];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return newInstance;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">In these examples, the class method sends messages (<b>initTag:</b> and <b>setColor:</b>) to initialize the instance.&nbsp; It doesn't assign a new value directly to an instance variable as an instance method might have done:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">tag = anInt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">color = NX_REDCOLOR;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Only instance variables of the receiver can be directly set this way.&nbsp; Since the receiver for a class method (the class object) has no instance variables, this syntax can't be used.&nbsp; However, if <b>newInstance</b> had been statically typed, something similar would have been possible:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">newInstance-&gt;tag = anInt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">See &quot;Referring to Instance Variables,&quot; earlier in this chapter, for more on when this syntax is permitted.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

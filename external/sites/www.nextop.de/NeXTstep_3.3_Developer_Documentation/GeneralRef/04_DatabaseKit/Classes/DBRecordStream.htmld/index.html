@@ -1,0 +1,1771 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Classes/DBRecordStream.rtf -->
+<!-- Date: Sun Jun 28 20:04:29 1998 -->
+<head>
+<title>DBRecordStream</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBRecordStream</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/DBRecordStream.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBRecordStream class defines an object that allows sequential access to the records stored in a database server. Normally, you create instances of DBRecordStream's subclass, DBRecordList.&nbsp; A DBRecordList object can fetch and store many records at a time, and provides random access into its &quot;record table.&quot;</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Setting Up a DBRecordStream</b></font>
+
+<p><font face="Times">You create a new DBRecordStream object in the usual way, by sending <b>alloc</b> and <b>init</b> messages.&nbsp; Before you can use a DBRecordStream to access records in a database, you must specify the source of the data (say, the &quot;authors&quot; table of an SQL database) and the properties (for example, name, address, and telephone number) that are to be fetched from that source.&nbsp; The <b>setProperties:ofSource:</b> method lets you do both.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id database, authors, recordStream, propertyList;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">database = [DBDatabase findDatabaseNamed:&#34;pubs&#34; connect:YES];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">authors = [database entityNamed:&#34;authors&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">recordStream = [[DBRecordList alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">propertyList = [[List alloc] init];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[authors getProperties:propertyList];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordStream setProperties:propertyList ofSource:authors];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To allow modification of records in the database, a DBRecordStream must know the <i>key property</i> (or properties) for the source. A key property uniquely identifies individual records within the source.&nbsp; For example, within a table of employee data, the employee's identification number uniquely identifies the records.&nbsp; Typically, the model created by DBModeler identifies the key properties of the data sources, but you can set them directly using <b>setKeyProperties:</b>.</font>
+
+<p><font face="Times">Optionally, you can specify that the records be returned in sorted order.&nbsp; Sending an <b>addRetrieveOrder:for:</b> message to the DBRecordStream associates a sorting order with a property.&nbsp; These messages are additive; for example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id lastName, firstName;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">firstName = [authors propertyNamed:&#34;au_fname&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lastName = [authors propertyNamed:&#34;au_lname&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordStream addRetrieveOrder:DB_AscendingOrder for:lastName];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordStream addRetrieveOrder:DB_AscendingOrder for:firstName];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The records will be retrieved in alphabetical order according to the authors' last names.&nbsp; For authors having identical last names, the retrieval order will be determined by first names.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Fetching Data</b></font>
+
+<p><font face="Times">A DBRecordStream accesses data in the database when it is sent a <b>fetchUsingQualifier:</b> message.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordStream fetchUsingQualifier:nil];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the qualifier argument is <b>nil</b>, all records within the source will be made available through the DBRecordStream.&nbsp; If you supply a qualifier, only the set of records meeting its restrictions (for example, &quot;au_lname = `Smith'&quot;) will be made available.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Accessing Data in the DBRecordStream</b></font>
+
+<p><font face="Times">After receiving a <b>fetchUsingQualifier:</b> message, the DBRecordStream can be queried for record data.&nbsp; The first record returned by the fetch operation is available immediately; the second and subsequent records can be accessed by sending the DBRecordStream <b>setNext</b> messages.</font>
+
+<p><font face="Times">You access the data within a record indirectly, through DBValue objects.&nbsp; The <b>getValue:forProperty:</b> method causes the DBRecordStream to set a DBValue object's value equal to a specified property in the current record:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id authors, state, recordStream, value;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">state = [authors propertyNamed:&#34;state&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">value = [[DBValue alloc] init];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[recordStream getValue:value forProperty:state];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">printf(&#34;state: %s\n&#34;, [value stringValue]);</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Modifying Records</b></font>
+
+<p><font face="Times">The data in the DBRecordStream's current record can be modified using the <b>setValue:forProperty:</b> method.&nbsp; The current record can be deleted by invoking <b>deleteRecord</b>.</font>
+
+<p><font face="Times">To add a new record to the DBRecordStream, you first create an empty record by sending a <b>newRecord</b> message.&nbsp; The DBRecordStream responds by using its current set of properties (as returned by <b>getProperties:</b>) to create an empty record. Once the empty record has been created, you can set the values for its properties as you would any record.</font>
+
+<p><font face="Times">These modifications, deletions, and additions only affect the current record in the DBRecordStream.&nbsp; To reflect these changes in the database itself, you must send the DBRecordStream a <b>saveModifications</b> message. If the database being accessed supports transactions, they should always be enabled before saving modifications.&nbsp; In general, it's both safer for the integrity of the data involved and much more efficient to do this.</font>
+
+<p><font face="Times">Emptying, initing, or fetching records into the DBRecordStream (or DBRecordList) resets&nbsp; it to an &quot;unmodified&quot; state.&nbsp; After that, modifications are tracked until the DBRecordList is refilled or it receives a <b>saveModifications</b> message.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Responding to Notification that a Modification Will Fail</b></font>
+
+<p><font face="Times">A DBRecordStream (or its subclass DBRecordList) notifies its delegate of the impending failure of an operation that would modify, delete, or add records to the database.&nbsp; The delegate receives a <b>recordStream:willFailForReason:</b> message. It can then take action to review the condition that caused the failure. In some circumstances, it can refuse to accept the failure.</font>
+
+<p><font face="Times">Saving a record (or a set of records) happens in two stages.&nbsp; First the records are verified. Then they are written out to the database.&nbsp; If a failure occurs during the verification stage, the application can choose to abort the transaction.&nbsp; Having the delegate return YES to the notification <b>recordStream:willFailForReason:</b> means that the delegate assents to the failure, and permits the entire save to fail.&nbsp; (This failure doesn't, of itself, abort the transaction of which the save is part.)&nbsp; Alternatively, the application can pretend that the verification succeeded and let the save proceed.</font>
+
+<p><font face="Times">If a failure occurs during the writing stage, here again the delegate can either return YES (thereby assenting to the failure and aborting the operation), or it can return NO (thereby skipping the particular record for which writing failed but going ahead with writing the others).&nbsp; If you choose to have the delegate return NO, you may be left with a situation in which the record's &quot;modified&quot; flag is set and so is the &quot;modified&quot; flag for its DBRecordStream or DBRecordList, <i>but the offending record is nevertheless unsaved</i>, and the transaction will nevertheless continue, commit, and return success.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Before having the delegate return NO to <b>recordStream:willFailForReason:</b>, you should be very sure this is what you want it to do.&nbsp; Returning NO permits what looks like successful completion of a save, despite the fact that some of the application's data still differs from the data in the database.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">For failures denoted by the failure codes DB_NoRecordKey or DB_RecordStreamNotReady, there isn't anything you can do to keep going. In those situations, the method fails regardless of what the delegate returns.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>delegate;</b></font>
+
+<p><font face="Times">id <b>source</b>;</font>
+
+<p><font face="Times">id <b>properties</b>;</font>
+
+<p><font face="Times">id <b>database</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The object that responds to notification messages</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">source</font></td>
+
+<td><font face="Times">The database entity from which records are to be retrieved</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">properties</font></td>
+
+<td><font face="Times">The list of properties of records to be retrieved</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">database</font></td>
+
+<td><font face="Times">The DBDatabase object that owns the record stream</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing and freeing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting up a DBRecordStream</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRetrieveOrder:for:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setProperties:ofSource:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getProperties:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setKeyProperties:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getKeyProperties:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Fetching data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">fetchUsingQualifier:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cancelFetch</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentRetrieveStatus</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getValue:forProperty:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getRecordKeyValue:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setNext</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setValue:forProperty:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">newRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isNewRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">deleteRecord</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isModified</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isReadOnly</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Saving modifications</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">saveModifications</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Resetting a DBRecordStream</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">clear</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning Delegates</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">binderDelegate</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setBinderDelegate:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addRetrieveOrder:for:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRetrieveOrder:</b>(DBRetrieveOrder)<i>anOrder</i> <b>for:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Associates a retrieval order with the property <i>aProperty</i>.&nbsp; The permissible values of <i>anOrder</i> are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NoOrder</font></td>
+
+<td><font face="Times">Remove ordering associated with <i>aProperty</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_AscendingOrder</font></td>
+
+<td><font face="Times">Sort records in ascending order of the values in <i>aProperty</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_DescendingOrder</font></td>
+
+<td><font face="Times">Sort records in descending order of values in <i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can specify sort orders for multiple properties by sending multiple <b>addRetrieveOrder:for:</b> messages; the sorts will be nested.&nbsp; For example, assume you specify an ascending order for a property associated with employee names and a descending order for a property associated with employee salaries.&nbsp; Records will be retrieved in alphabetical order based on the employee's last name and, for employees having the same last name, will be ordered in descending numerical order based on salaries.</font>
+
+<p><font face="Times">If an <b>addRetrieveOrder:for:</b> message hasn't been sent to a DBRecordStream object, it retrieves records in ascending order of the first property in its property list.</font>
+
+<p><font face="Times">Returns a <b>nil</b> if an error occurs; otherwise, returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProperties:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDelegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDelegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the delegate used by the DBRecordStream's DBBinder objects.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBinderDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>cancelFetch</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cancelFetch</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Terminates the current fetch operation; this is generally only of use if the DBRecordStream is fetching in the background. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchUsingQualifier:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>clear</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>clear</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resets the DBRecordStream.&nbsp; The DBRecordStream's record data, list of properties, and list of key properties are emptied.&nbsp; Its <b>database</b> instance variable is set to <b>nil</b>, but its delegate remains unchanged.&nbsp; Its status is set to DB_NotReady.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentRetrieveStatus</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>currentRetrieveStatus</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBRecordRetrieveStatus)<b>currentRetrieveStatus</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBRecordStream's status, which can be:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NotReady</font></td>
+
+<td><font face="Times">Not ready to fetch or insert data</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_Ready</font></td>
+
+<td><font face="Times">Ready to fetch or insert data</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_FetchInProgress</font></td>
+
+<td><font face="Times">Fetch in progress; more records are available</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_FetchCompleted</font></td>
+
+<td><font face="Times">Fetch finished; no more records remain</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBRecordStream's delegate or <b>nil</b> if no delegate has be set.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordStream:willFailForReason:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>deleteRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>deleteRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deletes the current record in the DBRecordStream and causes the DBRecordStream to access the next record in sequence, if any.</font>
+
+<p><font face="Times">Returns <b>nil</b> if the deletion can't be accomplished; otherwise, returns <b>self</b>.&nbsp; If the deletion fails, the DBRecordStream will attempt to notify its delegate of the reason, and the cursor remains unchanged (pointing to the record that should have been deleted but wasn't).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordStream:willFailForReason:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchUsingQualifier:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchUsingQualifier:</b>(DBQualifier *)<i>aQualifier</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects data from the database and makes it available to the DBRecordStream.&nbsp; The scope of records retrieved from the database is controlled by <i>aQualifier</i>.&nbsp; For example, assuming the data source is an SQL database, <i>aQualifier</i> could be an object that represents the expression &quot;where name = `Holbein'&quot;. If <i>aQualifier</i> is <b>nil</b>, all records in <i>aSource</i> are selected. The argument <i>aQualifier</i> and the current property list must refer to the same entity; otherwise an error occurs.</font>
+
+<p><font face="Times">In case of error, this method makes the DBRecordStream's list of properties empty, and returns <b>nil</b>.&nbsp; Otherwise, returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cancelFetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:ofSource:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Releases the storage for the DBRecordStream.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getKeyProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>getKeyProperties:</b>(List *)<i>keyList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fills <i>keyList</i> with objects that represent the key properties of the DBRecordStream.&nbsp;&nbsp; Each of these objects conforms to the DBProperties protocol.&nbsp; Returns the newly filled List object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKeyProperties:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>getProperties:</b>(List *)<i>propertyList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Places the DBRecordStream's property list in <i>propertyList</i> and returns <i>propertyList</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:ofSource:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getRecordKeyValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getRecordKeyValue:</b>(DBValue *)<i>aValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Places the value of the current record's key property (or properties) in <i>aValue</i>.</font>
+
+<p><font face="Times">This method is especially useful when data must be exchanged between DBRecordStreams.&nbsp; For example, suppose one DBRecordStream supplies employee information and another supplies department information to the user interface of an application.&nbsp; A user can change an employee's department by selecting from a list of department names.&nbsp; After a department name is selected, you can use <b>getRecordKeyValue:</b> to determine the corresponding record's key value so that you can set the department identification in the employee's record.</font>
+
+<p><font face="Times">Returns <b>nil</b> if the DBRecordStream has status DB_NotReady; otherwise, returns <i>aValue</i>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getValue:forProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getValue:</b>(DBValue *)<i>aValue</i> <b>forProperty:</b><i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Places the value for <i>aProperty</i> into <i>aValue</i>.&nbsp; This method is the only means of retrieving record data stored in the DBRecordStream.</font>
+
+<p><font face="Times">When <i>aProperty</i> is a relationship, the method sets <i>aValue</i> so that it includes the key value of the relationship's source property and the entity that is the relationship's target.&nbsp; (In that case, sending <i>aValue</i> the DBValues message <b>isEntity</b>&nbsp; would get the response YES.)&nbsp; The fact that the value object identifies the target entity is exploited by the method <b>setProperties:ofSource:</b>.</font>
+
+<p><font face="Times">If the status of the DBRecordStream is DB_NotReady, this method return <b>nil</b>.&nbsp; Otherwise, it returns the DBValue object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setValueFor:from:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>propertyNamed:</b> (DBDatabase),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEntity</b> (DBValues protocol),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:ofSource:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns a newly allocated DBRecordStream.&nbsp; The DBRecordStream's <b>delegate</b> instance variable is set to <b>nil</b> and its retrieve status is set to DB_NotReady.</font>
+
+<p><font face="Times">This method is the designated initializer for DBRecordStream.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isModified</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isModified</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the current record has been modified since it was added to the DBRecordStream or fetched from the database; NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isNewRecord</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isNewRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isNewRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the current record is new; that is, it the result of the DBRecordStream receiving a <b>newRecord</b> message.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>newRecord</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isModified</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isReadOnly</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isReadOnly</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the records in the DBRecordStream can only be read, not modified.&nbsp; If a DBRecordStream's key properties haven't been set, <b>isReadOnly</b> will return YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKeyProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKeyProperties:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>newRecord</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>newRecord</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates a new, empty record.&nbsp; Before this operation can take place, the DBRecordStream attempts to save modifications of the current record to the database.&nbsp; If these changes can't be saved, <b>newRecord</b> returns <b>nil</b>, no new record is created, and the cursor is not advanced.&nbsp; Otherwise, <b>newRecord</b> returns <b>self</b>, and the cursor is advanced to make the new record the current record.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveModifications</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>saveModifications</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>saveModifications</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Saves the new or modified record to the database.&nbsp; If the database supports transactions and there's no transaction in progress, this save operation is nested within a new transaction.</font>
+
+<p><font face="Times">If there is no transaction in progress, a new transaction is created for this operation.&nbsp; If the modifications can be made to the database, this transaction is committed.&nbsp; An error during this commit process raises a DB_TRANSACTION_ERROR exception.</font>
+
+<p><font face="Times">Returns these values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Value</b></font></td>
+
+<td><font face="Helvetica"><b>Reason</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">1</font></td>
+
+<td><font face="Times">The save operation was successful.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/sp.gif" width=3 height=1><font face="Times">0</font></td>
+
+<td><font face="Times">There were no modifications to save.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NoIndex</font></td>
+
+<td><font face="Times">Either the DBRecordStream isn't ready (its status is DB_NotReady or DB_NoRecordKey), or the record in the database has changed since it was fetched and the delegate hasn't forced the modification to be saved.&nbsp; (See <b>recordStream:willFailForReason:</b>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the attempt to save modifications fails, the delegate is notified by sending it a <b>recordStream:willFailForReason:</b> message, and the DBRecordStream's internal cursor is not advanced to the next record.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areTransactionsEnabled</b> (DBDatabase),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>beginTransaction</b> (DBDatabase)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setBinderDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setBinderDelegate:</b><i>newDelegate</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the delegate for the DBRecordStream's DBBinder objects.&nbsp; This delegate can intercede in operations that would add or modify the database.&nbsp; See the DBBinder class specification for more information.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDelegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the DBRecordStream's delegate.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordStream:willFailForReason:</b> (delegate method)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setKeyProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>setKeyProperties:</b>(List *)<i>propertyList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the DBRecordStream's list of key properties to <i>propertyList</i>.&nbsp; Each of the objects in <i>propertyList</i> must conform to the DBProperties protocol.&nbsp; Typically, key properties are identified in the database model using DBModeler, so you rarely invoke this method.</font>
+
+<p><font face="Times">Returns <b>nil</b> if any property in <i>propertyList</i> is not a property of the DBRecordStream's source; otherwise, returns the property list.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKeyProperties:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setNext</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setNext</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Advances the DBRecordStream's internal cursor by 1, so that it points to the next record in the group of records made available by a fetch operation.</font>
+
+<p><font face="Times">Returns <b>self</b> if successful and <b>nil</b> if not.&nbsp; A <b>nil</b> return can mean that there are no further records to return or that the DBRecordStream was unable to save modifications to the current record.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveModifications</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setProperties:ofSource:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>setProperties:</b>(List *)<i>propertyList</i> <b>ofSource:</b><i>aSource</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the properties that will be fetched or stored by a DBRecordStream, or its subclass, a DBRecordList.&nbsp; The properties transferred will be those contained in <i>propertyList</i>. The argument <i>aSource</i> specifies the entity that contains the properties; this is typically a DBEntities object that's the &quot;root&quot; of all the properties in the property list.&nbsp; If <i>aSource</i> is <b>nil</b>, the entity for the first property in <i>propertyList</i> is used.</font>
+
+<p><font face="Times">The argument <i>aSource</i> can also be a DBValue object that's gotten by asking for the value for a relationship from a data-storage object that has already fetched data.&nbsp; The DBValue object encodes the relationship's attribute equivalence such that when the receiving DBRecordStream fetches, it qualifies the fetch to select the &quot;detail&quot; records for the &quot;master&quot; record from whence the DBValue was plucked.</font>
+
+<p><font face="Times">The application should send a <b>setProperties:ofSource:</b> message before doing anything with a DBRecordStream or DBRecordList.&nbsp; Once the list of properties has been set, the application can send <b>fetchUsingQualifier:</b> messages, based on the list of properties that has been set.&nbsp; To a DBRecordList, the application can also send <b>fetchUsingQualifier:empty:</b>, or can make multiple inserts or multiple deletes.&nbsp;&nbsp; (After once calling <b>setProperties:ofSource:</b>, you shouldn't call it again until you really need to establish a new property list, since each use discards any prior data without saving.)</font>
+
+<p><font face="Times">Returns <b>nil</b> if the properties in <i>propertyList</i> don't share the same entity or if some other error occurs; otherwise, returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProperties:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getValue:forProperty:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isEntity</b> (DBValues protocol)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setValue:forProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setValue:</b>(DBValue *)<i>aValue</i> <b>forProperty:</b><i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the value for <i>aProperty</i> in the current record to that contained in <i>aValu</i>e.&nbsp; Returns a nonzero value if successful; otherwise, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getValue:forProperty:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordStream:willFailForReason:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>recordStream:</b><i>sender</i> <b>willFailForReason:</b>(DBFailureCode) <i>aCode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Responds to a message informing the delegate that a modification couldn't be saved to the database.&nbsp;&nbsp; In general, returning YES to this message acknowledges the failure and permits the operation to be aborted, thereby aborting the local transaction of which it is part.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If the local transaction is nested within another transaction, it is the application's responsibility to either rollback or commit the outer transaction.</font>
+
+<p><font face="Times">Returning NO skips the specific record involved but permits the operation to continues the processing of others records (if any).</font>
+
+<p><font face="Times">The <i>aCode</i> argument identifies the reason for the failure and can have the following values:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordHasChanged</font></td>
+
+<td><font face="Times">The record in the database has changed since it was fetched by the DBRecordStream. Saving the modification would overwrite someone else's changes.&nbsp; Returning YES to this message acknowledges the failure and permits the operation to be aborted.&nbsp; Returning NO skips the record and continues with the others.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordKeyNotUnique</font></td>
+
+<td><font face="Times">More than one record in the database corresponds to the record in the DBRecordStream that is being updated or deleted.&nbsp;&nbsp;&nbsp; Returning YES to this message acknowledges the failure and permits the operation to be aborted.&nbsp; Returning NO permits a <i>delete</i> to proceed with the other records, but can't help an update, since update is never permitted with an ambiguous key.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordStreamNotReady</font></td>
+
+<td><font face="Times">The DBRecordStream isn't ready for this operation (its status is DB_NotReady).&nbsp; The boolean return value of the message is ignored.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NoRecordKey</font></td>
+
+<td><font face="Times">The modification couldn't be saved because no property (or combination of properties) within the record was identified as the record key.&nbsp; The boolean return value of the message is ignored.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_AdaptorError</font></td>
+
+<td><font face="Times">The modification couldn't be saved because of some sort of error reported by the adaptor. Returning YES to this message acknowledges the failure and permits the operation to be aborted.&nbsp;&nbsp; Returning NO skips the record and continues with the others.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>saveModifications</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordStreamPrepareCurrentRecordForModification:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>recordStreamPrepareCurrentRecordForModification:</b><i>aRecordStream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Notifies the delegate of a proposed modification to the current record, verifies that the record is unique, and permits modification to proceed only if the return is YES.</font>
+
+<p><font face="Times">If implemented, this delegate method provides an alternative to the standard check that a DBRecordStream performs before deleting or modifying a record. (The DBRecordStream or its subclass normally verifies that a record still exists, and that it is unique.&nbsp; It invokes a &quot;confirming select&quot; on the DBDatabase using the key value, and then compares all properties to see that none has changed.&nbsp; The select is usually a locking select.)&nbsp; This delegate method replaces that mechanism, making the delegate responsible for verification and locking.&nbsp; If the method returns YES, the record is considered to be verified, and modification proceeds.&nbsp; If the method returns NO, the record is not modified, which may cause the entire sequence containing <b>saveModifications:</b> to fail, depending on the transaction model being used.</font>
+
+<p><font face="Times">This method should not call any of the methods implemented by DBRecordStream or DBRecordList other than <b>getValue:forProperty:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

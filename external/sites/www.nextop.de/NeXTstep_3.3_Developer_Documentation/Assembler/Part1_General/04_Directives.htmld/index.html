@@ -1,0 +1,3199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Assembler/Part1_General/04_Directives.rtf -->
+<!-- Date: Sun Jun 28 19:30:11 1998 -->
+<head>
+<title>04_Directives</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#0000FF"><b>4</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Assembler Directives</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter describes assembler directives (also known as pseudo operations, or pseudo-ops), which allow control over the actions of the assembler.&nbsp; For organizational purposes, the directives are grouped here into the following functional categories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Directives for designating the current section</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Built-in directives for designating the current section</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Directives for moving the location counter</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Directives for generating data</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Directives for dealing with symbols</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Miscellaneous directives</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Processor-specific directives</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Directives for Designating the Current Section</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The assembler in NEXTSTEP Release 3.3 and later supports designation of arbitrary sections with the <b>.section</b> and <b>.zerofill </b>directives (descriptions apear below).&nbsp; Only those sections specified by a directive in the assembly file appear in the resulting object file (including implicit <b>.text</b> directives--see &quot;Built-in Directives for Designating the Current Section&quot;).&nbsp; Sections appear in the object file in the order their directives first appear in the assembly file.&nbsp; When object files are linked by the link editor, the output objects have their sections in the order the sections first appear in the object files that are linked.&nbsp; See the <b>ld</b>(1) UNIX man page for more details.</font>
+
+<p><font face="Times">Associated with each section in each segment is an implicit location counter which begins at zero and is incremented by 1 for each byte assembled into the section.&nbsp; There is no way to explicitly reference a particular location counter, but the directives described here can be used to &quot;activate&quot; the location counter for a section, making it the <i>current</i> location counter.&nbsp; As a result, the assembler begins assembling into the section associated with that location counter.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If the <b>-n</b> command line option isn't used, the (__TEXT,__text) section is used by default at the beginning of each file being assembled, just as if each file began with the <b>.text</b> directive.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.section</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.section</b>&nbsp; <i>segname</i> <b>,</b> <i>sectname</i> [[[ <b>,</b> <i>type</i> ] <b>,</b> <i>attribute</i> ] <b>,</b> <i>sizeof_stub</i> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.section</b> directive causes the assembler to begin assembling into the section given by <i>segname</i> and <i>sectname</i>.&nbsp; A section created with this directive contains initialized data or instructions and is referred to as a content section.&nbsp; <i>type</i> and <i>attribute</i> may be specified as described below under &quot;Section Types and Attributes.&quot;&nbsp; If <i>type</i> is <b>symbol_stubs</b>, then the <i>sizeof_stub</i> field must be given as the size in bytes of the symbol stubs contained in the section.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.zerofill</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.zerofill</b>&nbsp; <i>segname</i> <b>,</b> <i>sectname</i> [ <b>,</b> <i>symbolname</i> <b>,</b> <i>size</i> [ <b>,</b> <i>align_expression</i> ]]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.zerofill</b> directive causes <i>symbolname</i> to be created as uninitialized data in the section given by <i>segname</i> and <i>sectname</i>, with a size in bytes given by <i>size</i>.&nbsp; A power of 2 between 0 and 15 may be given for <i>align_expression</i> to indicate what alignment should be forced on <i>symbolname</i>, which will then be placed on the next expression boundary having the given alignment.&nbsp; See the description of the <b>.align</b> built-in directive for more information.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Section Types and Attributes</b></font>
+
+<p><font face="Times">A content section has a type, which informs the link editor about special processing needed for the items in that section.&nbsp; The most common form of special processing is for sections containing literals (strings, constants, and so on) where only one copy of the literal is needed in the output file and the same literal can be used by all references in the input files.</font>
+
+<p><font face="Times">A section's attributes record supplemental information about the section that&nbsp; the link editor may use in processing that section. For example, the <b>reloc_at_launch</b> attribute indicates that a section should be relocated immediately when a program is launched.</font>
+
+<p><font face="Times">A section's type and attribute are recorded in a Mach-O file as the <b>flags</b> field in the section header, using constants defined in the header file <b>mach-o/loader.h</b>.&nbsp; The following paragraphs describe the various types and attributes by the names used to identify them in a <b>.section</b> directive.&nbsp; The name of the related constant is also given in parentheses following the identifier.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Type Identifiers</b></font>
+
+<p><font face="Times"><b>regular</b> (S_REGULAR)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>regular</b> section may contain any kind of data and gets no special processing from the link editor.&nbsp; This is the default section type.&nbsp; Examples of <b>regular</b> sections include program instructions or initialized data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>cstring_literals</b> (S_CSTRING_LITERALS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>cstring_literals</b> section contains null-terminated literal C language character strings.&nbsp; The link editor places only one copy of each literal into the output file's section and relocates references to different copies of the same literal to the one copy in the output file.&nbsp; There can be no relocation entries for a section of this type, and all references to literals in this section must be inside the address range for the specific literal being referenced.&nbsp; The last byte in a section of this type must be a null byte, and the strings can't contain null bytes in their bodies.&nbsp; An example of a <b>cstring_literals</b> section is one for the literal strings that appear in the body of an ANSI C function where the compiler chooses to make such strings read-only.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>4byte_literals</b> (S_4BYTE_LITERALS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>4byte_literals</b> section contains 4-byte literal constants.&nbsp; The link editor places only one copy of each literal into the output file's section and relocates references to different copies of the same literal to the one copy in the output file.&nbsp; There can be no relocation entries for a section of this type, and all references to literals in this section must be inside the address range for the specific literal being referenced.&nbsp; An example of a <b>4byte_literals</b> section is one in which single-precision floating-point constants are stored for a RISC machine (these would normally be stored as immediates in CISC machine code).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>8byte_literals</b> (S_8BYTE_LITERALS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">An <b>8byte_literals</b> section contains 8-byte literal constants.&nbsp; The link editor places only one copy of each literal into the output file's section and relocates references to different copies of the same literal to the one copy in the output file.&nbsp; There can be no relocation entries for a section of this type, and all references to literals in this section must be inside the address range for the specific literal being referenced.&nbsp; An example of a <b>8byte_literals</b> section is one in which double-precision floating-point constants are stored for a RISC machine (these would normally be stored as immediates in CISC machine code).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>literal_pointers</b> (S_LITERAL_POINTERS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>literal_pointers</b> section contains 4-byte pointers to literals in a literal section.&nbsp; The link editor places only one copy of a pointer into the output file's section for each pointer to a literal with the same contents.&nbsp; The link editor also relocates references to each literal pointer to the one copy in the output file.&nbsp; There must be exactly one relocation entry for each literal pointer in this section, and all references to literals in this section must be inside the address range for the specific literal being referenced.&nbsp; The relocation entries can be external relocation entries referring to undefined symbols if those symbols identify literals in another object file.&nbsp; An example of a <b>literal_pointers</b> section is one containing selector references generated by the Objective C compiler.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>symbol_stubs</b> (S_SYMBOL_STUBS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>symbol_stubs</b> section contains symbol stubs, which are sequences of machine instructions (all the same size) used for lazily binding undefined function calls at run time.&nbsp; If a call to an undefined function is made, the compiler outputs a call to a symbol stub instead, and tags the stub with an indirect symbol that indicates what symbol the stub is for.&nbsp; On transfer to a symbol stub, a program executes instructions that eventually reach the code for the indirect symbol associated with that stub. Here's a sample of assemly code based on a function <b>func()</b> containing only a call to the undefined function <b>foo()</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">.text</font><br>
+<img src="../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">.align 4, 0x90</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_func:</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">call&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _foo_stub</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">ret</font>
+
+<p><img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.symbol_stub&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_foo_stub:&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.indirect_symbol _foo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">ljmp&nbsp;&nbsp;&nbsp;&nbsp; _foo_lazy_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # the symbol stub</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_foo_stub_1:&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">pushl&nbsp;&nbsp; $_foo_lazy_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp; dyld_stub_binding_helper&nbsp;&nbsp;&nbsp;&nbsp; #</font>
+
+<p><img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.lazy_symbol_pointer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_foo_lazy_ptr:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # the symbol pointer</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.indirect_symbol _foo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.long _foo_stub_1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # to be replaced by _foo's address</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">In the assembly code, <b>_func</b> calls <b>_foo_stub</b>, which is responsible for finding the definition of the function <b>foo()</b>.&nbsp; <b>_foo_stub </b>jumps to the contents of <b>_foo_lazy_ptr</b>, initially causing the code at <b>_foo_stub_1</b> to be executed.&nbsp; This value is initially the address for <b>_foo_stub1</b>, which calls the <b>dyld_stub_binding_helper()</b> function to overwrite the contents of&nbsp; <b>_foo_lazy_ptr </b>with the address of the real function, <b>_foo</b>.&nbsp; This way,&nbsp; jumps through <b>_foo_lazy_ptr</b> will immediately execute <b>foo()</b>'s code.</font>
+
+<p><font face="Times">The indirect symbol entries for <b>_foo</b> provide information to the static and dynamic linkers for binding the symbol stub.&nbsp; Each symbol stub and lazy pointer entry must have exactly one such indirect symbol, associated with the first address in the stub or pointer entry.&nbsp; See the description of the <b>.indirect_symbol</b> directive for more information.</font>
+
+<p><font face="Times">The static link editor places only one copy of each stub into the output file's section for a particular indirect symbol, and relocates all references to the stubs with the same indirect symbol to the stub in the output file.&nbsp; Further, the static link editor eliminates a stub if a definition of the indirect symbol for that stub is present in the output file and that output file isn't a dynamically linked shared library file.&nbsp; The stub can refer only to itself, one lazy symbol pointer (referring to the same indirect symbol as the stub), and the <b>dyld_stub_binding_helper()</b> function.&nbsp; No global symbols can be defined in this type of section.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>lazy_symbol_pointers</b> (S_LAZY_SYMBOL_POINTERS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>lazy_symbol_pointers</b> section contains 4-byte symbol pointers that will eventually contain the value of the indirect symbol associated with the pointer.&nbsp; These pointers are used by symbol stubs to lazily bind undefined function calls at run time.&nbsp; A lazy symbol pointer initially contains an address in the symbol stub of instructions that cause the symbol pointer to be bound to the function definition (in the example above, the lazy pointer <b>_foo_lazy_ptr</b> initially contains the address for <b>_foo_stub_1</b> but gets overwritten with the address for <b>_foo</b>).&nbsp; The dynamic link editor binds the indirect symbol associated with the lazy symbol pointer by overwriting it with the value of the symbol.</font>
+
+<p><font face="Times">The static link editor only places a copy of a lazy pointer in the output file if the corresponding symbol stub is in the output file.&nbsp; Only the corresponding symbol stub can make a reference to a lazy symbol pointer, and no global symbols can be defined in this type of section.&nbsp; There must be one indirect symbol assocated with each lazy symbol pointer.&nbsp; An example of a <b>lazy_symbol_pointers</b> section is one in which the compiler has generated calls to undefined functions, each of which can be bound lazily at the time of the first call to the function.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>non_lazy_symbol_pointers</b> (S_NON_LAZY_SYMBOL_POINTERS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>non_lazy_symbol_pointers</b> section contains 4-byte symbol pointers that will contain the value of the indirect symbol associated with a pointer that may be set at any time before any code makes a reference to it.&nbsp; These pointers are used by the code to reference undefined symbols.&nbsp; Initially these pointers have no interesting value, but will get overwritten by the dynamic link editor with the value of the symbol for the associated indirect symbol before any code can make a reference to it.</font>
+
+<p><font face="Times">The static link editor places only one copy of each non-lazy pointer for its indirect symbol into the output file and relocates all references to the pointer with the same indirect symbol to the pointer in the output file.&nbsp; The static link editor futher can fill in the pointer with the value of the symbol if a definition of the indirect symbol for that pointer is present in the output file. No global symbols can be defined in this type of section.&nbsp; There must be one indirect symbol assocated with each non-lazy symbol pointer.&nbsp; An example of a <b>non_lazy_symbol_pointers</b> section is one in which the compiler has generated code to indirectly reference undefined symbols to be bound at run time--this preserves the sharing of the machine instructions by allowing the dynamic link editor to update references without writing on the instructions.</font>
+
+<p><font face="Times">Here's an example of assembly code referencing an element in the undefined</font><br>
+<font face="Times">structure.&nbsp; The corresponding 'C' code would be:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct s {</font><br>
+<img src="../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">int member1, member2;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">};</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">extern struct s bar;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int func()</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=215 height=1><font face="Courier" size="-1">return(bar.member2);</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The i386 assembly code might look like this:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">.text</font><br>
+<img src="../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">.align 4, 0x90</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.globl _func</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_func:</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">movl _bar_non_lazy_ptr,%eax</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">movl 4(%eax),%eax</font><br>
+<img src="../../Images/sp.gif" width=189 height=1><font face="Courier" size="-1">ret</font>
+
+<p><img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">.non_lazy_symbol_pointer</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">_bar_non_lazy_ptr:</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">.indirect_symbol _bar</font><br>
+<img src="../../Images/sp.gif" width=173 height=1><font face="Courier" size="-1">.long 0</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>mod_init_funcs</b> (S_MOD_INIT_FUNC_POINTERS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">A <b>mod_init_funcs</b> section contains 4-byte pointers to functions that are to be called just after the module containing the pointer is bound into the program by the dynamic link editor.&nbsp; The static link editor does no special processing for this section type except for disallowing section ordering.&nbsp; This is done to maintain the order the functions will be called (which is the order their pointers appear in the original module).&nbsp; There must be exactly one relocation entry for each pointer in this section.&nbsp; An example of a <b>mod_init_funcs</b> section is one in which the compiler has generated code to call C++ constructors for modules that get dynamicly bound at run time.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Attribute Identifiers</b></font>
+
+<p><font face="Times"><b>none</b> (0)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">No attributes for this section.&nbsp; This is the default section attribute.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>pure_instructions</b> (S_ATTR_PURE_INSTRUCTIONS)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>pure_instructions</b> attribute means that this section contains nothing but machine instructions.&nbsp; This attribute would be used for the (__TEXT,__text) section of NeXT compilers and sections which have a section type of <b>symbol_stubs</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><b>reloc_at_launch</b> (S_ATTR_RELOC_AT_LAUNCH)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The <b>reloc_at_launch</b> attribute means that this section is to be relocated by the dynamic linker when the program is first run or first loaded into memory, regardless of whether a module is needed to bind undefined symbols.&nbsp; Sections are normally relocated only when first referenced.&nbsp; This attribute would be used for the (__OBJC,__message_refs) section of NeXT Objective C compiler to allow the Objective C run-time system to initialize images being loaded into a program.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Built-in Directives for Designating the Current Section</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The directives described here are simply built-in equivalents for <b>.section</b> directives with specific arguments.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Designating Sections in the __TEXT Segment</b></font>
+
+<p><font face="Times">The directives listed below cause the assembler to begin assembling into the indicated section of the __TEXT segment.&nbsp; Note that the underscore before __TEXT, __text, and the rest of the segment names is actually two underscore characters.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times"><b>Directive</b></font></td>
+
+<td><font face="Times"><b>Section</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.text</b></font></td>
+
+<td><font face="Times">(__TEXT,__text)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.const</b></font></td>
+
+<td><font face="Times">(__TEXT,__const)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.static_const</b></font></td>
+
+<td><font face="Times">(__TEXT,__static_const)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.cstring</b></font></td>
+
+<td><font face="Times">(__TEXT,__cstring)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.literal4</b></font></td>
+
+<td><font face="Times">(__TEXT,__literal4)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.literal8</b></font></td>
+
+<td><font face="Times">(__TEXT,__literal8)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.constructor</b></font></td>
+
+<td><font face="Times">(__TEXT,__constructor)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.destructor</b></font></td>
+
+<td><font face="Times">(__TEXT,__destructor)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.fvmlib_init0</b></font></td>
+
+<td><font face="Times">(__TEXT,__fvmlib_init0)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.fvmlib_init1</b></font></td>
+
+<td><font face="Times">(__TEXT,__fvmlib_init1)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.symbol_stub</b></font></td>
+
+<td><font face="Times">(__TEXT,__symbol_stub)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.mod_init_func</b></font></td>
+
+<td><font face="Times">(__TEXT,__mod_init_func)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following paragraphs describe the sections in the __TEXT segment and the types of information that should be assembled into each of them:</font>
+
+<p><font face="Times">(__TEXT,__text)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__text,regular,pure_instructions</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The compiler only places machine instructions in the (__TEXT,__text) section (no read-only data, jump tables or anything else).&nbsp; With this the entire (__TEXT,__text) section is pure instructions and tools that operate on object files can take advantage of this and can locate the instructions of the program and not get confused with data that could have been mixed in.&nbsp; To make this work all run-time support code linked into the program must also obey this rule (all NeXT library code follows this rule).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__const)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__const</b></font>
+
+<p><font face="Times">The compiler places all data declared const in this section and all jump tables it generates for switch statements.</font>
+
+<p><font face="Times">(__TEXT,__static_const)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__static_const</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This is not currently used by the compiler.&nbsp; It was added to the assembler so that the compiler may separate global and static const data into separate sections if it wished to.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__cstring)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__cstring, cstring_literals</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is marked with the section type S_LITERAL_CSTRING, which the link editor recognizes.&nbsp; The link editor merges the like literal C strings in all the input object files to one unique C string in the output file.&nbsp; Therefore this section must only contain C strings (a C string in a sequence of bytes that ends in a null byte, '\0', and does not contain any other null bytes except its terminator).&nbsp; The compiler places literal C strings found in the code that are not initializers and do not contain any imbedded nulls in this section.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__literal4)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__literal4,4byte_literals</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is marked with the section type S_4BYTE_LITERALS, which the link editor recognizes.&nbsp; The link editor then can merge the like 4 byte literals in all the input object files to one unique 4 byte literal in the output file.&nbsp; Therefore this section must only contain 4 byte literals. This is typically intended for single precision floating-point constants and the compiler uses this section for that purpose.&nbsp; On some machines it is more efficient to place these constants in line as immediates as part of the instruction (this is what is done on NeXT 68k machines when the optimizer is turned on).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__literal8)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__literal8,8byte_literals</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is marked with the section type S_8BYTE_LITERALS, which the link editor recognizes.&nbsp; The link editor then can merge the like 8 byte literals in all the input object files to one unique 8 byte literal in the output file.&nbsp; Therefore this section must only contain 8 byte literals. This is typically intended for double precision floating-point constants and the compiler uses this section for that purpose.&nbsp; On some machines it is more efficient to place these constants in line as immediates as part of the instruction (this is what is done on NeXT 68k machines when the optimizer is turned on).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__constructor)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__constructor</b></font><br>
+<font face="Times">(__TEXT,__destructor)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__destructor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">These sections are used by the C++ run-time system, and are reserved exclusively for the C++ compiler.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__fvmlib_init0)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__fvmlib_init0</b></font><br>
+<font face="Times">(__TEXT,__fvmlib_init1)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__fvmlib_init1</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">These two sections are used by the fixed virtual memory shared library initialization.&nbsp; The compiler doesn't place anything in these sections, as they are reserved exclusively for the shared library mechanism.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__symbol_stub)</font><br>
+<font face="Times">This is equivalent to <b>.section __TEXT,__symbol_stub, symbol_stubs, pure_instructions,NBYTES</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>symbol_stubs</b> and has the attribute <b>pure_instructions</b>.&nbsp; The compiler places symbol stubs in this section for undefined functions that are called in the module.&nbsp; This is the standard symbol stub section for non position-independent code.&nbsp; The value <b>NBYTES</b> is dependent on the target architecture.&nbsp; The standard symbol stub for the m68k is 20 bytes and has an alignment of 2 bytes (<b>.align 1</b> or <b>.even</b>) .&nbsp; For example, a stub for the symbol _foo would be (using a lazy symbol pointer Lfoo$stub_binder):</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.symbol_stub</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">movel&nbsp;&nbsp;&nbsp; L_foo$lazy_ptr,a0</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a0@</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub_binder:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">movel&nbsp;&nbsp;&nbsp; #L_foo$lazy_ptr,sp@-</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">bra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dyld_stub_binding_helper</font>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.lazy_symbol_pointer</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">L_foo$lazy_ptr:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.long&nbsp;&nbsp;&nbsp; Lfoo$stub_binder</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The standard symbol stub for the i386 is 16 bytes and has an alignment of 1 byte (.align 0).&nbsp; For example a stub for the symbol _foo would be (using a lazy symbol pointer Lfoo$stub_binder):</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.symbol_stub</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">ljmp&nbsp;&nbsp;&nbsp;&nbsp; L_foo$lazy_ptr</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub_binder:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">pushl&nbsp;&nbsp; $L_foo$lazy_ptr</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp; dyld_stub_binding_helper</font>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.lazy_symbol_pointer</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">L_foo$lazy_ptr:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.long Lfoo$stub_binder</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT, __picsymbol_stub)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __TEXT, __picsymbol_stub, symbol_stubs, pure_instructions, NBYTES</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>symbol_stubs</b> and has the attribute <b>pure_instructions</b>.&nbsp; The compiler places symbol stubs in this section for undefined functions that are called in the module.&nbsp; This is the standard symbol stub section for position-independent code.&nbsp; The value of <b>NBYTES</b> is dependent on the target architecture.</font>
+
+<p><font face="Times">The standard position-independent symbol stub for the m68k is 24 bytes and has an alignment of 2 bytes (<b>.align 1</b> or <b>.even</b>). For example a stub for the symbol _foo would be (using a lazy symbol pointer Lfoo$stub_binder):</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.picsymbol_stub</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">movel&nbsp;&nbsp;&nbsp; pc@(L_foo$lazy_ptr-.),a0</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a0@</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub_binder:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">pea&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pc@(L_foo$lazy_ptr-.)</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">bra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dyld_stub_binding_helper</font>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.lazy_symbol_pointer</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">L_foo$lazy_ptr:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.long Lfoo$stub_binder</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The standard position-independent symbol stub for the i386 is 26 bytes and has an alignment of 1 byte (<b>.align 0</b>).&nbsp; For example a stub for the symbol _foo would be (using a lazy symbol pointer Lfoo$stub_binder):</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">.picsymbol_stub</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">call&nbsp;&nbsp;&nbsp;&nbsp; L1foo$stub</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">L1foo$stub:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">popl&nbsp;&nbsp;&nbsp;&nbsp; %eax</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">movl&nbsp;&nbsp;&nbsp;&nbsp; L_foo$lazy_ptr-L1foo$stub(%eax),%ebx</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %ebx</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">Lfoo$stub_binder:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">lea&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L_foo$lazy_ptr-L1foo$stub(%eax),%eax</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">pushl&nbsp;&nbsp;&nbsp; %eax</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">jmp&nbsp;&nbsp;&nbsp;&nbsp; dyld_stub_binding_helper</font>
+
+<p><img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.lazy_symbol_pointer</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">L_foo$lazy_ptr:</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.indirect_symbol _foo</font><br>
+<img src="../../Images/sp.gif" width=196 height=1><font face="Courier" size="-1">.long Lfoo$stub_binder</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__TEXT,__mod_init_func)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __TEXT, __mod_init_func, mod_init_funcs</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>mod_init_funcs</b> and has no attributes.&nbsp; The C++ compiler places a pointer to a function in this section for each function it creates to call the constructors (if the module has them).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Designating Sections in the __DATA Segment</b></font>
+
+<p><font face="Times">These directives cause the assembler to begin assembling into the indicated section of the __DATA segment:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times"><b>Directive</b></font></td>
+
+<td><font face="Times"><b>Section</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.data</b></font></td>
+
+<td><font face="Times">(__DATA,__data)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.static_data</b></font></td>
+
+<td><font face="Times">(__DATA,__static_data)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.non_lazy_symbol_pointer</b></font></td>
+
+<td><font face="Times">(__DATA,__nl_symbol_pointer)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.lazy_symbol_pointer</b></font></td>
+
+<td><font face="Times">(__DATA,__la_symbol_pointer)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.dyld</b></font></td>
+
+<td><font face="Times">(__DATA,__dyld)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following paragraphs describe the sections in the __DATA segment and the types of information that should be assembled into each of them:</font>
+
+<p><font face="Times">(__DATA,__data)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __DATA, __data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">The compiler places all non-const initialized data (even initialized to zero) in this section.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__DATA,__static_data)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __DATA, __static_data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This is not currently used by the compiler.&nbsp; It was added to the assembler so that the compiler could separate global and static data symbol into separate sections if it wished to.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__DATA,__nl_symbol_ptr)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __DATA, __nl_symbol_ptr,non_lazy_symbol_pointers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>non_lazy_symbol_pointers</b> and has no attributes. The compiler places a non-lazy symbol pointer in this section for each undefined symbol referenced by the module (except for function calls).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__DATA,__la_symbol_ptr)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __DATA, __la_symbol_ptr,lazy_symbol_pointers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>lazy_symbol_pointers</b> and has no attributes.&nbsp; The compiler places a lazy symbol pointer in this section for each symbol stub it creates for undefined functions that are called in the module.&nbsp;&nbsp; (See __TEXT, __symbol_stub for examples.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">(__DATA,__dyld)</font><br>
+<font face="Times">This is equivalent to&nbsp;&nbsp;&nbsp; <b>.section __DATA, __dyld,regular</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">This section is of type <b>regular</b> and has no attributes.&nbsp; This section is used by the dynamic link editor.&nbsp; The compiler doesn't place anything in this section, as it is reserved exclusively for the dynamic link editor.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Designating Sections in the __OBJC Segment</b></font>
+
+<p><font face="Times">These directives cause the assembler to begin assembling into the indicated section of the __OBJC segment:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times"><b>Directive</b></font></td>
+
+<td><font face="Times"><b>Section</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_class</b></font></td>
+
+<td><font face="Times">(__OBJC,__class)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_meta_class</b></font></td>
+
+<td><font face="Times">(__OBJC,__meta_class)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_cat_cls_meth</b></font></td>
+
+<td><font face="Times">(__OBJC,__cat_cls_meth)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_cat_inst_meth</b></font></td>
+
+<td><font face="Times">(__OBJC,__cat_inst_meth)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_protocol</b></font></td>
+
+<td><font face="Times">(__OBJC,__protocol)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_string_object</b></font></td>
+
+<td><font face="Times">(__OBJC,__string_object)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_cls_meth</b></font></td>
+
+<td><font face="Times">(__OBJC,__cls_meth)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_inst_meth</b></font></td>
+
+<td><font face="Times">(__OBJC,__inst_meth)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_cls_refs</b></font></td>
+
+<td><font face="Times">(__OBJC,__cls_refs)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_message_refs</b></font></td>
+
+<td><font face="Times">(__OBJC,__message_refs)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_symbols</b></font></td>
+
+<td><font face="Times">(__OBJC,__symbols)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_category</b></font></td>
+
+<td><font face="Times">(__OBJC,__category)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_class_vars</b></font></td>
+
+<td><font face="Times">(__OBJC,__class_vars)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_instance_vars</b></font></td>
+
+<td><font face="Times">(__OBJC,__instance_vars)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_module_info</b></font></td>
+
+<td><font face="Times">(__OBJC,__module_info)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_class_names</b></font></td>
+
+<td><font face="Times">(__OBJC,__class_names)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_meth_var_names</b></font></td>
+
+<td><font face="Times">(__OBJC,__meth_var_names)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_meth_var_types</b></font></td>
+
+<td><font face="Times">(__OBJC,__meth_var_types)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.objc_selector_strs</b></font></td>
+
+<td><font face="Times">(__OBJC,__selector_strs)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">All sections in the __OBJC segment, including old sections that are no longer used and future sections that may be added, are exclusively reserved for the Objective C compiler's use.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Directives for Moving the Location Counter</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes directives that advance the location counter to a location higher in memory.&nbsp; They have the additional effect of setting the intervening memory to some value.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.align</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.align</b>&nbsp; <i>expression</i> [ <b>,</b> <i>fill_expression</i> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.align</b> directive advances the location counter to the next expression boundary, if it isn't currently on such a boundary. <i>expression</i> is a power of 2 between 0 and 15 (not the result of the power of 2;&nbsp; for example, the argument of&nbsp; .<b>align 3</b> means 2 to the third).&nbsp; The fill expression, if specified, must be absolute.&nbsp; The space between the current value of the location counter and the desired value is filled with the low-order byte of the fill expression (or with zeros, if <i>fill_expression</i> isn't specified).</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The assembler enforces no alignment for any bytes created in the object file (data or machine instructions).&nbsp; You must supply the desired alignment before any directive or instruction.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">.align 3</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">one:&nbsp;&nbsp;&nbsp; .double 0r1.0</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.org</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.org</b>&nbsp; <i>expression</i> [ <b>,</b> <i>fill_expression</i> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.org</b> directive sets the location counter to <i>expression</i>, which must be a currently known absolute expression.&nbsp; This directive can only move the location counter up in address.&nbsp; The fill expression, if specified, must be absolute.&nbsp; The space between the current value of the location counter and the desired value is filled with the low-order byte of the fill expression (or with zeros, if <i>fill_expression</i> isn't specified).</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If the output file is later link-edited, the <b>.org</b> directive isn't preserved.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.org 0x100,0xff</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Directives for Generating Data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The directives described in this section all generate data (unless specified otherwise, the data goes into the current section).&nbsp; In some respects they are similar to the directives in the previous section, &quot;Directives for Moving the Location Counter&quot;--they do have the effect of moving the location counter--but this isn't their primary purpose.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.ascii and .asciz</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times"><b>.ascii</b>&nbsp; [ <b>&quot;</b><i>string</i><b>&quot;</b> ] [ <b>, &quot;</b><i>string</i><b>&quot;</b></font></td>
+
+<td><font face="Times">] ...</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.asciz</b>&nbsp; [ <b>&quot;</b><i>string</i><b>&quot;</b> ] [ <b>, &quot;</b><i>string</i><b>&quot;</b> ] ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These two directives translate character strings into their ASCII equivalents for use in the source program.&nbsp; Each directive takes zero or more comma-separated, quoted strings.&nbsp; Each string can contain any character or escape sequence that can appear in a character string; the newline character cannot appear, but it can be represented by the escape sequence <b>\012</b> or <b>\n</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <b>.ascii</b> directive generates a sequence of ASCII characters.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <b>.asciz</b> directive is similar, except that it automatically terminates the sequence of ASCII characters with the null character, \0 (necessary when generating strings usable by C programs).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If no strings are specified, the directive is ignored.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.ascii &#34;Can't open the DSP.\0&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.asciz &#34;%s has changes.\tSave them?&#34;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.byte, .short, and .long</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.byte</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font><br>
+<font face="Times"><b>.short</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font><br>
+<font face="Times"><b>.long</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These directives reserve storage locations in the current section and initialize them with specified values.&nbsp; Each directive takes zero or more comma-separated absolute expressions and generates a sequence of bytes for each expression.&nbsp; The expressions are truncated to the size generated by the directive:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.byte</b> generates one byte per expression</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.short</b> generates two bytes per expression</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.long</b> generates four bytes per expression</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.byte&nbsp; 74,0112,0x4A,0x4a,'J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | all the same byte</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.short 64206,0175316,0xface&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | all the same short</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long&nbsp; -1234,037777775456,0xfffffb2e&nbsp; | all the same long</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.single&nbsp; and .double</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.single</b>&nbsp; [ <i>number</i> ] [ <b>,</b> <i>number</i> ] ...</font><br>
+<font face="Times"><b>.double</b>&nbsp; [ <i>number</i> ] [ <b>,</b> <i>number</i> ] ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These two directives reserve storage locations in the current section and initialize them with specified values.&nbsp; Each directive takes zero or more comma-separated decimal floating-point numbers:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.single</b> takes IEEE single-precision floating point numbers; it reserves four bytes for each number, and initializes them to the value of the corresponding number</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.double</b> takes IEEE double-precision floating point numbers; it reserves eight bytes for each number, and initializes them to the value of the corresponding number</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.single 3.33333333333333310000e-01</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.double 0.00000000000000000000e+00</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.single +Infinity</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.double -Infinity</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.single NaN</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.fill</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>.fill</b> <i>repeat_expression</i> <b>,</b> <i>fill_size</i> <b>,</b> <i>fill_expression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.fill</b> directive advances the location counter by <i>repeat_expression</i> times <i>fill_size</i> bytes.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>fill_size</i> is in bytes, and must have the&nbsp; value 1, 2, or 4</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>repeat_expression</i> must be an absolute expression greater than zero</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>fill_expression</i> may be any absolute expression (it gets truncated to the fill size)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.fill 69,4,0xfeadface&nbsp;&nbsp; | put out 69 0xfeadface's</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.space</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>.space</b>&nbsp; <i>num_bytes</i> [ <b>,</b> <i>fill_expression</i> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.space</b> directive advances the location counter by <i>num_bytes</i>, where <i>num_bytes</i> is an absolute expression greater than zero. The fill expression, if specified, must be absolute.&nbsp; The space between the current value of the location counter and the desired value is filled with the low-order byte of the fill expression (or with zeros, if <i>fill_expression</i> isn't specified).</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">ten_ones:</font><br>
+<img src="../../Images/sp.gif" width=194 height=1><font face="Courier" size="-1">.space 10,1</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.comm</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>.comm</b>&nbsp; <i>name</i>&aacute;<b>,</b> <i>size</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.comm</b> directive creates a common symbol named <i>name</i> of <i>size</i> bytes.&nbsp; If the symbol isn't defined elsewhere, its type is &quot;common.&quot;</font>
+
+<p><font face="Times">The link editor allocates storage for common symbols that aren't otherwise defined.&nbsp; Enough space is left after the symbol to hold the maximum size (in bytes) seen for each symbol in the (__DATA,__common) section.</font>
+
+<p><font face="Times">The link editor will align each such symbol (based on its size aligned to the next greater power of two) to the maximum alignment of the (__DATA,__common) section.&nbsp; For information about how to change the maximum alignment, see the description of <b>-sectalign</b> in the <b>ld</b>(1) UNIX manual page.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.comm _global_uninitialized,4</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.lcomm</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Times"><b>.lcomm</b>&nbsp; <i>name</i>&aacute;<b>,</b> <i>size</i> [ <b>,</b> <i>align</i> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.lcomm</b> directive creates a symbol named <i>name</i> of <i>size</i> bytes in the (__DATA,__bss) section.&nbsp; It will contain zeros at execution.&nbsp; The name isn't declared as global, and hence will be unknown outside the object module.</font>
+
+<p><font face="Times">The optional <i>align</i> expression, if specified, causes the location counter to be rounded up to an <i>align</i> power-of-two boundary before assigning the location counter to the value of <i>name</i>.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lcomm abyte,1&nbsp;&nbsp;&nbsp;&nbsp; | <i>or:</i>&nbsp; .lcomm abyte,1,0</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lcomm padding,7</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lcomm adouble,8&nbsp;&nbsp; | <i>or:</i>&nbsp; .lcomm adouble,8,3</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These are the same as:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.zerofill __DATA,__bss,abyte,1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lcomm __DATA,__bss,padding,7</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lcomm __DATA,__bss,adouble,8</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Directives for Dealing with Symbols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes directives that have an effect on symbols and the symbol table.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.globl</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.globl</b>&nbsp; <i>symbol_name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.globl</b> directive makes <i>symbol_name</i> external.&nbsp; If <i>symbol_name</i> is otherwise defined (by <b>.set</b> or by appearance as a label), it acts within the assembly exactly as if the <b>.globl</b> statement were not given; however, the link editor may be used to combine this object module with other modules referring to this symbol.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">.globl abs</font><br>
+<img src="../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">.set abs,1</font>
+
+<p><img src="../../Images/sp.gif" width=166 height=1><font face="Courier" size="-1">.globl var</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">var:&nbsp; .long 2</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.indirect_symbol</b></font>
+
+<p><font face="Times">SYNOPSIS:</font>
+
+<p><font face="Times"><b>.indirect_symbol</b> <i>symbol_name</i></font>
+
+<p><font face="Times">The <b>.indirect_symbol</b> directive creates an indirect symbol with <i>symbol_name</i> and associates the current location with the indirect symbol.&nbsp; An indirect symbol must be defined immediately before each item in a <b>symbol_stub</b>, <b>lazy_symbol_pointers</b>, and <b>non_lazy_symbol_pointers</b> section.&nbsp; The static and dynamic linkers use <i>symbol_name</i> to identify the symbol associated with the following item.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.reference</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.reference</b>&nbsp; <i>symbol_name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.reference</b> directive causes <i>symbol_name</i> to be an undefined symbol that will be present in the output's symbol table.&nbsp; This is useful in referencing a symbol without generating any bytes to do it (used, for example, by the Objective C run-time system to reference superclass objects).</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.reference&nbsp; .objc_class_name_Object</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.private_extern</b></font>
+
+<p><font face="Times">SYNOPSIS:</font>
+
+<p><font face="Times"><b>.private_extern</b> <i>symbol_name</i></font>
+
+<p><font face="Times">The <b>.private_extern</b> directive makes <i>symbol_name</i> a private external symbol.&nbsp; When the link editor combines this module with other modules (and the <b>-keep_private_externs</b> command-line option is not specified) the symbol turns it from global to static.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.lazy_reference</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.lazy_reference</b>&nbsp; <i>symbol_name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.reference</b> directive causes <i>symbol_name</i> to be a lazy undefined symbol that will be present in the output's symbol table. This is useful in referencing a symbol without generating any bytes to do it (used, for example, by the Objective C run-time system with the dynamic linker to reference superclass objects but to allow the runtime to bind them on first use).</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.lazy_reference&nbsp; .objc_class_name_Object</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.stabs, .stabn, and .stabd</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.stabs</b>&nbsp; <i>n_name</i> <b>,</b> <i>n_type</i> <b>,</b> <i>n_other</i> <b>,</b> <i>n_desc</i> <b>,</b> <i>n_value</i></font><br>
+<font face="Times"><b>.stabn</b>&nbsp; <i>n_type</i> <b>,</b> <i>n_other</i> <b>,</b> <i>n_desc</i> <b>,</b> <i>n_value</i></font><br>
+<font face="Times"><b>.stabd</b>&nbsp; <i>n_type</i> <b>,</b> <i>n_other</i> <b>,</b> <i>n_desc</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These three directives are used to place symbols in the symbol table for the symbolic debugger (a &quot;stab&quot; is a <i>s</i>ymbol <i>tab</i>le entry).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.stabs</b> specifies all the fields in a symbol table entry.&nbsp; The <i>n_name</i> is the name of a symbol; if the symbol name is null, the <b>.stabn</b> directive may be used instead.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.stabn</b> is like <b>.stabs</b>, except that it uses a NULL (&#34;&#34;) name.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.stabd</b> is like <b>.stabn</b>, except that it uses the value of the location counter ( <b>.</b> ) as the <i>n_value</i> field.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In each case, the <i>n_type</i> field is assumed to contain a 4.3BSD-like value for the N_TYPE bits.&nbsp; For <b>.stabs</b> and <b>.stabn</b> the <b>n_sect </b>field of the Mach-O file's <b>nlist</b> is set to the section number of the symbol for the specified <i>n_value</i> parameter.&nbsp; For <b>.stabd</b> the <b>n_sect</b> field is set to the current section number for the location counter.&nbsp; The <b>nlist</b> structure is defined in <b>mach-o/nlist.h</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The <i>n_other</i> field of a stab directive is ignored.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.stabs&nbsp; &#34;hello.c&#34;,100,0,0,Ltext</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.stabn&nbsp; 192,0,0,LBB2</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.stabd&nbsp; 68,0,15</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.desc</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.desc</b>&nbsp; <i>symbol_name</i> <b>,</b> <i>absolute_expression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.desc</b> directive sets the <b>n_desc</b> field of the specified symbol to <i>absolute_expression</i>.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.desc&nbsp; _main,0xface</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.set</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.set</b>&nbsp; <i>symbol_name</i> <b>,</b> <i>absolute_expression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.set</b> directive creates the symbol <i>symbol_name</i> and sets its value to <i>absolute_expression</i>.&nbsp; This is the same as using <i>symbol_name</i> <b>=</b> <i>absolute_expression</i>.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.set one,1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">two = 2</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.lsym</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.lsym</b>&nbsp; <i>symbol_name</i> <b>,</b> <i>expression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A unique and otherwise unreferenceable symbol of the (<i>symbol_name</i>, <i>expression</i>) pair is created in the symbol table.&nbsp; Some Fortran 77 compilers use this mechanism to communicate with the debugger.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Miscellaneous Directives</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes additional directives that don't fit into any of the previous sections.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.abort</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.abort</b>&nbsp; [&nbsp; <b>&#34;</b><i>abort_string</i><b>&#34;</b> ]</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.abort</b> directive causes the assembler to ignore all further input and quit processing.&nbsp; No files are created.&nbsp; The directive would be used, for example, in a pipe interconnected version of a compiler--the first major syntax error would cause the compiler to issue this directive, saving unnecessary work in assembling code that would have to be discarded anyway.</font>
+
+<p><font face="Times">The optional <b>&#34;</b><i>abort_string</i><b>&#34;</b> is printed as part of the error message when the <b>.abort</b> directive is encountered.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#ifndef VAR</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">.abort &#34;You must define VAR to assemble this file.&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#endif</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.file and .line</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.file</b>&nbsp; <i>file_name</i></font><br>
+<font face="Times"><b>.line</b>&nbsp; <i>line_number</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.file</b> directive causes the assembler to report error messages as if it were processing the file <i>file_name</i>.</font>
+
+<p><font face="Times">The <b>.line</b> directive causes the assembler to report error messages as if it were processing the line <i>line_number</i>.&nbsp; The next line after the <b>.line</b> directive is assumed to be <i>line_number</i>.</font>
+
+<p><font face="Times">The assembler turns C preprocessor comments of the form</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># <i>line_number file_name level</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">into</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.line <i>line_number</i>; .file <i>file_name</i></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.line 6</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">nop&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | this is line 6</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.if, .elseif, .else, and .endif</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.if</b> <i>expression</i></font><br>
+<font face="Times"><b>.elseif</b> <i>expression</i></font><br>
+<font face="Times">.else</font><br>
+<font face="Times">.endif</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These directives are used to delimit blocks of code that are to be assembled conditionally, depending on the value of an expression.&nbsp; A block of conditional code may be nested within another block of conditional code.&nbsp; <i>Expression</i> must be an absolute expression.</font>
+
+<p><font face="Times">For each <b>.if</b> directive,</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">there must be a matching <b>.endif</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">there may be as many intervening <b>.elseif</b>'s as desired</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">there may be no more than one intervening <b>.else</b> before the tailing <b>.endif</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Labels or multiple statements must not be placed on the same line as any of these directives; otherwise, statements including these directives won't be recognized and will produce errors or incorrect conditional assembly.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.if a==1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long 1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.elseif a==2</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long 2</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.else</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long 3</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.endif</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.include</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.include</b> <i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.include</b> directive causes the named file to be included at the current point in the assembly.&nbsp; The <b>-I</b><i>dir</i> option to the assembler specifies alternative paths to be used in searching for the file if it isn't found in the current directory&nbsp; (the default path, <b>/usr/include</b>, is always searched last).</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.include&nbsp; macros.h</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.macro, .endmacro, .macros_on, and .macros_off</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times">.<b>macro</b></font><br>
+<font face="Times">.<b>endmacro</b></font><br>
+<font face="Times">.<b>macros_on</b></font><br>
+<font face="Times">.<b>macros_off</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These directives allow your to define simple macros (once a macro is defined, however, you can't redefine it).&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.macro&nbsp; var</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_1&nbsp; $0,$1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_2&nbsp; $2</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_N</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long $n</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.endmacro</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">$<i>d</i> (where <i>d</i> is a single decimal digit, 0 through 9) represents each argument--there can be at most 10 arguments.&nbsp; <i>$n</i> is replaced by the actual number of arguments the macro was invoked with.</font>
+
+<p><font face="Times">When you use a macro, arguments are separated by a comma (except inside matching parentheses--for example, </font><font face="Courier" size="-1">xxx(1,3,4),yyy</font> <font face="Times">contains only two arguments).&nbsp; You could use the macro defined above as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">var&nbsp; #0,@sp,4</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This would be expanded to:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_1 #0,@sp</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_2 4</font><br>
+<img src="../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">instruction_N</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long 3</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The directives <b>.macros_on</b> and <b>.macros_off</b> allow macros to be written that override an instruction or directive while still using the instruction or directive.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.macro .long</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.macros_off</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.long $0,$0</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.macros_on</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.endmacro</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you don't specify an argument, the macro will substitute nothing (also see the <b>.abs</b> directive below).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.abs</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.abs</b>&nbsp; <i>symbol_name</i> <b>,</b> <i>expression</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This directive sets the value of <i>symbol_name</i> to 1 if <i>expression</i> is an absolute expression; otherwise, it sets the value to 0.</font>
+
+<p><font face="Times">EXAMPLE:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.macro var</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.abs is_abs,$0</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.if is_abs==1</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.abort &#34;must be absolute&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.endif</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.endmacro</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>.dump and .load</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.dump</b> <i>filename</i></font><br>
+<font face="Times"><b>.load</b> <i>filename</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These directives let you dump and load the absolute symbols and macro definitions, for faster loading and faster assembly.</font>
+
+<p><font face="Times">These work like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.include &#34;big_file_1&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.include &#34;big_file_2&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.include &#34;big_file_3&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">. . .</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.include &#34;big_file_N&#34;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.dump&nbsp;&nbsp;&nbsp; &#34;symbols.dump&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>.dump</b> directive writes out all the N_ABS symbols and macros.&nbsp; You can later use the <b>.load</b> directive to load all the N_ABS symbols and macros faster than you could with <b>.include</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.load &#34;symbols.dump&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">One useful side effect of loading symbols this way is that they aren't written out to the object file.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Architecture- and Processor-specific Directives</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>M68000-Specific Directives</b></font>
+
+<p><font face="Times">The following directives are specific to the M68000 architecture.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>.word, .long, .quad, and .octa</b></font>
+
+<p><font face="Times">SYNOPSIS:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td><font face="Times"><b>.word</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font><br>
+<font face="Times"><b>.int</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font><br>
+<font face="Times"><b>.quad</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font><br>
+<font face="Times"><b>.octa</b>&nbsp; [ <i>expression</i> ] [ <b>,</b> <i>expression</i> ] ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These directives reserve storage locations in the current section and initialize them with specified integral values.&nbsp; Each directive takes zero or more comma-separated absolute expressions and generates a sequence of bytes for each expression. The expressions are truncated to the size generated by the directive:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.word</b> generates two bytes per expression</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.int</b> generates four bytes per expression</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.quad</b> generates eight bytes per expression</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>.octa</b> generates sixteen bytes per expression</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Additional Processor-Specific Directives</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following processor-specific directives are synonyms for other standard directives described earlier in this chapter; although they are listed here for completeness, their use isn't recommended; wherever possible, you should use the standard directive instead.</font>
+
+<p><font face="Times">The following are M68000-specific directives:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times"><b>M68000 Directive</b></font></td>
+
+<td><font face="Times"><b>Standard Directive</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.skip</font></td>
+
+<td><font face="Times">.space</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.float</font></td>
+
+<td><font face="Times">.single</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.even</font></td>
+
+<td><font face="Times">.align 1</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.proc</font></td>
+
+<td><font face="Times"><i>&lt;&lt;reserved for future use&gt;&gt;</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The following are i386-specific directives:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=131></td>
+
+<td nowrap><font face="Times"><b>i386 Directive</b></font></td>
+
+<td><font face="Times"><b>Standard Directive</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.ffloat</font></td>
+
+<td><font face="Times">.single</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.dfloat</font></td>
+
+<td><font face="Times">.double</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.tfloat</font></td>
+
+<td><font face="Times">[expression]</font> <img src="../../Images/cAC.gif" width=14 height=7> <font face="Times">80-bit IEEE extended precision floating-point</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.word</font></td>
+
+<td><font face="Times">.short</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.value</font></td>
+
+<td><font face="Times">.short</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.ident</font></td>
+
+<td><font face="Times">(ignored)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.def</font></td>
+
+<td><font face="Times">(ignored)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.optim</font></td>
+
+<td><font face="Times">(ignored)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.version</font></td>
+
+<td><font face="Times">(ignored)</font></td></tr>
+
+<tr valign=top>
+
+<td width=130></td>
+
+<td nowrap><font face="Times">.ln</font></td>
+
+<td><font face="Times">(ignored)</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

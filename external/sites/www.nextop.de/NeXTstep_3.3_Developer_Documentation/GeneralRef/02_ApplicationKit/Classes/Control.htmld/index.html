@@ -1,0 +1,2784 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/Control.rtf -->
+<!-- Date: Sun Jun 28 19:59:49 1998 -->
+<head>
+<title>Control</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:Control"></a><font face="Helvetica" size="+2"><b>Control</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">View : Responder : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/Control.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Control is an abstract superclass that provides three fundamental features for implementing user interface devices.&nbsp; First, as a subclass of View, Control allows the on-screen representation of the device to be drawn.&nbsp; Second, it receives and responds to user-generated events within its bounds by overriding Responder's <b>mouseDown:</b> method and providing a position in the responder chain.&nbsp; Third, it implements the <b>sendAction:to:</b> method to send an action message to the Control's target object. Subclasses of Control defined in the Application Kit are Button, Form, Matrix, NXBrowser, NXColorWell, Slider, Scroller, and TextField.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Target and Action</b></font>
+
+<p><font face="Times">Target objects and action methods provide the mechanism by which Controls interact with other objects in an application.&nbsp; A target is an object that a Control has effect over.&nbsp; The target class defines an action method to enable its instances to respond to user input.&nbsp; An action method takes only one argument: the <b>id</b> of the sender.&nbsp; The sender may be either Control that sends the action message or another object that the target should treat as the sender.&nbsp; When it receives an action message, a target can return messages to the sender requesting additional information about its status.&nbsp; Control's <b>sendAction:to:</b> asks the Application object, NXApp, to send an action message to the Control's target object.&nbsp; The method used for this is Application's <b>sendAction:to:from:</b>.&nbsp; You can also set the target to <b>nil</b> and allow it to be determined at run time.&nbsp; When the target is <b>nil</b>, the Application object must look for an appropriate receiver.&nbsp; It conducts its search in a prescribed order, by following the responder chain until it finds an object that can respond to the message:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It begins with the first responder in the key window and follows <b>nextResponder</b> links up the responder chain to the Window object.&nbsp; After the Window object, it tries the Window's delegate.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the main window is different from the key window, it then starts over with the first responder in the main window and works its way up the main window's responder chain to the Window object and its delegate.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Next, it tries to respond itself.&nbsp; If the Application object can't respond, it tries its own delegate.&nbsp; NXApp and its delegate are the receivers of last resort.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Control provides methods for setting and using the target object and the action method.&nbsp; However, these methods require that a Control have an associated subclass of Cell that provides a target and an action, such as ActionCell and its subclasses.</font>
+
+<p><font face="Times">Target objects and action methods demonstrate the close relationship between Controls and Cells.&nbsp; In most cases, a user interface device consists of an instance of a Control subclass paired with one or more instances of a Cell subclass.&nbsp; Each implements specific details of the user interface mechanism.&nbsp; For example, Control's <b>mouseDown:</b> method sends a <b>trackMouse:inRect:ofView:</b> message to a Cell, which handles subsequent mouse and keyboard events; a Cell sends a Control a <b>sendAction:to:</b> message in response to particular events.&nbsp; Control's <b>drawSelf::</b> method is implemented by sending a <b>drawSelf:inView:</b> message to the Cell.&nbsp; As another example, Control provides methods for setting and formatting its contents; these methods send corresponding messages to Cell, which actually owns the contents.</font>
+
+<p><font face="Times">See the ActionCell class specification for more on the implementation of target and action behavior.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Creating New Controls</b></font>
+
+<p><font face="Times">Since Control uses the Cell class to implement most of its actual functionality, you can usually implement a unique user interface device by creating a subclass of Cell or ActionCell rather than Control.&nbsp; A Control subclass doesn't have to use a Cell subclass to implement itself; Scroller and NXColorWell don't.&nbsp; However, such subclasses have to take care of details that Cell would otherwise handle.&nbsp; Specifically, they have to override methods designed to work with a Cell.&nbsp; What's more, they cannot be used in a Matrix--a subclass of Control designed specifically for managing multi-cell arrays such as radio buttons.</font>
+
+<p><font face="Times">The <b>initFrame:</b> method is the designated initializer for the Control class.&nbsp; Override this method if you create a subclass of Control that performs its own initialization.</font>
+
+<p><font face="Times">If your new Control uses a custom subclass of Cell, you'll probably also want to override Control's <b>setCellClass:</b> class method. Since Objective C does not support class variables, if you create a subclass of, for example, Button, and send <b>setCellClass:</b> to your subclass object to use a custom Cell, then all Buttons created after that will also use that Cell class.&nbsp; There are two ways to circumvent this problem.&nbsp; One is to reset the Cell class each time you create an instance of your Control subclass.&nbsp; The other is to override <b>setCellClass:</b> to store its own Cell class in a global variable and to use that in its <b>initFrame:</b> method as follows (note that in the <b>initialize</b> method MyCellSubClass checks itself to prevent its subclasses from inheriting a method that initializes them incorrectly):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static id myStoredCellClass;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ initialize</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Class initialization code. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (self == [MyCellSubclass class]) {</font><br>
+<img src="../../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">myStoredCellClass = [MyCellSubclass class];&nbsp; // Default class</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">+ setCellClass:classId</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">myStoredCellClass = classId;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- initFrame:(NXRect *)frameRect</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">id oldCell;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[super initFrame:frameRect];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">oldCell = [self setCell:[[myStoredCellClass alloc] init]];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[oldCell free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* other initialization code */</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">int <b>tag</b>;</font><br>
+<font face="Times">id <b>cell</b>;</font>
+
+<p><font face="Times">struct _conFlags {</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>enabled</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>editingValid</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>ignoreMultiClick</b>:1;</font><br>
+<img src="../../../Images/sp.gif" width=37 height=1><font face="Times">unsigned int <b>calcSize</b>:1;</font><br>
+<font face="Times">} <b>conFlags</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">tag</font></td>
+
+<td><font face="Times">Identifies the Control; used by View's <b>findViewWithTag:</b> method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cell</font></td>
+
+<td><font face="Times">The Control's Cell (if it has only one).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">conFlags.enabled</font></td>
+
+<td><font face="Times">YES if the Control is enabled; relevant for multi-cell controls only.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">conFlags.editingValid</font></td>
+
+<td><font face="Times">YES if editing has been validated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">conFlags.ignoreMultiClick</font></td>
+
+<td><font face="Times">YES if the Control ignores double- or triple-clicks.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">conFlags.calcSize</font></td>
+
+<td><font face="Times">YES if the cell should recalculate its size and location before drawing.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing and freeing a Control</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initFrame:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the Control's Cell</font></td>
+
+<td><font face="Times">+ setCellClass:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cell</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Enabling and disabling the Control</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=308></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isEnabled</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setEnabled:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Identifying the selected Cell</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedCell</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectedTag</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Setting the Control's value</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFloatValue:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">floatValue</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDoubleValue:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">doubleValue</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIntValue:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">intValue</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setStringValue:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setStringValueNoCopy:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setStringValueNoCopy:shouldFree:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">stringValue</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Interacting with other Controls</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">takeDoubleValueFrom:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">takeFloatValueFrom:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">takeIntValueFrom:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">takeStringValueFrom:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Formatting text</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAlignment:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">alignment</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFont:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">font</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFloatingPointFormat:left:right:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the field editor</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">abortEditing</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentEditor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">validateEditing</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the cursor</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resetCursorRects</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Resizing the Control</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">calcSize</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeTo::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeToFit</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Displaying the Control and Cell</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawCell:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawCellInside:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">drawSelf::</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectCell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">update</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">updateCell:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">updateCellInside:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Target and action</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setAction:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">action</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTarget:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">target</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setContinuous:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isContinuous</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendAction:to:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sendActionOn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Assigning a tag</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTag:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">tag</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Tracking the mouse</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">ignoreMultiClick:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mouseDown:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">mouseDownFlags</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setCellClass:%5D"></a><font face="Helvetica"><b>setCellClass:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setCellClass:</b><i>classId</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This abstract method does nothing.&nbsp; It's implemented by subclasses of Control, which use this method to set the class of their Cells.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-abortEditing%5D"></a><font face="Helvetica"><b>abortEditing</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortEditing</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Terminates and discards any editing of text displayed by the receiving Control.&nbsp; Returns <b>self</b>, or <b>nil</b> if no editing was going on in the receiving Control.&nbsp; This method doesn't redisplay the old value of the Control.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>endEditingFor:</b> (Window),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateEditing</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-action%5D"></a><font face="Helvetica"><b>action</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(SEL)<b>action</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the action message sent by the Control's Cell, or the default action message for a Control with multiple Cells (such as a Matrix or Form).&nbsp; To retrieve the action message, this method sends an <b>action</b> message to the Cell.&nbsp; For Controls with multiple Cells, it's better to get the action message for a particular Cell using:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">someAction = [[<i>theControl</i> selectedCell] action];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-alignment%5D"></a><font face="Helvetica"><b>alignment</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>alignment</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the alignment mode of the text in the Control's Cell.&nbsp; The return value can be one of three constants: NX_LEFTALIGNED, NX_CENTERED or NX_RIGHTALIGNED.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAlignment:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-calcSize%5D"></a><font face="Helvetica"><b>calcSize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Recomputes any internal sizing information for the Control, if necessary, by invoking its Cell's <b>calcDrawInfo:</b> method.&nbsp; This method doesn't actually draw.&nbsp; It can be used for more sophisticated sizing operations as well (for example, Form).&nbsp; <b>calcSize</b> is automatically invoked whenever the Control is displayed and something has changed; you need never invoke it.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>calcSize</b> (Matrix, Form),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-cell%5D"></a><font face="Helvetica"><b>cell</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cell</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Control's Cell.&nbsp; You should use <b>selectedCell</b> in the action method of the target of the Control, since a Control may have multiple Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-currentEditor%5D"></a><font face="Helvetica"><b>currentEditor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>currentEditor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the receiving Control is being edited (that is, has a Text object acting as its editor, and is the first responder in its Window), this method returns the Text object being used to perform that editing.&nbsp; If the Control isn't being edited, this method returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortEditing</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateEditing</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-doubleValue%5D"></a><font face="Helvetica"><b>doubleValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(double)<b>doubleValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the value of the Control's selected Cell as a double-precision floating point number.&nbsp; If the Control contains many cells (for example, Matrix), then the value of the currently <b>selectedCell</b> is returned.&nbsp; If the Control is in the process of editing the affected Cell, then <b>validateEditing</b> is invoked before the value is extracted and returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>floatValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-drawCell:%5D"></a><font face="Helvetica"><b>drawCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is the cell used to implement this Control, then the Control is displayed.&nbsp; This method is provided primarily to support a consistent set of methods between Controls with single and multiple Cells, since a Control with multiple Cells needs to be able to draw a single Cell at a time.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCellInside:</b>,</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b> (Matrix)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-drawCellInside:%5D"></a><font face="Helvetica"><b>drawCellInside:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Draws the inside of a Control (the area within a bezel or border). This method invokes Cell's <b>drawInside:inView:</b> method. <b>drawCellInside:</b> is used by <b>setStringValue:</b> and similar content-setting methods to provide a minimal update of the Control when its value is changed.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawInside:inView:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawCellInside:</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCellInside:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-drawSelf::%5D"></a><font face="Helvetica"><b>drawSelf::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:</b>(const NXRect *)<i>rects</i> <b>:</b>(int)<i>rectCount</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Draws the Control.&nbsp; This method invokes the <b>drawSelf:inView:</b> method of the Control's Cell.&nbsp; You must override this method if you have a Control with multiple Cells.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawSelf:inView:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-floatValue%5D"></a><font face="Helvetica"><b>floatValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>floatValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the value of the Control's selected Cell as a single-precision floating point number.&nbsp; See <b>doubleValue</b> for more details.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-font%5D"></a><font face="Helvetica"><b>font</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Font object used to draw the text (if any) of the Control's Cell.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the memory used by the Control and its Cells.&nbsp; Aborts editing if the text of the Control was currently being edited.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-ignoreMultiClick:%5D"></a><font face="Helvetica"><b>ignoreMultiClick:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ignoreMultiClick:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Control to ignore multiple clicks if <i>flag</i> is YES.&nbsp; By default, double-clicks (and higher order clicks) are treated the same as single clicks.&nbsp; You can use this method to &quot;debounce&quot; a Control, so that it won't inadvertently send its action message twice when double-clicked.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-initFrame:%5D"></a><font face="Helvetica"><b>initFrame:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initFrame:</b>(const NXRect *)<i>frameRect</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes and returns the receiver, a new instance of Control, by setting the value pointed to by <i>frameRect</i> as its frame rectangle.&nbsp; Makes the new instance an opaque View.&nbsp; Since Control is an abstract class, messages to perform this method should appear only in subclass methods;&nbsp; that is, there should always be a more specific designated initializer for the subclass. <b>initFrame:</b> is the designated initializer for the Control class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-intValue%5D"></a><font face="Helvetica"><b>intValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>intValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the value of the Control's selected Cell as an integer (see <b>doubleValue</b> for more details).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>floatValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-isContinuous%5D"></a><font face="Helvetica"><b>isContinuous</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isContinuous</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the Control's Cell continuously sends its action message to its target during mouse tracking.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContinuous:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-isEnabled%5D"></a><font face="Helvetica"><b>isEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the Control is enabled, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-mouseDown:%5D"></a><font face="Helvetica"><b>mouseDown:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mouseDown:</b>(NXEvent *)<i>theEvent</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Highlights the Control, and sends <b>trackMouse:inRect:ofView:</b> to the Control's Cell (or whichever Cell the mouse event occured in if the Control has multiple Cells).&nbsp; This method is invoked when the mouse button goes down while the cursor is within the bounds of the Control.&nbsp; The Control's Cell tracks the cursor until it goes outside the bounds, at which time the Control is unhighlighted.&nbsp; If the cursor goes back into the bounds, then the Control highlights again and its Cell starts tracking again. This behavior continues until the mouse button goes up.&nbsp; If it goes up with the cursor in the Control, the state of the Control is changed, and the action message is sent to the target with <b>sendAction:to:</b>.&nbsp; If the mouse button goes up with the cursor outside the Control, no action message is sent.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>trackMouse:inRect:ofView:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-mouseDownFlags%5D"></a><font face="Helvetica"><b>mouseDownFlags</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>mouseDownFlags</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the event flags (for example, NX_SHIFTMASK) that were in effect at the beginning of mouse tracking.&nbsp; The flags are valid only in the action method invoked upon the Control's target.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>mouseDownFlags</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-read:%5D"></a><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the Control from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-resetCursorRects%5D"></a><font face="Helvetica"><b>resetCursorRects</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resetCursorRects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reestablishes the cursor rectangles for the Control's Cell (or Cells).&nbsp; If the Cell displays text, and the text in the Cell is selectable, then <b>resetCursorRect:inView:</b> is sent to the Cell. <b>resetCursorRect:inView:</b> in turn, sends <b>addCursorRect:cursor:</b> back to the Control, so that the cursor will change to an I-beam when it enters the Cell's rectangle. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resetCursorRect:inView:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addCursorRect:cursor:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-selectCell:%5D"></a><font face="Helvetica"><b>selectCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is a Cell of the receiving Control and is unselected, this method selects <i>aCell</i> and redraws the Control.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-selectedCell%5D"></a><font face="Helvetica"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the Control's selected Cell.&nbsp; The target of the Control should use this method when it wants to get the Cell of the sending Control.&nbsp; Note that even though the <b>cell</b> method will return the same value for Controls with only a single Cell, it's strongly suggested that this method be used since it will work for Controls with either a single or multiple Cells.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedCell</b> (Matrix)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-selectedTag%5D"></a><font face="Helvetica"><b>selectedTag</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>selectedTag</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the tag of the Control's selected Cell.&nbsp; This is equivalent to:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myTag = [[<i>theControl</i> selectedCell] tag];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns</font> <img src="../../../Images/c2D.gif" width=8 height=4><font face="Times">1 if there is no selected Cell.&nbsp; The Cell's tag can be set with ActionCell's <b>setTag:</b> method.&nbsp; You should only use the <b>setTag:</b> and <b>tag</b> methods in conjunction with <b>findViewWithTag:</b>.&nbsp; When you set the tag of a Control with a single Cell in Interface Builder, it sets both the tags of both Control and Cell as a convenience.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-sendAction:to:%5D"></a><font face="Helvetica"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:</b>(SEL)<i>theAction</i> <b>to:</b><i>theTarget</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sends a <b>sendAction:to:from:</b> message to NXApp, which in turn sends a message to <i>theTarget</i> to perform <i>theAction</i>. <b>sendAction:to:from:</b> adds the Control as <i>theAction</i>'s only argument.&nbsp; If <i>theAction</i> is NULL, no message is sent. <b>sendAction:to:</b> is invoked primarily by Cell's <b>trackMouse:inRect:ofView:</b></font>
+
+<p><font face="Times">If <i>theTarget</i> is <b>nil</b>, NXApp looks for an object that can respond to the message by following the responder chain, as detailed in the class description.</font>
+
+<p><font face="Times">Returns <b>nil</b> if no object that responds to <i>theAction</i> could be found; otherwise returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>trackMouse:inRect:ofView:</b> (Cell),</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:from:</b> (Application)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-sendActionOn:%5D"></a><font face="Helvetica"><b>sendActionOn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>sendActionOn:</b>(int)<i>mask</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Uses <i>mask</i> to record the events that cause <b>sendAction:to:</b> to be invoked during tracking of the mouse, which is performed in Cell's <b>trackMouse:inRect:ofView:</b>.&nbsp; Returns the old event mask.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendActionOn:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>trackMouse:inRect:ofView:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setAction:%5D"></a><font face="Helvetica"><b>setAction:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:</b>(SEL)<i>aSelector</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>aSelector</i> the Control's action method.&nbsp; If <i>aSelector</i> is NULL, then no action messages will be sent from the Control. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setAlignment:%5D"></a><font face="Helvetica"><b>setAlignment:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAlignment:</b>(int)<i>mode</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the alignment mode of the text in the Control's Cell, or of all the Control's Cells if it has more than one, and redraws the Control.&nbsp; <i>mode</i> should be one of:&nbsp; NX_LEFTALIGNED, NX_CENTERED or NX_RIGHTALIGNED.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>alignment</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setCell:%5D"></a><font face="Helvetica"><b>setCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Cell of the Control to be <i>cell</i>.&nbsp; Use this method with great care as it can irrevocably damage your Control; specifically, you should only use this method in initializers for subclasses of Control.&nbsp; Returns the old Cell.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setContinuous:%5D"></a><font face="Helvetica"><b>setContinuous:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContinuous:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the Control will continuously send its action message to its target as the mouse is tracked.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContinuous:</b> (ButtonCell, SliderCell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendActionOn:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setDoubleValue:%5D"></a><font face="Helvetica"><b>setDoubleValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>(double)<i>aDouble</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the value of the Control's selected Cell to be <i>aDouble</i> (a double-precision floating point number).&nbsp; If the affected Cell is being edited, that editing is aborted and the value being typed is discarded in favor of <i>aDouble</i>.&nbsp; If autodisplay is on, then the Cell's inside (the area within a bezel or border) is redrawn.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortEditing</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>drawInside:inView: </b>(Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setEnabled:%5D"></a><font face="Helvetica"><b>setEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets whether the Control is active or not (that is, whether it tracks the mouse and sends its action to its target).&nbsp; If <i>flag</i> is NO, any editing is aborted.&nbsp; Redraws the entire Control if autodisplay is on.&nbsp; Subclasses may want to override this to redraw only a portion of the Control when the enabled state changes (Button and Slider do this).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setEnabled:</b> (Cell),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setFloatValue:%5D"></a><font face="Helvetica"><b>setFloatValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>(float)<i>aFloat</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Same as <b>setDoubleValue:</b>, but sets the value as a single-precision floating point number.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>floatValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setFloatingPointFormat:left:right:%5D"></a><font face="Helvetica"><b>setFloatingPointFormat:left:right:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatingPointFormat:</b>(BOOL)<i>autoRange</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>left:</b>(unsigned)<i>leftDigits</i></font><br>
+<font face="Times"><b>right:</b>(unsigned)<i>rightDigits</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the autoranging and floating point number format of the Control's Cell, so that at most <i>leftDigits</i> are displayed to the left of the decimal point, and <i>rightDigits</i> to the right.&nbsp; If the Control has more than one Cell, they're all affected.&nbsp; See the description of this method in the Cell class specification for more detail.&nbsp; This method doesn't redraw the Control. <b>setFloatingPointFormat:left:right:</b> affects only subsequent invocations of <b>setFloatValue:</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatingPointFormat:left:right:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setFont:%5D"></a><font face="Helvetica"><b>setFont:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFont:</b><i>fontObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the Font object used to draw the text (if any) in the Control's Cell, or in all the Cells if the Control has more than one.&nbsp; You only need to use this method if you don't want to use the user's default system font (as set by the user in the Preferences application).&nbsp; If autodisplay is on, then the inside of the Cell is redrawn.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>font</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setIntValue:%5D"></a><font face="Helvetica"><b>setIntValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Same as <b>setDoubleValue:</b>, but sets the value as an integer.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setStringValue:%5D"></a><font face="Helvetica"><b>setStringValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Same as <b>setDoubleValue:</b>, but sets the value as a string by copying it from <i>aString</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:shouldFree:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setStringValueNoCopy:%5D"></a><font face="Helvetica"><b>setStringValueNoCopy:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like <b>setStringValue:</b>, but doesn't copy the string.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:shouldFree:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setStringValueNoCopy:shouldFree:%5D"></a><font face="Helvetica"><b>setStringValueNoCopy:shouldFree:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:</b>(char *)<i>aString</i> <b>shouldFree:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Like <b>setStringValueNoCopy:</b>, but lets you specify whether the string should be freed when the Control is freed.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValueNoCopy:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setTag:%5D"></a><font face="Helvetica"><b>setTag:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b>(int)<i>anInt</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Makes <i>anInt</i> the receiving Control's tag.&nbsp; Doesn't affect the Control's Cell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tag</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedTag</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>findViewWithTag:</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-setTarget:%5D"></a><font face="Helvetica"><b>setTarget:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the target for the action message of the Control's Cell.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If <i>anObject</i> is <b>nil</b>, then when an action message is sent, NXApp looks for an object that can respond to the message by following the responder chain, as detailed in the class description.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAction:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-sizeTo::%5D"></a><font face="Helvetica"><b>sizeTo::</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeTo:</b>(NXCoord)<i>width</i> <b>:</b>(NXCoord)<i>height</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the width and the height of the Control's frame.&nbsp; Redisplays the Control if autodisplay is on.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-sizeToFit%5D"></a><font face="Helvetica"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Changes the width and the height of the Control's frame so that they are the minimum needed to contain the Cell.&nbsp; If the Control has more than one Cell, then you must override this method.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToFit</b> (Matrix),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeToCells</b> (Matrix)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-stringValue%5D"></a><font face="Helvetica"><b>stringValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>stringValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the value of the Control's selected Cell as a string.&nbsp; If the Control is in the process of editing the affected Cell, then <b>validateEditing</b> is invoked before the value is extracted and returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>floatValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-tag%5D"></a><font face="Helvetica"><b>tag</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>tag</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the receiving Control's tag (not the tag of the Control's Cell).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTag:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectedTag</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>tag</b> (Cell)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-takeDoubleValueFrom:%5D"></a><font face="Helvetica"><b>takeDoubleValueFrom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>takeDoubleValueFrom:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the double-precision floating-point value of the receiving Control's selected Cell to the value obtained by sending a <b>doubleValue</b> message to <i>sender</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method can be used in action messages between Controls.&nbsp; It permits one Control (the sender) to affect the value of another Control (the receiver) by invoking this method in an action message to the receiver.&nbsp; For example, a TextField can be made the target of a Slider.&nbsp; Whenever the Slider is moved, it will send a <b>takeDoubleValueFrom:</b> message to the TextField.&nbsp; The TextField will then get the Slider's floating-point value, turn it into a text string, and display it, thus tracking the value of the Slider.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDoubleValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>doubleValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-takeFloatValueFrom:%5D"></a><font face="Helvetica"><b>takeFloatValueFrom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>takeFloatValueFrom:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the single-precision floating-point value of the receiving Control's selected Cell to the value obtained by sending a <b>floatValue</b> message to <i>sender</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See <b>takeDoubleValueFrom:</b> for an example.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFloatValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>floatValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-takeIntValueFrom:%5D"></a><font face="Helvetica"><b>takeIntValueFrom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>takeIntValueFrom:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the integer value of the receiving Control's selected Cell to the value returned by sending an <b>intValue</b> message to <i>sender</i>. Returns <b>self</b>.</font>
+
+<p><font face="Times">See <b>takeDoubleValueFrom:</b> for an example.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIntValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-takeStringValueFrom:%5D"></a><font face="Helvetica"><b>takeStringValueFrom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>takeStringValueFrom:</b><i>sender</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the character string of the receiving Control's selected Cell to a string obtained by sending a <b>stringValue</b> message to <i>sender</i>.&nbsp; Since this is an action method, there is no alternate like <b>takeStringValueFrom:noCopy:</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">See <b>takeDoubleValueFrom:</b> for an example.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setStringValue:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-target%5D"></a><font face="Helvetica"><b>target</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>target</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the target for the action message of the Control's cell, or the Control's target for a Control with multiple Cells.&nbsp; If <b>nil</b>, then any action messages sent by the Control will be sent up the responder chain, as detailed in the Class Description.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setTarget:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>action</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sendAction:to:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-update%5D"></a><font face="Helvetica"><b>update</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If autodisplay is enabled, sends a <b>display</b> message to itself.&nbsp; Otherwise it simply sets a flag indicating that the Control needs to be displayed.&nbsp; This method also makes sure that <b>calcSize</b> is performed.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCellInside:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-updateCell:%5D"></a><font face="Helvetica"><b>updateCell:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCell:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is a Cell used to implement this Control, and if autodisplay is on, then draws the Control's Cell; otherwise, sets the <b>needsDisplay</b> and <b>calcSize</b> flags to YES.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCellInside:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-updateCellInside:%5D"></a><font face="Helvetica"><b>updateCellInside:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCellInside:</b><i>aCell</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If <i>aCell</i> is a Cell used to implement this Control, and if autodisplay is on, draws the inside portion of the Cell; otherwise sets the <b>needsDisplay</b> flag to YES.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>updateCell:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isAutodisplay</b> (View),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setAutodisplay:</b> (View)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-validateEditing%5D"></a><font face="Helvetica"><b>validateEditing</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>validateEditing</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Causes the value of the Control's selected Cell to be set to the value of the field being edited, if any.&nbsp; &quot;Being edited&quot; does not necessarily mean that a user is typing; if a field (for example, a TextField object) has the application's global Text object acting in its place as first responder, then the field is considered as being edited. This method is invoked automatically from <b>stringValue</b>, <b>intValue</b>, and other similar methods, so that a partially edited field's actual value will be correctly returned by those methods.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">This method doesn't end editing; to do that, invoke Window's <b>endEditingFor:</b> or <b>abortEditing</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>endEditingFor:</b> (Window),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortEditing</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BControl-write:%5D"></a><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the Control to the typed stream <i>stream</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

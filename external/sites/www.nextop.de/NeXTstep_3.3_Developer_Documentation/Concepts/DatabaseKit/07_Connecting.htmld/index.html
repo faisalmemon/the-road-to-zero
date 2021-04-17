@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/07_Connecting.rtfd -->
+<!-- Date: Sun Jun 28 19:36:00 1998 -->
+<head>
+<title>07_Connecting</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>7</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Connecting to the Server</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can read a model into a DBDatabase object and examine the modeling objects it contains without being connected to a database server.&nbsp; But the ultimate use of modeling objects is to configure data-storing objects so the latter can fetch and store data from the server (as explained in the next chapter).&nbsp; However, in order to fetch data, your application must first form a connection to the database server that's providing the data.</font>
+
+<p><font face="Times">This chapter describes the methods that the DBDatabase class defines that let you connect to a database server.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Adaptor Name and Login String</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To connect to a server you must supply an adaptor name and a login string:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The adaptor name is a string that identifies the adaptor file that implements the connection to the server.&nbsp; The name is given without a path name or extension.&nbsp; When a connection is attempted, the appropriate adaptor file is searched for in the following directories (in this order):</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><img src="../../Images/sp.gif" width=19 height=1><font face="Times">Your application's main bundle</font><br>
+<img src="../../Images/sp.gif" width=19 height=1><font face="Times">~/Library/Databases</font><br>
+<img src="../../Images/sp.gif" width=19 height=1><font face="Times">/LocalLibrary/Databases</font><br>
+<img src="../../Images/sp.gif" width=19 height=1><font face="Times">/NextLibrary/Databases</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Most adaptors require that the user log in to the server.&nbsp; The login string provides server-specific login information that's used when the connection is being forged.&nbsp; The format of this string is the same as in the ASCII model file:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap></td>
+
+<td><img src="../../Images/sp.gif" width=19 height=1><font face="Times"><i>userName</i>/<i>password</i> : <i>hostName</i> : <i>serverName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A DBDatabase object contains default settings for these strings which it reads from the model that it represents.&nbsp; You can retrieve these defaults by sending the messages <b>defaultAdaptorName</b> and <b>defaultLoginString</b> to your DBDatabase object.&nbsp; In some cases, you may want to specify a non-default adaptor or login string; you do this by passing your values as arguments to a connection-forming method (as described in the next section).</font>
+
+<p><font face="Times">When the connection to a server is successfully formed, the DBDatabase object records the adaptor name and login string values that were used.&nbsp; You can retrieve the values of the current settings through the <b>currentAdaptorName</b> and <b>currentLoginString</b> methods.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Connection Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The simplest way to connect your DBDatabase object to the underlying server is to pass YES as the second argument to <b>findDatabaseNamed:connect:</b>.&nbsp; The method attempts a connection to the server using the DBDatabase object's default adaptor name and login string values as guides.&nbsp; The adaptor will almost certainly put up its login panel with all but the password field filled in, thus allowing the user to supply the password.&nbsp; See the section &quot;Suppressing the Login Panel,&quot; below, if you're creating an application that doesn't use windows, or if you want to control the login information yourself.</font>
+
+<p><font face="Times">The <b>connect</b> method follows the connection rules used by <b>findDatabaseNamed:connect:</b>.&nbsp; Specifically, it attempts a connection using the default adaptor name and login string information.&nbsp; You should only need to use the <b>connect</b> method if you've passed NO as the second argument to <b>findDatabaseNamed:connect:</b>.</font>
+
+<p><font face="Times">The <b>connectUsingAdaptor:andString:</b> is the &quot;master&quot; connection method.&nbsp; It lets you specify the adaptor name and login string as arguments.&nbsp; If the connection is successful, the method sets the current adaptor and login settings to the arguments that you passed (the default settings aren't changed).&nbsp; In general, you should only need to use this method if you want to specify a non-default login string.&nbsp; An attempt to connect through the &quot;wrong&quot; adaptor--in other words, through an adaptor other than that upon which the model was based--is almost certain to fail.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Disconnecting</b></font>
+
+<p><font face="Times">To disconnect a DBDatabase, you can send it a <b>disconnect</b> or <b>disconnectUsingString:</b> message.&nbsp; The argument to the latter is a string that contains an arbitrary statement that's evaluated by the adaptor just before the connection is severed.&nbsp;&nbsp; In addition, an application's connection is automatically severed when the application itself is terminated.</font>
+
+<p><font face="Times">You should note that you can't disconnect a DBDatabase by passing NO as the second argument to the <b>findDatabaseNamed:connect:</b> method.&nbsp; If the object that's found by the method is already connected, it will remain connected regardless of the second argument value that you pass.</font>
+
+<p><font face="Times">Because connecting to a server can be time-consuming, many application never explicitly disconnect:&nbsp; They connect when they're launched and remain connected thereafter.&nbsp; However, connection &quot;contexts&quot; can be precious commodities.&nbsp; Many server licenses allow only a certain number of connections at a time.&nbsp; In such a case, disconnecting when your application isn't actively moving data to or from the server may be the expedient thing to do if connections are limited.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Connection State</b></font>
+
+<p><font face="Times">To determine if a DBDatabase object is currently connected to its server, you send it an <b>isConnected</b> message.&nbsp; In reply, the method returns a boolean value.</font>
+
+<p><font face="Times">The <b>connect</b> and&nbsp; <b>connectUsingAdaptor:andString:</b> methods also return booleans that can mistakenly be taken to indicate connection status.&nbsp; But don't be fooled:&nbsp; The value tells you whether a particular invocation of one of these methods successfully formed a connection.&nbsp; If, for example, a DBDatabase is already connected when it receives a <b>connect</b> message, the return value for the message will be NO (and the object will remain connected).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Suppressing the Login Panel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you're creating a command line program--or any application that doesn't use windows--then you certainly won't want the adaptor to put up its login panel.&nbsp; To suppress the panel, you send your DBDatabase object a <b>setPanelsEnabled:</b> message, passing NO as the argument, <i>before</i> you tell it to connect.&nbsp; Obviously, this means that you also have to pass NO as the second argument to the previous&nbsp; <b>findDatabaseNamed:connect:</b> method, as shown in the following example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBDatabase *db = [DBDatabase findDatabaseNamed:&#34;myModel&#34; connect:NO];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[db setPanelsEnabled:NO];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[db connect];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">With panels disabled, the Oracle and Sybase adaptors use the entire login string--including the password--when a connection is attempted.&nbsp; The user isn't prompted to verify the password or otherwise supply any login information.&nbsp; This isn't a requirement, however, so other adaptors may ask the user for authentication (through a command line prompt, for example).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Attention Panels</b></font>
+
+<p><font face="Times">The adaptor's login panel isn't the only window that a DBDatabase may cause to be displayed.&nbsp; The DBDatabase itself, by default, displays an attention panel when a server error is encountered.&nbsp; For example, if an attempted connection fails, the following panel (or one like it) will appear:</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=364 height=185></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 74</b></font><font face="Times">.&nbsp; DBDatabase's Attention Panel</font>
+
+<p><br><br>
+
+<p><font face="Times">This attention panel can be disabled through the <b>setPanelsEnabled:</b> method (by passing NO as the argument).</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,4191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Foundation/Classes/NSStringClassCluster.rtf -->
+<!-- Date: Sun Jun 28 19:56:12 1998 -->
+<head>
+<title>NSStringClassCluster</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Enterprise Objects Framework Release 1.0 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1994 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+2"><b>NSString Class Cluster</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Cluster Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">NSString objects represent character strings in the Foundation Kit, which uses them in place of the C language's <b>char *</b> data type. Representing strings as objects allows you to use strings wherever you use other objects. It also provides the benefits of encapsulation, so that string objects can use whatever encoding and storage is needed for efficiency while simply appearing as arrays of characters. The cluster's two public classes, NSString and NSMutableString, declare the programmatic interface for static and dynamic strings, respectively.</font>
+
+<p><font face="Times">The objects you create using these classes are referred to as <i>string objects</i> (and when no confusion will result, merely as <i>strings</i>).&nbsp; Because of the nature of class clusters, string objects are not actual instances of the NSString or NSMutableString classes but of one of their private subclasses.&nbsp; Although a string object's class is private, its interface is public, as declared by these abstract superclasses, NSString and NSMutableString.&nbsp; (See &quot;Class Clusters&quot; in the introduction to the Foundation Kit for more information on class clusters and creating subclasses within a cluster.)&nbsp; The string classes adopt the NSCopying and NSMutableCopying protocols, making it convenient to convert a string of one type to the other.</font>
+
+<p><font face="Times">A string object presents itself as an array of Unicode characters.&nbsp; You can determine how many characters it contains with the <b>length</b> method and can retrieve a specific Unicode character with the <b>characterAtIndex:</b> method.&nbsp; These two methods provide basic access to a string object.&nbsp; Most use of strings, however, is at a higher level, with the strings being treated as single entities:&nbsp; strings are compared against one another, search for substrings, combined into new strings, and so on.&nbsp; If you need to access string objects character-by-character, you must understand the Unicode encoding; see <i>The Unicode Standard:&nbsp; Worldwide Character Encoding</i> for details:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times"><i>The Unicode Standard:&nbsp; Worldwide Character Encoding</i>, Version 1.0, Volume 1.&nbsp; The Unicode Consortium. Addison-Wesley, 1990, 1991.&nbsp; ISBN 0</font><img src="../../Images/c2D.gif" width=8 height=4><font face="Times">201</font><img src="../../Images/c2D.gif" width=8 height=4><font face="Times">56788</font><img src="../../Images/c2D.gif" width=8 height=4><font face="Times">1</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Using String Objects with C String API</b></font>
+
+<p><font face="Times">Although string objects fit nicely in the Objective C realm, there remains a lot of API that expects C strings: ANSI C and other library functions, your own code, and even some object-oriented API. You can both create string objects from ANSI C strings and extract C string representations from string objects. The simplest way to create a string object in source code is to use either the <b>stringWithCString:</b> or the <b>initWithCString:</b> method. Each takes a standard null-terminated C string in the system's default encoding (a superset of ASCII for most, EUC for Japanese systems) and produces a Unicode string object. The Objective C compiler also supports the <b>@&#34;...&#34;</b> construction to create a string object constant:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *temp = @&#34;/tmp/scratch&#34;;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Such an object is created at compile time and exists throughout your program's execution.&nbsp; The compiler makes such object constants unique on a per-module basis, and they're never deallocated (though you can retain and release them like you would any other object).</font>
+
+<p><font face="Times">To get a C string from a string object, you use the <b>cString</b> message.&nbsp; This returns a <b>char *</b> in the system's default string encoding.&nbsp; The C string you receive is owned by a temporary object, though, so it will become invalid when automatic deallocation takes place (see &quot;Object Ownership and Automatic Disposal&quot; in the introduction to the Foundation Kit for further information).&nbsp; If you want to get a permanent C string, you must create a buffer and use one of the <b>getCString:...</b> methods to fill it. You can find out how large the buffer needs to be with the <b>cStringLength</b> method, and if you need to know the encoding that will be used, use the <b>defaultCStringEncoding</b> method.</font>
+
+<p><font face="Times">To convert a string object to or from a C string in a specific encoding, use the <b>initWithData:encoding:</b> and <b>dataUsingEncoding:...</b> methods. The string classes support the encodings listed under the <b>NSStringEncoding</b> data type in the Types and Constants section of this chapter.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Working with Composed Character Sequences</b></font>
+
+<p><font face="Times">A <i>composed character sequence</i> is any sequence of Unicode characters that is to be considered a single logical unit--a &quot;letter&quot; in many writing systems. Composed character sequences are made of <i>base characters</i> and <i>non-spacing</i> (or diacritical) <i>characters</i>. For example, you could encode the letter &quot;&uuml;&quot; with the base character &quot;lowercase u&quot; and the non-spacing character &quot;umlaut.&quot; It's possible to have any number of non-spacing characters associated with a base character: You can have a lowercase &quot;u&quot; with an umlaut and a tilde above, and with an underscore below. Non-spacing characters that don't affect each other can appear in any order after the base character, and all such permutations must be considered equivalent for comparison. For example, the pre-composed character &quot;lowercase u umlaut&quot; is equivalent to the composed character sequence &quot;lowercase u&quot; + &quot;umlaut&quot;; likewise, the following three combinations are equivalent to each other:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">&quot;lowercase u umlaut&quot; + &quot;underscore&quot;</font><br>
+<font face="Times">&quot;lowercase u&quot; + &quot;umlaut&quot; + &quot;underscore&quot;</font><br>
+<font face="Times">&quot;lowercase u&quot; + &quot;underscore&quot; + &quot;umlaut&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Beyond considerations of equivalence for comparison of composed character sequences, note that it's an error to unintentionally break a composed character sequence, whether by only examining part of it (unless you mean specifically to examine its parts), by inserting characters anywhere inside it, or by removing one of the characters that compose it. Whenever you perform some arbitrary computation of an index into a Unicode string, you must adjust that index to fall between composed character sequences for many operations, such as searching and comparing, to be meaningful. The <b>rangeOfComposedCharacterSequenceAtIndex:</b> method gives you the beginning index and length of the composed character sequence that lies across a given character index. For example, suppose you need to divide a string in half. You could use the following sequence to move the break back so that it contains a full composed character sequence:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">unsigned int halfway;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSRange midCharSequence;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">halfway = [stringObj length] / 2;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">midCharSequence = [stringObj</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">rangeOfComposedCharacterSequenceAtIndex:halfway];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">halfway = midCharSequence.location;</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>Working with String Objects</b></font>
+
+<p><font face="Times">The string classes provide methods for finding characters and strings within strings and for comparing one string against another.&nbsp; These methods conform to the Unicode standard for determining what character sequences are equivalent.&nbsp; The string classes provide comparison methods that handle composed character sequences properly, though you do have the option of specifying a literal search when efficiency is important and you can guarantee some canonical form for composed character sequences.</font>
+
+<p><font face="Times">The search and comparison methods each come in three variants.&nbsp; The simplest version of each searches or compares entire strings.&nbsp; Other variants allow you to alter the way comparison of composed character sequences is performed and to specify a specific range of characters within a string to be searched or compared.&nbsp; The options you can specify are given in the table below (not all options are available for every method):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Search Option</b></font></td>
+
+<td><font face="Helvetica"><b>Effect</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NSCaseInsensitiveSearch</font></td>
+
+<td><font face="Times">Case distinctions among characters, when they would normally be made, are ignored.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NSLiteralSearch</font></td>
+
+<td><font face="Times">A byte-for-byte comparison is made.&nbsp; Differing sequences of Unicode characters that would otherwise be considered equivalent are considered not to match.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NSBackwardsSearch</font></td>
+
+<td><font face="Times">Searching is performed from the end of the range toward the beginning.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NSAnchoredSearch</font></td>
+
+<td><font face="Times">Searching is performed only on the range of characters at the beginning or end of the range.&nbsp; No match at the beginning or end means nothing is found, even if a matching sequence of characters occurs elsewhere in the string.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Note that the default search behavior is case-sensitive from the beginning of the string, with composed character sequences compared according to the Unicode standard.&nbsp; Substrings are only found if completely contained within the specified range.&nbsp; If you specify a range for a search or comparison method and don't request <b>NSLiteralSearch</b>, the range must not break composed character sequences on either end; if it does you could get an incorrect result.&nbsp; (See the method description for <b>rangeOfComposedCharacterSequenceAtIndex:</b> for a code sample that adjusts a range to lie on character sequence boundaries.)</font>
+
+<p><font face="Times">The basic search and comparison methods are these:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">rangeOfString:</font></td>
+
+<td><font face="Times">compare:</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">rangeOfString:options:</font></td>
+
+<td><font face="Times">compare:options:</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">rangeOfStrings:options:range:</font></td>
+
+<td><font face="Times">compare:options:range:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">rangeOfCharacterFromSet:</font><br>
+<font face="Times">rangeOfCharacterFromSet:options:</font><br>
+<font face="Times">rangeOfCharacterFromSet:options:range:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The <b>rangeOfString:</b> methods search for a substring within the receiver. The <b>rangeOfCharacterFromSet:</b> methods search for individual Unicode characters from a supplied set of characters. The <b>compare:</b> methods return the lexical ordering of the receiver and the supplied string. Several other methods allow you to determine equality of strings or whether one is the prefix or suffix of another, but these don't have variants that allow you to specify search options or ranges.</font>
+
+<p><font face="Times">In addition to searching and comparing strings, you can combine and divide them in various ways.&nbsp; The simplest way to put two strings together is to append one to the other.&nbsp; The <b>stringByAppendingString:</b> method returns a string object formed from the receiver and the argument supplied.&nbsp; You can also combine several strings in the manner of <b>printf() </b>with the <b>initWithFormat:</b>, <b>stringWithFormat:</b> and <b>stringByAppendingFormat:</b> methods.</font>
+
+<p><font face="Times">The string classes allow you to extract substrings from the beginning or end to a particular index, or from a specific range, with the <b>substringToIndex:</b>, <b>substringFromIndex:</b>, and <b>substringFromRange:</b> methods.&nbsp; You can also ask for an array object containing all substrings divided by a separator string with the <b>componentsSeparatedByString: </b>method.</font>
+
+<p><font face="Times">Most of the NSString classes' remaining methods are for conveniences like changing case, quickly extracting numeric values, and working with encodings.&nbsp; An additional class cluster, NSScanner, allows you to scan a string object for numeric and string values.&nbsp; Both the NSString and the NSScanner class clusters use the auxiliary NSCharacterSet class cluster.&nbsp; See the appropriate class specifications for more information.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Notes on Unicode Support</b></font>
+
+<p><font face="Times">The NSString classes internally support Unicode, but the associated NSCharacterSet classes don't fully support Unicode. See the NSCharacterSet class cluster specification for details.</font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSString</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCoding</font><br>
+<font face="Times">NSCopying</font><br>
+<font face="Times">NSMutableCopying</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSString.h</font><br>
+<font face="Times">foundation/NSPathUtilities.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSString class declares the programmatic interface for an object that manages an immutable array of Unicode characters (in other words, a text string). NSString's two primitive methods--<b>length</b> and <b>characterAtIndex:</b>--provide the basis for all other methods in its interface. The <b>length</b> method returns the total number of Unicode characters in the string. <b>characterAtIndex:</b> gives access to each character in the string by index, with index values starting at 0.</font>
+
+<p><font face="Times">NSString declares methods for finding and comparing strings.&nbsp; It also declares methods for reading numeric values from strings, for combining strings in various ways, and for converting a string to different forms (such as encoding- and case-changes).&nbsp; General use of these methods is presented in the class cluster description under &quot;Working with String Objects.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCoding</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeUsingCoder:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeUsingCoder:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NSMutableCopying</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopyWithZone:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">mutableCopy</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating temporary strings</font></td>
+
+<td><font face="Times">+ stringWithCharacters:length:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ stringWithCString:length:</font><br>
+<font face="Times">+ stringWithCString:</font><br>
+<font face="Times">+ stringWithFormat:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing newly allocated strings</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCharactersNoCopy:length:freeWhenDone:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCharacters:length:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCStringNoCopy:length:freeWhenDone:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCString:length:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithFormat:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithFormat:arguments:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithData:encoding:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithContentsOfFile:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting a string's length</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">length</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing characters</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">characterAtIndex:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getCharacters:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getCharacters:range:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Combining strings</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByAppendingFormat:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByAppendingString:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Dividing strings into pieces</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">componentsSeparatedByString:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">substringFromIndex:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">substringFromRange:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">substringToIndex:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Finding characters and substrings</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfCharacterFromSet:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfCharacterFromSet:options:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfCharacterFromSet:options:range:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfString:options:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfString:options:range:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Determining composed character sequences</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">rangeOfComposedCharacterSequenceAtIndex:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Converting String Contents into a Property List</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">propertyList</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">propertyListFromStringsFileFormat</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Identifying and Comparing strings</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">compare:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">compare:options:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">compare:options:range:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">hasPrefix:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">hasSuffix:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqual:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">isEqualToString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">hash</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting a shared prefix</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">commonPrefixWithString:options:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Changing case</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">capitalizedString</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">lowercaseString</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">uppercaseString</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting ANSI C strings</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">cString</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">cStringLength</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getCString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getCString:maxLength:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">getCString:maxLength:range:remainingRange:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Getting numeric values</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">floatValue</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">intValue</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Working with encodings</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">canBeConvertedToEncoding:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">dataUsingEncoding:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">dataUsingEncoding:allowLossyConversion:</font><br>
+<font face="Times">+ defaultCStringEncoding</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">description</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">fastestEncoding</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">smallestEncoding</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Working with paths</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">completePathIntoString:caseSensitive:</font><br>
+<img src="../../Images/sp.gif" width=25 height=1><font face="Times">matchesIntoArray:filterTypes:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">lastPathComponent</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">pathExtension</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByAbbreviatingWithTildeInPath</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByAppendingPathComponent</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByAppendingPathExtension:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByDeletingLastPathComponent</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByDeletingPathExtension</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByExpandingTildeInPath</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByResolvingSymlinksInPath</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">stringByStandardizingPath</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>defaultCStringEncoding</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSStringEncoding)<b>defaultCStringEncoding</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the C string encoding assumed for any method accepting a C string as an argument (such methods use <b>CString </b>in the keywords for such arguments; for example, <b>stringWithCString:</b>).&nbsp; See the description of <b>NSStringEncoding</b> in the Types and Constants section for a full list of supported encodings.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCharacters:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSString *)<b>stringWithCharacters:</b>(const unichar *)<i>chars</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string containing <i>chars</i>.&nbsp; <i>length</i> characters are copied into the string, regardless of whether a null character exists in <i>chars</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCharacters:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCString:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSString *)<b>stringWithCString:</b>(const char *)<i>byteString</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string containing characters from <i>byteString</i>, which need not be null-terminated.&nbsp; <i>byteString</i> should contain characters in the default C string encoding.&nbsp; <i>length</i> bytes are copied into the string, regardless of whether a null byte exists in <i>byteString</i>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCString:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSString *)<b>stringWithCString:</b>(const char *)<i>byteString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string containing the characters in <i>byteString</i>, which must be null-terminated.&nbsp; <i>byteString</i> should contain characters in the default C string encoding.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCString:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithFormat:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSString *)<b>stringWithFormat:</b>(NSString *)<i>format</i>, <i>.</i>..</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string created by using <i>format</i> as a <b>printf()</b> style format string, and the following arguments as values to be substituted into the format string. For example, this code excerpt creates a string from another string and an <b>int</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *myString = [NSString stringWithFormat:@&#34;%@: %d\n&#34;,</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">@&#34;Cost&#34;, 32];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The result string has the value &quot;Cost: 32\n&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFormat:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>canBeConvertedToEncoding:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>canBeConvertedToEncoding:</b>(NSStringEncoding)<i>encoding</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if the receiver can be converted to <i>encoding</i> without loss of information.&nbsp; Returns NO if characters would have to be changed or deleted in the process of changing encodings.</font>
+
+<p><font face="Times">Note that if you plan to actually convert a string, the <b>dataUsingEncoding:</b> methods simply return <b>nil</b> on failure, so you can avoid the overhead of invoking this method yourself by simply trying to convert the string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>dataUsingEncoding:allowLossyConversion:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>capitalizedString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>capitalizedString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string with the first character of each word changed to its corresponding uppercase value. A word is any sequence of characters delimited by spaces, tabs, or newline characters.</font>
+
+<p><font face="Times">Case transformations aren't guaranteed to be symmetrical or to produce strings of the same lengths as the originals. The result of this statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [myString lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">might not be equal to this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [[myString capitalizedString] lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See <b>lowercaseString</b> for an example.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lowercaseString</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>uppercaseString</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>characterAtIndex:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unichar)<b>characterAtIndex:</b>(unsigned)<i>anIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the character at the array position given by <i>anIndex</i>.&nbsp; This method raises an <b>NSRangeException</b> exception if <i>anIndex</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>commonPrefixWithString:options:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>commonPrefixWithString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>options:</b>(unsigned)<i>mask</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string containing characters that the receiver and <i>aString</i> have in common, starting from the beginning of each up to the first characters that aren't equivalent.&nbsp; The returned string is based on the characters of the receiver. For example, if the receiver is &quot;Stru&#175;delhaus&quot; and <i>aString</i> is &quot;Str&uuml;del&quot;, the returned string will be &quot;Stru&#175;del&quot;, not &quot;Str&uuml;del&quot;.&nbsp; The following search options may be specified in <i>mask</i> by combining them with the C <b>|</b> (bitwise OR) operator:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">NSCaseInsensitiveSearch</font><br>
+<font face="Times">NSLiteralSearch</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See &quot;Working with String Objects&quot; in the class cluster description for details on these options.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hasPrefix</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>compare:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSComparisonResult)<b>compare:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>compare:options:</b> with no options.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compare:options:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>compare:options:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSComparisonResult)<b>compare:</b>(NSString *)<i>aString</i> <b>options:</b>(unsigned)<i>mask</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>compare:options:range:</b> with <i>mask</i> as the options and the receiver's full extent as the range.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>compare:options:range:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSComparisonResult)<b>compare:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>options:</b>(unsigned)<i>mask</i></font><br>
+<font face="Times"><b>range:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns <b>NSOrderedAscending</b> if the substring given by <i>aRange</i> in the receiver precedes the corresponding substring of <i>aString</i> in lexical ordering, <b>NSOrderedSame</b> if the two substrings are equivalent in lexical value, and <b>NSOrderedDescending</b> if the receiver's substring follows <i>aString</i>'s.&nbsp; The following options may be specified in <i>mask </i>by combining them with the C <b>|</b> (bitwise OR) operator:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">NSCaseInsensitiveSearch</font><br>
+<font face="Times">NSLiteralSearch</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See &quot;Working with String Objects&quot; in the class cluster description for details on these options.</font>
+
+<p><font face="Times">This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>completePathIntoString:caseSensitive:matchesIntoArray:filterTypes:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned)<b>completePathIntoString:</b>(NSString * *)<i>outputName</i> <b>caseSensitive:</b>(BOOL)<i>flag </i><b>matchesIntoArray:</b>(NSArray * *)<i>outputArray</i> <b>filterTypes:</b>(NSArray *)<i>filterTypes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Regards the receiver as containing a partial filename and returns in <i>outputName</i> the longest matching path name. &nbsp; Case is considered if <i>flag</i> is YES. If <i>outputArray</i> is given, all matching file names are returned in <i>outputArray</i>. If <i>filterTypes</i> is provided, this method considers only those paths that match one of the types. Returns 0 if no matches are found; otherwise, the return value is positive.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>componentsSeparatedByString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSArray *)<b>componentsSeparatedByString:</b>(NSString *)<i>separator</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Constructs and returns an NSArray containing substrings from the receiver that have been divided by <i>separator</i>.&nbsp; The strings in the array appear in the order they did in the receiver.&nbsp; For example, this code excerpt:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *path = @&#34;tmp/gigo&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSArray *pathComponents = [path componentsSeparatedByString:@&#34;/&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">produces an array containing these strings:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">&quot;tmp&quot; at index 0</font><br>
+<font face="Times">&quot;gigo&quot; at index 1</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If <b>path</b> begins with a slash--for example, &quot;/tmp/gigo&quot;--the array contains these strings:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">&quot;&quot; at index 0 (because there are no characters before the first slash)</font><br>
+<font face="Times">&quot;tmp&quot; at index 1</font><br>
+<font face="Times">&quot;gigo&quot; at index 2</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If path has no separators--for example, &quot;gigo&quot;--the array contains the string itself, in this case &quot;gigo&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>componentsJoinedByString:</b> (NSArray class cluster)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>cString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>cString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a representation of the receiver as a C string in the default C string encoding. The returned string will be automatically freed just as a returned object would be; your code should copy the string or use <b>getCString:</b> if it needs to store it outside of the method in which the string is created.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCString:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>cStringLength</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned)<b>cStringLength</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the length in bytes of the C string representation of the receiver.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>defaultCStringEncoding</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>length</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataUsingEncoding:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSData *)<b>dataUsingEncoding:</b>(NSStringEncoding)<i>encoding</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>dataUsingEncoding:allowLossyConversion:</b> with NO as the argument to allow lossy conversion.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>dataUsingEncoding:allowLossyConversion:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSData *)<b>dataUsingEncoding:</b>(NSStringEncoding)<i>encoding</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>allowLossyConversion:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSData object containing a representation of the receiver in <i>encoding</i>. If <i>flag</i> is NO and the receiver can't be converted without losing some information (such as accents or case) this method returns <b>nil</b>. If <i>flag</i> is YES and the receiver can't be converted without losing some information, some characters may be removed or altered in conversion. For example, in converting a character from <b>NSUnicodeStringEncoding</b> to <b>NSASCIIStringEncoding</b>, the character &quot;&Aacute;&quot; would become &quot;A&quot;, losing the accent.</font>
+
+<p><font face="Times">The result of this method is the default &quot;plain text&quot; format for <i>encoding</i> and is the recommended way to save or transmit a string object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>canBeConvertedToEncoding:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a quoted version of the string. The string may always be quoted; it will certainly be quoted if it contains backslashes or quotes. If quoted, then internal quotes and backslashes are also backslashed.</font>
+
+<p><br><br><br><br>
+
+<p><font face="Helvetica"><b>fastestEncoding</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSStringEncoding)<b>fastestEncoding</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the fastest encoding to which the receiver may be converted without loss of information.&nbsp; &quot;Fastest&quot; applies to retrieval of characters from the string.&nbsp; This encoding may not be space efficient.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>smallestEncoding</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>floatValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>floatValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the floating-point value of the receiver's text.&nbsp; Whitespace at the beginning of the string is skipped.&nbsp; If the receiver begins with a valid text representation of a floating-point number, that number's value is returned, otherwise 0.0 is returned.&nbsp; HUGE_VAL or</font> <img src="../../Images/c2D.gif" width=8 height=4><font face="Times">HUGE_VAL is returned on overflow.&nbsp; 0.0 is returned on underflow.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getCharacters:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCharacters:</b>(unichar *)<i>buffer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>getCharacters:range:</b> with the provided <i>buffer</i> and the entire extent of the receiver as the range.&nbsp; <i>buffer</i> must be large enough to contain all the characters in the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getCharacters:range:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCharacters:</b>(unichar *)<i>buffer</i> <b>range:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copies characters from <i>aRange</i> in the receiver into <i>buffer</i>, which must be large enough to contain them.&nbsp; This method does <i>not</i> add a null character.&nbsp; This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><font face="Times">If you subclass NSString, this method works properly using <b>characterAtIndex:</b>.&nbsp; Your subclass should override this method to provide a fast implementation.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getCString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCString:</b>(char *)<i>buffer</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>getCString:maxLength:range:remainingRange:</b> with <b>NSMaximumStringLength</b> as the maximum length, the receiver's entire extent as the range, and NULL for the remaining range. <i>buffer</i> must be large enough to contain the resulting C string plus a terminating null character (which this method adds).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getCString:maxLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCString:</b>(char *)<i>buffer</i> <b>maxLength:</b>(unsigned)<i>maxLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>getCString:maxLength:range:remainingRange:</b> with <i>maxLength</i> as the maximum length, the receiver's entire extent as the range, and NULL for the remaining range.&nbsp; <i>buffer</i> must be large enough to contain <i>maxLength</i> bytes plus a terminating null character (which this method adds).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>getCString:maxLength:range:remainingRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>getCString:</b>(char *)<i>buffer</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>maxLength:</b>(unsigned)<i>maxLength</i></font><br>
+<font face="Times"><b>range:</b>(NSRange)<i>aRange</i></font><br>
+<font face="Times"><b>remainingRange:</b>(NSRange *)<i>leftoverRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Copies up to <i>maxLength</i> of the receiver's characters as bytes in the default C string encoding into <i>buffer</i>. <i>buffer</i> must be large enough to contain <i>maxLength</i> bytes plus a terminating null character (which this method adds). Characters are copied from <i>aRange</i>; if not all characters can be copied, the range of those not copied is put into <i>leftoverRange</i>. This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>hash</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned)<b>hash</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an unsigned integer that can be used as a table address in a hash table structure.&nbsp; If two string objects are equal (as determined by the <b>isEqual:</b> method), they must have the same hash value.&nbsp; Because of this, your subclass of NSString shouldn't override <b>hash</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>hasPrefix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>hasPrefix:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if <i>aString</i> matches the beginning characters of the receiver, NO otherwise.&nbsp; The default search options are used (see &quot;Working with String Objects&quot; in the class cluster description for further information).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hasSuffix:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>hasSuffix:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>hasSuffix:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if <i>aString</i> matches the ending characters of the receiver, NO otherwise.&nbsp; The default search options are used (see &quot;Working with String Objects&quot; in the class cluster description for further information).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>hasPrefix:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, to contain no characters. This is the only initialization method that a subclass of NSString should override.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCharacters:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCharacters:</b>(const unichar *)<i>characters</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by copying <i>length</i> characters from <i>characters</i>. This method doesn't stop at a null character.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringWithCharacters:length:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCharactersNoCopy:length:freeWhenDone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCharactersNoCopy:</b>(unichar *)<i>characters</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>length:</b>(unsigned)<i>length</i></font><br>
+<font face="Times"><b>freeWhenDone:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, to contain <i>length</i> characters from <i>characters</i>. This method doesn't stop at a null character. The receiver becomes the owner of <i>characters;</i> if <i>flag</i> is YES the receiver will free the memory when it no longer needs them, but if <i>flag</i> is NO it won't.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithContentsOfFile:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithContentsOfFile:</b>(NSString *)<i>path</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by reading NEXTSTEP-encoded characters from the file whose name is given by <i>path</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCString:</b>(const char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by converting the one-byte characters in <i>aString</i> into Unicode characters. <i>aString</i> must be a null-terminated C string in the default C string encoding.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringWithCString:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCString:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCString:</b>(const char *)<i>aString</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by converting <i>length</i> one-byte characters in <i>aString</i> into Unicode characters. This method doesn't stop at a null byte. <i>aString</i> must be contain bytes in the default C string encoding.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringWithCString:length:</b>, + <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCStringNoCopy:length:freeWhenDone:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCStringNoCopy:</b>(char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>length:</b>(unsigned)<i>length</i></font><br>
+<font face="Times"><b>freeWhenDone:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by converting <i>length</i> one-byte characters in <i>aString</i> into Unicode characters. This method doesn't stop at a null byte. <i>aString</i> must be contain bytes in the default C string encoding. The receiver becomes the owner of <i>aString;</i> if <i>flag</i> is YES it will free the memory when it no longer needs it, but if <i>flag</i> is NO it won't.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>defaultCStringEncoding</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithData:encoding:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithData:</b>(NSData *)<i>data</i> <b>encoding:</b>(NSStringEncoding)<i>encoding</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by converting the bytes in <i>data</i> into Unicode characters. <i>data</i> must be an NSData object containing bytes in <i>encoding</i> and in the default &quot;plain text&quot; format for that encoding.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithFormat:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFormat:</b>(NSString *)<i>format</i>, ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by constructing a string from <i>format</i> and following string objects in the manner of <b>printf()</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringWithFormat:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithFormat:arguments:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithFormat:</b>(NSString *)<i>format</i> <b>arguments:</b>(va_list)<i>argList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by constructing a string from <i>format</i> and <i>argList</i> in the manner of <b>vprintf()</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated NSString, by copying the characters from <i>aString</i>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>intValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>intValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the integer value of the receiver's text.&nbsp; Whitespace at the beginning of the string is skipped.&nbsp; If the receiver begins with a valid representation of an integer, that number's value is returned, otherwise 0 is returned.&nbsp; INT_MAX or INT_MIN is returned on overflow.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>intValue</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>isEqual:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqual:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if both the receiver and <i>anObject</i> have the same <b>id</b> or if they're both NSStrings that compare as <b>NSOrderedSame</b>, NO otherwise.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compare:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>isEqualToString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isEqualToString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns YES if <i>aString</i> is equivalent to the receiver (if they have the same <b>id</b> or if they compare as <b>NSOrderedSame</b>), NO otherwise.&nbsp; When you know both objects are strings, this method is a faster way to check equality than <b>isEqual:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compare:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>lastPathComponent</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>lastPathComponent</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the last component in the receiving path. If the receiving path consists solely of a slash, <b>lastPathComponent </b>returns the empty string. The following table illustrates the effect of <b>lastPathComponent</b> on a variety of different paths:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar.tiff</font></td>
+
+<td><font face="Times">Bar.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar</font></td>
+
+<td><font face="Times">Bar</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar/</font></td>
+
+<td><font face="Times">Bar</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Foo</font></td>
+
+<td><font face="Times">Foo</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/</font></td>
+
+<td><font face="Times">&quot;&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>length</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>length</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the number of characters in the receiver. This includes the individual characters of composed character sequences, so you can't use this method to determine if a string will be visible when printed, or how long it will appear.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cStringLength</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>lowercaseString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>lowercaseString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string with each character changed to its corresponding lowercase value.&nbsp; Case transformations aren't guaranteed to be symmetrical or to produce strings of the same lengths as the originals.&nbsp; The result of this statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [myString lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">might not be equal to this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [[myString uppercaseString] lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For example, the uppercase form of &quot;&szlig;&quot; is &quot;SS&quot;, so converting &quot;e&szlig;en&quot; to uppercase then lowercase would produce this sequence of strings:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">e&szlig;en</font><br>
+<font face="Times">ESSEN</font><br>
+<font face="Times">essen</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>capitalizedString</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>uppercaseString</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>pathExtension</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>pathExtension</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string consisting only of the receiving path's extension. If the receiving path does not have an extension (&quot;/Foo/Bar&quot; or &quot;/Foo/Bar&quot;, for example), <b>pathExtension</b> returns the empty string. The following table illustrates the effect of <b>pathExtension</b> on a variety of different paths:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar.tiff</font></td>
+
+<td><font face="Times">tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar</font></td>
+
+<td><font face="Times">&quot;&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar/</font></td>
+
+<td><font face="Times">&quot;&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>propertyList</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(id)<b>propertyList</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Depending on the format of the receiver's contents, returns a string, data, array, or dictionary object represention of those contents.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>propertyListFromStringsFileFormat</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSDictionary *)<b>propertyListFromStringsFileFormat</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a dictionary object initialized with the keys and values found in the receiver. The receiver's format must be that used for &quot;<b>.string</b>&quot; files.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfCharacterFromSet:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfCharacterFromSet:</b>(NSCharacterSet *)<i>aSet</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>rangeOfCharacterFromSet:options:</b> with no options.</font>
+
+<p><font face="Times">Finds the first occurrence of a character from the specified set and returns its range. Note that the range covers only the first found character, not a sequence of characters. If not found, returned length is 0.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfCharacterFromSet:options:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfCharacterFromSet:</b>(NSCharacterSet *)<i>aSet</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>options:</b>(unsigned int)<i>mask</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Finds the first occurrence of a character from the specified set and returns its range. Note that the range covers only the first found character, not a sequence of characters. If not found, returned length is 0. Possible options are: NSLiteralSearch, NSBackwardsSearch, NSAnchoredSearch.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfCharacterFromSet:options:range:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfCharacterFromSet:</b>(NSCharacterSet *)<i>aSet</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>options:</b>(unsigned int)<i>mask</i></font><br>
+<font face="Times"><b>range:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the range in the receiver of the first character found from <i>aSet</i>.&nbsp; The search is restricted to those characters in the receiver within <i>aRange</i>.&nbsp; The following options may be specified in <i>mask</i> by combining them with the C <b>|</b> (bitwise OR) operator:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">NSCaseInsensitiveSearch</font><br>
+<font face="Times">NSLiteralSearch</font><br>
+<font face="Times">NSBackwardsSearch</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See &quot;Working with String Objects&quot; in the class cluster description for details on these options.&nbsp; This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><font face="Times">Since precomposed characters in <i>aSet</i> can match composed characters sequences in the receiver, it's possible that the length of the returned range be greater than one.&nbsp; For example, if you search for &quot;&uuml;&quot; in the string &quot;stru&#175;del&quot;, the returned range will be {3,2}.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfComposedCharacterSequenceAtIndex:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfComposedCharacterSequenceAtIndex:</b>(unsigned)<i>anIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSRange giving the location and length in the receiver of the composed character sequence located at <i>anIndex</i>.&nbsp; The composed character sequence includes the first base character found at or past <i>anIndex</i>, and its length includes the base character and all zero-width or non-base characters following the base character.</font>
+
+<p><font face="Times">This method raises an <b>NSRangeException</b> exception if <i>anIndex</i> lies beyond the end of the string.</font>
+
+<p><font face="Times">If you want to write a method to adjust an arbitrary range so that it includes the composed character sequences on its boundaries, you can create a method such as this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (NSRange)adjustRange:(NSRange)aRange</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned index, endIndex;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">NSRange newRange, endRange;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* Calculate the beginning location for the range.</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">index = aRange.location;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">newRange = [self rangeOfComposedCharacterSequenceAtIndex:index];</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* Calculate the ending index for the range.</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">index = aRange.location + aRange.length;</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">endRange = [self rangeOfComposedCharacterSequenceAtIndex:index];</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">endIndex = endRange.location + endRange.length;</font>
+
+<p><img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">* Set the length of the adjusted range.</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">newRange.length = endIndex - newRange.location;</font>
+
+<p><img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return newRange;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>rangeOfString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>rangeOfString:options:</b> with no options.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfString:options:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfString:</b>(NSString *)<i>aString</i> <b>options:</b>(unsigned)<i>mask</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Invokes <b>rangeOfString:options:range:</b> with no options and the entire extent of the receiver as the range.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>rangeOfString:options:range:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSRange)<b>rangeOfString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>options:</b>(unsigned)<i>mask</i></font><br>
+<font face="Times"><b>range:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an NSRange giving the location and length in the receiver of <i>aString</i>.&nbsp; If <i>aString</i> isn't found, the length of the returned NSRange is zero.&nbsp; The length of the returned range and that of <i>aString</i> may differ if equivalent composed character sequences are matched.&nbsp; The search is restricted to the substring of the receiver given by <i>aRange</i>.&nbsp; The following options may be specified in <i>mask</i> by combining them with the C <b>|</b> (bitwise OR) operator:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">NSCaseInsensitiveSearch</font><br>
+<font face="Times">NSLiteralSearch</font><br>
+<font face="Times">NSBackwardsSearch</font><br>
+<font face="Times">NSAnchoredSearch</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See &quot;Working with String Objects&quot; in the class cluster description for details on these options.&nbsp; This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>smallestEncoding</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSStringEncoding)<b>smallestEncoding</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the smallest encoding to which the receiver can be converted without loss of information.&nbsp; This encoding may not be the fastest for accessing characters, but is very space-efficient.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fastestEncoding</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCharacters:range:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByAbbreviatingWithTildeInPath</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByAbbreviatingWithTildeInPath</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with a &quot;~&quot; character substituted for the first occurrence of the user's home directory. If the receiving path does not start with the user's home directory, the receiving path is returned unaltered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByExpandingTildeInPath</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByAppendingFormat:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByAppendingFormat:</b>(NSString *)<i>format</i>, ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string made by using <i>format</i> as a <b>printf()</b> style format string, and the following arguments as values to be substituted into the format string. This code excerpt, for example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *errorTag = @&#34;Error: &#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *errorLocation = @&#34;Filename.m&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *errorText = [errorTag</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">stringByAppendingFormat:@&#34;Undefined value in %@\n&#34;,</font><br>
+<img src="../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">errorLocation];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">produces the string &quot;Error: Undefined value in Filename.m\n&quot;.</font>
+
+<p><font face="Times">This method is equivalent to invoking <b>stringWithFormat:</b> with the arguments listed, and passing the resulting string to <b>stringByAppendingString:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByAppendingString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)s<b>tringByAppendingString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object made by appending the receiver and <i>aString</i>.&nbsp; This code excerpt, for example:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *errorTag = @&#34;This is where &#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *insertTabA = @&#34;you insert tab A.&#34;;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NSString *errorText = [errorTag stringByAppendingString:insertTabA];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">produces the string &quot;This is where you insert tab A.&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByAppendingFormat:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByAppendingPathComponent:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByAppendingPathComponent:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with the path component specified by <i>aString</i> appended. The following table illustrates the effect of <b>stringByAppendingPathComponent:</b> on a variety of different paths, assuming that <i>aString</i> is supplied as @&quot;Bar.tiff&quot;:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo</font></td>
+
+<td><font face="Times">/Foo/Bar.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/</font></td>
+
+<td><font face="Times">/Foo/Bar.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/</font></td>
+
+<td><font face="Times">/Bar.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">&quot;&quot;</font></td>
+
+<td><font face="Times">Bar.tiff</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByAppendingPathExtension:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByAppendingPathExtension:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByAppendingPathExtension:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with a period and the path extension specified by <i>aString</i> appended. The following table illustrates the effect of <b>stringByAppendingPathExtension:</b> on a variety of different paths, assuming that <i>aString</i> is supplied as @&quot;tiff&quot;:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar.x</font></td>
+
+<td><font face="Times">/Foo/Bar.x.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/</font></td>
+
+<td><font face="Times">/Foo/.tiff</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Foo</font></td>
+
+<td><font face="Times">Foo.tiff</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByAppendingPathComponent:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByDeletingLastPathComponent</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByDeletingLastPathComponent</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with the last path component removed. The following table illustrates the effect of <b>stringByDeletingLastPathComponent</b> on a variety of different paths:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar.tiff</font></td>
+
+<td><font face="Times">/Foo</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/</font></td>
+
+<td><font face="Times">/</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/</font></td>
+
+<td><font face="Times">/</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Foo</font></td>
+
+<td><font face="Times">&quot;&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByDeletingPathExtension</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByDeletingPathExtension</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByDeletingPathExtension</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with the path extension removed. The following table illustrates the effect of <b>stringByDeletingPathExtension</b> on a variety of different paths:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Receiving Path</b></font></td>
+
+<td><font face="Helvetica"><b>Resulting String</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/Bar.tiff</font></td>
+
+<td><font face="Times">/Foo/Bar</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/Foo/</font></td>
+
+<td><font face="Times">/Foo</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">/</font></td>
+
+<td><font face="Times">/</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pathExtension</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByDeletingLastPathComponent</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByExpandingTildeInPath</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>stringByExpandingTildeInPath</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns the receiving path with the first &quot;~&quot; character (or &quot;~<i>user</i>&quot; expression) expanded. If the user does not exist, or the receiving path does not begin with a tilde, the receiving path is returned unaltered.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByAbbreviatingWithTildeInPath</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByResolvingSymlinksInPath</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">- (NSString *)<b>stringByResolvingSymlinksInPath</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Resolves all symbolic links in the receiving path, returning a path with no symbolic links and cleaned up as described in <b>stringByStandardizingPath</b>. The empty string is returned if an error occurs.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByExpandingTildeInPath,</b></font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByStandardizingPath</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringByStandardizingPath</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">- (NSString *)<b>stringByStandardizingPath</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Expands &quot;~&quot; in the receiving path, removes &quot;/private&quot; (if possible), and condenses &quot;//&quot; and &quot;/./&quot;. <b>stringByStandardizingPath</b> replaces any use of &quot;..&quot; in absolute paths by taking the real parent directory (if possible; otherwise, it just trims the previous component). Raises an exception on failure--never returns <b>nil</b>. <b>stringByStandardizingPath</b> does not stat the path; it just cleans up the syntax.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByExpandingTildeInPath</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringByResolvingSymlinksInPath</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>substringFromIndex:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>substringFromIndex:</b>(unsigned)<i>anIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object containing the characters of the receiver from the one at <i>anIndex</i> to the end.&nbsp; This method raises an <b>NSRangeException</b> exception if <i>anIndex</i> lies beyond the end of the string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringFromRange:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringToIndex:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>substringFromRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>substringFromRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object containing the characters of the receiver which lie within <i>aRange</i>.&nbsp; This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringFromIndex:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringToIndex:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>substringToIndex:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>substringToIndex:</b>(unsigned)<i>anIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string object containing the characters of the receiver up to, but not including, the one at <i>anIndex</i>.&nbsp; This method raises an <b>NSRangeException</b> exception if <i>anIndex</i> lies beyond the end of the string.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringFromIndex:</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>substringFromRange:</b></font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>uppercaseString</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(NSString *)<b>uppercaseString</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a string with each character changed to its corresponding uppercase value.&nbsp; Case transformations aren't guaranteed to be symmetrical or to produce strings of the same lengths as the originals.&nbsp; The result of this statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [myString lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">might not be equal to this:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">lcString = [[myString uppercaseString] lowercaseString];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">See <b>lowercaseString</b> for an example.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>capitalizedString</b>,</font> <img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>lowercaseString</b></font>
+
+<p><br><br><br><br><br><br><br><br>
+
+<p><font face="Helvetica" size="+2"><b>NSMutableString</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">NSString : NSObject</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">NSCoding (NSString)</font><br>
+<font face="Times">NSCopying (NSString)</font><br>
+<font face="Times">NSMutableCopying (NSString)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">foundation/NSString.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The NSMutableString class declares the programmatic interface to objects that manage a modifiable array of Unicode characters (text strings).&nbsp; This class adds a method for replacing characters--<b>replaceCharactersInRange:withString:</b>--to the basic string-handling behavior inherited from NSString. All other methods that modify a string work through this method.&nbsp; For example, <b>insertString:atIndex:</b> simply replaces the characters in a range of zero length, while <b>deleteCharactersInRange:</b> replaces the characters in a given range with no characters.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">None declared in this class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Creating temporary strings</font></td>
+
+<td><font face="Times">+ stringWithCapacity:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ stringWithCharacters:length:</font><br>
+<font face="Times">+ stringWithCString:</font><br>
+<font face="Times">+ stringWithCString:length:</font><br>
+<font face="Times">+ stringWithFormat:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing a Mutable String</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithCapacity:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Modifying a string</font></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">appendFormat:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">appendString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">deleteCharactersInRange:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">insertString:atIndex:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">replaceCharactersInRange:withString:</font><br>
+<img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">setString:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>stringWithCapacity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSMutableString *)<b>stringWithCapacity:</b>(unsigned)<i>capacity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns an empty mutable string, using <i>capacity</i> as a hint for how much initial storage to reserve.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCharacters:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSMutableString *)<b>stringWithCharacters:</b>(const unichar *)<i>chars</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a mutable string containing <i>chars</i>.&nbsp; The first <i>length</i> characters are copied into the string.&nbsp; This method doesn't stop at a null character.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCString:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSMutableString *)<b>stringWithCString:</b>(const char *)<i>byteString</i> <b>length:</b>(unsigned)<i>length</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a mutable string containing <i>length</i> characters made from <i>byteString</i>.&nbsp; This method doesn't stop at a null byte. <i>byteString</i> should contain bytes in the default C string encoding.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>defaultCStringEncoding</b> (NSString)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithCString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSMutableString *)<b>stringWithCString:</b>(const char *)<i>byteString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a mutable string containing the characters in <i>byteString</i>, which must be null-terminated.&nbsp; <i>bytes</i> should contain bytes in the default C string encoding.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>defaultCStringEncoding</b> (NSString)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>stringWithFormat:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NSMutableString *)<b>stringWithFormat:</b>(NSString *)<i>format</i>, ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Returns a mutable string created by using <i>format</i> as a <b>printf()</b> style format string, and the subsequent arguments as values to be substituted into the format string.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=68></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>appendFormat:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>appendFormat:</b>(NSString *)<i>format</i>, ...</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds a constructed string to the receiver. The new characters are created by using <i>format</i> as a <b>printf()</b> style format string, and the following arguments as values to be substituted into the format string.</font>
+
+<p><font face="Times">This method is equivalent to invoking <b>stringWithFormat:</b> with the arguments listed, and passing the resulting string to <b>appendString:</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>appendString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>appendString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Adds the characters of <i>aString</i> to end of the receiver.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>deleteCharactersInRange:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>deleteCharactersInRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Removes from the receiver the characters in <i>aRange</i>. This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>initWithCapacity:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithCapacity:</b>(unsigned)<i>capacity</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializes a newly allocated mutable string object, giving it enough allocated memory to hold <i>capacity</i> characters.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>insertString:atIndex:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>insertString:</b>(NSString *)<i>aString</i> <b>atIndex:</b>(unsigned)<i>anIndex</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Inserts the characters of <i>aString</i> into the receiver, such that the new characters begin at <i>anIndex</i> and the existing character from <i>anIndex</i> to the end are shifted by the length of <i>aString</i>.&nbsp; This method raises an <b>NSRangeException </b>exception if <i>anIndex</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>replaceCharactersInRange:withString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>replaceCharactersInRange:</b>(NSRange)<i>aRange</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=162></td>
+
+<td><font face="Times"><b>withString:</b>(NSString *)<i>otherString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Inserts the characters of <i>otherString</i> into the receiver, such that they replace the characters in <i>aRange</i>.&nbsp; This method raises an <b>NSRangeException</b> exception if any part of <i>aRange</i> lies beyond the end of the string.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>setString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../Images/c2D.gif" width=8 height=4> <font face="Times">(void)<b>setString:</b>(NSString *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Replaces the characters of the receiver with those in <i>aString</i>.</font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

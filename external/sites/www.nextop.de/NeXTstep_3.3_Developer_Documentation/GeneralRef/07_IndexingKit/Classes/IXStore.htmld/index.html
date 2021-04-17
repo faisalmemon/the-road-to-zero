@@ -1,0 +1,1194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXStore.rtf -->
+<!-- Date: Sun Jun 28 20:05:44 1998 -->
+<head>
+<title>IXStore</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXStore</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">store/IXStore.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IXStore is a transaction based, compacting storage allocator designed for data-intensive applications.&nbsp; Its main features include compaction and relocatability of storage, for reducing and optimizing memory usage; transaction management, for making compound operations atomic and for ensuring data integrity; and concurrency control, for ensuring safe access to shared storage.</font>
+
+<p><font face="Times">An IXStore manages a single memory-based heap.&nbsp; Blocks of storage managed by the IXStore are addressed indirectly by the client, through unsigned integers called <i>handles</i>.&nbsp; To gain access to the contents of a block, the client must open the block for reading or writing.&nbsp; An IXStore opens a block by resolving the block's handle into a pointer.&nbsp; While a block is open, client code is free to address its contents through the pointer, and can safely assume that the block won't move.&nbsp; When a block is closed, however, the IXStore is free to move it in order to compact storage; pointers cached by the client may therefore become invalid.</font>
+
+<p><font face="Times">The contents of an IXStore are relocatable to and from other instances of IXStore and its subclasses.&nbsp; Since block handles are indirect reference to data, it's possible to retrieve the contents of an IXStore as a single unit and to store that unit in another IXStore without invalidating handle-based referential data structures residing in the IXStore, like linked lists or trees.&nbsp; This makes it easy to copy complex structures, or to quickly save them to a file.</font>
+
+<p><font face="Times">IXStore implements transactions, allowing several operations to be grouped together in such a way that either all of them take effect, or none of them does.&nbsp; This helps to ensure semantic integrity by making compound operations atomic, and provides a convenient way to undo a series of changes.&nbsp; The use of transactions also ensures data integrity against process and system crashes when used with a persistent storage medium; for example, IXStoreFile, a subclass of IXStore, keeps its storage in a UNIX file.&nbsp; This means that if a system loses power, the IXStoreFile's contents can be recovered intact on power up, in the state they were in after the last transaction that actually finished.&nbsp; For more details on persistence, see the IXStoreFile class specification.</font>
+
+<p><font face="Times">IXStore is thread-safe.&nbsp; All methods perform the locking needed to ensure the integrity of shared data structures when the IXStore is addressed by different Mach threads.&nbsp; Clients of an IXStore need only synchronize higher-level operations to ensure semantic integrity (see the IXBTree class specification for an example of this).</font>
+
+<p><font face="Times">It's possible for two or more instances of IXStore to share the same contents; these instances are called <i>store contexts</i>.&nbsp; IXStore mediates access to the blocks among multiple contexts through transactions.&nbsp; No block may be accessed by more than one context at a time, and an open block becomes available again only when the transaction that opened it aborts, or when the last outstanding transaction on the context that opened it is committed.&nbsp; A block opened only for reading, however, becomes available as soon as it's closed.&nbsp; When a context tries to open a block that's already been opened by another context, an exception is raised.&nbsp; This supports the use of deadlock avoidance strategies by the client.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Using Transactions</b></font>
+
+<p><font face="Times">To start a transaction, send <b>startTransaction</b> to the IXStore.&nbsp; This defines a checkpoint your code can go back to if it has to undo changes.&nbsp; Transactions aren't enabled by default; the first time one is started, the IXStore permanently enables transactions.&nbsp; Your code can check whether transactions have been enabled with <b>areTransactionsEnabled</b>.&nbsp; You may want to do this if your code&nbsp; is invoked by higher level methods that determine the transaction management policy for the application. For example, IXBTree uses <b>areTransactionsEnabled</b> to determine whether or not to invoke <b>startTransaction</b> before responding to an <b>empty</b> message.</font>
+
+<p><font face="Times">Using transactions makes updates slower, since blocks must be copied when they're opened for writing.&nbsp; On the other hand, in the case of an IXStoreFile, it's nearly certain that the storage will be unrecoverable following a crash if your code doesn't use transactions.&nbsp; Always use IXStore without transactions, unless you need undo capability, since its contents are always destroyed by a crash.&nbsp; Always use IXStoreFile with transactions, except for data that can be easily reconstructed, such as an index.</font>
+
+<p><font face="Times">Once you've started a transaction, your code can open blocks and make changes to them, or even start another transaction inside the previous one.&nbsp; The <b>nestingLevel</b> method tells how many transactions are pending on the context.&nbsp; This is important if a transaction has already been started by a method that invokes yours, so that yours doesn't finish a transaction that the invoking method is still working on.&nbsp; The nesting level also determines when blocks are made available to other contexts.&nbsp; Modified blocks are made available when the nesting level becomes 0--that is, when the last transaction is committed, or when the transaction that opened them is aborted.&nbsp; Unmodified blocks are made available when they're closed.</font>
+
+<p><font face="Times">At any point in a transaction, your code can send <b>abortTransaction</b> to the IXStore.&nbsp; This undoes everything you've done up to that point in the current transaction: created blocks are destroyed, freed blocks are recovered, block resizes are undone, and any changes made to blocks opened after the corresponding <b>startTransaction</b> message are undone and those blocks are closed. Also, any blocks opened in that transaction are made available to other contexts.</font>
+
+<p><font face="Times">When your code is ready to commit its changes, it sends <b>commitTransaction</b> to the IXStore.&nbsp; This closes all blocks opened since the last <b>startTransaction</b>, and makes sure all changes are recorded.&nbsp; Changes aren't flushed immediately, however, if the transaction is nested within another one.&nbsp; This means that changes committed by nested transactions can be undone by their parents.&nbsp; If the <b>commitTransaction</b> results in a nesting level of 0, then all pending changes are physically flushed, making them permanent, and all blocks that had been opened by the committing context are made available to other contexts.</font>
+
+<p><font face="Times">One restriction on transaction nesting is that changes to a block are associated with the transaction that opened the block.&nbsp; That is, within a nested transaction, changes made to any block opened by an outer transaction are associated with the outer transaction, not the nested transaction.&nbsp; The changes aren't undone when the inner transaction is aborted; the outer transaction must be aborted to undo the changes.&nbsp; Changes made to any block opened by the nested transaction, however, are associated with the nested transaction, not the outer transaction, and can be undone by aborting either transaction.</font>
+
+<p><font face="Times">Note that if your code makes changes outside any transaction while transactions are enabled, an enclosing transaction is started automatically.&nbsp; The next invocation of <b>startTransaction</b>, if any, before an intervening abort or commit, simply picks up this enclosing transaction, and reports a nesting level of 1.&nbsp; Thus, if nesting isn't needed, your code can simply enable transactions initially with a pair of <b>startTransaction</b>/<b>commitTransaction</b> messages, and thereafter use only <b>commitTransaction</b> to mark transaction boundaries, leaving&nbsp; transactions implicitly begin with the first modification following each commit.</font>
+
+<p><font face="Times">When using an IXStoreFile without transactions, try to cluster your updates into small windows of activity, and invoke <b>commitTransaction</b> at the close of each window to flush them immediately, as this will minimize the probability of damage in the event of a system crash or power loss.&nbsp; Also note that any modifications that haven't been committed are aborted when an IXStore is freed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">unsigned int <b>changeCount</b>;</font>
+
+<p><font face="Times">unsigned int <b>nestingLevel</b>;</font>
+
+<p><font face="Times">unsigned int <b>queueForward</b>;</font>
+
+<p><font face="Times">unsigned int <b>queueReverse</b>;</font>
+
+<p><font face="Times">struct StoreBroker *<b>storeBroker</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">changeCount</font></td>
+
+<td><font face="Times">The number of the changes made to the IXStore's contents since the IXStore was created.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">nestingLevel</font></td>
+
+<td><font face="Times">The number of the current nested transaction.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">queueForward</font></td>
+
+<td><font face="Times">For internal use by the IXStore.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">queueReverse</font></td>
+
+<td><font face="Times">For internal use by the IXStore.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">storeBroker</font></td>
+
+<td><font face="Times">For internal use by the IXStore.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Initializing, copying, and freeing instances</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copy</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Creating, copying, and freeing blocks</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">createBlock:ofSize:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">copyBlock:atOffset:forLength:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">freeBlock:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Opening and closing blocks</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">openBlock:atOffset:forLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">readBlock:atOffset:forLength:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">closeBlock:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing block sizes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">resizeBlock:toSize:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeOfBlock:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Using transactions</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">startTransaction</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">abortTransaction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">commitTransaction</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">areTransactionsEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">nestingLevel</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">changeCount</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing the contents</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getContents:andLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setContents:andLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Reducing memory consumption</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">compact</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>abortTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reverts the IXStore to the state it was in before the last time it received a <b>startTransaction</b> message, if transactions are enabled.&nbsp; Discards all changes made to blocks that were opened by the current transaction (even if they've been closed), closes those blocks if necessary, and makes them available to other contexts.&nbsp; Any blocks created by the current transaction are destroyed, any blocks freed are reclaimed, and any blocks resized are restored to their previous size.&nbsp; The current transaction is terminated, and the transaction in effect, if any, when the current transaction was started is made the current transaction.&nbsp; If the nesting level is 1 (that is, no transaction is pending), the state reverts to the last time a <b>commitTransaction</b> was received. Returns <b>self</b>.</font>
+
+<p><font face="Times">Blocks opened by an enclosing transaction are <i>not</i> affected, even if their contents have been changed since the receipt of the last <b>startTransaction</b> message.&nbsp; If transactions aren't enabled, only the block creations and freeings performed since the last <b>commitTransaction</b> message are reverted; changes made to the contents of blocks aren't undone.&nbsp; Even if your code never uses <b>startTransaction</b>, it should periodically send <b>commitTransaction</b> to establish a checkpoint for <b>abortTransaction</b>.</font>
+
+<p><font face="Times">This method increases the change count of the IXStore, indicating that a change in state has occurred which may have closed blocks.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nestingLevel</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>changeCount</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>areTransactionsEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>areTransactionsEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if transactions are enabled for the IXStore (that is, if the IXStore was ever sent a <b>startTransaction</b> message). Otherwise, it returns NO.&nbsp; You should use this method if you're not sure whether or not to send <b>startTransaction</b> messages, or when invoked by higher-level code that establishes the transaction management policy.</font>
+
+<p><font face="Times">The transaction management policy is a property of the contents of an IXStore.&nbsp; If your code copies the contents of an IXStore that has transactions enabled into an IXStore that doesn't, transactions will be enabled for the receiving IXStore.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nestingLevel</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>changeCount</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>changeCount</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of <b>commitTransaction</b> and <b>abortTransaction</b> messages received by the IXStore since it was created. That is, this number indicates the number of changes made to the IXStore's contents since the run-time object was initialized.</font>
+
+<p><font face="Times">This method is useful for determining if cached pointers to the contents of opened blocks are still valid, so the overhead of the block opening methods can be avoided.&nbsp; For example, if an object needs to repeatedly access the same block within a transaction, it can cache the pointer to the block's contents when it opens the block, along with the change count.&nbsp; From then on, whenever the object needs to access the block, it can check the IXStore's change count; if the change count hasn't increased, then no commits or transactions have occurred since the block was opened, which means that the cached pointer is still valid, and the object can use the pointer safely without having to open the block again--unless, of course, the object itself has since closed the block.&nbsp; (The use of this method by IXBTreeCursor accounts for a 40% performance improvement on sequential key reads when all pages are in memory.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nestingLevel</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Closes the block identified by <i>aHandle</i>.&nbsp; This allows the IXStore to relocate the block if needed.&nbsp; Changes to the block don't take effect until the transaction that opened it is committed; similarly, changes aren't undone until the transaction that opened the block is aborted.&nbsp; Open blocks are automatically closed when the transaction that opened them is either committed or aborted. Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Closing a block that was opened for writing does <i>not</i> make it available to other contexts; the transaction in which the block was opened must be aborted, or pending transactions committed until the nesting level is 0, for it to become available again.&nbsp; Blocks opened for reading become available when closed, since there are no changes to protect.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>commitTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Commits all changes made to blocks opened since the last <b>startTransaction</b>, closes the blocks.&nbsp; If the nesting level becomes 0, makes the blocks available to other contexts.&nbsp; Any creations, freeings or resizes performed since the <b>startTransaction</b> are also committed.&nbsp; The current transaction is terminated, and the enclosing transaction, if any, becomes the current transaction. Returns <b>self</b>.</font>
+
+<p><font face="Times">Your code may use this message even if transactions aren't enabled; the reversal of block-level operations (creating and freeing) is supported even in the absence of transactions.&nbsp; <b>commitTransaction</b> commits all such changes made since the last <b>commitTransaction</b>, and <b>abortTransaction</b> cancels all such changes made since the last <b>commitTransaction</b>.&nbsp; If transactions aren't enabled, this method closes <i>all</i> open blocks, making them available to other contexts, and commits <i>all</i> outstanding creates and frees.</font>
+
+<p><font face="Times">This method increases the change count of the IXStore, indicating that a change in state has occurred which may have closed blocks.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>changeCount</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>compact</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>compact</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Compacts the contents of the IXStore so that they consume as little storage as possible.&nbsp; This method moves blocks around physically within the IXStore, and so may take some time to complete.&nbsp; The amount of storage consumed may be reduced by as much as 50%.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If this method is invoked while transactions are pending, the actual compaction will be postponed until there are no transactions outstanding.&nbsp; When used with IXStoreFile, this method actually reduces the size of the file.&nbsp; Compaction also may occur automatically.&nbsp; This won't occur unless the IXStore consumes at least 16 MB of storage, and may not occur until much more storage is actually consumed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copy</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copy</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and returns a new store context, which addresses the same storage as the original.&nbsp; Changes made by either context will affect the shared storage, and will be reflected in both contexts.</font>
+
+<p><font face="Times">If you want to create a completely independent duplicate of an IXStore, you can use <b>getContents:andLength:</b> and <b>setContents:andLength:</b> as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">IXStore&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *aStore, *twinStore;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">vm_address_t theStorage;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">vm_size_t&nbsp;&nbsp;&nbsp; theLength;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aStore compact]; // Makes the transfer more efficient.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aStore getContents:&amp;theStorage andLength:&amp;theLength];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">twinStore = [[IXStore alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[twinStore setContents:theStorage andLength:theLength];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This technique is also effective for saving the contents of an IXStore into an IXStoreFile.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getContents:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContents:andLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>copyBlock:atOffset:forLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>copyBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>atOffset:</b>(unsigned int)<i>anOffset</i></font><br>
+<font face="Times"><b>forLength:</b>(unsigned int)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a handle to a new block whose contents are identical to the region of the block identified by <i>aHandle</i> specified by <i>anOffset</i> and <i>aLength</i>.</font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createBlock:ofSize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createBlock:</b>(unsigned int *)<i>aHandle</i> <b>ofSize:</b>(unsigned int)<i>size</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates a new block of <i>size</i> bytes and returns its handle by reference in <i>aHandle</i>.&nbsp; The new block is guaranteed to be zeroed.&nbsp; If you create a block of size <b>vm_page_size</b> or more, it's guaranteed to be page-aligned (<b>vm_page_size</b> is declared in the header file <b>mach/mach_init.h</b>).&nbsp; It isn't possible to create a block of size 0.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the IXStore.&nbsp; The storage substrate is also freed if there are no other store contexts addressing it.&nbsp; Returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>freeBlock:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes and frees the block identified by <i>aHandle</i>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getContents:andLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getContents:</b>(vm_address_t *)<i>theContents</i> <b>andLength:</b>(vm_size_t *)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the address and length of a copy of the IXStore's contents.&nbsp; <i>theContents</i> is a copy-on-write image of the original (<b>vm_address_t</b> is declared in the header file <b>mach/mach_types.h</b>).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Your code can use this method along with <b>setContents:andLength:</b> to create an independent copy of an IXStore (see the <b>copy </b>method description for an example).&nbsp; Be sure to compact the IXStore before invoking this method, so that the amount of memory copied is as small as possible.&nbsp; These methods also provide an efficient means of saving the contents of an IXStore into an IXStoreFile.</font>
+
+<p><font face="Times"><b>getContents:andLength:</b> must not be invoked when transactions are pending; if it is, IX_ArgumentError is raised.&nbsp; Your code should also not invoke this method while any blocks are open outside the scope of a transaction (since they may have been changed).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContents:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>copy</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes a new IXStore with zero capacity and transactions not enabled.&nbsp; This is the designated initializer for the IXStore class.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>nestingLevel</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>nestingLevel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the number of the transactions pending against the IXStore.&nbsp; If transactions aren't enabled, this method always returns 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areTransactionsEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>startTransaction</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>openBlock:atOffset:forLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>openBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>atOffset:</b>(unsigned int)<i>anOffset</i></font><br>
+<font face="Times"><b>forLength:</b>(unsigned int)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a region of the block identified by <i>aHandle</i>, beginning at <i>anOffset</i> and of <i>aLength</i> bytes, after opening it for writing.&nbsp; If your code writes outside of the opened area, your data may become corrupt.&nbsp; Neither <b>abortTransaction</b> nor <b>commitTransaction</b> will restore data damaged in this manner.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Unless it's certain that the store is memory-based, your application should assume that the data in the block is big-endian, and convert it to and from host endian-ness as needed.</font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">When using IXStoreFile, you shouldn't use <b>vm_copy()</b> to write data into a block.&nbsp; See the IXStoreFile class specification for more details.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeBlock:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>readBlock:atOffset:forLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>readBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>atOffset:</b>(unsigned int)<i>anOffset</i></font><br>
+<font face="Times"><b>forLength:</b>(unsigned int)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to a region in the block identified by <i>aHandle</i>, beginning at <i>anOffset</i> and of <i>aLength</i> bytes, after opening it for reading.&nbsp; It's assumed that your code won't alter the block.&nbsp; If your code does alter the block, your data may become corrupt, and neither <b>abortTransaction</b> nor <b>commitTransaction</b> will restore data damaged in this manner.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Unless it's certain that the store is memory-based, your application should assume that the data in the block is big-endian, and convert it to host endian-ness as needed.</font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>freeBlock:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>resizeBlock:toSize:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resizeBlock:</b>(unsigned int)<i>aHandle</i> <b>toSize:</b>(unsigned int)<i>aSize</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resizes the block identified by <i>aHandle</i> to <i>aSize</i>.&nbsp; Returns <b>self</b><i>.</i></font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sizeOfBlock:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readBlock:atOffset:forLength</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setContents:andLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContents:</b>(vm_address_t)<i>someContents</i> <b>andLength:</b>(vm_size_t)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the contents of the IXStore with the contents specified by <i>someContents</i> and <i>aLength</i>.&nbsp; The original contents of the IXStore are lost.&nbsp; <i>someContents</i> should be a virtual memory image retrieved by <b>getContents:andLength:</b> (<b>vm_address_t</b> is declared in the header file <b>mach/mach_types.h</b>).&nbsp; The IXStore assumes responsibility for freeing the virtual memory image, and may simply use it directly.&nbsp; Contents copied in this manner between instances of IXStore are shared as copy-on-write data. Returns <b>self</b>.</font>
+
+<p><font face="Times">Your code can use this method along with <b>getContents:andLength:</b> to create an independent copy of an IXStore (see the <b>copy </b>method description for an example).&nbsp; These methods also provide an efficient means of saving the contents of an IXStore into an IXStoreFile.</font>
+
+<p><font face="Times"><b>setContents:andLength:</b> must not be invoked when transactions are pending; if it is, IX_ArgumentError is raised.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getContents:andLength:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sizeOfBlock:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>sizeOfBlock:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the size, in bytes, of the block identified by <i>aHandle</i>.</font>
+
+<p><font face="Times">If there is no block identified by <i>aHandle</i>, IX_NotFoundError is raised.&nbsp; If the block has been opened by another context, IX_LockedError is raised.&nbsp; See the class description for more information on when a block becomes available to other contexts.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>resizeBlock:toSize:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openBlock:atOffset:forLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readBlock:atOffset:forLength</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>closeBlock:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>startTransaction</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>startTransaction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Begins a new transaction, which will be aborted or committed before all other outstanding transactions on the receiving context. If transactions aren't enabled for the IXStore, they're permanently enabled.&nbsp; Returns a number identifying the new transaction, and indicating the number of transactions outstanding, including the new one.&nbsp; This is the same value returned by the <b>nestingLevel</b> method.&nbsp; For example, if the nesting level is 0 and the IXStore receives <b>startTransaction</b> three times, the invocations of the method will return, in order, 1, 2, 3.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>abortTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>commitTransaction</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>areTransactionsEnabled</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>nestingLevel</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

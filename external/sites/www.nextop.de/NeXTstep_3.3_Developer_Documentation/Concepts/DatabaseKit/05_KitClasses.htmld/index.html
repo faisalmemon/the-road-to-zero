@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/05_KitClasses.rtfd -->
+<!-- Date: Sun Jun 28 19:35:57 1998 -->
+<head>
+<title>05_KitClasses</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>5</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Database Kit Classes and Protocols</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The classes and protocols in the Database Kit fall naturally into two groups, or layers:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <i>access layer</i> provides the core of any Database Kit application.&nbsp; The classes and protocols therein represent the components of a database model, store data that's retrieved from a database server, and mediate data transactions with the server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The <i>interface layer</i>, as its name implies, provides the classes and protocols that are used in your application's interface.&nbsp; The interface objects display data that's drawn from the access layer objects, let the user manipulate the displayed data, and provide controls that trigger data transactions.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The interface layer is a client of the access layer in the sense that the interface layer objects create instances of specific access layer classes, and depend on the functionality that these classes provide, while the access layer objects remain ignorant of the identity of the forces that prevail upon them.&nbsp; Although the practice is discouraged, it's possible to use the access layer without the interface layer.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Database Kit Library</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Database Kit library doesn't discriminate between the two layers:&nbsp; When you include the library in your project, you're gaining the object definitions for both layers.&nbsp; In addition, the library is represented, in your code, by a precompiled header, so you can import the header files for the entire Kit through a single statement:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;dbkit/dbkit.h&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Introducing the Database Kit library to your application was discussed in the &quot;Project Builder&quot; section of Chapter 4.&nbsp; To summarize that material:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The library is shared, and is included in your application by linking against the file <b>/usr/lib/libdbkit_s.a</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You must force the compiler to load the library's symbols; you do this by adding the following line to the file <b>Makefile.preamble</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">OTHER_LDFLAGS = -u libdbkit_s -u libNeXT_s -u libsys_s</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Access Layer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The classes and protocols in the Database Kit access layer take on two roles:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Model emulation</i>.&nbsp; They realize, as objects, the components of a database model, as well as the adaptor that lies beneath the model.&nbsp; They also allow you to form a connection (through the adaptor) to the database server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Data movement, storage, and manipulation</i>.&nbsp; They provide memory into which data that's retrieved from the server can be stored, and allow individual data items to be manipulated and sent back to the server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These roles work together to provide a model-based storage system for database data.&nbsp; The way this works in your application is that the modeling objects are used to configure the data-storage objects; data is then fetched from the server (as translated by the adaptor) and set in the storage objects.&nbsp; Put another way, the data-storage objects are containers forged from the molds of the modeling objects, and into which data is poured.</font>
+
+<p><font face="Times">The class and protocols of the access layer are shown in Figure 71.&nbsp; (Class names are in bold, protocols are regular.&nbsp; The protocols that are conformed to by a class, or adopted by another protocol are shown in italic.&nbsp; Inheritance is depicted left-to-right.)</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F1.gif" width=243 height=288></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 71</b></font><font face="Times">.&nbsp; Access Layer Classes and Protocols</font>
+
+<p><br><br>
+
+<p><font face="Times">The classes and protocols of the access layer are examined in the following chapters:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Chapter 6, &quot;Model Emulation&quot; examines the DBDatabase class and the DBProperties and DBEntities protocols as they define modeling objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Chapter 7, &quot;Connecting to the Server&quot; briefly looks at the DBDatabase methods through which you connect your application to a database server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Chapter 8, &quot;Data Storage, Retrieval, and Manipulation&quot; explains the basic techniques of configuring data-storage objects, retrieving data from the server, manipulating data, and sending modified values back to the server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Chapter 9, &quot;Advanced Record List Techniques&quot; pays attention to the finer points of data storage.&nbsp; In this chapter, data-storage objects are fine-tuned, and techniques such as joining tables and creating master-detail tables are demonstrated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Chapter 10, &quot;Fetching and Saving Data&quot; looks at the ways that you can fine-tune the data-fetching mechanism, and explains how to validate modified data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">One access layer class, DBBinder, is left out of the discussions in these chapters.&nbsp; DBBinder, a low-level class, gives you the most direct control of all aspects of</font><br>
+<font face="Times">access layer functionality.&nbsp; The DBBinder class description in <b>/NextLibrary/Documentation/NextDev/GeneralRef/04_DatabaseKit/Classes</b></font><br>
+<font face="Times">gives a thorough treatment of the class.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>The Interface Layer</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The interface layer classes provide objects that display and validate data, and that provide the connection between the access layer and the user interface.&nbsp; The chart for the interface layer is given in Figure 72.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="F0.gif" width=289 height=217></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Figure 72</b></font><font face="Times">.&nbsp; Interface Layer Classes</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br>
+
+</body>
+</html>

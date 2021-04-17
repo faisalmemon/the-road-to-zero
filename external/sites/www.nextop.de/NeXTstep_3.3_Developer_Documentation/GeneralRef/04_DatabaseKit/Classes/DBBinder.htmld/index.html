@@ -1,0 +1,3674 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/04_DatabaseKit/Classes/DBBinder.rtf -->
+<!-- Date: Sun Jun 28 20:04:08 1998 -->
+<head>
+<title>DBBinder</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>DBBinder</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">DBCursorPositioning</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">dbkit/DBBinder.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBBinder class provides a mechanism for connecting individual data items in a database to particular objects, variables, and methods in your application.&nbsp; Most applications benefit by avoiding DBBinder and working instead with higher-level classes such as DBRecordList or DBRecordStream.&nbsp; You should create and use DBBinder objects only if your application needs to augment or modify the functionality provided by DBRecordStream or DBRecordList.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Preparing a DBBinder</b></font>
+
+<p><font face="Times">To access a database, a DBBinder must be initialized and associated with a database model through a DBDatabase object, as shown below:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Initialize the DBBinder through the init method.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBBinder *myBinder = [[DBBinder alloc] init];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Associate it with a DBDatabase through the setDatabase: method.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[myBinder setDatabase:myDB];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Furthermore, the DBBinder must be informed of which properties in which tables in the database it should accommodate.&nbsp; There are two ways to do this:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you can determine the list of properties that you're interested in, you should inform the DBBinder through the <b>setProperties:</b> method.&nbsp; As a convenience, the <b>initForDatabase:withProperties:andQualifier:</b> method lets you initialize the DBBinder and set its DBDatabase and property list (and an optional property qualifier) in a single breath.&nbsp; An example of this method is given in the next section.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Alternatively, you can describe the properties that you want as an expression in the database's query language, passing the expression (a string) as the argument to the <b>evaluateString:</b> method, as shown below:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">/* Select all the properties in the &#34;Weight&#34; table.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">[myBinder evaluateString:&#34;select * in Weight&#34;];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The optional qualifier described as part of the <b>initForDatabase:...</b>&nbsp; method can be set separately, through the <b>setQualifier: </b>method.&nbsp; The qualifier, of which there can be but one at a time per DBBinder, is used to filter properties when the DBBinder is told to select data from the database.&nbsp; (See the &quot;Qualification&quot; section, below for more on the qualifier.)</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Records and Containers</b></font>
+
+<p><font face="Times">The pith of a DBBinder is a collection of objects that hold records from a database table. Each object, called a <i>record</i>, holds one record from the database.&nbsp; The collection of a DBBinder's record-holding objects is stored in a <i>container</i> object.&nbsp; Record and container objects, however, aren't built into the DBBinder class--you have to specify what sorts of objects you want to assume these two roles.</font>
+
+<p><font face="Times">Specifying a container is easy, you invoke the <b>setContainer:</b> method, passing an object that conforms to the DBContainers protocol.&nbsp; That object will be used by the DBBinder to store record objects when the DBBinder fetches from the database. Barring any specialized requirements, a DBBinder is well served using a List object as its container (DBBinder defines a List category that allows a List to pose as a DBContainers-conforming object).&nbsp; You can also use a DBBinder without setting its container.&nbsp; For a container-less DBBinder, fetching data is done one record at a time and can only step forward through the database.</font>
+
+<p><font face="Times">Setting a record object takes a bit more thought.&nbsp; There are two general approaches:&nbsp; You can specify an object yourself that will be copied for each record, or you can let the DBBinder create and assemble a class dynamically, instances of which it will then create to store records.</font>
+
+<p><font face="Times">The first approach centers around the <b>setRecordPrototype:</b> method.&nbsp; To this method you pass an object that will be copied as records are fetched from the table, one copy per record.&nbsp; But you're not done yet.&nbsp; To actually get a record's property values into a copy of the prototype record object, you must create an association between each property and one of the record object's instance variables, or between a property and a pair of methods, one to set and the other to retrieve the property's value.&nbsp; These associations are created through the <b>associateRecordIvar:withProperty:</b> and <b>associateRecordSelectors::withProperty: </b>methods.&nbsp; You can mix and match associations within a record object such that some properties are associated with instance variables and others are associated with method pairs, but a single property can only be associated with one variable or one pair of methods.</font>
+
+<p><font face="Times">For example, let's say you want to access a table that contains information about convicted felons.&nbsp; Furthermore, you're only interested in a felon's name and the length of his or her sentence.&nbsp; To accommodate the records in the table you create a class called FelonRecord, for which the interface file might look like this:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface FelonRecord : Object</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">char *name;</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">float sentence;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Having connected to the database and the table (as described in the DBDatabase class and DBEntities protocol descriptions), you would create a DBBinder object, set the record prototype, and associate the appropriate properties with the designated instance variables:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBDatabase myDB;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id felonTable;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">id nameProp, sentenceProp;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">List *propList = [[List alloc] initCount:2];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBBinder *aBinder;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Get the database, entity, and properties.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">myDB = [DBDatabase findDatabaseNamed:&#34;Crime Data&#34; connect:YES];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">felonTable = [myDB entityNamed:&#34;Convicts&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">nameProp = [felonTable propertyNamed:&#34;Name&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sentenceProp = [felonTable propertyNamed:&#34;Sentence Length&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:nameProp];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[propList addObject:sentenceProp];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Initialize the binder.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">aBinder = [[DBBinder alloc] initForDatabase:myDB</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">withProperties:propList</font><br>
+<img src="../../../Images/sp.gif" width=320 height=1><font face="Courier" size="-1">andQualifier:nil];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Set the container, record prototype, and associations.&nbsp; */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aBinder setContainer:[[List alloc] init]];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aBinder setRecordPrototype:[[FelonRecord alloc] init];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aBinder associateRecordIvar:&#34;name&#34; withProperty:nameProp];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aBinder associateRecordIvar:&#34;sentence&#34; withProperty:sentenceProp];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The DBBinder is now ready to fetch records from the table (as described in the following section).</font>
+
+<p><font face="Times">The other approach to creating a record object prototype requires less work and is more adaptable, but it's also less controllable. It centers around the method <b>createRecordPrototype</b>.&nbsp; When a DBBinder receives a <b>createRecordPrototype</b> message, it creates and assembles, while you wait, a class (by default, a subclass of Object) that will be used to create record objects.&nbsp; This new class defines a set of instance variables that match, in number, name, and type, the properties that the DBBinder knows about (as set through the methods described in the previous section, and possibly modified by <b>addProperty:</b> and <b>removePropertyAt:</b>).&nbsp; When a record is fetched, an instance of the class is created and its instance variables are bound to the record's properties.&nbsp; Fetching (through the <b>fetch</b> method) automatically invokes <b>createRecordPrototype</b>, thus you needn't invoke it yourself.</font>
+
+<p><font face="Times">You can prepare the dynamic record class through two DBBinder class methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setDynamicRecordClassName:</b> takes a string argument that's used to name the class that DBBinder will create; by default, DBBinder gives the class an arbitrary, but unique, name.&nbsp; The argument that you pass must itself be a unique class name--it <i>mustn't</i> name an existing class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>setDynamicRecordSuperclassName:</b> also takes a string argument that names a class, but for this method the named class <i>must</i> exist.&nbsp; It's used as the superclass for the class that DBBinder will create (which, as mentioned above, is Object by default).&nbsp; This is of particular use if you've created a class whose set of instance variables are known to match, to some extent, the properties in the table that you're binding to.&nbsp; If the set isn't complete, the subclass (the class that DBBinder will create) will be given a sufficient number of additional instance variables.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Since these are class methods, invoking either of them will affect all subsequent invocations of <b>createRecordPrototype</b> for all DBBinder instances.&nbsp; Classes that were previously created are unaffected.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Of the two approaches, the <b>setRecordPrototype:</b> method takes priority.&nbsp; Reinforcing this, you shouldn't send <b>createRecordPrototype</b> to a DBBinder that has previously received a <b>setRecordPrototype:</b> message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Using a DBBinder</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The point of all this, of course, is to gain access to the data in the actual database.&nbsp; Having set up your DBBinder, you can command it to retrieve data through the <b>select</b>, <b>selectWithoutFetching</b>, and <b>fetch</b> methods (<b>select</b> performs a select and a fetch; <b>selectWithoutFetching</b> just selects).&nbsp; The <b>insert</b>, <b>update</b>, and <b>delete</b> methods write data back to the database.&nbsp; In addition, the <b>evaluateString:</b> method can be used to command the adaptor associated with the DBBinder's DBDatabase to evaluate the given string, and thereby produce data or modify data.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">After fetching data into a DBBinder's record objects, you can point to a particular record by positioning the &quot;cursor&quot; in the container.&nbsp; This is done through the DBCursorPositioning protocol methods such as <b>setNext</b> and <b>setTo:</b>.&nbsp; (If the DBBinder doesn't have a container, then only the <b>setNext</b> method can be used; in this case, <b>setNext</b> causes a fetch to be performed.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Having positioned the cursor, you can retrieve a DBValue object from the pointed-to record for a particular property through the <b>valueForProperty:</b> method.&nbsp; You can then examine and modify the DBValue; any changes you make will be imprinted on the record in the DBBinder and will be written back to the database when the DBBinder receives an <b>update</b> message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The DBBinder class also provides an asynchronous fetch mechanism, provoked by the <b>fetchInThread</b> method.&nbsp; When the DBBinder receives a <b>fetchInThread</b> message, it creates a separate thread in which the fetch is performed.&nbsp; (Note that asynchronous fetching requires containers.)&nbsp; To check on the progress of a threaded fetch, use the method <b>checkThreadedFetchCompletion:</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=24></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Qualification</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=40 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=40></td>
+
+<td nowrap></td>
+
+<td><font face="Times">You can give a DBBinder a DBQualifier object through the <b>setQualifier:</b> or <b>initForDatabase:withProperties:andQualifier: </b>method.&nbsp; The DBQualifier is applied to data that's obtained through DBBinder's fetch and select methods; note, however, that it isn't used by <b>evaluateString:</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">id <b>database</b>;</font>
+
+<p><font face="Times">id <b>recordPrototype</b>;</font>
+
+<p><font face="Times">id <b>container</b>;</font>
+
+<p><font face="Times">id <b>delegate</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">database</font></td>
+
+<td><font face="Times">The DBDatabase object with which this DBBinder is associated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">recordPrototype</font></td>
+
+<td><font face="Times">A template for the DBBinder's record objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">container</font></td>
+
+<td><font face="Times">The repository for record objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">delegate</font></td>
+
+<td><font face="Times">The receiver of notification messages.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">DBCursorPositioning</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFirst</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setNext</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPrevious</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setLast</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setTo:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">currentPosition</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">init</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initForDatabase:withProperties:andQualifier:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Connecting to a database</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">database</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDatabase:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing properties</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getProperties:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setProperties:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addProperty:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removePropertyAt:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the qualifier</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">qualifier</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setQualifier:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the container</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">container</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setContainer:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFlushEnabled:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isFlushEnabled</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFreeObjectsOnFlush:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">areObjectsFreedOnFlush</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing the record prototype</font></td>
+
+<td><font face="Times">+ setDynamicRecordSuperclassName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><font face="Times">+ setDynamicRecordClassName:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setRecordPrototype:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">createRecordPrototype</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">ownsRecordPrototype</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordPrototype</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">associateRecordIvar:withProperty:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">associateRecordSelectors::withProperty:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">valueForProperty:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Ordering and ignoring records</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addRetrieveOrder:for:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeRetrieveOrderFor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">retrieveOrderFor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">positionInOrderingsFor:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">ignoresDuplicateResults</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setIgnoresDuplicateResults:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing the database</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">fetch</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">select</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectWithoutFetching</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insert</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">update</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delete</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">evaluateString:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">adaptorWillEvaluateString:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Fetching in a thread</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">fetchInThread</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">cancelFetch</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">checkThreadedFetchCompletion:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Limiting a fetch</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setMaximumRecordsPerFetch:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">maximumRecordsPerFetch</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">recordLimitReached</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Using the shared cursor for several binders</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setSharesContext:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sharesContext</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Managing general resources</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reset</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">flush</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">scratchZone</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Appointing a delegate</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delegate</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setDelegate:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Archiving</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">read:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">write:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDynamicRecordClassName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setDynamicRecordClassName:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the name of the record class that's dynamically created and assembled by the <b>createRecordPrototype</b> method.&nbsp; The argument must <i>not</i> name an existing class; if it does, invocations of <b>createRecordPrototype</b> will fail.&nbsp; An argument of NULL erases the previously established class name.&nbsp; Lacking the instruction provided by this method, the DBBinder class creates a class name that's arbitrary and unique.&nbsp; The dynamic record class mechanism only applies to DBBinder objects that have no prototype record objects; in other words, it applies only to DBBinders that haven't received a <b>setRecordPrototype:</b> message. See the class description above for a detailed description of the dynamic record class mechanism.&nbsp; Returns <b>self</b>, regardless of the viability of the argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setDynamicRecordSuperclassName:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordPrototype:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDynamicRecordSuperclassName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ <b>setDynamicRecordSuperclassName:</b>(const char *)<i>aName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Identifies, by name, the class that's used as the superclass of the record classes that are created by <b>createRecordPrototype</b>. The argument must name an existing class; if it doesn't, invocations of <b>createRecordPrototype</b> will fail.&nbsp; By default, dynamic record classes are subclasses of Object; an argument of NULL to this method will return the superclass to the default.&nbsp; The dynamic record class mechanism only applies to DBBinder objects that have no prototype record objects; in other words, it applies only to DBBinders that haven't received a <b>setRecordPrototype:</b> message.&nbsp; See the class description above for a detailed description of the dynamic record class mechanism.&nbsp; Returns <b>self</b>, regardless of the viability of the argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setDynamicRecordClassName:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordPrototype:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>adaptorWillEvaluateString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>adaptorWillEvaluateString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the adaptor associated with the DBBinder's DBDatabase object will accept the given string for evaluation (as determined by sending bionder:willEvaluateString: to the DBBinder's delegate), otherwise returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binder:willEvaluateString:</b> (DBBinder delegate)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addProperty:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Adds the given object (which should conform to the DBProperties protocol) to the DBBinder's list of properties that it's interested in.&nbsp; The list can't contain duplicates; if the property is already present, the addition isn't performed.&nbsp; The return value should be ignored.</font>
+
+<p><font face="Times">Typically, you only use this method if you're building the DBBinder's property list incrementally, and so will rely on the DBBinder to create a record class dynamically.&nbsp; If you're setting your own prototype record object (through <b>setRecordPrototype:</b>), you should, rather than use this method, inform the DBBinder of its properties all at once, through <b>initForDatabase:withProperties:andQualifier:</b> or <b>setProperties:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removePropertyAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addRetrieveOrder:for:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRetrieveOrder:</b>(DBRetrieveOrder)<i>anOrder</i> <b>for:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes the order in which records are retrieved from the database (and stored in the DBBinder's container).&nbsp; Using the value of the <i>aProperty</i> property as a retrieval &quot;key,&quot; records are retrieved in least-to-greatest or greatest-to-least order, as <i>anOrder</i> is DB_AscendingOrder or DB_DescendingOrder.&nbsp; If <i>anOrder</i> is DB_NoOrder, the default, the property is removed from the retrieval order scheme.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">You can invoke this method for as many properties as you choose, but the order in which the invocations are performed is important:&nbsp; The first invocation establishes the primary retrieval order property, the second establishes the secondary such property, and so on.&nbsp; If two or more records have the same value for their primary properties, their order is determined according to the values of their secondary properties.&nbsp; If they still can't be distinguished, the decision falls to the tertiary properties, and so on.</font>
+
+<p><font face="Times">Note well that it's the adaptor--not the DBBinder--that retrieves records.&nbsp; If the adaptor that you're using doesn't support the notion of an ordered retrieval, then this method is for naught.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>retrieveOrderFor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRetrieveOrderFor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>positionInOrderingsFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>areObjectsFreedOnFlush</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>areObjectsFreedOnFlush</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the objects in the DBBinder's container are freed when the DBBinder is flushed, otherwise returns NO. Flushing is explained in the description of the <b>flush</b> method.&nbsp; By default, the objects are freed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFreeObjectsOnFlush:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>associateRecordIvar:withProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>associateRecordIvar:</b>(const char *)<i>variableName</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withProperty:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Associates the record object instance variable named <i>variableName</i> with the given property such that when a record is fetched from the database, the value of the named instance variable (in the record object that's created to hold the record) is set to the value at the property.&nbsp; The property's value is coerced, if possible, to match the data type of the instance variable.&nbsp; If <i>aProperty </i>isn't in the DBBinder's list of properties, the association isn't made and <b>nil</b> is returned, otherwise non-<b>nil</b> is returned.</font>
+
+<p><font face="Times">You should only invoke this method if you're setting your own prototype record object (through the <b>setRecordPrototype: </b>method).&nbsp; Furthermore, the prototype record must already be set when you invoke this method, and it must contain an instance variable with the given name.&nbsp; Failing these, the association isn't made (although the return value will still be non-<b>nil</b>).</font>
+
+<p><font face="Times">Rather than associate a property with an instance variable, you can associate it with a pair of instance methods, through the <b>associateRecordSelectors:withProperty:</b> method.&nbsp; However, a single property can be associated with only one instance variable or one method pair; invoking this method with a particular property undoes the effect of a previous invocation of this or of the <b>associateRecordSelectors:withProperty:</b> method for that property.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>associateRecordSelectors::withProperty:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>associateRecordSelectors::withProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>associateRecordSelectors:</b>(SEL)<i>set</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>:</b>(SEL)<i>get</i></font><br>
+<font face="Times"><b>withProperty:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Associates the record object instance methods <i>set</i> and <i>get</i> with the given property such that when a record is fetched from the database, the value at the property is set through the <i>set</i> method, and when the record is written back to the database, the value is retrieved through the <i>get</i> method.&nbsp; Either or both of the selector arguments may be NULL.&nbsp; If non-NULL, the <i>set</i> method must take exactly one argument, the value that's being set; the <i>get</i> method must take no arguments.&nbsp; The data type of the value returned by the <i>get</i> method should match that of the <i>set</i> method's argument.</font>
+
+<p><font face="Times">You should only invoke this method if you're setting your own prototype record object (through the <b>setRecordPrototype: </b>method).&nbsp; Furthermore, the prototype record must have already been set, and the object must respond to the <i>set</i> and <i>get</i> methods (if they're non-NULL).&nbsp; If it doesn't respond, or if <i>aProperty</i> isn't in the DBBinder's list of properties, the association isn't made and <b>nil</b> is returned.&nbsp; Otherwise, the method returns non-<b>nil.</b></font>
+
+<p><font face="Times">Rather than associate a property with a pair of methods, you can associate it with an instance variable, through the <b>associateRecordIvar:withProperty:</b> method.&nbsp; However, a single property can be associated with only one instance variable or one method pair; invoking this method with a particular property undoes the effect of a previous invocation of this or of the <b>associateRecordIvar:withProperty:</b> method for that property.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>associateRecordIvar:withProperty:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>cancelFetch</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cancelFetch</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Interrupts an asynchronous fetch.&nbsp; You can also use this method after a successful synchronous fetch to ensure that idle resources are reclaimed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchInThread</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchDone:</b> (DBDatabase)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>checkThreadedFetchCompletion:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkThreadedFetchCompletion:</b>(double)<i>timeout</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you're performing an asynchronous fetch but you're not using the Application Kit's event loop--which is generally not a particularly safe thing to do--you should invoke this message (after invoking <b>fetchInThread</b>) to ensure that the delegate message <b>binderDidFetch:</b> is sent.&nbsp; The argument is the maximum amount of time, in seconds, to wait before returning.&nbsp; Returns <b>nil</b> (and the message isn't sent) if the time limit expires before the fetch completes, otherwise returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchInThread</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>container</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;DBContainers&gt;)<b>container</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBBinder's container object, as set through <b>setContainer:</b>.&nbsp; The container, which must conform to the DBContainers protocol, holds the record objects that are created when the DBBinder fetches data.&nbsp; A DBBinder has no default container and can operate without one, although this impedes some of the object's functionality.&nbsp; Lacking a container, a DBBinder can't perform an asynchronous fetch, and its cursor can only be positioned through the <b>setNext</b> method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContainer:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>createRecordPrototype</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createRecordPrototype</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Creates and assembles a class that's used to create record objects.&nbsp; The class is given sufficient instance variables to hold the DBBinder's properties (one instance variable per property).&nbsp; By default, the name of the class that's created is arbitrary and unique and its superclass is Object.&nbsp; You can change these settings through the <b>setDynamicRecordClass:</b> and <b>setDynamicRecordSuperclass:</b> class methods.&nbsp; This method has no effect and returns <b>nil</b> under the following conditions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the DBBinder's current prototype record object isn't <b>nil</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the DBBinder has no properties.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the name set through <b>setDynamicRecordClass:</b> names an existing class.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If the class named by <b>setDynamicRecordSuperclass:</b> doesn't exist.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Upon success, this method returns the class that it created.</font>
+
+<p><font face="Times">This method is automatically invoked when the DBBinder fetches data, thus you needn't invoke it directly.&nbsp; In general, it's a good idea to never invoke this method; however, if you do--for example, to examine the return value--you should send a <b>setRecordPrototype:nil</b> message to the DBBinder before the next fetch to ensure that the correct class will be assembled.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>setDynamicRecordClass:</b>, + <b>setDynamicRecordSuperclass:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>database</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBDatabase *)<b>database</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBDatabase object that's associated with the DBBinder.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initForDatabase:withProperties:andQualifier:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDatabase:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delegate</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object that will receive notification messages for the DBBinder.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>delete</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>delete</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Deletes from the database each of the DBBinder's record objects.</font>
+
+<p><font face="Times">Before the operation begins, a <b>binderWillDelete:</b> message is sent to the DBBinder's delegate (with the DBBinder as the argument); if the delegate message returns NO, then the deletion isn't performed and this method returns <b>nil</b>.&nbsp; After all the records have been processed, the DBBinder is flushed.&nbsp; If the records were successfully deleted, a <b>binderDidDelete:</b> message is sent to the delegate and <b>self</b> is returned, otherwise the delegate message isn't sent and <b>nil</b> is returned.</font>
+
+<p><font face="Times">As each record is deleted, one of two messages is sent to the container's delegate (if the DBBinder has a container, if the container has a delegate, and if the delegate implements the method):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didAcceptObject:</b> if the record was deleted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didRejectObject:</b> is sent if the record couldn't be deleted.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For both methods, the first argument is the DBBinder and the second is the record object.&nbsp; The values returned by these methods are ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>evaluateString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>evaluateString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Tells the adaptor to evaluate and execute the commands that are encoded in <i>aString</i>.&nbsp;&nbsp;&nbsp; The DBBinder's qualifier <i>isn't</i> applied to the evaluation.</font>
+
+<p><font face="Times">Before the evaluation is performed, a <b>binder:willEvaluateString:</b> message is sent to the DBBinder's delegate.&nbsp; If the delegate message returns NO, then the evaluation isn't performed and this method immediately returns NO.</font>
+
+<p><font face="Times">The DBBinder is then flushed, and the evaluation is performed by sending an <b>evaluateString:</b> message to the DBDatabase, passing <i>aString</i> as the argument.&nbsp; If the DBDatabase message returns NO, then this method returns NO, otherwise a <b>binder:didEvaluateString:</b> message is sent to the delegate and YES is returned.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetch</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fetches records from the database, forms a record object for each, and places the record objects in the DBBinder's container.&nbsp; If the binder has no container,&nbsp; you should use the <b>setNext</b> method, rather than this one, to fetch data.</font>
+
+<p><font face="Times">Before the fetch begins, the DBBinder's delegate is sent a <b>binderWillFetch:</b> message; after, it's sent <b>binderDidFetch:</b>.&nbsp; If <b>binderWillFetch:</b> returns NO, the fetch isn't performed and this method immediately returns <b>nil</b>.</font>
+
+<p><font face="Times">As each record of data is fetched, a copy of the DBBinder's prototype record object is created to hold the data.&nbsp; If the DBBinder's prototype record hasn't been set, a class is dynamically assembled to fill the need, as explained in the description of <b>createRecordPrototype</b>.</font>
+
+<p><font face="Times">The fetch continues until there's no more data to retrieve, or until the record limit (as set through the <b>setMaximumRecordsPerFetch:</b> method) has been reached.</font>
+
+<p><font face="Times">After the fetch has ended, the DBBinder's cursor is set to the first record in the container (or to the single fetched record if there is no container) and <b>self</b> is returned.&nbsp; If there was no data to fetch, or if there's a fetch in progress (and the DBBinder has a container), the cursor isn't set and <b>nil</b> is returned.</font>
+
+<p><font face="Times">If the fetch ended by exhausting the source data--in other words, it didn't end because the record limit was reached--you should then invoke <b>cancelFetch</b> to reclaim resources that were used during the fetch.&nbsp; Use the <b>recordLimitReached</b> method to test whether the fetch ended because it reached the limit while there was more data to fetch.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>fetchInThread</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetchInThread</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fetches data asynchronously from the database by performing the fetch in a separate thread.&nbsp; The general mechanism and conditions are as described in the <b>fetch</b> method, but with these differences:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An asynchronous fetch only works if the DBBinder has a container.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You shouldn't invoke <b>cancelFetch</b> after invoking this method unless you actually want to abort the fetch.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The record limit set through <b>setMaximumRecordsPerFetch:</b>has no effect on an asynchronous fetch.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If there is no container, or if the <b>binderWillFetch:</b> delegate message returns NO, then the fetch isn't performed and this method returns <b>nil</b>.&nbsp; Otherwise, this method returns <b>self</b> while the fetch proceeds in the background.&nbsp; When the fetch is complete, the <b>binderDidFetch:</b> method is sent to the delegate.</font>
+
+<p><font face="Times">If you're not using the Application Kit's main event loop, then you probably don't want to fetch asynchronously--there are any number of things that you can do, in this situation, that will make your application hang.&nbsp; But if you're feeling lucky you should note that this method, when run without the App Kit, should be followed by an invocation of <b>checkThreadedFetchCompletion:</b>.&nbsp; This synchronizes the fetch thread with the main thread, and ensures that the <b>binderDidFetch:</b> message is sent.&nbsp; Good luck.</font>
+
+<p><font face="Times">To be used in an asynchronous fetch, the DBBinder's container must be thread-safe (it must be re-entrant).&nbsp; Alternatively, if you limit yourself to DBCursorPositioning methods, such as <b>setTo:</b> and <b>setNext:</b>, you can access the container regardless of the type of fetch employed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>cancelFetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>checkThreadedFetchCompletion:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>flush</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>flush</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If flushing is enabled, this empties the DBBinder's container.&nbsp; Furthermore, if the DBBinder has been told to free-on-flush, the records that were in the container are freed and the prototype record object is set to <b>nil</b>.&nbsp; By default, both flushing and free-on-flush are enabled.&nbsp; Returns YES if flushing is enabled, NO if not.</font>
+
+<p><font face="Times">This method always interrupts a fetch, if one is in progress, whether or not flushing is enabled.</font>
+
+<p><font face="Times">The following DBBinder methods may cause <b>flush</b> to be invoked:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=157></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">evaluateString:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">selectWithoutFetching</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insert</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">update</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">delete</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setProperties:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">reset</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">free</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFreeOnFlush:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Frees the DBBinder and its records.&nbsp; If the DBBinder owns the prototype record object, it too is freed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>getProperties:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Fills <i>aList</i> with the DBBinder's properties, then returns the List directly and by reference.&nbsp; The order of the properties in the List is that by which they were added to the DBBinder.&nbsp; You mustn't free the contents of <i>aList</i>, although you may free the List itself.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initForDatabase:withProperties:andQualifier:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addProperty</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>ignoresDuplicateResults</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>ignoresDuplicateResults</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBBinder is set to ignore duplicate records during a select.&nbsp; The default is NO.&nbsp; It's up to the adaptor to support this (the Oracle and Sybase adapters supplied with the Database Kit do).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIgnoresDuplicateResults:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The designated initializer for the DBBinder class, <b>init</b> initializes and returns the DBBinder.&nbsp; All the objects that the DBBinder owns or knows of, such as its container, properties, DBDatabase, and DBQualifier are set to <b>nil</b>.&nbsp; Its boolean attributes are set as follows:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Attribute</b></font></td>
+
+<td><font face="Helvetica"><b>Value</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">flushing enabled?</font></td>
+
+<td><font face="Times">YES</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">frees properties on flush?</font></td>
+
+<td><font face="Times">YES</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">ignores duplicates?</font></td>
+
+<td><font face="Times">NO</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">shares context?</font></td>
+
+<td><font face="Times">NO</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initForDatabase:withProperties:andQualifier</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initForDatabase:withProperties:andQualifier:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initForDatabase:</b><i>aDBDatabase</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withProperties:</b>(List *)<i>propertyList</i></font><br>
+<font face="Times"><b>andQualifier:</b>(DBQualifier *)<i>aDBQualifier</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invokes <b>init</b> and then sets the DBBinder's DBDatabase, properties, and DBQualifier as given by the arguments.&nbsp; The properties in <i>propertyList</i> are added to the DBBinder's own List, thus the argument may be freed.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>init</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>insert</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insert</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts into the database each of the DBBinder's record objects.</font>
+
+<p><font face="Times">Before the operation begins, a <b>binderWillInsert:</b> message is sent to the DBBinder's delegate (with the DBBinder as the argument); if the delegate message returns NO then the insertion isn't performed and <b>nil</b> is immediately returned by this method.&nbsp; After all the records have been processed, the DBBinder is flushed.&nbsp; If the records were successfully inserted, a <b>binderDidInsert:</b> message is sent to the delegate and <b>self</b> is returned, otherwise the delegate message isn't sent and <b>nil</b> is returned.</font>
+
+<p><font face="Times">As each record is inserted, one of two messages is sent to the container's delegate (if the DBBinder has a container, if the container has a delegate, and if the delegate implements the appropriate method):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didAcceptObject:</b> if the record was inserted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didRejectObject:</b> is sent if the record couldn't be inserted.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For both methods, the first argument is the DBBinder and the second is the record object.&nbsp; The values returned by these methods are ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>isFlushEnabled</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isFlushEnabled</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBBinder has flushing enabled, otherwise return NO.&nbsp; The default is YES.&nbsp; See the description of the <b>flush </b>method for more information.&nbsp; (Note that sharing a cursor is incompatible with flushing, so <b>setSharesContext:</b> has the side effect of disabling flushing.)</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flush</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushEnabled:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSharesContext:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>maximumRecordsPerFetch</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>maximumRecordsPerFetch</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the maximum number of records that will be retrieved during a synchronous fetch, as set through the <b>setMaximumRecordsPerFetch:</b> method.&nbsp; By default, this limit is set to DB_NoIndex, which imposes no limit.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaximumRecordsPerFetch:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordLimitReached</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>ownsRecordPrototype</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>ownsRecordPrototype</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBBinder owns its prototype record object--in other words, if it will create a record class for you (when <b>createRecordPrototype</b> is invoked).&nbsp; If you've set the prototype record object yourself, through <b>setRecordPrototype:</b>, then this returns NO.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>positionInOrderingsFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>positionInOrderingsFor:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an integer that indicates the level (primary, secondary, tertiary, and so on) at which the given property is used to order the records that are retrieved from the database.&nbsp; The ordering position of a particular property is the order in which it was added to the ordering mechanism (amongst the currently &quot;active&quot; ordering properties) through the <b>addRetrieveOrder:for: </b>method.&nbsp; A return of DB_NoIndex means that the property isn't used in the ordering mechanism.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRetrieveOrder:For:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>qualifier</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBQualifier *)<b>qualifier</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBQualifier object that was set through <b>setQualifier:</b> or <b>initForDatabase: withProperties:andQualifier:</b>.&nbsp; The qualifier is used to qualify values during a select.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setQualifier:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initForDatabase:withProperties:andQualifier:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>read:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>read:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Reads the DBBinder from the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordLimitReached</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>recordLimitReached</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If the previous fetch was stopped because the DBBinder's record limit (as set through the <b>setMaximumRecordsPerFetch: </b>method) was reached, then this returns YES.&nbsp; By default, this returns NO; the <b>flush</b> method will also set this to return NO, whether or not flushing is enabled.&nbsp; See the description of the <b>fetch</b> method for an example of the use this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaximumRecordsPerFetch:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>maximumRecordsPerFetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>recordPrototype</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordPrototype</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the DBBinder's prototype record object.&nbsp; If you've set the object yourself, through <b>setRecordPrototype:</b>, then that object is returned.&nbsp; Otherwise, this returns <b>nil</b> unless you've previously invoked <b>createRecordPrototype</b> directly, or unless this is called from within a subclass implementation of <b>fetch</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordPrototype</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createRecordPrototype</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removePropertyAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removePropertyAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the property at the given index.&nbsp; To find the index of a particular property, get the DBBinder's List of properties through the <b>getProperties:</b> method, and then ask for the index by sending <b>indexOf:</b> to the List, passing the property as the argument.&nbsp; Returns the property (or <b>nil</b> if there was none).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addProperty:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeRetrieveOrderFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeRetrieveOrderFor:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the given property from the list of properties that are used to sort records as they're being fetched.&nbsp; The property's retrieve order constant is set to DB_NoOrder.&nbsp; Returns <b>nil</b> if the property hadn't previously been added to the record-sorting list (if it hadn't previously received an <b>addRetrieveOrderFor:</b> message), otherwise <b>self</b> is returned.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRetrieveOrderFor:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>positionInOrderingsFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>reset</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reset</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Restores the DBBinder to a virgin state.&nbsp; The DBBinder is first flushed (which cancels a fetch, if one is in progress), then the objects that it has allocated, and any that you've allocated in the scratch zone, are freed.&nbsp; The <b>setProperties:</b> and <b>free</b> methods automatically cause a reset.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flush</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>scratchZone</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>retrieveOrderFor:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBRetrieveOrder)<b>retrieveOrderFor:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a constant that indicates the order in which records are retrieved when <i>aProperty</i> is used as a retrieval key (see the <b>addRetrieveOrder:for:</b> method for a further explanation).&nbsp; The retrieval order constants are:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NoOrder</font></td>
+
+<td><font face="Times">The property isn't part of the ordering scheme</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_AscendingOrder</font></td>
+
+<td><font face="Times">Least to greatest</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_DescendingOrder</font></td>
+
+<td><font face="Times">Greatest to least</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addRetrieveOrder:for:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>positionInOrderingsFor:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>scratchZone</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXZone *)<b>scratchZone</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the zone in which the DBBinder allocates the objects that it owns.&nbsp; The objects in the zone are freed during a reset; the zone is made public so you can use it to allocate your own supporting objects and have them freed during a reset as well.&nbsp; Note that the zone may be different after each reset.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>reset</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>select</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>select</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects and fetches data from the database.&nbsp; First, <b>selectWithoutFetching</b> is invoked; if that returns <b>nil</b>, then this returns <b>nil</b>.&nbsp; If the method was successful, then <b>fetch</b> is invoked; the value returned by <b>fetch</b> is returned by this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectWithoutFetching</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>selectWithoutFetching</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectWithoutFetching</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Selects records from the database, using the DBBinder's qualifier (as set through <b>setQualifier:</b> or <b>initForDatabase:withProperties:andQualifier:</b>) to qualify the records that are selected.</font>
+
+<p><font face="Times">Before the operation begins, a <b>binderWillSelect:</b> message is sent to the DBBinder's delegate (with the DBBinder as the argument); if the delegate message returns NO, then the select isn't performed and <b>nil</b> is immediately returned by this method. Otherwise, the DBBinder is flushed and the data is selected<b>.</b>&nbsp; If the select was successful, a <b>binderDidSelect:</b> message is sent to the delegate and <b>self</b> is returned, otherwise the delegate message isn't sent and <b>nil</b> is returned.</font>
+
+<p><font face="Times">If the DBBinder is set to ignore duplicate results, only the first of duplicate records will be selected.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>select</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIgnoreDuplicateResults</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setContainer:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setContainer:</b>(id &lt;DBContainers&gt;)<i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the container that's used to store record objects.&nbsp; The argument must either adopt the DBContainers protocol, or it can be a List object--DBBinder defines a category of List that allows its instances, and those of its subclasses, to pose as DBContainers-conforming objects.&nbsp; Most DBBinders are well served using a List as a container.&nbsp; For more on the theory and practice of containment, see the class description, above.</font>
+
+<p><font face="Times">Returns the previous container.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDatabase:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDatabase:</b>(DBDatabase *)<i>aDatabase</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the DBBinder's database.&nbsp; Returns the previous DBDatabase object.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setDelegate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setDelegate:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the object that receives notification messages for the DBBinder.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFlushEnabled:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushEnabled:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes whether the DBBinder is capable of being flushed, as explained in the description of the <b>flush</b> method.&nbsp; The default is YES.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flush</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFreeObjectOnFlush:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setFreeObjectsOnFlush:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFreeObjectsOnFlush:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes whether the DBBinder will free its records when it's flushed.&nbsp; Setting this to YES is effective only if the DBBinder is capable of being flushed, as established by the <b>setFlushEnabled:</b> method.&nbsp; The default is YES (the default flush-enablement is also YES).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>flush</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setFlushEnabled:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setIgnoresDuplicateResults:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setIgnoresDuplicateResults:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes whether duplicate records are ignored during a select.&nbsp; The default is NO.&nbsp; It's up the adaptor to support this; the Oracle and Sybase adapters supplied with the Database Kit do.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>ignoresDuplicateRecords</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>selectWithoutFetching</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setMaximumRecordsPerFetch:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setMaximumRecordsPerFetch:</b>(unsigned int)<i>limit</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets, to <i>limit</i>, the maximum number of records that will be retrieved during a fetch.&nbsp; The limit only applies to synchronous fetches; the asynchronous fetch method <b>fetchInThread</b> ignores the record limit.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>maximumRecordsPerFetch</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordLimitReached</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>fetch</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setProperties:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(List</font></td>
+
+<td><font face="Times">*)<b>setProperties:</b>(List *)<i>aList</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Resets the DBBinder and then adds to it the properties in <i>aList</i>.&nbsp; Returns the argument.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getProperties:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addProperty:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removePropertyAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setQualifier:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setQualifier:</b>(DBQualifier *)<i>aQualifier</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the qualifier that's used during a select.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>qualifier</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setRecordPrototype:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setRecordPrototype:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sets the object that's copied to store the results of a fetch.&nbsp; See the class description for a full explanation of the record prototype object.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>recordPrototype</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>createRecordPrototype</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setSharesContext:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSharesContext:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Establishes whether the DBBinder shares its cursor with other DBBinder objects.&nbsp; The default is NO.&nbsp; Making a DBBinder share its cursor disables flushing.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Shared cursor behavior depends on the implementation of the adaptor rather than the database; it's provided in both the Oracle and the Sybase adaptors as a way of achieving atomic updates.&nbsp; Sharing the cursor also provides a slightly more efficient use of memory.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sharesContext</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sharesContext</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>sharesContext</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the DBBinder shares its cursor with other DBBinders, otherwise returns NO.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setSharesContext:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>update</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>update</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Copies the values in the DBBinder's record objects into the appropriate records in the database.</font>
+
+<p><font face="Times">Before the operation begins, a <b>binderWillUpdate:</b> message is sent to the DBBinder's delegate (with the DBBinder as the argument); if the delegate message returns NO, then the update isn't performed and <b>nil</b> is immediately returned by this method. After all the records have been processed, the DBBinder is flushed.&nbsp; If the records were successfully updated, a <b>binderDidUpdate:</b> message is sent to the delegate and <b>self</b> is returned, otherwise the delegate message isn't sent and <b>nil</b> is returned.</font>
+
+<p><font face="Times">As each record is updated, one of two messages is sent to the container's delegate (if the DBBinder has a container, if the container has a delegate, and if the delegate implements the appropriate method):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didAcceptObject:</b> if the record was updated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>binder:didRejectObject:</b> is sent if the record couldn't be updated.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For both methods, the first argument is the DBBinder and the second is the record object.&nbsp; The values returned by these methods are ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>valueForProperty:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(DBValue *)<b>valueForProperty:</b>(id &lt;DBProperties&gt;)<i>aProperty</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a DBValue object for the given property of the currently pointed-to record.&nbsp; Use the DBCursorPositioning methods, such as <b>setNext</b> and <b>setTo:</b>, to set the cursor to point to a particular record.&nbsp; The object that's returned is owned by the DBBinder and shouldn't be freed.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>write:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>write:</b>(NXTypedStream *)<i>stream</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes the DBBinder to the typed stream <i>stream</i>.&nbsp; Returns <b>self</b>.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Methods Implemented by the Delegate</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binder:didEvaluateString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binder:</b><i>aBinder</i> <b>didEvaluateString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the given string has been successfully evaluated by DBBinder's <b>evaluateString:</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binder:willEvaluateString:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binder:</b><i>aBinder</i> <b>willEvaluateString:</b>(const unsigned char *)<i>aString</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the given string is evaluated by DBBinder's <b>evaluateString:</b> method.&nbsp; A return of NO will thwart the evaluation.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDidDelete:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDidDelete:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the DBBinder has successfully deleted records through the <b>delete</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDidFetch:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDidFetch:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the DBBinder has successfully fetched records through the <b>fetch</b> or <b>fetchInThread</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDidInsert:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDidInsert:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the DBBinder has successfully inserted records through the <b>insert</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDidSelect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDidSelect:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the DBBinder has successfully selected data through the <b>selectWithoutFetching</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderDidUpdate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>binderDidUpdate:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked after the DBBinder has successfully updated the database through the <b>update</b> method.&nbsp; The return value is ignored.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderWillDelete:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binderWillDelete:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the DBBinder attempts to delete records from the database through the <b>delete</b> method.&nbsp; A return of NO will thwart the attempt.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderWillFetch:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binderWillFetch:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the DBBinder attempts to fetch data through the <b>fetch</b> or <b>fetchInThread</b> method.&nbsp; A return of NO will thwart the attempt.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderWillInsert:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binderWillInsert:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the DBBinder attempts to insert records into the database through the <b>insert</b> method.&nbsp; A return of NO will thwart the attempt.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderWillSelect:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binderWillSelect:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the DBBinder attempts to select data from the database through the <b>selectWithoutFetching</b> method.&nbsp; A return of NO will thwart the attempt.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>binderWillUpdate:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>binderWillUpdate:</b><i>aBinder</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Invoked before the DBBinder attempts to update the database through the <b>update</b> method.&nbsp; A return of NO will thwart the attempt.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

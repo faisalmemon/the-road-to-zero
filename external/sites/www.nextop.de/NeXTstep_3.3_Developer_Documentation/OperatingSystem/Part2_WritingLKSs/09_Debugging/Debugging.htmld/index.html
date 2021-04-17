@@ -1,0 +1,951 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/09_Debugging/Debugging.rtfd -->
+<!-- Date: Sun Jun 28 20:10:21 1998 -->
+<head>
+<title>Debugging</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>9</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Building, Loading, and Debugging Loadable Kernel Servers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The process of writing a loadable kernel server typically includes many cycles of writing, building, loading, and debugging the code.&nbsp; This chapter explains how to build, load, and debug your server, as well as how to build and load it once it's ready for normal use.&nbsp; Much of this chapter is devoted to explaining how you can use the GNU source-level debugger, GDB, to debug a server.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Building a Loadable Kernel Server</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To build a server, you need two tools:&nbsp; the GNU C compiler (<b>cc</b>) and the kernel-server linker (<b>kl_ld</b>).&nbsp; The following example is an excerpt from a typical Makefile for a loadable kernel server.&nbsp; It shows how to build either a debugging version or a final version of the server, using <b>cc</b> and <b>kl_ld</b>.&nbsp; (<b>kl_ld</b> is discussed in detail in Appendix A, &quot;Utilities for Loadable Kernel Servers&quot;; <b>cc</b> is discussed in the <i>NeXTSTEP Development Tools and Techniques</i> manual.)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># defaults for a final version of the server:</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">OFILE_DIR= ./obj</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">G_LOADABLE=</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CFLAGS= -DKERNEL -DMACH_USER_API -DMACH -Wall -O2</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># defaults for all versions of the server:</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NAME=mydriver</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CFILES= mydriver.c</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">OFILES= $(CFILES:.c=.o) $(MIGCFILES:.c=.o)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">VPATH = $(OFILE_DIR)</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">debug:</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">make $(NAME)_reloc_g&nbsp; \</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&#34;OFILE_DIR=./debugObj&#34;&nbsp; \</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&#34;G_LOADABLE=-d $(NAME)_loadable&#34; \</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">&#34;CFLAGS=-DKERNEL -DMACH_USER_API -DMACH -Wall -g -DDEBUG&#34;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">$(OFILE_DIR):</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">mkdirs $@</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">$(NAME)_reloc $(NAME)_reloc_g: $(OFILE_DIR) $(OFILES)\</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">loadCmds unloadCmds</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kl_ld -n $(NAME) -l loadCmds -u unloadCmds -i instance \</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">$(G_LOADABLE) -o $@ $(OFILES)</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">.c.o:</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">$(CC) $(CFLAGS) -c $*.c -o $(OFILE_DIR)/$*.o</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The definitions of KERNEL, MACH_USER_API, and MACH (as shown above) are necessary for every loadable kernel server. They ensure that your server has access both to kernel functionality and to most of the Mach kernel functions that are listed in Chapter 4, &quot;Mach Functions.&quot;</font>
+
+<p><font face="Times">The <b>-Wall</b> option is not necessary, but it's a good way to check your code during compilation.&nbsp; It instructs the compiler to warn you of many possible errors, such as passing the wrong kind of argument to a function.</font>
+
+<p><font face="Times">The <b>-O2</b> option causes the compilation to be optimized to produce a smaller object file that executes more quickly.&nbsp; Optimization generally isn't used until the server has been completely debugged because it can make debugging more difficult (by making variables disappear or the flow of control briefly move where you don't expect it).</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If you experience a bug that occurs only when the server is compiled with optimization, make sure that all variables that refer to hardware addresses and all variables used in more than one thread are declared as <b>volatile</b>.</font>
+
+<p><font face="Times">The <b>-g</b> option to the compiler creates symbols in the server's object file, which makes it possible to see C source code while debugging with GDB.&nbsp; Released drivers usually aren't compiled with <b>-g</b> because it makes the object file much larger.</font>
+
+<p><font face="Times">The definition of DEBUG is often used in debugging versions so that <b>ASSERT()</b> is defined.</font>
+
+<p><font face="Times">Finally, the <b>-d</b> option to <b>kl_ld</b> specifies that <b>kern_loader</b> should create a loadable object file when it allocates the server.&nbsp; This file is necessary when debugging the server with GDB.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Loading a Server into the Kernel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Loadable kernel servers must be allocated against the kernel before they can be loaded into it.&nbsp; There are three ways to allocate a server:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Add a line to the kernel-server loader configuration file, <b>/etc/kern_loader.conf</b>; the server will be allocated shortly after the system boots.&nbsp; The MIDI driver works this way.&nbsp; The kernel-server loader configuration file is discussed in Appendix A.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Write a user-level program, such as an application or background task, that calls <b>kern_loader_add_server()</b>.&nbsp; For example, the InstallTablet application allocates the tablet driver when the user presses a button.&nbsp; The <b>kern_loader_add_server() </b>function is discussed in Chapter 3, &quot;Using Loadable Kernel Servers.&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Use the command-line utility <b>kl_util</b> with the <b>-a</b> option.&nbsp; This command is especially useful while you're debugging your server.&nbsp; It can also be called from <b>/etc/rc.local</b>, a script called from <b>/etc/rc</b> during system initialization.&nbsp; For example, you could allocate your server depending on the result of a conditional statement in <b>/etc/rc.local</b>.&nbsp; The <b>kl_util</b> command is discussed in Appendix A.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Once a server is allocated, it can be loaded in these ways:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As soon as it is allocated.&nbsp; To specify that this should happen, put a START command in the load commands script that's passed to <b>kl_ld</b>.&nbsp; For example, all UNIX-style servers must start up as soon as they're allocated, since they're accessed by table lookups instead of Mach messages.&nbsp; The load commands script is described in Appendix A.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As soon as it receives a message on one of its ports.&nbsp; The ports that can receive the first message must be specified in the server's load commands script.&nbsp; Specifically, each port must be advertised using an ADVERTISE command and mapped to a handling function using an HMAP or SMAP command.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By a user-level program that calls <b>kern_loader_load_server()</b>.&nbsp; The <b>kern_loader_load_server()</b> function is discussed in Chapter 3.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">By the <b>-l</b> option to <b>kl_util</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When choosing how to load your driver, you should try to combine maximum user convenience with a minimum effect on system performance.&nbsp; For example, if you allocate and load your server just after the system boots (using <b>/etc/kern_loader.conf</b> and the START load command), you're increasing the amount of time that the system will take to become usable after booting.&nbsp; This extra time might be worthwhile if the user definitely needs the driver, but it's a high price to pay if the user doesn't need the driver.&nbsp; On the other hand, if you don't load your server until it's called, then the first call to the server will take a couple of seconds longer than usual.</font>
+
+<p><font face="Times">Another possibility might be that the user explicitly load the server, such as by pressing a button in an application.&nbsp; However, since this is probably an inconvenience to the user, you should have a good reason for requiring it.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Tools for Debugging Servers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The GNU source-level debugger, GDB, is the primary tool for debugging loadable kernel servers.&nbsp; However, you'll also use many other tools while debugging your server.&nbsp; This section describes these other tools.&nbsp; The section after discusses in detail how to use GDB to debug loadable kernel servers.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=132></td>
+
+<td><font face="Helvetica"><b>Generating Interrupts from the Keyboard</b></font>
+
+<p><font face="Helvetica" size="-1">At times, your system might freeze due to bugs in your server or mistakes while running GDB.&nbsp; If this happens and you don't see a Panic window, first try to generate a non-maskable interrupt (NMI), as described below.&nbsp; If this doesn't work, then as a last resort you can reset the CPU.</font>
+
+<p><font face="Helvetica" size="-1">To generate an NMI on a keyboard that has only one Command key, use Command-Left Alternate-~.&nbsp; (Hold down both the Command key and the leftmost Alternate key and press the ~ key.&nbsp; Do <i>not</i> press the Shift key.)&nbsp; To generate an NMI on a keyboard that has two Command keys, use Command-Command-~.&nbsp;&nbsp; (Hold down both Command keys and press the key at the upper left of the numeric keypad.)</font>
+
+<p><font face="Helvetica" size="-1">After you generate an NMI, the NMI mini-monitor window appears.&nbsp; Besides the <b>msg</b> and <b>continue</b> commands discussed in the section &quot;NMI Mini-Monitor Window,&quot; you can also enter a <b>reboot</b> or <b>halt</b> command to reboot or halt the computer, or a <b>monitor </b>command to enter the ROM monitor.</font>
+
+<p><font face="Helvetica" size="-1">To reset the CPU, hold down the Command and Alternate keys at the lower left of the keyboard, and press the <b>*</b> key on the upper right of the numeric keypad.&nbsp; This causes the machine to reboot immediately.&nbsp; Rebooting will take longer than usual because the file system will be checked.</font>
+
+<p><font face="Helvetica" size="-1"><b>Warning:</b>&nbsp; Resetting the CPU can damage the file system and should be used only as a last resort!</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=107></td>
+
+<td><img src="../../../Images/EPS2.gif" width=688 height=33></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>NMI Mini-Monitor Window</b></font>
+
+<p><font face="Times">The NMI mini-monitor window is useful for looking at the output of kernel <b>printf()</b> calls, for rebooting the system, and, if the system fails to reboot, for entering the ROM monitor.&nbsp;&nbsp;&nbsp; To bring up the NMI mini-monitor window, generate a non-maskable interrupt (NMI) as described in the gray box titled &quot;Generating Interrupts from the Keyboard.&quot;</font>
+
+<p><font face="Times">To view the output of kernel <b>printf()</b> calls, use the <b>msg</b> command.&nbsp; You can limit the number of messages you see by putting <b>=</b><i>n </i>after the command, where <i>n</i> is the number of messages you want to see.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">nmi&gt; <b>msg=3</b></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To return to normal system operation, enter the <b>continue</b> command.</font>
+
+<p><font face="Times">The <b>gdb</b> NMI mini-monitor command is sometimes necessary when using GDB to debug a server.&nbsp; This command is described later in this chapter, in the section &quot;Debugging Servers with GDB.&quot;</font>
+
+<p><font face="Times">For more information on the NMI mini-monitor window, see the <i>NeXTSTEP Network and System Administration</i> manual.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>ROM Monitor Window</b></font>
+
+<p><font face="Times">The ROM monitor window lets you specify command options for rebooting your system.&nbsp; For example, the <b>bsd -p</b> command boots the system and tells it not to automatically reboot if a system panic occurs.&nbsp; Boot commands and other generally useful ROM monitor commands are discussed in detail in the <i>Network and System Administration</i> manual.</font>
+
+<p><font face="Times">Some less widely used ROM monitor commands, such as those that let you examine and change the contents of hardware addresses on the CPU board, are described in Appendix B, &quot;The ROM Monitor and NMI Mini-Monitor.&quot;</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Panic Window</b></font>
+
+<p><font face="Times">By specifying the <b>-p</b> option at boot time, you tell the computer to bring up a Panic window instead of rebooting when the system panics.&nbsp; The Panic window is similar to the NMI mini-monitor window, but it comes up only as the result of a kernel panic.&nbsp; In this window you can use the <b>gdb</b> and <b>msg</b> commands, just as in the NMI mini-monitor window.</font>
+
+<p><font face="Times">If the system brings up a Panic window, you can run GDB on the panicked system if it's connected to the network.&nbsp; To do so, start GDB as usual on the master system (including entering the <b>kattach</b> command, as discussed later in this chapter).&nbsp; You can then use the <b>backtrace</b> GDB command to see what function caused the panic.</font>
+
+<p><font face="Times">After you're done using GDB, enter <b>halt</b> at the Panic window.&nbsp; Once the system has shut down, you can boot it.&nbsp; (If the system doesn't respond to entering <b>halt</b> and pressing Return, then try to shut down by using the <b>monitor</b> command to enter the ROM monitor.)&nbsp; Booting after a panic will take longer than usual, since the file system will be checked.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>System Console</b></font>
+
+<p><font face="Times">You can view the output of <b>printf()</b> statements without using the NMI mini-monitor by keeping the system console window open.&nbsp; To open a console window, choose the Console command from the Tools menu of Workspace Manager</font><font size="-2"><sup><sup>TM</sup></sup></font><font face="Times">.</font>
+
+<p><font face="Times">Another way to use the console is to log in with the user name <b>console</b> (without a password).&nbsp; This will make the whole screen act like a UNIX terminal that receives all console messages.&nbsp; After you log in, you can enter commands at the shell prompt.</font>
+
+<p><font face="Times">Logging in as <b>console</b> is useful when the only thing you want to run is your server, so you don't need the overhead of a windowing environment.&nbsp; This is sometimes true for the slave computer when you're debugging your server with GDB.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Other Debugging Tools</b></font>
+
+<p><font face="Times">With BusProbe (an application in the NeXTbus Development Kit), you can read or write registers while you're testing or debugging a NeXTbus driver.&nbsp; BusProbe is described in Chapter 7, &quot;NeXTbus Device Drivers.&quot;</font>
+
+<p><font face="Times">The kernel-server log command, <b>kl_log</b>, is useful for getting log messages from your server.&nbsp; If you wish, you can instead write a program that calls <b>kern_loader_log_level()</b> and <b>kern_loader_get_log()</b>.&nbsp; Chapter 6, &quot;Designing Loadable Kernel Servers,&quot; describes how loadable kernel servers create log messages.</font>
+
+<p><font face="Times">The kernel-server utility, <b>kl_util</b>, not only lets you load and unload servers; it also can give you information about all servers or one server in particular.&nbsp; Entering <b>kl_util -s</b> gives you general information on all the servers that <b>kern_loader</b> knows about.&nbsp; To get more detailed information on a particular server, such as where in memory it's loaded, use <b>kl_util -s</b> <i>servername</i>.</font>
+
+<p><font face="Times">The <b>vm_stat</b> command is useful for seeing how many pages are wired down.&nbsp; It can help you find out whether your server is growing too large.&nbsp; For information on <b>vm_stat</b>, see its UNIX manual page.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Debugging Servers with GDB</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">GDB, the GNU source-level debugger, is an important debugging tool.&nbsp; You can use it not only during the normal debugging cycle, but also later to examine kernel panics caused by your server.&nbsp; With GDB, you can debug every function in your server that's called after your server is loaded.&nbsp; However, you can't debug functions that are called when <b>kern_loader</b> is initializing your server.</font>
+
+<p><font face="Times">To use GDB to debug your server, you need two computers that are connected to a network and are running the same major release of NeXTSTEP.&nbsp; GDB runs on one computer (the <i>master</i>), debugging the server that's running on the other computer (the <i>slave</i>).&nbsp; Once you have two computers, follow these steps to debug your server (as described in detail below):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">1.</font></td>
+
+<td><font face="Times">Set up the computers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">2.</font></td>
+
+<td><font face="Times">Put the appropriate files where GDB can find them.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">3.</font></td>
+
+<td><font face="Times">Start up and initialize GDB.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">4.</font></td>
+
+<td><font face="Times">Debug with GDB.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">5.</font></td>
+
+<td><font face="Times">Shut down GDB.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section describes the special steps you must take to use GDB on a loadable kernel server.&nbsp; For general information on using GDB, see <i>NeXTSTEP Development Tools</i>.&nbsp; Most GDB commands work for loadable kernel servers.&nbsp; However, commands for listing and affecting threads don't work.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Setting Up the Computers</b></font>
+
+<p><font face="Times">When setting up the master and slave computers, you must first choose which one will be the slave.&nbsp; Keep in mind that the slave computer will panic often and its operating system will often be frozen.&nbsp; Some of the consequences include:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The slave computer should have a minimum of disk space, so that rebooting after a panic won't take too long (due to checking the disk).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">No one can depend on the slave computer working all the time.&nbsp; For example, you should not use the slave as an NFS</font><font size="-2"><sup>&reg;</sup></font><font face="Times">server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you might need any files from the slave while it's panicked or frozen, be sure to copy them to another computer.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Of course, the slave computer should also support whatever hardware you need to test your driver.</font>
+
+<p><font face="Times">Once you've decided which computer is the slave, set up both computers so that they're connected to the network.&nbsp; You'll need access to both keyboards, so put the computers close together.</font>
+
+<p><font face="Times">Once you've set up the computers, boot them both.&nbsp; Use the <b>-p</b> option to the <b>boot</b> command on the slave computer so the Panic window will stay up.</font>
+
+<p><font face="Times">To verify that the two machines can communicate with each other, use the <b>ping</b> command at a shell prompt.&nbsp; If the output doesn't include the phrase &quot;0% packet loss,&quot; contact your system administrator.&nbsp; Below is an example of the output of <b>ping </b>when the network connection is working.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master&gt; <b>/usr/etc/ping slave</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">PING slave: 56 data bytes</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">64 bytes from 192.42.172.1: icmp_seq=0. time=13. ms</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">64 bytes from 192.42.172.1: icmp_seq=1. time=5. ms</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"><b>&lt;Control-C&gt;</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">----slave PING Statistics----</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">2 packets transmitted, 2 packets received, 0% packet loss</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">round-trip (ms)&nbsp; min/avg/max = 5/9/13</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master&gt;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Setting Up the Files</b></font>
+
+<p><font face="Times">Now that you've set up the computers, you need to decide where to put the files that they need and how to keep them in up-to-date on both the master and slave computers.</font>
+
+<p><font face="Times">Usually, files are kept up-to-date by using NFS to mount the directory containing the relocatable object file onto the slave computer.&nbsp; Another solution is to make the slave the NetBoot client of the master.&nbsp; Using NFS and NetBoot is covered in the <i>Network and System Administration</i> manual.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Files Needed by the Slave Computer</b></font>
+
+<p><font face="Times">The slave computer needs only whatever files are required by <b>kern_loader</b>.&nbsp; Usually, this is just your server's relocatable object file.&nbsp; You must create the relocatable object file by compiling with the <b>-g</b> option so that it contains debugging information. Avoid using the <b>-O</b> option, since optimization can make variable values appear incorrect.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Files Needed by the Master Computer</b></font>
+
+<p><font face="Times">The master computer needs access to the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The directory that contains the source files for your server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Your server's loadable object file.&nbsp; This file is produced by <b>kern_loader</b> on the slave computer when your server is allocated, but only if you specify the location of this file when you link your server by using the <b>-d</b> option of the <b>kl_ld </b>command.&nbsp; (Information on using <b>kl_ld</b> is at the beginning of this chapter and in Appendix A.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A file that contains the same version of the kernel as the one that the slave is running.&nbsp; If the master and the slave are running the same version of the kernel, then you can use the <b>/mach</b> file on the master.&nbsp; You can check the version by searching for &quot;mk-&quot; in <b>/usr/adm/messages</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Before you go on to the next step, write down the full name (using pathnames starting at the master computer's root directory) of the loadable object file and the server's source directory.&nbsp; You'll need to supply these names to GDB later.</font>
+
+<p><font face="Times">For example, in the rest of this chapter, the loadable object file is <b>/me/mydriver/LKS/mydriver_loadable</b> and the server source directory is <b>/me/mydriver/LKS</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Starting Up GDB</b></font>
+
+<p><font face="Times"><i>On the master computer:</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>1.</b></font></td>
+
+<td><font face="Times">Become <b>root</b> at a shell prompt.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master&gt; <b>su</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Password:</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>2.</b></font></td>
+
+<td><font face="Times">Change to the directory containing the kernel file that's the same version as the one running on the slave.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master:1# <b>cd /</b></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>3.</b></font></td>
+
+<td><font face="Times">Start GDB, specifying the name of the kernel file.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master:2# <b>gdb mach</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Reading symbol data from mach...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(no debugging symbols found)...done.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>On the slave computer:</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>4.</b></font></td>
+
+<td><font face="Times">Load the server, if it isn't already running.&nbsp; (In the following example, a <b>kl_util -l</b> command isn't necessary after entering <b>kl_util -a</b> because the driver automatically loads when it's allocated.)</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave:1# <b>kl_util -a mydriver_reloc</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Adding server with relocatable /me/mydriver/LKS/mydriver_reloc</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Allocating server mydriver</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver linking /me/mydriver/LKS/mydriver_reloc against /mach</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver linking relocatable &#34;/me/mydriver/LKS/mydriver_reloc&#34; into loadable &#34;/me/mydriver/LKS/mydriver_loadable&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver Allocated</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver loading</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">regs.pc = 405e158</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver download complete</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver starting up</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Server mydriver Loaded</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">slave:2#</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>5.</b></font></td>
+
+<td><font face="Times">If the loadable object file isn't currently accessible to the master computer, copy it over to the master computer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>6.</b></font></td>
+
+<td><font face="Times">Get into the NMI mini-monitor by generating an NMI as described earlier in this chapter.&nbsp; The slave computer is now frozen because its kernel is stopped.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times"><i>On the master computer:</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>7.</b></font></td>
+
+<td><font face="Times">Establish the master computer's control over the slave by entering &quot;<b>kattach</b> <i>hostname</i>&quot;, where <i>hostname</i> is the name of the slave machine.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>kattach slave</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Attaching program: /mach to kernel on slave.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>8.</b></font></td>
+
+<td><font face="Times">Bring the symbol information from your loadable file into GDB.&nbsp; To do so, enter <b>add-file</b> followed by the full pathname of the loadable file.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">0x408f30a in kdbg_connect ()</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>add-file /me/mydriver/LKS/mydriver_loadable</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb)</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you had any trouble adding your server to GDB, make sure <b>kl_util -s</b> <i>servername</i> on the slave shows your server as &quot;Loaded.&quot;&nbsp; If not, load it.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=96></td>
+
+<td nowrap><font face="Helvetica"><b>9.</b></font></td>
+
+<td><font face="Times">Finally, tell GDB where your source files are with the <b>dir</b> or <b>idir</b> command.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>dir /me/mydriver/LKS</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Source directories searched: /me/mydriver/LKS://:$cdir:$cwd</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb)</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Debugging with GDB</b></font>
+
+<p><font face="Times">You're now ready to set breakpoints and debug your code.&nbsp; If you can't set breakpoints in your server, make sure it's loaded, not just allocated, on the slave computer.&nbsp; Remember that your server's initialization functions have already been called, so there's no point in setting a breakpoint for them.</font>
+
+<p><font face="Times">If the slave computer wasn't booted with the <b>-p</b> option, it's useful to set a breakpoint for <b>panic()</b>.&nbsp; Setting this breakpoint ensures that you'll be able to use the GDB <b>backtrace</b> command to see what caused the panic.</font>
+
+<p><font face="Times">When you're ready to continue running the kernel, use the <b>cont</b> (continue) command in GDB.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Never use the <b>run</b> command when debugging a loadable kernel server.&nbsp; It causes unpredictable behavior.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>break panic</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Breakpoint 1 at 0x40230b2</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>break mydriver_signoff</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Breakpoint 2 at 0x105aa40c: file mydriver_main.c:17.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>break mydriver_do_log</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Breakpoint 3 at 0x105aa420: file mydriver_main.c:23.</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>cont</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Continuing.</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Breakpoint 3, mydriver_do_log (server=0) at mydriver_main.c:23</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">23&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf(&#34;Calling kern_serv_log.\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>n</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">24&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kern_serv_log(&amp;instance, LOG_WARNING,</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>p instance</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">$1 = (kern_server_t) 0x10171660</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>n</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">27&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf(&#34;Returned from calling kern_serv_log\n&#34;);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>n</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">28&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return KERN_SUCCESS;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>info breakpoints</b></font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Enb&nbsp;&nbsp; Address&nbsp;&nbsp;&nbsp; Where</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#1&nbsp;&nbsp; y&nbsp; 0x040230b2&nbsp; &lt;panic+4&gt;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#2&nbsp;&nbsp; y&nbsp; 0x105aa40c&nbsp; in mydriver_signoff at mydriver_main.c:17</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#3&nbsp;&nbsp; y&nbsp; 0x105aa420&nbsp; in mydriver_do_log at mydriver_main.c:23</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>cont</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Continuing.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To get a &quot;(gdb)&quot; prompt on the master computer without hitting a breakpoint, type Control-C.&nbsp; If that doesn't work, try again by generating an NMI at the slave computer and entering <b>gdb</b> at the &quot;nmi&gt;&quot; prompt.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Ending the Debugging Session</b></font>
+
+<p><font face="Times">To remove GDB from a running kernel, follow these steps:</font>
+
+<p><font face="Times"><i>On the master computer:</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>1.</b></font></td>
+
+<td><font face="Times">If you don't have a &quot;(gdb)&quot; prompt on the master computer, get one by typing Control-C.&nbsp; If that doesn't work, try again by generating an NMI at the slave computer and entering <b>gdb</b> at the &quot;nmi&gt;&quot; prompt.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>2.</b></font></td>
+
+<td><font face="Times">Delete all the breakpoints you've set, detach the debugger from the slave computer's kernel, and quit GDB.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>delete</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Delete all breakpoints? (y or n) <b>y</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>detach</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Detaching program: /mach pid -1</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(gdb) <b>quit</b></font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">master:3#</font>
+
+
+
+<p><br><br>
+
+</body>
+</html>

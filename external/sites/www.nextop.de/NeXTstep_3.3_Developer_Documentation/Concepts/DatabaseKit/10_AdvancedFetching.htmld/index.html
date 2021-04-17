@@ -1,0 +1,1903 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/DatabaseKit/10_AdvancedFetching.rtf -->
+<!-- Date: Sun Jun 28 19:36:07 1998 -->
+<head>
+<title>10_AdvancedFetching</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>10</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Fetching and Saving Data</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter examines the methods and techniques you use to move data between the server and your application.&nbsp; It's divided into two major sections:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Fetching</i>.&nbsp; The data-fetching demonstration given in Chapter 8 was far from the whole story.&nbsp; The Database Kit lets you adjust the fetching machinery, as explained in the section &quot;Details of Fetching.&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Saving and validating data.</i>&nbsp; One of the thornier problems confronting a database application developer is to ensure that the data that's drawn into the application and modified there will &quot;fit&quot; when it's sent back to the server.&nbsp; The checks through which a client of a server, such as your application, attempts to ensure that its data will fit is called &quot;validation&quot; or &quot;verification&quot; (this book adopts the former term).&nbsp;&nbsp; Validation is a highly permutable activity, depending greatly on the nature of the server, the resources of the adaptor, and the type of data that your application uses.&nbsp; Thus, a comprehensive and universally-applicable &quot;validation suite&quot; is impossible to create.&nbsp; Nonetheless, the Database Kit provides a few validation techniques that any application should be able to use.&nbsp; These are described in the section &quot;Saving and Validating Data.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Details of Fetching</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There are a number of ways that you can tinker with the fetching machinery.&nbsp; You can:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Perform the fetch in a background thread.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Limit the number of records that are retrieved during a single fetch.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Set the order of the records that are retrieved.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Concatenate the results of consecutive fetches.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Fetch a specific record based on its primary key value.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">These manipulations are examined in the following sections.&nbsp; But first, the DBRecordList's &quot;retrieve status,&quot; upon which some of these tinkerings depends, is described.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Retrieve Status</b></font>
+
+<p><font face="Times">A DBRecordList maintains a &quot;retrieve status,&quot; a constant that tells you where the DBRecordList is with regard to a &quot;fetching session.&quot;&nbsp; There are five retrieve states, returned through the <b>currentRetrieveStatus</b> method as one of these DBRecordRetrieveStatus constants:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_NotReady</b>.&nbsp; This is the status of a freshly made DBRecordList; it indicates that the object doesn't contain any properties.&nbsp; If you try to fetch while the DBRecordList isn't ready, the fetch will fail.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_Ready</b>.&nbsp; This status indicates that the DBRecordList is ready for a fetch.&nbsp; More specifically, it means that the object has had its properties set, but hasn't fetched any records, whether because it's been recently created or has received an <b>empty </b>or <b>clear</b> message.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_FetchInProgress</b>.&nbsp; You can only catch a DBRecordList in the act of fetching if the object is set to fetch in the background; this status indicates that a background fetch has commenced (whether its actually in progress or has completed can't be determined).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_FetchLimitReached</b>.&nbsp; This is used to indicate that a previous fetch operation was completed because the record limit was reached.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_FetchCompleted</b>.&nbsp; This status means that the previous fetch operation is finished, and that the entire range of records, given the latest qualification, have been retrieved from the server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The normal sequence of states for a DBRecordList depends on how the object's fetching mechanism is set up.&nbsp; For a default fetch, the states proceed as shown in the following &quot;causal&quot; table:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Invoking this method...</b></font></td>
+
+<td><font face="Helvetica"><b>...induces this status</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>init</b>, <b>clear</b>, or <b>empty</b></font></td>
+
+<td><font face="Times">DB_NotReady</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>setProperties:ofSource:</b></font></td>
+
+<td><font face="Times">DB_Ready</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times"><b>fetchUsingQualifier:</b></font></td>
+
+<td><font face="Times">DB_FetchInProgress (background fetches only)</font><br>
+<font face="Times">DB_FetchLimitReached (record-limited fetches only)</font><br>
+<font face="Times">DB_FetchCompleted (foreground fetches only)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Fetching in the Background</b></font>
+
+<p><font face="Times">By default, fetches are performed in the foreground:&nbsp; The fetch method doesn't return until it's finished fetching.&nbsp; You can also set a DBRecordList to fetch in the background, thus allowing the fetch method to return immediately while the fetch continues asynchronously in its own process thread.</font>
+
+<p><font face="Times">To set the &quot;fetch strategy&quot; of a DBRecordList, you pass one of the DBRecordListRetrieveMode constants to the <b>setRetrieveMode:</b> method:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_SynchronousStrategy</b>.&nbsp; This is the default foreground strategy.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_BackgroundStrategy</b>.&nbsp; Records are fetched in the background, as explained above, allowing your application to proceed.&nbsp; However, if you try to move the DBRecordList's cursor to a record that hasn't yet been fetched, the cursor-positioning method will block until the specified record is retrieved.&nbsp;&nbsp; (Note that sending a <b>setLast</b> message to a background-fetching DBRecordList will block until all the records have been fetched and the cursor can be correctly set to the absolute last record in the record table.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_BackgroundNoBlockingStrategy</b>.&nbsp; This is the same as DB_BackgroundStrategy, except that it doesn't cause the cursor-moving methods to block; if you try to point the cursor to an as-yet-unretrieved record, the method will fail and immediately return.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The <b>retrieveMode</b> method returns a DBRecordList's current fetch strategy as one of these constants.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">You should only set a DBRecordList to fetch in the background if you're using the Application Kit and you have its main event loop running.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=44></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica"><b>Checking for the Completion of a Background Fetch</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=13></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">After you've started a background fetch, you'll probably want to know when the fetch is complete.&nbsp; To be so informed, you need to supply a &quot;binder&quot; delegate that implements the <b>binderDidFetch:</b> method.&nbsp; The binder delegate, and the messages it receives, is described in greater detail later in this chapter.&nbsp; The following example provides a quick tutorial on how to prepare your application to catch the <b>binderDidFetch:</b> message.&nbsp; First, you create a delegate class:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Declare the interface for a class that implements the</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">binderDidFetch: method. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@interface MyBinderDelegate : Object</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- binderDidFetch:aBinder;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@end;</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*&nbsp; Define the class. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">@implementation MyBinderDelegate</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- binderDidFetch:aBinder</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">/*&nbsp; Do what you need to do here. The return value is ignored, but</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">it isn't declared void, so, to be polite, we return self. */</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">return self;</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Then you set the DBRecordList's binder delegate to an instance of your class:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">MyBinderDelegate *aDelegate= [[MyBinderDelegate alloc] init];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DBRecordList *aRecordList = [[DBRecordList alloc] init];</font>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[aRecordList setBinderDelegate:aDelegate];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the fetch is complete, the binder delegate is sent the <b>binderDidFetch:</b> message.&nbsp; (The message is sent regardless of the DBRecordList's retrieval strategy; however, it's of particular importance when the object is fetching in the background.)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Background Fetches and Retrieval Status</b></font>
+
+<p><font face="Times">After a background fetch has begun, the DBRecordList's retrieval status is set to DB_FetchInProgress.&nbsp; It's important to note that the status doesn't change when the fetch is complete--it remains DB_FetchInProgress until the DBRecordList is cleared, emptied, or has its properties reset.&nbsp; Because of this, you can't use the status to gauge if a background fetch has finished.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Stopping a Background Fetch</b></font>
+
+<p><font face="Times">If you get tired of waiting for a background fetch to complete, you can tell it to stop by sending the <b>cancelFetch</b> message to the DBRecordList.&nbsp; This doesn't wipe out the fetch entirely--records that have already been fetched and placed in the DBRecordList aren't thrown away--it simply stops the fetch process.&nbsp; As with a naturally-completed background fetch, cancelling a fetch doesn't cause the DBRecordList's status to change--it remains DB_FetchInProgress.</font>
+
+<p><font face="Times">Cancelling a background fetch thwarts the <b>binderDidFetch:</b> delegate message.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Record Limit</b></font>
+
+<p><font face="Times">When a DBRecordList is commanded to fetch, it normally fetches the entire range of records that pass the qualification.&nbsp; You can set the maximum number of records that you want a fetch to retrieve through the <b>setRecordLimit:</b> method.&nbsp; The <b>currentRecordLimit</b> method returns the currently set record limit; a return of DB_NoIndex indicates that there is no limit (this is the default).&nbsp; You can use the DB_NoIndex value as the argument to <b>setRecordLimit:</b> to erase the current limit.</font>
+
+<p><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">For the record limit to have an affect, the DBRecordList's fetching strategy must be DB_SynchronousStrategy: You can't set the record limit of a DBRecordList that fetches in the background.</font>
+
+<p><font face="Times">There are two ways to tell if the record limit was reached during a fetch (these are examined in the following sections):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The DBRecordList's status is set to DB_FetchLimitReached.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A <b>recordStream:willFailForReason:</b> message is sent to the DBRecordList's delegate, with DB_RecordLimitReached as the second argument.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Fetch Limit Reached Status</b></font>
+
+<p><font face="Times">The DB_FetchLimitReached status is essentially the same as DB_FetchCompleted.&nbsp; You don't have to do anything to &quot;reset&quot; the object or otherwise clean up after the fetch.&nbsp; The status is provided merely to inform you that the fetch didn't (necessarily) retrieve all the records that pass the qualifier.</font>
+
+<p><font face="Times">More important, this status doesn't affect a subsequent fetch:&nbsp; The next fetch <i>doesn't</i> continue where the previous one left off, it begins fetching at the &quot;top&quot; of the server's list of records.&nbsp; In other words, you can't use the record limit feature to perform incremental fetches.</font>
+
+<p><font face="Times">If the record limit is greater than the number of candidate records in the server, the DBRecordList's status, after a fetch, is set to DB_FetchCompleted.&nbsp; (If the two values are equal, the status is DB_FetchLimitReached, even though all the records were fetched.)</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Delegate Message</b></font>
+
+<p><font face="Times">When, during a fetch, a DBRecordList's record limit is reached, the object's delegate is sent a <b>recordStream:willFailForReason:</b> message, with the DBRecordList object as the first argument and the value DB_RecordLimitReached (a DBFailureCode constant) as the second.&nbsp; The delegate's response to this boolean message is important:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A response of YES tells the DBRecordList to obey the record limit; the fetch is halted, the object's status set to DB_FetchLimitReached, and the fetch method returns immediately.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">A response of NO tells the DBRecordList to ignore the limit and continue fetching.&nbsp; If no other errors are encountered, the object's status will be set to DB_FetchCompleted when the fetch method returns.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An implementation of <b>recordStream:willFailForReason:</b> can assume that the DBRecordList contains (at least) the number of records specified by the limit (if the DBRecordList didn't empty before fetching, then it may contain more).&nbsp; The values held in these records may be examined to determine whether the method should return YES or NO.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Sorting Records</b></font>
+
+<p><font face="Times">DBRecordList provides methods that let you declare the basis upon which fetched records are sorted into the record table.&nbsp; This is done by associating a &quot;retrieve order&quot; constant with a particular property in the DBRecordList object.&nbsp; There are three retrieve order constants, declared as DBRetrieveOrder data types; their names describe their meanings:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">DB_NoOrder</font><br>
+<font face="Times">DB_AscendingOrder</font><br>
+<font face="Times">DB_DescendingOrder</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The association between a retrieve order and a property is established through the <b>addRetrieveOrder:for:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* We'll assume that the objects used below exist; &#34;employees&#34; is a</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">DBRecordList; &#34;name&#34; is a property object rooted at &#34;employees&#34;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">source entity. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employees addRetrieveOrder:DB_AscendingOrder for:name];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the DBRecordList fetches, in this example, the records are sorted into alphabetical order based on the values for the </font><font face="Helvetica">name</font> <font face="Times">property.&nbsp; Similarly, the following causes the records to be stored in reverse alphabetical order:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employees addRetrieveOrder:DB_DescendingOrder for:name]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The property argument (the argument to the <b>for:</b> keyword) can be a natural property or DBExpression object.&nbsp; Furthermore, the object needn't be present in the DBRecordList's property list.&nbsp; The only requirement is that it be rooted at the DBRecordList's source entity.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>Secondary Sorting</b></font>
+
+<p><font face="Times">The example shown above raises a question--what happens if two records have the same value for the</font> <font face="Helvetica">name</font> <font face="Times">property?&nbsp; You can provide a tie-breaker simply by specifying the retrieve order for yet another property.&nbsp; The order in which retrieve-ordered properties are applied during a fetch is the order in which the <b>addRetrieveOrder:for:</b> messages that declared them were sent.</font>
+
+<p><font face="Times">For example, consider a slightly different</font> <font face="Helvetica">Employee</font> <font face="Times">entity that has the properties</font> <font face="Helvetica">firstName</font> <font face="Times">and</font> <font face="Helvetica">lastName</font><font face="Times">.&nbsp; To sort employee records such that they're sorted alphabetically by last name and then, in the case of identical last names, by first names, you would send these messages in this order:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* The firstName and lastName object are assumed to exist. */</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employees addRetrieveOrder:DB_AscendingOrder for:lastName];</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[employees addRetrieveOrder:DB_AscendingOrder for:firstName];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can add any number of properties to the retrieve order equation.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Concatenating Fetches</b></font>
+
+<p><font face="Times">By default, a DBRecordList empties itself before it fetches data--this means that any previously fetched data that's stored in the object is thrown away and replaced with the results of the new fetch.&nbsp; You can tell a DBRecordList to retain &quot;old&quot; data by passing NO as the second argument to the <b>fetchUsingQualifier:empty:</b> method.&nbsp; This causes the results of the new fetch to be appended to the records that are already in the DBRecordList (the new records aren't sorted among the old records).</font>
+
+<p><font face="Times">Fetching without emptying is useful if you're performing successive fetches with a different qualification at each fetch.&nbsp; For example, let's say you've set up a DBQualifier with which you've fetched employee records for employees whose last names begin with &quot;A&quot;.&nbsp; Now you want to retrieve the &quot;B&quot; employees but you don't want to throw away the &quot;A&quot; set.&nbsp; To do this, you modify the DBQualifier to match last names that start with &quot;B&quot; and apply the object in a <b>fetchUsingQualifier:empty:</b> message, passing NO as the second argument.&nbsp; By repeating this across the alphabet, you can perform an incremental fetch.</font>
+
+<p><font face="Times">You can't use the fetch-no-empty feature to fetch dissimilar sets of data (in other words, records with different sets of properties) into the same DBRecordList.&nbsp; This is because the <b>setProperties:ofSource:</b> method automatically empties the receiving DBRecordList.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+1"><b>Saving and Validating Data</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writing modified data back to the server is simple:&nbsp; You invoke DBRecordList's&nbsp; <b>saveModifications</b> method.&nbsp; The method steps through the record table and identifies those records that contain modified data.&nbsp; As it checks for modified data, the <b>saveModifications</b> method also performs an &quot;integrity&quot; test that warns you if the data that you're saving will overwrite someone else's changes.</font>
+
+<p><font face="Times">These two routines--finding modified records and ensuring the integrity of the data these records contain--constitute the Database Kit's validation process; the two parts of this process are described in detail in the following sections.</font>
+
+<p><font face="Times">You should note that the Kit does nothing, at the time data is saved, to check data value &quot;correctness&quot; or data format consistency.&nbsp; In other words, it doesn't look at each value to make sure that (for example) it falls within certain bounds, or that the value's data type is in the proper format.&nbsp; However, these subjects aren't completely unaddressed:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Checking the value for an attribute is highly dependent on context--only your application can determine whether a value is appropriate.&nbsp; The methods described in the next section show you how to identify modified values so you can perform value checks yourself.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">As described in Chapter 8, the data type of a field in a records is immutable.&nbsp; The value in a particular field is converted to the data type declared by the attribute for which the field holds data; it maintains that type regardless of value modifications. Thus, data format is, for most applications, excused from the validation arena.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Finding Modified Data</b></font>
+
+<p><font face="Times">There are three boolean DBRecordList methods that help you find modified data:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>isModified</b> tells you if the object's record table has been modified such that it might not correspond to data on the server. Specifically, the method returns YES if records have been added or deleted from the table, or if the value of a field within a record has been set (even if the new value is the same as the old).&nbsp; The order of the records in the table isn't considered; moving and swapping records in the table won't, of themselves, mark the table as having been modified.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>isModifiedAt:</b> takes a record index argument and returns YES if the record is new or if the value of any of the record's fields has been set (again, even if the new value is the same as the old).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>isModifiedForProperty:at:</b> looks at the specific record field designated by the property object and record index arguments and returns YES if its value has been set (or if the record is new).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can use these methods to find the fields that have been modified and so, for example, check their values before sending them back to the server.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Modified Record List</b></font>
+
+<p><font face="Times">When you tell a DBRecordList to save its modifications, the object compiles a list of records (its &quot;modified record list&quot;) that are involved in the operation.&nbsp; This list consists of new or modified records and deleted records.&nbsp; Only these records are sent back to (or deleted from) the server.&nbsp; There are two reasons why records are selected for modification (as opposed to blithely sending the entire record table):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It's more efficient to send back only those records that have been modified or deleted.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The data integrity test (which is described in the next section) won't stumble over data that you're not interested in.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Although you can easily determine the new or data-modified records that will be included (by using the methods described in the previous section), there's no way to ask for the object's deleted records.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Integrity Test</b></font>
+
+<p><font face="Times">The Database Kit performs a &quot;data integrity&quot; test to make sure that the data in the records that you're saving won't overwrite someone else's changes.&nbsp; The manner in which the test is conducted depends on the adaptor that you're using; the tests for the Oracle and Sybase adaptors are examined in the following sections.&nbsp; You should be aware that the integrity test is only run on data-modified or deleted records.&nbsp; New records (records that have been added to the DBRecordList) pass the test by default.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica"><b>The Oracle Test</b></font>
+
+<p><font face="Times">The Oracle integrity test examines each modified record and determines if any field in that record has changed on the server since the record was fetched.&nbsp; If a field has been changed, the record won't be used to update the server's data.</font>
+
+<p><font face="Times">For example, let's say you've fetched some employee records into a record table that, after the fetch, looks like this:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">New York</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Atlanta</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The Database Kit makes a copy of these just-fetched records for later use.&nbsp; Changes that you make to the records (in your record table) won't affect the Kit's copy.</font>
+
+<p><font face="Times">In your record table, you change Runyon's location to San Diego, and Smith's location to Des Moines and his salary to $2,000:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">San Diego</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Des Moines</font></td>
+
+<td><font face="Times">2000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the meantime, someone else fetches the same data and changes Smith's location to Omaha (but leaves all other fields unchanged):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">New York</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Omaha</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Let's assume that the other user sends <b>saveModifications</b> before you do.&nbsp; After the save (in which only the Smith record is sent to the server since it was the only one that was modified) the data on the server looks like the table shown immediately above.</font>
+
+<p><font face="Times">Now you send <b>saveModifications</b>.&nbsp; The Database Kit looks at each record and determines that only Runyon's and Smith's need to be saved.&nbsp; Next, the Kit re-fetches these records from the server and compares them to its copy of the just-fetched records.&nbsp; If there are any differences, it will refuse to save the record.&nbsp; Your Runyon record is accepted.&nbsp; However, since Smith's location was changed by the other user, your Smith record is rejected.&nbsp; After the save, the server's data looks like this (the server data is shown in bold):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">San Diego</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Omaha</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You should note the finer points of the Oracle integrity test mechanism:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Data is accepted or rejected on a record-by-record basis.&nbsp; Even though your Smith record didn't pass the integrity test, Runyon did.&nbsp; Thus, Smith was rejected but Runyon was accepted and written to the server.&nbsp; Furthermore, the <i>entire</i> Smith record was rejected; even though your salary modification was valid (in that the other user didn't set the field to a new value), your new salary value was rejected along with the rest of the record.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">After the save, your record table will still hold modified data for Smith:&nbsp; According to your record table Smith is in Des Moines making $2,000.&nbsp; Even though the Database Kit knows that your record table is out of sych with the server, it won't alter your table to hold the server's data.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>The Sybase Test</b></font>
+
+<p><font face="Times">The Sybase integrity test proceeds much like that of the Oracle test:&nbsp; A just-fetched copy of your records is used to determine if the records have changed since the time that they were fetched.&nbsp; Unlike Oracle, the Sybase mechanism doesn't automatically reject a record that shows a discrepancy between the just-fetched copy and the current (server) state of the record.&nbsp; By default, all modifications are accepted, even if they overwrite someone else's changes.</font>
+
+<p><font face="Times">As an example of how this works, let's re-visit the demonstration used above.&nbsp; Here we have the employee table before anybody fetches from it:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">New York</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Atlanta</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=17></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You fetch the data into a DBRecordList, and modify the Runyon and Smith records as described above:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">San Diego</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Des Moines</font></td>
+
+<td><font face="Times">2000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The other user also fetches and modifies the Smith record:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Runyon</font></td>
+
+<td nowrap><font face="Times">New York</font></td>
+
+<td><font face="Times">10000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Omaha</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Jones</font></td>
+
+<td nowrap><font face="Times">Boston</font></td>
+
+<td><font face="Times">7000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The other user sends <b>saveModifications</b> before you do; the server now holds data as shown in the table immediately above. When you send <b>saveModifications</b>, the Smith record doesn't pass the integrity test, but it doesn't matter--your record is still saved, clobbering that of the other user.&nbsp; Thus, after you save the server's Smith record looks like yours:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Des Moines</font></td>
+
+<td><font face="Times">2000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When the integrity test finds a questionable record, it sends the DBRecordList's delegate a <b>recordStream:willFailForReason: </b>message.&nbsp; The DBRecordList's delegate can implement this method to thwart the impending overwrite.&nbsp; This is explained in the next section.</font>
+
+<p><font face="Times">There's another way in which the save-mechanism based on the Sybase adaptor differs from Oracle's:&nbsp; Whereas Oracle accepts or rejects whole records, Sybase will accept changes to individual fields.&nbsp; Turning, once again, to the example, consider the case in which you and the other user modify different fields in the same record.&nbsp; Let's say you change Smith's location to Des Moines, but you don't change his salary:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Des Moines</font></td>
+
+<td><font face="Times">5000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">And the other user's changes his salary to $4,000, but leaves him in Atlanta:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Atlanta</font></td>
+
+<td><font face="Times">4000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The other user saves, writing the new salary value to the server.&nbsp; Then you save; since location was the only attribute you changed, only the value of that field is written to the server.&nbsp; The server's Smith record, after both changes, looks like this:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Name</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Location</b></font></td>
+
+<td><font face="Helvetica"><b>Salary</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Smith</font></td>
+
+<td nowrap><font face="Times">Des Moines</font></td>
+
+<td><font face="Times">4000</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Even though your modification doesn't overwrite the other user's, your Smith record, as it's being processed by the save-mechanism, will fail the integrity test.&nbsp; Thus, you have a chance, through the <b>recordStream:willFailForReason:</b> delegate method, to reject your own non-destructive change.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Controlling a Save</b></font>
+
+<p><font face="Times">The <b>saveModifications</b> method sends the DBRecordList's delegate a <b>recordStream:willFailForReason:</b> message if there's a problem saving the data. The message's first argument is the DBRecordList object; the second is a DBFailureCode constant that describes the failing situation.</font>
+
+<p><font face="Times">The first two failure codes indicate an error in the set up of the DBRecordList:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_RecordStreamNotReady</b>.&nbsp; This indicates that the DBRecordList isn't ready to save, probably because it hasn't had its property list set.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_NoRecordKey</b>.&nbsp; This is similar to the above, although it's a bit more precise:&nbsp; It means that the DBRecordList doesn't have a primary key attribute.&nbsp; Given the automatic primary key-searching mechanism described in Chapter 8, this failure code should rarely be seen.&nbsp; If you do see it, you should suspect the model that you're using (it probably doesn't have a primary key designation).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For both of these errors, the value that's returned by the <b>recordStream:willFailForReason:</b> method is ignored and the <b>saveModifications</b> method returns immediately, returning the value DB_NoIndex.</font>
+
+<p><font face="Times">The other error codes that can be passed as the second argument in a <b>recordStream:willFailForReason:</b> message are listed below.&nbsp; These codes indicate a &quot;record error.&quot;&nbsp; In other words, a particular record either didn't pass the integrity test or was otherwise unable to be saved:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_RecordKeyNotUnique</b>.&nbsp; This means that the fetch that was performed by the integrity test found more than one record (on the server) with primary key values that match the primary key value of the current record (where &quot;current record&quot; means the record in the DBRecordList's list of modified records that's currently being tested or that the DBRecordList is attempting to write to the server).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_TransactionError</b>.&nbsp; This error indicates that the current record failed the integrity test because the analogous record on the server couldn't be found, possibly because some other process deleted it.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_RecordHasChanged</b>.&nbsp; This means that the current record failed the integrity test because of changed data.&nbsp; In other words, the just-fetch copy of the record didn't match the server's current version.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>DB_AdaptorError</b>.&nbsp; This indicates that the adaptor encountered an error while writing the current record to (or deleting it from) the server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Because these codes point to errors in particular records, you may see more than one of them within the course of a single <b>saveModifications</b> invocation.</font>
+
+<p><font face="Times">For each of the four record errors (but not for the DBRecordList errors listed previously) the boolean value returned by <b>recordStream:willFailForReason:</b> is important.&nbsp; It answers the question &quot;should this save be aborted?&quot;:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If <b>recordStream:willFailForReason:</b> returns YES, the entire transaction is aborted.&nbsp; No more records are looked at, and any previous records that were successfully saved are &quot;unsaved&quot; (or <i>rolled back</i>).&nbsp; The <b>saveModifications</b> method returns immediately, returning the value DB_NoIndex.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If it returns NO, the save process isn't aborted and previously saved records aren't rolled back.&nbsp; What happens to the current record (the record that caused the error) depends on the adaptor.&nbsp; The Oracle adaptor skips the record--it makes no attempt to send it to or delete it from the server.&nbsp; The Sybase adaptor goes ahead and processes the record, possibly clobbering someone else's changes, as described in the previous section.&nbsp; If the save isn't aborted by a subsequently rejected record, the <b>saveModifications</b> method will, in this case, return 1.&nbsp; This indicates that the record table holds modified but unsaved data.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As a review, the following table describes the meanings of the values that can be returned by <b>saveModifications</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Return Value</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">DB_NoIndex</font></td>
+
+<td><font face="Times">The save was aborted (or never got to the first record).</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">1</font></td>
+
+<td><font face="Times">The DBRecordList may contain some unsaved records.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">0</font></td>
+
+<td><font face="Times">The save was completely successful.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Implementing the Delegate Method</b></font>
+
+<p><font face="Times">When <b>recordStream:willFailForReason:</b> is invoked, the DBRecordList is guaranteed to be &quot;pointing to&quot; the record that caused the failure.&nbsp; This is true even if the record is being deleted and so doesn't otherwise appear in the DBRecordList.&nbsp; The following methods, which query the pointed to record, can be used within a delegate's implementation of the <b>recordStream:willFailForReason:</b> method:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">getValue:forProperty:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">getRecordKeyValue:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">currentPosition</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">These &quot;record cursor&quot; methods, which were proscribed in Chapter 8, should only be used in the implementation of the <b>recordStream:willFailForReason:</b> method.&nbsp; They should otherwise be avoided.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">The <b>currentPosition</b> method is particularly useful, for you can use the value it returns</font><br>
+<font face="Times">(the record index of the failed record) to determine which properties were modified.&nbsp; Specifically, you can use the current record index value as the last argument to the <b>isModifiedForProperty:at:</b> method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">For example, let's say you've set up a record table that holds employee records, as in the previous section.&nbsp; Of the properties that you've set (</font><font face="Helvetica">name</font><font face="Times">,</font> <font face="Helvetica">location</font><font face="Times">, and</font> <font face="Helvetica">salary</font><font face="Times">), you want to make sure that the values for</font> <font face="Helvetica">location</font> <font face="Times">maintain absolute integrity--you don't care so much about names and money, but if a record is rejected because of a bad location value, then you want the entire save to be aborted.&nbsp; Here's what the implementation of <b>recordStream:willFailForReason:</b> would look like:</font></td></tr>
+
+</table>
+
+<p><img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">- (BOOL) recordStream:streamOrList</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">willFailforReason:(DBFailureCode)aCode</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">switch (aCode) {</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">case DB_RecordKeyNotUnique:</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">case DB_TransactionError:</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">case DB_RecordHasChanged:</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">case DB_AdaptorError:</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">/*&nbsp; We'll assume that locProp, which represents the</font><br>
+<img src="../../Images/sp.gif" width=220 height=1><font face="Courier" size="-1">&#34;locations&#34; property, is declared globally. */</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">if ([streamOrList isModifiedForProperty:locProp</font> &nbsp; at:[streamOrList currentPosition]])<br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">else</font><br>
+<img src="../../Images/sp.gif" width=245 height=1><font face="Courier" size="-1">return NO;</font><br>
+<img src="../../Images/sp.gif" width=167 height=1><font face="Courier" size="-1">default:</font><br>
+<img src="../../Images/sp.gif" width=195 height=1><font face="Courier" size="-1">return YES;</font><br>
+<img src="../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">You shouldn't try to fix the error or in any other way modify the record in the implementation of this method.&nbsp; By the time the method is invoked, it's too late for the failed record.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">If you're using the Sybase adaptor provided by the Database Kit, you also must not fetch during the <b>recordStream:willFailForReason:</b> method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">Keep in mind that <b>recordStream:willFailForReason:</b> is also invoked when a fetch has reached a declared record limit.&nbsp; This was described in the section on fetching, earlier in this chapter.&nbsp; As a convenience, the complete set of failure codes that can appear as the second argument to <b>recordStream:willFailForReason:</b> are shown below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Error Code</b></font></td>
+
+<td nowrap><font face="Helvetica"><b>Meaning</b></font></td>
+
+<td><font face="Helvetica"><b>Return Value</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordStreamNotReady</font></td>
+
+<td nowrap><font face="Times">Bad DBRecordList</font></td>
+
+<td><font face="Times">Ignored</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_NoRecordKey</font></td>
+
+<td nowrap><font face="Times">Bad DBRecordList</font></td>
+
+<td><font face="Times">Ignored</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordKeyNotUnique</font></td>
+
+<td nowrap><font face="Times">Bad record</font></td>
+
+<td><font face="Times">Abort? (YES or NO)</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_TransactionError</font></td>
+
+<td nowrap><font face="Times">Bad record</font></td>
+
+<td><font face="Times">Abort?</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordHasChanged</font></td>
+
+<td nowrap><font face="Times">Bad record</font></td>
+
+<td><font face="Times">Abort?</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_AdaptorError</font></td>
+
+<td nowrap><font face="Times">Bad record</font></td>
+
+<td><font face="Times">Abort?</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">DB_RecordLimitReached</font></td>
+
+<td nowrap><font face="Times">Record limit met during fetch</font></td>
+
+<td><font face="Times">Continue fetch?</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

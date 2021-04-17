@@ -1,0 +1,479 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/08_InterfaceBuilder/IntroInterfaceBuilder.rtf -->
+<!-- Date: Sun Jun 28 20:06:13 1998 -->
+<head>
+<title>IntroInterfaceBuilder</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>8</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Interface Builder</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Library:</b></font></td>
+
+<td><font face="Times">None, this API is defined by the Interface Builder application</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Header File Directory:</b></font></td>
+
+<td><font face="Times">/NextDeveloper/Headers/apps</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Import:</b></font></td>
+
+<td><font face="Times">apps/InterfaceBuilder.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Introduction</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter describes the application programming interface that lets you build custom palettes, inspectors, and editors for Interface Builder.</font>
+
+<p><font face="Times">Interface Builder gives you direct access to the majority of the objects defined in NEXTSTEP.&nbsp; Adding a Text object or a DBTableView object to your application--objects that represent years of programming and testing effort--is as easy as dragging the object from Interface Builder's Palette window into your application's window.&nbsp; By creating a custom palette containing objects of your own design, you and other developers can manipulate these objects as easily as you do the ones in Interface Builder's standard palettes.</font>
+
+<p><font face="Times">Using the facilities described in this chapter, you can easily create a palette that contains one or more objects of your own design.&nbsp; These objects can be of various types:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Type</b></font></td>
+
+<td><font face="Helvetica"><b>Instantiation</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">View objects</font></td>
+
+<td><font face="Times">Can be dragged into one of the application's standard windows.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">MenuCell objects</font></td>
+
+<td><font face="Times">Can be dragged into one of the application's menus.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Window objects</font></td>
+
+<td><font face="Times">Can be dragged into the workspace.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Other non-View objects</font></td>
+
+<td><font face="Times">Can be dragged into Interface Builder's File window.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The API described here also lets you provide inspectors for any custom object.&nbsp; There are four kinds of inspectors:&nbsp; Attributes, Connections, Size, and Help.&nbsp; The most common inspector to implement is the Attributes inspector, which lets the user set the custom object's unique features.&nbsp; For example, if you define a custom button object that sends a message repeatedly when it is pressed, the Attributes inspector could let the user set the repeat rate.&nbsp; Objects with special connection requirements (like those in the Database Kit) can provide their own Connection inspectors.&nbsp; The Size and Help inspectors are rarely overridden since they are appropriate for most types of objects.</font>
+
+<p><font face="Times">If you need to provide the user with a more sophisticated system for interacting with your custom objects, you can implement an <i>editor</i> using the API described in this chapter.&nbsp; Whereas an inspector borrows one of Interface Builder's windows for its display, an editor provides its own window.&nbsp; The size of this window is not constrained as is the inspector window.&nbsp; Since each object can have its own editor, there can be multiple editor windows on the screen at once, making &quot;copy and paste&quot; and &quot;drag and drop&quot; interactions possible between editor windows.&nbsp; If the edited object contains other objects, the editor can open subeditors to let the user interact with the contained objects.</font>
+
+<p><font face="Times">The DBModule object available from the Database Kit palette (in <b>/NextDeveloper/Palettes/DatabaseKit.palette</b>) provides an example of the use of an editor.&nbsp; If you drag a DBModule object into the File window and then double-click it, the editor opens its window.</font>
+
+<p><font face="Times">To provide a better context for the discussion of the programming interface that makes custom palettes, inspectors, and editors possible, the next section gives a broad overview of Interface Builder's design.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Interface Builder's Design</b></font>
+
+<p><font face="Times">You use Interface Builder to assemble and interconnect your application's objects.&nbsp; You start the process by creating a new document (or, more likely, by modifying the default document provided by Project Builder).&nbsp; When you save the document, it's represented by a file package having a name ending in &quot;.nib&quot;.&nbsp; What's in this document or the nib file that represents it?</font>
+
+<p><font face="Times">An Interface Builder document contains:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">An object hierarchy</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">References to custom classes</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Connection information</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Within Interface Builder, these components are managed by a <i>document object</i>.&nbsp; This object is of a private class, but can be queried and updated through the methods declared in the IBDocuments protocol.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>The Object Hierarchy</b></font>
+
+<p><font face="Times">A document object stores and maintains an object hierarchy.&nbsp; At the top of the hierarchy is the File's owner object--the object that's represented in the top-left portion of the File window.&nbsp; This is actually a proxy object, since the actual object that owns the interface will exist outside of the nib file.&nbsp;&nbsp; When a user adds an object to the interface project, it becomes part of the document by being attached to some other object--the <i>parent</i> object--in the object hierarchy.&nbsp; (In this hierarchy, a parent object may have many children, but each child can have only one parent object.)&nbsp; An object must be part of this hierarchy for it to be archived in the nib file.</font>
+
+<p><font face="Times">Interface Builder declares and implements several methods as a category of Object (see the Object Additions specification) so that it can query any object in the hierarchy for crucial information.&nbsp; For example, each object can identify its various inspectors and its editor since it inherits these methods:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">getInspectorClassName</font><br>
+<font face="Times">getConnectInspectorClassName</font><br>
+<font face="Times">getSizeInspectorClassName</font><br>
+<font face="Times">getHelpInspectorClassName</font><br>
+<font face="Times">getEditorClassName</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When you define a class for a custom palette object, you can override any of these methods to provide your own inspector or editor.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Class References</b></font>
+
+<p><font face="Times">Often, the object you want instantiated when your application runs is not available to Interface Builder either from its own library of objects or from any palette that has been dynamically loaded.&nbsp; For these cases, Interface Builder provides a proxy object such as the CustomView object in the Basic Views palette.&nbsp; When you drag a CustomView into your application, you are in fact adding this proxy object to the document's object hierarchy.&nbsp; When the resulting nib file is loaded within a running application, the proxy object is unarchived and queried to determine the identity of the class that the proxy represents.&nbsp; Then, an instance of this custom class is created (through the facilities of the <b>alloc</b> and <b>init</b> messages), and the proxy is freed.</font>
+
+<p><font face="Times">Note that this distinction between objects that are unarchived and objects that are represented by proxies has important consequences.&nbsp; An object that's unarchived can receive <b>awake</b> and <b>finishUnarchiving</b> messages, but won't receive an <b>init </b>message.&nbsp; On the other hand, an object that's represented by a proxy object in the nib file will only receive an <b>init</b> message--it won't receive an <b>awake</b> or <b>finishUnarchiving</b> message.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Connection Information</b></font>
+
+<p><font face="Times">An Interface Builder document also contains information about how objects within the object hierarchy are interconnected. This connection information is embodied in objects that conform to the IBConnectors protocol.&nbsp; Each connector object stores information about a connection between one source object and one destination object.&nbsp; Interface Builder's Connections inspector is the interface to a document's connector objects.&nbsp; Each time you connect a source object with a destination object, you are creating another connection object.</font>
+
+<p><font face="Times">When you save the document, connector objects are archived in the nib file along with the objects they interconnect.&nbsp; When an application loads the nib file, the objects from the object hierarchy are unarchived, proxy objects are replaced with the appropriate instances, and connection objects are unarchived.&nbsp; Interface Builder then sends each connection object an <b>establishConnection</b> message, giving it an opportunity to connect its source and destination as it deems appropriate.&nbsp; For example, the standard connection object that Interface Builder provides (again, of an unspecified class) stores the identity of the source object's outlet variable and the destination object's action method, if any.&nbsp; So, when such a connector object receives an <b>establishConnection</b> message, it sets the source object's outlet to the destination object and--if the source object's outlet is named &quot;target&quot;--it sets the source's action to the destination's action method.</font>
+
+<p><font face="Times">In most cases, Interface Builder's standard connection objects will be sufficient for your needs.&nbsp; However, you can create a Connection inspector and connection objects of your own, and through the methods declared in the IBDocuments protocol, you can have these connection objects archived in the nib file.&nbsp; Also, note that since connection objects are archived in the nib file, and since they all receive an <b>establishConnection</b> message when the nib file is loaded, they provide a convenient mechanism for storing any sort of information, not just connection information.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Interface Builder's Programming Interface</b></font>
+
+<p><font face="Times">The API that Interface Builder defines is organized as two class definitions, several protocols, and several methods that are added, through the use of categories, to the definitions of the Object and View classes.&nbsp; The function of these components is summarized in the following tables.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Classes</b></font>
+
+<p><font face="Times">Interface Builder uses these two class definitions as links to your custom palette and to inspectors.&nbsp; It's through the methods defined in these classes that Interface Builder locates and loads the user-interface objects that appear in the custom palette and in the inspector for a custom object.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBPalette</font></td>
+
+<td><font face="Times">This class is provided as the owner of palette's interface.&nbsp; If your custom palette includes only View objects, there's no reason to subclass IBPalette.&nbsp; If the objects that appear in the palette represent MenuCells, Windows, or other non-View objects, you'll have to create a subclass of IBPalette to associate the images in the Palette window with the real objects you intend to have instantiated.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBInspector</font></td>
+
+<td><font face="Times">This is the abstract superclass for inspectors.&nbsp; Your inspector provides Interface Builder with the controls to be loaded into the Inspector panel when the user attempts to inspect the custom object.&nbsp; The inspector also interprets the user's actions on these controls as commands to modify the custom object's state.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Protocols</b></font>
+
+<p><font face="Times">These protocols define the ways your dynamically loaded palette module can communicate with Interface Builder (the IB and IBDocuments protocols) and the ways Interface Builder can communicate with objects in your module (the remaining protocols).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IB</font></td>
+
+<td><font face="Times">This protocol gives you access to global information:&nbsp; the object that represents the active document, whether Interface Builder is in test mode, the source and destination objects of a connection, and so on.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBDocuments</font></td>
+
+<td><font face="Times">This protocol defines the programming interface to a document object in Interface Builder. Through this interface, you can add and remove objects from the document's object hierarchy, add or remove a connector object, and set the active editor.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBInspectors</font></td>
+
+<td><font face="Times">This protocol declares the methods that all inspector objects must have:&nbsp; <b>ok:</b>, <b>revert:</b>, and <b>wantsButtons</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBEditors</font></td>
+
+<td><font face="Times">This protocol declares the methods through which Interface Builder can interact with an editor object.&nbsp; Interface Builder invokes these methods to make the editor's selected object visible; to copy, paste or delete the selection; and to open an close subeditors, among other things.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBDocumentControllers</font></td>
+
+<td><font face="Times">This protocol declares the notification methods Interface Builder can use to inform an object in your module about the state of the document--that it has been loaded or that it's about to be saved.&nbsp; You use the IB protocol to register an object as a document controller.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBSelectionOwners</font></td>
+
+<td><font face="Times">Editor objects conform to this protocol, which declares methods for counting the number of objects in the selection and for filling a List object with the objects in the selection.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">IBConnectors</font></td>
+
+<td><font face="Times">This protocol declares the methods that connector objects must implement.&nbsp; These include methods for identifying the source and destination of a connection and for establishing the connection between these objects.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Other Programming Interfaces</b></font>
+
+<p><font face="Times">Through the use of categories, Interface Builder adds methods to the Object and View classes.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Object Additions</font></td>
+
+<td><font face="Times">Interface Builder uses these methods to discover the various inspectors for the selected object.&nbsp; Default inspectors and editors are provided for all objects.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">View Additions</font></td>
+
+<td><font face="Times">These methods let custom View objects control how they are resized and redrawn.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Creating a Custom Palette</b></font>
+
+<p><font face="Times">The process of creating a custom palette is most easily explained by example.&nbsp; See Chapter 18, &quot;Building a Custom Palette&quot; in the <i>NEXTSTEP Development Tools and Techniques</i> manual for such an example.&nbsp; (This information is also available on-line in <b>/NextLibrary/Documentation/NextDev/DevTools/18_CustomPalette</b>.)</font></td></tr>
+
+</table>
+
+
+
+<p><br><br>
+
+</body>
+</html>

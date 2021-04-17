@@ -1,0 +1,1102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/ReleaseNotes/ObjectLinks.rtfd -->
+<!-- Date: Sun Jun 28 20:13:53 1998 -->
+<head>
+<title>ObjectLinks</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times" size="+1">3.3 Release Notes:</font><br>
+<font face="Times" size="+1">Object Links</font>
+
+<p><font face="Times">There are no new Object Link features or bug fixes in Release 3.3, 3.2, or 3.1.&nbsp; This file contains release notes for Release 3.0.</font></td></tr>
+
+</table>
+
+<p><font face="Times" size="+1"><b>Notes Specific to Release 3.0</b></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">NEXTSTEP 3.0 supports the dynamic sharing of data between documents owned by different applications via Object Links.&nbsp; As a typical example, imagine a user copies an illustration from Draw (the &#34;source&#34; application) and pastes it into a report being written in Edit (the &#34;destination&#34; application).&nbsp; If the user chooses this data to be linked, then later changes in the source drawing are automatically reflected in the report. Object Links free the user from the tedious and error prone task of manually updating dependant documents when original sources change, and allow users to share data between documents.&nbsp; Object Links also support hypertext-style, navigational links between documents.</font>
+
+<p><font face="Times">In 3.0, the bundled applications that support Object Links are Draw (both as a source and destination), Edit (destination only) and IconBuilder (source only).&nbsp; Since Draw is an example as well as a demo, the source for its Object Links support is available, mostly contained in the file gvLinks.m.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>New Classes and Architecture</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Applications participate in Object Links using the classes NXDataLinkManager and NXDataLink.&nbsp; A DataLink Manager coordinates link operations for a particular document.&nbsp; A DataLink represents a particular link between documents.</font>
+
+<p><font face="Times">For each document that an application opens, it creates a DataLink Manager for that document.&nbsp; The DataLink Manager has a delegate, which is set to a custom object within the application.&nbsp; The DataLink Manager and its delegate cooperate to let others link to their document, to create new links to other documents and to manage existing links.&nbsp; The DataLink Manager does most of the real work of managing links, including storing the links and the interprocess communication used to implement links.&nbsp; The delegate is called on for various application-specific operations, e.g., incorporating new data for a link into a destination document.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=45></td>
+
+<td><img src="../Images/sp.gif" width=9 height=1><img src="paste.gif" width=475 height=214></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">A key component of Object Links is a way for the system and other applications to refer to parts of a given document.&nbsp; A reference to a piece of a document is held in a NXSelection object.&nbsp; As part of creating a link to a document, an application provides a Selection object that represents the current selection.&nbsp; Later the DataLink Manager may ask the delegate for a copy of the data for that selection as part of a link update.&nbsp; The creator of a Selection provides an arbitrary number of bytes which identify the part of the document.&nbsp; Since a Selection may be held by the system or other applications, its data can't be updated over time.&nbsp; A Selection must remain a valid reference to its part of the document, even if the document is edited in the meantime.&nbsp; Deciding how to represent selections of a document's data is the most difficult part of supporting Object Links, and will be elaborated on further.</font>
+
+<p><font face="Times">A fourth class used to implement Object Links is NXDataLinkPanel (titled &#34;Link Inspector&#34; in the user interface).&nbsp; This subclass of Panel provides a standard user interface for inspecting links.</font>
+
+<p><font face="Times">The Pasteboard class is used as the data transfer mechanism of Object Links. Pasteboards help make it easy for an application to participate in Object Links, since data transfer is implemented with existing copy and paste code.&nbsp; Because the owner of a Pasteboard can be lazy in providing the actual data for the types it declares, applications can freely declare as many types as they can support, yet only do the work to produce data for the types that are requested by the receiver of the data.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Creating a DataLink Manager</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Before doing anything with Object Links, an application must create a DataLink Manager for each of its documents.&nbsp; This is not expensive, and should be done whenever a document is opened.&nbsp; At creation time, the delegate for the DataLink Manager is provided, which will provide the application specific behavior for links for that document. If an existing document is being opened, the path is also passed.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">MyCustomObjectClass *delegate;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">linkManager = [[NXDataLinkManager alloc]</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">initWithDelegate:delegate fromFile:pathOfDocBeingOpened];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">If the document is untitled, a DataLink Manager should still be created, but only the delegate is passed.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">MyCustomObjectClass *delegate;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">linkManager = [[NXDataLinkManager alloc] initWithDelegate:delegate];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Creating an Object Link via the Pasteboard</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The user creates an Object Link using an extension of the Copy/Paste metaphor.&nbsp; Let's take the example of a Draw illustration pasted into Edit.&nbsp; First, the user selects some objects within Draw and does a &#34;Copy&#34;.&nbsp; In addition to its normal copy operation, Draw puts a link to the data being copied in the Pasteboard.&nbsp; It does this by creating a Selection that refers to the data the user is copying, and a DataLink containing that Selection.&nbsp; Draw then writes this DataLink to the Pasteboard.&nbsp; Draw must also declare an additional type to the Pasteboard, NXDataLinkPboardType (the link writes its data under this type).&nbsp; When the link is created, Draw declares what data types will be able to provide when data is requested for that link (see &#34;Updating an Object Link&#34;, below).&nbsp; The types available for the link can be a subset of the types initially declared to the Pasteboard, but usually are the same except for the NXDataLinkPboardType.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">Pasteboard *pboard;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *srcSel;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">const char * const *types;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* data types we can provide */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">int numTypes;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* number of types */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">const char * const *lTypes;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* data types we can provide later for the link */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">int numLTypes;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">pboard = [Pasteboard new];</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* types includes NXDataLinkPboardType */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[pboard declareTypes:types num:numTypes];</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* ...write data for any types that aren't lazy... */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">srcSel = /* a selection for the current selection */</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* srcSel is handed off to the link, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc]</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">initLinkedToSourceSelection:srcSel</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">managedBy:myDocsLinkManager</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">supportingTypes:newTypes count:numTypes];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink writeToPasteboard:pb];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The user now switches to Edit to complete the link.&nbsp; However, instead of choosing &#34;Paste&#34;, the user chooses &#34;Paste and Link&#34;.&nbsp; Edit first executes its normal pasting code, choosing its favorite data type from the Pasteboard's types and incorporating the data into its document.&nbsp; To complete the linkage to the source document, it then reads the link that Draw put in the Pasteboard, and adds it to its document via the DataLink Manager.&nbsp; It passes a Selection that refers to the newly pasted data.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">Pasteboard *pboard;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *destSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">pboard = [Pasteboard new];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* ...choose types, do normal pasting code... */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc] initFromPasteboard:pboard];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">destSel = /* a selection for the pasted data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if ([myLinkManager addLink:newLink at:destSel]) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* destSel is handed off to Link Manager, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* redisplay doc with newly pasted data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">} else {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* link failed to be added, Link Manager puts up an Alert */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* rip out pasted data, since the operation failed */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[destSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">It is quite possible for the <b>addLink:at:</b> method to fail, in which case the entire &#34;Paste and Link&#34; command should fail (the result should not be an unlinked paste of data, as the user can get this by doing &#34;Paste&#34;).&nbsp; Instead of the above code, it may be easier for some applications to not incorporate the data from the Pasteboard into their document until they know the link has been successfully added to the document.&nbsp; This technique works as long as you can still generate the destination Selection before attempting to add the link.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Creating an Object Link to a File</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">In NEXTSTEP the preferred user interface for importing a file into a document is to allow the user to just drag and drop the file from Workspace into a document window.&nbsp; In addition, the application can let the user link a file into his document instead of copying it (the user performs the drag and drop with the control key down, just as links are made within Workspace - see the AppKit release notes on the new image dragging support).&nbsp; In this case, the application imports the file's data as usual, and then adds a DataLink pointing to the imported file to its document's DataLink Manager.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">char *filename = /* file to link to, often from dragging pboard */;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">Pasteboard *pboard;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *destSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc] initLinkedToFile:filename];</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* sel is handed off to Link Manager, no need to free */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">destSel = /* a selection for the imported data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if ([myLinkManager addLink:newLink at:destSel]) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* destSel is handed off to Link Manager, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* import the file's data and redisplay */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">} else {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* link failed to be added, Link Manager puts up an Alert */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* don't import the file's data, since the operation failed */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[destSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Updating an Object Link</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">An Object Link update is the process of sending a new version of the linked data from the source to the destination.&nbsp; A number of events can cause a link to be updated:&nbsp; the system may notice that source document has changed, the user may explicitly request an update, or an application may programmatically initiate an update.</font>
+
+<p><font face="Times">An update begins with the system making sure the source document is open, launching the responsible application if necessary.&nbsp; The source document's DataLink Manager then asks the delegate to copy a certain part of the document to a Pasteboard.&nbsp; It indicates the part of the document by passing the Selection that the delegate previously generated as part of the &#34;Copy&#34; when the link was created.&nbsp; Note that since the Pasteboard works lazily, the delegate doesn't have to actually produce any data at this time, but just declare the types it can provide to the Pasteboard.&nbsp; A further optimization is may be taken if the &#34;cheap copy&#34; flag is set.&nbsp; Normally an application that provides data to the Pasteboard lazily must put at least one representation of the data into the Pasteboard at copy time, so that when other representations are requested it has the original data to convert from. The application can't use data in the document itself, since this may be edited by the user in the interim between the copy and the paste.&nbsp; If cheap copy is allowed, then the application does not need to write any representations at copy time, because it is guaranteed that there will be no events processed before the owner is asked to provide data for the types it declares (for example, Draw uses the optimization to avoid archiving the objects in the selection for later conversion to EPS or TIFF, and instead produces the EPS or TIFF directly from the object in the document - see Draw's source code).</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- copyToPasteboard:(Pasteboard *)pboard at:(NXSelection *)selection</font><br>
+<img src="../Images/sp.gif" width=127 height=1><font face="Ohlfs,Courier" size="-1">cheapCopyAllowed:(BOOL)flag</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* ...copy new data into pboard... */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The update continues as the new data is transferred into the destination document.&nbsp; The document's DataLink Manager asks its delegate to paste the contents of the Pasteboard previously set up by the source, passing a Selection to indicate the location.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- pasteFrom:(Pasteboard *)pboard at:(NXSelection *)selection</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* ...paste new data from pboard... */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">If the link was created to a file instead of via the Pasteboard, then a source application is not involved, and the delegate of the destination is simply told to import new data from that file.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- importFile:(const char *)filename at:(NXSelection *)selection</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">{</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* ...import new data from file... */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Copying and Pasting Data Containing Object Links</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">What happens if the user copies some data that is already linked?</font>
+
+<p><font face="Times">When copying data between applications, since none of the standard Pasteboard types are rich enough to describe what components are linked and how they can be updated, links are usually not transferred.&nbsp; For example, imagine a user creates a graph in a charting application and pastes it, with linking, into Draw for annotation.&nbsp; The user then scales the whole graph down, and adds some titles and call-outs.&nbsp; He then selects the entire result in Draw, and does a &#34;Copy&#34;.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=77></td>
+
+<td nowrap><font face="Times">1)</font></td>
+
+<td><font face="Times">If he then goes to Edit and does a &#34;Paste&#34;, an EPS representation of the data will be pasted into the Edit document, but there will be no link made in the Edit document. Changes to the chart will be propagated to the Draw document, but the user will have to manually re-copy the data into Edit to have the new chart appear in Edit.</font></td></tr>
+
+<tr valign=top>
+
+<td width=77 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=77></td>
+
+<td nowrap><font face="Times">2)</font></td>
+
+<td><font face="Times">If the user does a &#34;Paste and Link&#34;, a link will be made from Edit to Draw.&nbsp; Changes in the graph will propagate to Draw, and these changes will then propagate to Edit. Note that the linking from the Edit document to the graph must go through Draw, because only Draw knows how to scale the graph and add its call-outs to create the final illustration.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When copying data within a single application, representations of the data that are richer than the standard Pasteboard types are usually transferred.&nbsp; This is also the case when copying linked items within an application.&nbsp; In this case, links should be preserved.&nbsp; For example, imagine a user has some RTF in Edit containing a linked illustration from Draw. She selects a range of text that includes the graphic.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=77></td>
+
+<td nowrap><font face="Times">3)</font></td>
+
+<td><font face="Times">If she then goes to another Edit document, or a different place in the same document, and does a &#34;Paste&#34;, a copy of the text and the graphic is pasted, and the new graphic is still linked.&nbsp; This behavior also implies that a linked graphic can be cut from one part of a document and pasted into another part without the graphic becoming non-linked.</font></td></tr>
+
+<tr valign=top>
+
+<td width=77 height=17></td></tr>
+
+<tr valign=top>
+
+<td width=77></td>
+
+<td nowrap><font face="Times">4)</font></td>
+
+<td><font face="Times">If she does a &#34;Paste and Link&#34;, a link is made to the material that was copied.&nbsp; In this case the &#34;Paste and Link&#34; must be done in a different document than the copy (circular links are not allowed).&nbsp; Doing &#34;Paste and Link&#34; always creates a new link to the place where the last &#34;Copy&#34; was done.&nbsp; (This example is actually fictitious since Edit does not support being a link source, so it cannot be linked to.)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">To implement case 3) above, if an application is copying data that contains linked items, it should message the DataLink Manager to write the link data for the document to the Pasteboard along with the private data it normally copies.&nbsp; It should not try to write the DataLinks themselves along with its private data.&nbsp; When the private data is pasted, this link information will be used to create new links in the pasted data.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[myLinkManager writeLinksToPasteboard:pboard];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When the user does a &#34;Paste&#34; and the private data type is being inserted into the destination, as the paster encounters the previously linked items embedded in the private data it asks its DataLink Manager to incorporate each incoming link from the pasteboard into the receiving document.&nbsp; At this point, a DataLink is created and returned.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">Pasteboard *pboard;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *oldDestSel;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *newDestSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">pboard = [Pasteboard new];</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* while pasting private data from board, the following is done</font><br>
+<img src="../Images/sp.gif" width=108 height=1><font face="Ohlfs,Courier" size="-1">for each linked item encountered in the data being pasted</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">*/</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">oldDestSel = /* the selection for the link in the old document */;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newDestSel = /* a selection for the newly pasted data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [myLinkManager addLinkPreviouslyAt:oldDestSel</font><br>
+<img src="../Images/sp.gif" width=264 height=1><font face="Ohlfs,Courier" size="-1">fromPasteboard:pboard at:newDestSel];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if (newLink) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* newDestSel is handed off to Link Manager, no need to free */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[oldDestSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">} else {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* paste fails */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[newDestSel free];</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[oldDestSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Keeping the DataLink Manager Informed</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">In order for the DataLink Manager to keep linked data up to date, it must be kept apprised of the state of the document.&nbsp; The delegate fulfills this duty by sending the DataLink Manager messages when various commands are applied to the document, such as &#34;Save&#34;, &#34;Save As&#34;, &#34;Save To&#34;, &#34;Revert to Saved&#34; and &#34;Close&#34;.&nbsp; The delegate also sends a message to the DataLink Manager whenever any part of the document is edited.&nbsp; The messages are</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentSaved;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentReverted;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentSavedAs:(const char *)path;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentSavedTo:(const char *)path;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentClosed;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- documentEdited;</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Learning that the Document's Link Data has been Edited</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Since the data kept for Object Links is part of the destination document,&nbsp; the document should be considered edited when this information is changed.&nbsp; The link data is edited when the user changes the update mode of a link, or when the information used to find the source files of links is changed.&nbsp; The delegate should mark the document as edited in its implementation of the method</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- dataLinkManagerDidEditLinks:(NXDataLinkManager *)sender;</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Creating Selections</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">In order for an application's documents to be sources of linked data, it must be able to produce Selection objects which represent parts of a document.&nbsp; A Selection contains an application determined array of bytes of any length (the Selection's &#34;description&#34;). Selections are persistent, immutable references.&nbsp; It is desirable that Selections be maintainable without having to store state in the document to whose parts they refer.&nbsp; This allows users to link to documents which they have permission to read but not modify.</font>
+
+<p><font face="Times">For example, in a drawing program, each figure created in a document could be assigned an incrementing integer.&nbsp; A given selection of objects would then be represented as the list of their integers.&nbsp; Or if the user selects an area of the illustration, the rectangle selected would represent the selection.&nbsp; It is common to link to the entire contents of a document (e.g., a whole graph linked into a report, or a whole text file linked into a page layout).&nbsp; In this case, a special selection can created that means &#34;the same selection that results from the user performing 'Select All'&#34; by using the <b>allSelection</b> factory method of NXSelection.&nbsp; All these types of Selections will hold their meaning even if the illustration is edited, and do not require writing to the source document.</font>
+
+<p><font face="Times">It is more difficult some applications to produce Selections that can withstand edits to the document while still not writing to the document.&nbsp; For example, linking to an arbitrary range of text usually requires that the range is recorded with the document, so that subsequent edits can keep it current.&nbsp; In some applications, it may be possible to link to certain selections only if the document can be modified, while simpler selections do not require saving state in the document.&nbsp; For example, it should be possible to link to the entire contents of a text file without having to record state in the document.&nbsp; Even linking to whole paragraphs should also be possible, since they could each be given a unique ID.</font>
+
+<p><font face="Times">When an application is about to generate a Selection for which it will need to store state in the document to maintain the Selection, it should be sure it has permission to write to the document.</font>
+
+<p><font face="Times">If an application needs to store state in its document when it generates a selection, there is also an issue of when this state is reaped.&nbsp; If an application is generating this state on every &#34;Copy&#34; command, most of this information will become garbage because creating a link is much rarer than simply pasting data.&nbsp; To find out whether the link put in the Pasteboard is actually used, the app can implement the method <b>startTrackingLink:</b> to find out when a link is actually added to a destination document (see &#34;Update Modes for Object Links&#34;, below).&nbsp; The application can also be notified when it loses ownership of the Pasteboard by having the owner declared to the Pasteboard implement the method <b>pasteboardChangedOwner:</b>.&nbsp; At this point, it can know not to retain the state it kept in the document for that link.&nbsp; Once the link is completed, and the selection state is committed to the source document, there is currently no way to know a safe time to reap this state, because destinations of this link can be copied and stored on removable media.</font>
+
+<p><font face="Times">Applications that are both link sources and destinations will sometimes use different types of Selection descriptions in these scenarios.&nbsp; Since a user's selection may be quite complex, but the destination of a link is usually a single graphic, source Selections are often more complex.&nbsp; One important difference is that the API requires an application to resolve source Selections (e.g., finding the source data during an update), but never to exactly regenerate them.&nbsp; There may be more than one Selection that validly refers to a given user selection.&nbsp; On the other hand, the API does require that an application regenerate destination Selections.&nbsp; This is used when previously linked data is being pasted to refer to the links in the copying document.&nbsp; Destination Selections are also used as the keys for finding a particular link in a destination document.&nbsp; For example, when a linked item is deleted, the DataLink Manager's delegate must break that link, and it looks up that link by its destination Selection.</font>
+
+<p><font face="Times">Sometimes if an application uses different strategies for Selections descriptions, one of the first bytes can be used to indicate the type of Selection.&nbsp; This byte can also be used for versioning.</font>
+
+<p><font face="Times">Selection descriptions should also be architecture independent.&nbsp; One way to do this is to use an ASCII string.&nbsp; Another is to use the the first byte to indicate the byte-sex of the data.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Storing Object Link Information</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Information about Object Links persists only in the destination document.&nbsp; This allows read-only documents to be linked to.&nbsp; How does the DataLink Manager store this information along with the document?</font>
+
+<p><font face="Times">Documents that hold links to other documents are required to be file packages (i.e., the document is a directory instead of a single file).&nbsp; The DataLink Manager is then able to store its information in a file within the package without interfering with the storage of the rest of the document.&nbsp; This solution also has the advantage that the system can see what links a document has without having to launch the application to parse this information out of its private document format.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Update Modes for Object Links</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Object Links have three different update modes, which determine how often a link is updated.&nbsp; In manual mode, links are updated only when the user explicitly requests an update.&nbsp; In when-source-saved mode, links are updated when the system determines that the source has changed since the last update.&nbsp; Such updates can occur when documents are opened or saved.&nbsp; In continuous mode, links are updated whenever the source data is changed.&nbsp; The update mode of a link can be set by the user in the Link Inspector.&nbsp; The initial mode of a new link is controlled by the default &#34;NXDataLinkUpdateMode&#34;, which may be set globally for all applications or specifically for a given application.</font>
+
+<p><font face="Times">A DataLink Manager delegate must do a little extra work to support continuous updating; otherwise this option will not be available to the user.&nbsp; The delegate must be able to tell the DataLink Manager whenever the sources of links are edited.&nbsp; It must first respond YES to the message</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- (BOOL)dataLinkManagerTracksLinksIndividually;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">How does it know what parts of its document it should be tracking as sources of links?&nbsp; As the DataLink Manager for the source document learns of dependant documents that are currently open, it learns of selections within the source document that are linked to.&nbsp; The delegate can be notified as these associations are made by implementing</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- dataLinkManager:(NXDataLinkManager *)sender</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">startTrackingLink:(NXDataLink *)link;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- dataLinkManager:(NXDataLinkManager *)sender</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">stopTrackingLink:(NXDataLink *)link;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The delegate asks these links for their source selection, and then tracks changes to these selections.&nbsp; When one of these pieces of the document is edited, it messages the link corresponding to that selection.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[link sourceEdited];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* after link's source data is edited */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">These messages drive the continuous updates.&nbsp; Implementing this fine grained tracking of changes also allows the DataLink Manager to take some optimizations when updating automatic links during a save of the source document, since it knows specifically which dependants need to be updated.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Link Buttons</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Link Buttons are diamond shaped buttons that take the user to a place in another document when clicked.&nbsp; They are used in the Help System and Object Links.</font>
+
+<p><font face="Times">The user creates a Link Button by starting in the source document and doing a &#34;Copy&#34;.&nbsp; In the destination, she then chooses &#34;Paste Link Button&#34;.&nbsp; The destination's implementation is similar to that of &#34;Paste and Link&#34;, except simpler since no data is transferred with Link Buttons.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">Pasteboard *pboard;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *destSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">pboard = [Pasteboard new];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc] initFromPasteboard:pboard];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">destSel = /* a selection for the pasted data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if ([myLinkManager addLinkAsMarker:newLink at:destSel]) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* destSel is handed off to Link Manager, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* import the Link Button image, redisplay doc */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">} else {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* link failed to be added, Link Manager puts up an Alert */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[destSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">There are named NXImages for the Link Button (&#34;NXLinkButton&#34;) and the highlighted Link Button (&#34;NXLinkButtonH&#34;).&nbsp; By default these images are about 12 units high.&nbsp; If you wish to use larger buttons, or if your application allows the user to scale them, you may create larger images by first copying the named NXImage and then changing your copy's size.&nbsp; Don't try to scale the named NXImage, since other objects in the system will be affected.&nbsp; Draw demonstrates this in the source file Image.m.&nbsp; (Note: In the 3.0 Beta Release, Draw has some vestigial tiff images for links in its project, which it does not even use in its code.&nbsp; Be sure to use the named images for Link Buttons provided by the AppKit).</font>
+
+<p><font face="Times">When the user clicks on a link button, applications should track the mouse as they would for any button, so the user can move the mouse in and out of the button and see feedback in the way the button is highlighted.&nbsp; It is acceptable to track the rectangle enclosing the button instead of the diamond shape itself.&nbsp; For Link Buttons in a text streams, this means that clicking in a Link Button and dragging should not initiate text selection tracking.&nbsp; For Link Buttons in drawing applications, clicking one the button and moving may collide with the gesture used to move the Link Button graphic.&nbsp; We recommend that you treat the button as a button if it is not a selected graphic, and treat it as a normal graphic if it is selected.&nbsp; In addition, if the graphic is &#34;locked&#34;, then it can always be treated as a button (thus authors can lock the Link Buttons so they function unambiguously for their end users).&nbsp; Draw demonstrates this behavior.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Showing Destination Object Links</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Applications that serve as link destinations should allow the user to see which items are links.&nbsp; The DataLink Manager delegate should implement the method</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- dataLinkManagerRedrawLinkOutlines:(NXDataLinkManager *)sender;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When it receives this method, it should redraw the linked items currently in view. Whenever linked items are drawn, they should ask their DataLink Manager whether links are currently being show with the method</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- (BOOL)areLinkOutlinesVisible;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">If links are visible, they should be drawn with link outlining, using the C function</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">void NXFrameLinkRect(const NXRect *aRect, BOOL isDestination);</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">This function draws a distinctive link outline just outside the provided rectangle.&nbsp; For destination links <b>isDestination</b> should always be YES.&nbsp; For erasure or other purposes, the thickness of this outline can be found be calling <b>NXLinkFrameThickness()</b>.</font>
+
+<p><font face="Times">Do not draw link outlines around Link Buttons.&nbsp; They are already clearly identifiable as links, and the border around them is superfluous.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Showing Source Object Links</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">In applications that serve as link sources, the DataLink Manager delegate should implement two simple methods to allow the Open Source command to function properly.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- windowForSelection:(NXSelection *)selection;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- showSelection:(NXSelection *)selection;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The first of these simple returns the Window object that is displaying the given selection. Since most documents only have one window, this should be trivial for the delegate to implement.&nbsp; The second method is used during open source to show the user the source of the link.&nbsp; This method should scroll into view the data references by the given selection. It may also draw link borders around the source data using <b>NXFrameLinkRect()</b> with <b>isDestination</b> passed as NO.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>The Link Inspector</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The Link Inspector lets the user perform a few basic operations on the Object Links in a document.&nbsp; Since linking state is only stored in the destination document, this panel is only available to inspect links within the destination application.&nbsp; The panel allows the user to manually update a link, open the source of a link, break a link (i.e., prevent any future updates), break all links and set the update mode of a link.</font>
+
+<p><font face="Times">The&nbsp; menu item that brings up the panel should send the <b>orderFrontDataLinkPanel: </b>message to NXApp.</font>
+
+<p><font face="Times">Similar to the Font Panel, the DataLink Panel must track the user's selection as she selects data that is linked or contains links.&nbsp; It is the application's responsibility to send the panel a message as the selection changes.&nbsp; Be sure to keep the panel up to date when documents are opened, become key and are closed.&nbsp; Since this state needs to be tracked even before the panel is created, these messages can be sent to the factory as well as instances of the panel.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[NXDataLinkPanel setLink:currentlySelectedLink</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">andManager:myLinkManager</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">isMultiple:flag];</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Breaking and Deleting Object Links</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When the user deletes a linked item, the DataLink Manager's delegate should inform the manager that the link is no longer part of the document.&nbsp; It can do this by simply sending the appropriate DataLink the <b>break</b> method.&nbsp; After the link is no longer part of the destination DataLink Manager, it may be freed.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *linkToBreak;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *destSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">destSel = /* a selection for the data begin deleted */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">linkToBreak = [myLinkManager findDestinationLinkWithSelection:destSel];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if (linkToBreak) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[linkToBreak break];</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[linkToBreak free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When a link is broken, the DataLink Manager sends its delegate the message</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">- dataLinkManager:(NXDataLinkManager *)sender</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">didBreakLink:(NXDataLink *)link;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The delegate will probably wish to note that the graphic in question is no longer a linked item, and redraw without link borders if links are being shown.&nbsp; If the link transfers no data (i.e., its a Link Button), the button should be deleted, since it has no reason to exist as a broken link.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Publishing an Object Link</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">Sometimes it is convenient for users to be able to save an Object Link in the file system, instead of moving the link between documents via the Pasteboard.&nbsp; For example, there may be a specific picture or range of spreadsheet cells that a document owner may want others to link to.&nbsp; The user does this with the &#34;Publish Selection&#34; command.&nbsp;&nbsp; The DataLink class' <b>saveLinkIn:</b> method supports this feature.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *srcSel;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">char *directoryName;&nbsp;&nbsp;&nbsp; /* the directory of the doc we are publishing from */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">const char * const *lTypes;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* data types we can provide later for the link */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">int numLTypes;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">srcSel = /* a selection for the current selection */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">/* srcSel is handed off to the link, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc]</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">initLinkedToSourceSelection:srcSel</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">managedBy:myDocsLinkManager</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">supportingTypes:lTypes count:numLTypes];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink saveLinkIn:directoryName];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">On the destination side, the link is imported by the user by dragging it into the destination document.&nbsp; The destination can recognize a published link being imported by the &#34;.objlink&#34; suffix.&nbsp; Handling a published link is very similar to implementing &#34;Paste and Link&#34;.&nbsp; The destination application simply instantiates a DataLink from the file, and adds it to its DataLink Manager.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">char *filename;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* name of file being imported */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXDataLink *newLink;</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">NXSelection *destSel;</font>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">newLink = [[NXDataLink alloc] initFromFile: filename];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">destSel = /* a selection for the pasted data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if ([myLinkManager addLink:newLink at:destSel]) {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* destSel is handed off to Link Manager, no need to free it */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[newLink update];&nbsp;&nbsp;&nbsp; /* get initial copy of the data */</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">} else {</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* link failed to be added, Link Manager puts up an Alert */</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[newLink free];</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">[destSel free];</font><br>
+<img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Object Links Menu Items</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The recommended menu structure for Object Links starts a submenu of the &#34;Edit&#34; menu titled &#34;Link&#34;.&nbsp; This item should come immediately after the &#34;Paste&#34; command and any variants of &#34;Paste&#34;.&nbsp; The items in the &#34;Link&#34; menu should be, in order,</font>
+
+<p><img src="../Images/sp.gif" width=30 height=1><font face="Times">Paste and Link</font><br>
+<img src="../Images/sp.gif" width=30 height=1><font face="Times">Paste Link Button</font><br>
+<img src="../Images/sp.gif" width=30 height=1><font face="Times">Publish Selection...</font><br>
+<img src="../Images/sp.gif" width=30 height=1><font face="Times">Show Links</font><br>
+<img src="../Images/sp.gif" width=30 height=1><font face="Times">Link Inspector...</font>
+
+<p><font face="Times">&#34;Paste and Link&#34; has an optional command key equivalent of &#34;V&#34;.&nbsp; Additional menu items may be added after &#34;Publish Selection...&#34;.&nbsp; &#34;Show Links&#34; should toggle to &#34;Hide Links&#34; when links are being shown already for the document of the key window.&nbsp; All these menu items and their behavior can be seen in Draw.</font>
+
+<p><font face="Times">Control double-clicking on a linked item is the recommended accelerator for doing an &#34;Open Source&#34; on that link.&nbsp; This is implemented by looking up the DataLink for that link and sending it the <b>openSource</b> message.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Proper Launch Behavior</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When an application is launched to open the Source of an Object Link it is not appropriate for the application to create a new document, as it might otherwise do on launch.&nbsp; The application may detect this case by checking for the NXServiceLaunch default (which is also set when the app is launched to provide a service).&nbsp; Often this check is made in the <b>appDidInit:</b> method of NXApp's delegate.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Ohlfs,Courier" size="-1">if (!NXGetDefaultValue([self appName], &#34;NXServiceLaunch&#34;))</font><br>
+<img src="../Images/sp.gif" width=114 height=1><font face="Ohlfs,Courier" size="-1">/* make a new document on launch */</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Choices when Control-Dragging files</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">When the user control-drags a file into a document window, there are three different options available to the application:</font>
+
+<p><font face="Times">1) Import the file's data, and create an Object Link to that file (this is only possible of the file's data is of a type that can be imported).</font>
+
+<p><font face="Times">2) Show a Workspace-style icon for the file, which serves as a navigational link to the file.</font>
+
+<p><font face="Times">3)&nbsp; Show a Link Button, which serves as a navigational link to the file.</font>
+
+<p><font face="Times">If your app supports two or more of these options, the recommended way to make this decision is to put up an Alert prompting the user to make a choice.&nbsp; See Draw for an example of this behavior.&nbsp; Note that Draw puts up this Alert in its <b>concludeDragOperation:</b> method, because the earlier drag methods are sensitive to timeouts and the user may take an arbitrarily long time to dismiss the Alert.</font></td></tr>
+
+</table>
+
+
+
+</body>
+</html>

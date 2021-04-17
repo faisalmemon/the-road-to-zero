@@ -1,0 +1,1127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/06_Designing/Designing.rtf -->
+<!-- Date: Sun Jun 28 20:10:13 1998 -->
+<head>
+<title>Designing</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>6</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Designing Loadable Kernel Servers</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This chapter provides the basic information required to design loadable kernel servers.&nbsp; It describes the code that every server must have to be integrated into the kernel and to provide services to its clients.&nbsp; It also discusses the functions that loadable kernel servers can call, and it gives tips to help you write correct code that makes debugging easier.</font>
+
+<p><font face="Times">Besides this chapter, you should also read either Chapter 7, &quot;NeXTbus Device Drivers,&quot; or Chapter 8, &quot;Network Modules,&quot; for detailed information about the type of server you're writing.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Choosing an Interface for Your Server</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Before you can start writing your server, you have to decide whether it needs a message-based interface or a UNIX-style interface.&nbsp; Network modules such as network protocols primarily use a third kind of interface (called a <i>network interface</i>, which is described in Chapter 8).&nbsp; However most network modules have additional interface functions that are provided through either a message-based or a UNIX-style interface.</font>
+
+<p><font face="Times">It is recommended that you use the Mach Interface Generator (MiG) to write a message-based interface.&nbsp; One advantage of using a message-based interface is that your server can stay unloaded until the moment it's needed.&nbsp; Message-based servers, besides having more intuitive interfaces than UNIX-style servers, also have the advantage of MiG's network independence. For example, a graphics device with a message-based server could easily be accessed from any computer on the network.&nbsp; MiG and Mach messages are described in detail in Chapter 2, &quot;Using Mach Messages.&quot;</font>
+
+<p><font face="Times">Unfortunately, some servers can't use message-based interfaces.&nbsp; For example, servers that interact with the UNIX file system--such as disk drivers--need to supply a UNIX-style interface with UNIX entry points (<i>xxx</i><b>_open()</b>, <i>xxx</i><b>_close()</b>, and so on).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Tips for Writing Server Code</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When developing your server, you should start by designing your server's interface.&nbsp; When you're ready to start writing code, use a skeleton or sample server as the framework, and then add functionality a little at a time.&nbsp; You might want to put all the major interface functions in place, but just have each one print a message that says it's been called.&nbsp; This approach will make debugging your server much easier than if you implement large amounts of code at once.</font>
+
+<p><font face="Times">As you write the code for your server, keep the following in mind:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Using <b>register</b> isn't necessary.&nbsp; It's easier and often better to let the compiler decide what to put into registers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">You must use <b>volatile</b> for variables that refer to hardware addresses, or that can be modified by interrupt functions or other threads.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Beware of hardware registers that have side effects when accessed, or that contain different information when you read them than when you write to them.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Don't declare large variables in functions.&nbsp; Instead, if you need a large variable, declare a pointer to it and then dynamically allocate space with <b>kalloc()</b> or <b>kget()</b>.&nbsp; (Automatic variables are allocated on the kernel stack.&nbsp; Since the kernel stack is only 4 KB, large variables can easily cause stack overflow and result in system panics that aren't easily debugged.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Don't recursively call functions.&nbsp; (Like large automatic variables, recursion can cause stack overflow.)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Functions Your Server Can Call</b></font>
+
+<p><font face="Times">Your loadable kernel server can use the functions described in Chapter 10, &quot;Kernel Support Functions.&quot;&nbsp; In addition, it can use almost all Mach kernel functions, which are listed in Chapter 4, &quot;Mach Functions.&quot;</font>
+
+<p><font face="Times">However, loadable kernel servers can't use functions that are not defined in the Mach kernel.&nbsp; For example, a few Mach kernel functions don't work because they rely on data that's only available at user level.&nbsp; For example, <b>mach_error()</b> can't be used in loadable kernel servers because it prints to <b>stderr</b>, which the Mach kernel doesn't have access to.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">You can't use C Thread, Network Name Server, Bootstrap Server, or Kernel-Server Loader functions or macros in your server, because they aren't part of the Mach kernel.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap><font face="Helvetica"><b>Warning:</b></font></td>
+
+<td><font face="Times">Loadable kernel servers run outside of the kernel task, even though they use the kernel address map.&nbsp; Be sure to specify the correct task and map to Mach kernel functions.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=44></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Helvetica" size="+1"><b>Executing as the Result of an Interrupt</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=13></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">When a function in your server is called as the direct result of an interrupt, the computer stops all normal processing until the function exits.&nbsp; Even if your server doesn't handle hardware interrupts, it can run as the result of a software interrupt. Specifically, functions that run because they were scheduled by a call to <b>ns_timeout()</b> or <b>ns_abstimeout()</b> (as described in Chapter 10) are running as the result of a software interrupt.</font></td></tr>
+
+<tr valign=top>
+
+<td width=34 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=34></td>
+
+<td nowrap></td>
+
+<td><font face="Times">A server that's executing as the result of an interrupt must take certain precautions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It must not sleep.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It must not call any functions that might sleep.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If it needs to allocate memory, it should use <b>kget()</b> (which can fail but never sleeps).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">It shouldn't perform any I/O, unless the I/O is guaranteed not to block.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For information on handling hardware interrupts, see Chapter 7, &quot;NeXTbus Device Drivers.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Building In Debugging Code</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section discusses functions that can help you debug in two ways:&nbsp; by displaying information while your server runs and by checking assumptions in your server.&nbsp; The functions and macros discussed in this section are explained further in Chapter 10.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Displaying Debugging Information</b></font>
+
+<p><font face="Times">To display debugging information while your server runs, you have two choices:&nbsp; <b>kern_serv_log()</b> and the kernel <b>printf() </b>function.&nbsp; You should use <b>kern_serv_log()</b> instead of <b>printf()</b> whenever possible, since <b>printf()</b> slows the system and affects the timing of your server.&nbsp; You should use <b>printf()</b> only for unusual events that you need to see as soon as they occur and for events that are likely to result in a system panic.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using kern_serv_log()</b></font>
+
+<p><font face="Times"><b>kern_serv_log()</b> logs a message that a user process can later pick up and print out.&nbsp; The main advantages of <b>kern_serv_log() </b>are its quickness and reliability, even when called from an interrupt handler.&nbsp; However, if the system panics before the user process can pick up a log message, that message will be lost.</font>
+
+<p><font face="Times">Your server supplies to <b>kern_serv_log()</b> the string to be logged and the priority at which it should be logged.&nbsp; Higher numbers correspond to higher priorities, but the exact interpretation of priority numbers is up to you.</font>
+
+<p><font face="Times">Messages logged using <b>kern_serv_log()</b> can be obtained using either the kernel-server log command, <b>kl_log</b>, or any other user-level program that calls the functions <b>kern_loader_log_level()</b> and <b>kern_loader_get_log()</b>.&nbsp; By default, logging is off; you must set the log level before you can obtain any log messages.&nbsp; The <b>kl_log</b> utility is described in Appendix A, &quot;Utilities for Loadable Kernel Servers&quot;; <b>kern_loader_log_level()</b> and <b>kern_loader_get_log()</b> are described in Chapter 3, &quot;Using Loadable Kernel Servers.&quot;</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using printf()</b></font>
+
+<p><font face="Times">The kernel <b>printf()</b> function has the advantage that you can easily view its output.&nbsp; All you have to do is keep the console window open.&nbsp; However, <b>printf()</b> can greatly slow the system because nothing except hardware interrupt handling can happen during a call to <b>printf()</b>.&nbsp; Although <b>printf()</b> doesn't sleep, it's unreliable when called from an interrupt handler because messages can be garbled.</font>
+
+<p><font face="Times">The kernel <b>printf()</b> function is best used when you have a short message that you want to see as soon as it happens.&nbsp; You can see <b>printf()</b> messages not only in the console window, but also in <b>/usr/adm/messages</b> and from a <b>msg</b> command in the NMI mini-monitor or Panic window<i>.</i>&nbsp; Your message is guaranteed to make it to the <b>msg</b> buffer (although it might be garbled) even if the kernel panics.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Checking Assumptions</b></font>
+
+<p><font face="Times">To check assumptions in your server, you can use <b>ASSERT()</b> and <b>probe_rb()</b>.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using ASSERT()</b></font>
+
+<p><font face="Times"><b>ASSERT()</b> evaluates the expression you pass to it.&nbsp; If the result of the expression is 0, <b>ASSERT()</b> prints a message describing the line and file that the assertion failed on, and then calls <b>panic()</b>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times"><b>ASSERT()</b> doesn't do anything unless your server is compiled with the DEBUG C preprocessor macro defined.&nbsp; Other recommended compile flags are discussed in Chapter 9, &quot;Building, Loading, and Debugging Loadable Kernel Servers.&quot;</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Using probe_rb()</b></font>
+
+<p><font face="Times">Use <b>probe_rb()</b> whenever you need to make sure that an address is valid.&nbsp; For example, to check whether a NeXTbus board is in a certain slot, you can call <b>probe_rb()</b>, passing the virtual address of one of the board registers.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Kernel-Server Loader Requirements</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Your server must supply an instance variable to the kernel-server loader, <b>kern_loader</b>.&nbsp; You can also supply functions that <b>kern_loader</b> will call under certain circumstances, such as server initialization or shutdown.</font>
+
+<p><font face="Times">You inform <b>kern_loader</b> of the instance variable name and of any functions to be called when you compile your server.&nbsp; This information goes into sections of your server's object file.&nbsp; See Appendix A for details on specifying information during compile time.&nbsp; The following sections first describe how to declare the instance variable in your code and then describe the types of functions you can write for <b>kern_loader</b> to call.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Instance Variable</b></font>
+
+<p><font face="Times">Your server's instance variable is an ordinary C variable of type <b>kern_server_t</b> (defined in the header file <b>kernserv/kern_server_types.h</b>) that <b>kern_loader</b> uses to keep track of your server.</font>
+
+<p><font face="Times">You can make the instance variable contain other information as well.&nbsp; Do this by defining a structure that begins with a field of type <b>kern_server_t</b>, followed by fields of your choice.&nbsp; For example, you might declare your instance variable in a header file as follows:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;kernserv/kern_server_types.h&gt;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct my_instance_var</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_server_t&nbsp; kern_server;&nbsp; /* generic instance info */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; my_dev;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* per-device info */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp; field1;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int&nbsp; field2;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} dev[MAX_MINE]</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} my_instance_var_t;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">my_instance_var_t&nbsp; instance;</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Writing Functions for kern_loader to Call</b></font>
+
+<p><font face="Times">Your server can supply the following kinds of functions to <b>kern_loader</b>:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Kind of Function</b></font></td>
+
+<td><font face="Helvetica"><b>Called When</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Initialization</font></td>
+
+<td><font face="Times">Your server is loaded.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Shutdown</font></td>
+
+<td><font face="Times">Your server is unloaded.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Port server</font></td>
+
+<td><font face="Times">Your server receives a message on a certain port.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">Port death</font></td>
+
+<td><font face="Times">A port for which your server has send rights dies.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Some servers might not require all or any of these functions.&nbsp; However, a server that doesn't start until it receives a message must supply <b>kern_loader</b> with the names and port servers of all ports that the server might receive its first message on.</font>
+
+<p><font face="Times">Initialization functions can't be debugged with GDB.&nbsp; (You can't set a breakpoint in your server until it's fully loaded, and initialization functions are executed before then.)&nbsp; One way to get around this debugging problem is to have a message-based interface for initialization until your server is debugged.&nbsp; You can write a simple port server that initializes the server whenever it receives a message.&nbsp; You also have to write a simple program that sends this message.&nbsp; After you've finished debugging the initialization sequence, you can move it into the initialization functions called by <b>kern_loader</b>.</font>
+
+<p><font face="Times">Shutdown functions are often used to free kernel resources.&nbsp; When the server is unloaded, no other part of the kernel can contain a reference to any code or data contained within the loadable server.&nbsp; If the kernel tries to refer to any code or data in an unloaded server, the system panics.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Considerations for Message-Based Servers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Message-based loadable kernel servers are built using the Mach Interface Generator (MiG).&nbsp; Examples of using MiG are in Chapter 2 of this manual, as well as under <b>/NextLibrary/Documentation/NextDev/Examples</b>.&nbsp; Under the <b>Examples</b> directory, the <b>MiG</b> example contains only user-level code, but it's a good starting place if you're unfamiliar with MiG.&nbsp; The <b>Log</b> example features a loadable kernel server that can receive only one type of request.&nbsp; The <b>ServerVsHandler</b> example has two versions of a loadable kernel server that can receive two types of requests.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Server versus Handler Interfaces</b></font>
+
+<p><font face="Times">A message-based loadable kernel server can have one of two interfaces:&nbsp; a server interface or a handler interface.&nbsp; MiG automatically produces a server interface, but if requested it can produce most of the code for a handler interface.&nbsp; You have to write just a little more code to complete a MiG-generated handler interface.&nbsp; Handler interfaces have a performance advantage because they can use much less wired kernel memory if the loadable kernel server never returns much data.</font>
+
+<p><font face="Times">For example, for a loadable kernel server with a server interface, MiG allocates reply messages that are MAX_SIZE_BYTES (currently 8192) bytes long.&nbsp; If the server returns only a little data--for example, if it has ten interface functions, each returning only an integer indicating the call's success--then a lot of kernel memory is being wasted.&nbsp; If the same server has a handler interface, MiG allocates only 32 bytes for each reply message (24 bytes for the header, and 8 bytes for the message body).</font>
+
+<p><font face="Times">The difference in memory usage happens because MiG always generates large messages to return server data, but for handlers, it allocates just enough space to hold the largest message that's returned.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">From the caller's point of view and from the point of view of the loadable kernel server function that the MiG-generated interface calls, handler and server interfaces look identical.&nbsp; The difference between them is visible only in the options you specify to MiG, the files that MiG generates, and the extra bit of code you must write, as described in the following procedure.</font>
+
+<p><font face="Times">To convert a server to a handler, while keeping the exact same interface to user processes, follow these steps (substituting the name of your server for <i>name</i> and &quot;mydriver&quot;):</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>1.</b></font></td>
+
+<td><font face="Times">Copy your loadable kernel server's &quot;.defs&quot; file to another directory and enter the following command at a UNIX shell prompt:&nbsp; <b>mig</b> <i>name</i><b>.defs -handler</b> <i>name</i><b>Handler.c -sheader</b> <i>name</i><b>Handler.h -user</b> <i>name</i><b>User.c -header</b> <i>name</i><b>.h</b>.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">mymachine&gt; <b>mig mydriver.defs -handler mydriverHandler.c -sheader mydriverHandler.h -user mydriverUser.c -header mydriver.h</b></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>2.</b></font></td>
+
+<td><font face="Times">This creates a group of files.&nbsp; Look in the <i>name</i><b>Handler.h</b> file for the <i>name</i><b>_t</b> structure.&nbsp; Here's an example of what it looks like:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct mydriver {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp; *arg;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* argument to pass to function */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; timeout;&nbsp; /* timeout for RPC return msg_send */</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Routine mydriver_do_log */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">kern_return_t (*mydriver_do_log) (</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void *server);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} mydriver_t;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>3.</b></font></td>
+
+<td><font face="Times">Import <i>name</i><b>Handler.h</b> to your server and add a global variable of type <i>name</i>_t that maps user functions to the corresponding function in your server.&nbsp; The kernel and the kernel loader will use this structure to call your server's functions.&nbsp; For example, for a &quot;.defs&quot; file that has the line &quot;routine mydriver_do_log(server: port_t);&quot;, you might have the following:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">#import &#34;mydriverHandler.h&#34;</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">kern_return_t mydriver_do_log(port_t server);</font>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">mydriver_t mydriver_funcs = {</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">0,</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">100,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* in milliseconds */</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">(kern_return_t (*)(void *))mydriver_do_log</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">};</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>4.</b></font></td>
+
+<td><font face="Times">In the load commands script, change all instances of SMAP to HMAP, and change each function argument to the name of the mapping structure.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">SMAP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mydriver0 mydriver_server 0</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">becomes:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">HMAP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mydriver0 mydriver_handler mydriver_funcs</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>5.</b></font></td>
+
+<td><font face="Times">Change your server's makefile so that it performs the MiG command described above and has the correct dependencies.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">MIGOUTPUT=mydriverUser.c mydriverServer.c mydriver.h</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">SERVER_OBJ= mydriver_main.o mydriverServer.o</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">mydriver_reloc: ${SERVER_OBJ} LoadCommands UnloadCommands</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">kl_ld -n mydriver -l LoadCommands -u UnloadCommands -i instance \</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">-d mydriver_loadable -o $@ ${SERVER_OBJ}</font>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">${MIGOUTPUT}: mydriver.defs</font><br>
+<img src="../../../Images/sp.gif" width=171 height=1><font face="Courier" size="-1">mig mydriver.defs</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">might become:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">MIGOUTPUT=mydriverUser.c <b>mydriverHandler.c mydriverHandler.h</b> \</font><br>
+<img src="../../../Images/sp.gif" width=213 height=1><font face="Courier" size="-1">mydriver.h</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">SERVER_OBJ= mydriver_main.o <b>mydriverHandler.o</b></font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">.</font><br>
+<img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">mydriver_reloc: ${SERVER_OBJ} LoadCommands UnloadCommands</font><br>
+<img src="../../../Images/sp.gif" width=179 height=1><font face="Courier" size="-1">kl_ld -n mydriver -l LoadCommands -u UnloadCommands -i instance \</font><br>
+<img src="../../../Images/sp.gif" width=178 height=1><font face="Courier" size="-1">-d mydriver_loadable -o $@ ${SERVER_OBJ}</font>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1">${MIGOUTPUT}: mydriver.defs</font><br>
+<img src="../../../Images/sp.gif" width=178 height=1><font face="Courier" size="-1">mig mydriver.defs <b>-handler mydriverHandler.c \</b></font><br>
+<img src="../../../Images/sp.gif" width=178 height=1><font face="Courier" size="-1"><b>-sheader mydriverHandler.h -user mydriverUser.c \</b></font><br>
+<img src="../../../Images/sp.gif" width=178 height=1><font face="Courier" size="-1"><b>-header mydriver.h</b></font>
+
+<p><img src="../../../Images/sp.gif" width=143 height=1><font face="Courier" size="-1"><b>${SERVER_OBJ}:&nbsp;&nbsp;&nbsp; mydriverHandler.h</b></font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For another example of converting a server to a handler, see the files under <b>/NextLibrary/Documentation/NextDev/Examples/ServerVsHandler</b>.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Sending and Receiving Out-of-Line Data</b></font>
+
+<p><font face="Times">A message-based server that receives out-of-line data doesn't have direct access to the data.&nbsp; The data is inaccessible because it appears in the address map of the server's task, but loadable kernel servers use the kernel's address map instead of their own task's map.&nbsp; To read out-of-line data, your server must use <b>vm_write()</b> to map all or part of the data into the kernel map. Similarly, to send out-of-line data, your server must first call <b>vm_read()</b> to map the data into the address map of the server's task.&nbsp; Both <b>vm_write()</b> and <b>vm_read()</b> work on entire pages, so the data sent out-of-line must be page-aligned.&nbsp; However, as long as none of the data is wired down, the data isn't copied until it's written to.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Don't use <b>copyin()</b> and <b>copyout()</b> in message-based servers.&nbsp; They work only in UNIX-style servers.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Considerations for UNIX-Based Servers</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For a UNIX-based server, you must provide the proper entry points and insert the server into the appropriate device switch tables.&nbsp; This section lists the entry points you need, but doesn't cover most entry points in detail.&nbsp; If an entry point is not sufficiently covered here, see Egan and Teixeira's <i>Writing a UNIX Device Driver</i>.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">You should call NeXT Technical Support to receive the device major number to use.&nbsp; Getting the major number from NeXT will help ensure that your server works with other NeXT-supplied and third-party servers.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>UNIX Device Entry Points</b></font>
+
+<p><font face="Times">This section shows all the entry points that a character or block driver can provide.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Character-Device Entry Points</b></font>
+
+<p><font face="Times">Entry points for character devices are defined in the header file <b>sys/conf.h</b> as shown below.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct cdevsw</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_open)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_close)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_read)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_write)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_ioctl)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_stop)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_reset)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_select)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_mmap)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_getc)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_putc)();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern struct&nbsp; cdevsw cdevsw[];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Field</b></font></td>
+
+<td><font face="Helvetica"><b>Description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_open</font></td>
+
+<td><font face="Times">A pointer to the server function that handles an <b>open()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_close</font></td>
+
+<td><font face="Times">A pointer to the server function that handles a <b>close()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_read</font></td>
+
+<td><font face="Times">A pointer to the server function that handles a <b>read()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_write</font></td>
+
+<td><font face="Times">A pointer to the server function that handles a <b>write()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_ioctl</font></td>
+
+<td><font face="Times">A pointer to the server function that handles an <b>ioctl()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_stop</font></td>
+
+<td><font face="Times">Not supported for user-written servers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_reset</font></td>
+
+<td><font face="Times">Not used.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_select</font></td>
+
+<td><font face="Times">A pointer to the server function that handles a <b>select()</b> system call.&nbsp; If your device is ready for reading or writing, this function should return true.&nbsp; If your device is <i>always</i> ready for reading and writing, you can specify <b>seltrue()</b> in the <b>cdevsw</b> table, which will make the kernel return true without calling your server.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_mmap</font></td>
+
+<td><font face="Times">A pointer to the server function that handles memory mapping of device space to user space.&nbsp; This function, which is typically found in frame buffers, must return the page number of the passed offset.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_getc</font></td>
+
+<td><font face="Times">Not supported for user-written servers; used for console devices.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_putc</font></td>
+
+<td><font face="Times">Not supported for user-written servers; used for console devices.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If your driver implements the <i>d_select</i> entry point, it usually handles the case that no data is immediately available.&nbsp; In this case, your driver must remember that someone is interested in the data, as well as whether more than one party is interested.&nbsp; In typical UNIX systems, a pointer to the <b>proc</b> structure of the interested party is saved.&nbsp; In NeXT systems, however, the driver must save a pointer to a thread.&nbsp; The <b>selthreadcache()</b> function stores this thread pointer and ensures that the thread won't go away before <b>selthreadclear()</b> is called.&nbsp; The <b>selthreadclear()</b> function should be called when the awaited device activity has taken place or when the device is closed.&nbsp; The following example illustrates how to use <b>selthreadcache()</b> and <b>selthreadclear()</b>.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">typedef struct {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp; *selread;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp; *selwrite;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void&nbsp;&nbsp;&nbsp; *selexcep;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; collision : 1;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">} Mystruct;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">xyzselect(dev, flag)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Mystruct *myinfo = Myinfo[minor(dev)];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">switch (flag) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">case FREAD:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if ( data not available ) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">if ( selthreadcache(&amp;myinfo-&gt;selread) )</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">// more than one party...</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">myinfo-&gt;collision = 1;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">xyzint(dev)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (&nbsp; read data &amp;&amp; myinfo-&gt;selread )</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">xyzwakeup(myinfo, FREAD);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">xyzwakeup(myinfo, flag)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Mystruct *myinfo;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (flag &amp; FREAD) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">int oldpri = splxyz();&nbsp;&nbsp;&nbsp; // may not be necessary</font>
+
+<p><img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (myinfo-&gt;selread) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">selwakeup(myinfo-&gt;selread, myinfo-&gt;collision);</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">selthreadclear(&amp;myinfo-&gt;selread);</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">myinfo-&gt;collision = 0;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">splx(oldpri);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">xyzclose()</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (myinfo-&gt;selread)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">selthreadclear(&amp;myinfo-&gt;selread);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Block-Device Entry Points</b></font>
+
+<p><font face="Times">Entry points for block devices are defined in the header file <b>sys/conf.h</b> as shown below.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct bdevsw</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_open)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_close)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_strategy)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_dump)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; (*d_psize)();</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp; d_flags;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">};</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern struct&nbsp; bdevsw bdevsw[];</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Field</b></font></td>
+
+<td><font face="Helvetica"><b>Description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_open</font></td>
+
+<td><font face="Times">A pointer to the server function that handles an <b>open()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_close</font></td>
+
+<td><font face="Times">A pointer to the server function that handles a <b>close()</b> system call.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_strategy</font></td>
+
+<td><font face="Times">A pointer to the server function that eventually handles <b>read()</b> and <b>write()</b> system calls.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_dump</font></td>
+
+<td><font face="Times">A pointer to the server function that dumps physical memory to the swap device when the system is going down.&nbsp; Used only for devices that can be used for swapping.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_psize</font></td>
+
+<td><font face="Times">A pointer to the server function that returns the size of the swap partition for swap devices.&nbsp; Used only for devices that can be used for swapping.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">d_flags</font></td>
+
+<td><font face="Times">Contains flags that give more information about the device to the kernel.&nbsp; The only defined flag is B_TAPE, which tells the kernel that it can't reorder I/O to this server.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Inserting UNIX Servers into Device Switch Tables</b></font>
+
+<p><font face="Times">If your server is entered through UNIX system calls, you must insert it into the appropriate device switch tables during your server's initialization.&nbsp; While debugging, you should do this through a message-based interface.&nbsp; Later, you can transfer this to an initialization function called by <b>kern_loader</b>.</font>
+
+<p><font face="Times">The following example illustrates a server inserting itself into switch tables.&nbsp; Since the example is taken from a block driver, the server inserts itself into both the <b>bdevsw</b> and <b>cdevsw</b> tables.&nbsp; Character drivers have to insert themselves only into the <b>cdevsw </b>table.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">In the following example, MY_BLOCK_MAJOR and MY_RAW_MAJOR are device major numbers, which you should obtain from NeXT Technical Support.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* Example of a driver inserting itself into the block and character</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">* device switch tables.</font><br>
+<img src="../../../Images/sp.gif" width=131 height=1><font face="Courier" size="-1">*/</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#import &lt;sys/conf.h&gt;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern int nulldev();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern int nodev();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">extern int seltrue();</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">#define nullstr 0</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct bdevsw my_bdevsw =&nbsp; {</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myopen)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myclose)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*mystrategy)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">0 };</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct cdevsw my_cdevsw =&nbsp; {</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myopen)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myclose)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myread)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*mywrite)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">int (*myioctl)(),</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nulldev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">seltrue,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev,</font><br>
+<img src="../../../Images/sp.gif" width=243 height=1><font face="Courier" size="-1">nodev };</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct bdevsw my_saved_bdevsw;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">struct cdevsw my_saved_cdevsw;</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Save whatever entries were in the tables for our major numbers. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">my_saved_bdevsw = bdevsw[MY_BLOCK_MAJOR];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">my_saved_cdevsw = cdevsw[MY_RAW_MAJOR];</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Put my entries in the switch tables. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">bdevsw[MY_BLOCK_MAJOR]= my_bdevsw;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">cdevsw[MY_RAW_MAJOR]&nbsp; = my_cdevsw;</font>
+
+
+
+</body>
+</html>

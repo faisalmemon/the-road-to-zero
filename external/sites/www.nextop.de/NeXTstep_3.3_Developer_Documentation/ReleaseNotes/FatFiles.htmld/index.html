@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/ReleaseNotes/FatFiles.rtf -->
+<!-- Date: Sun Jun 28 20:13:45 1998 -->
+<head>
+<title>FatFiles</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.3 Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times" size="+1">3.3 Release Notes:</font><br>
+<font face="Times" size="+1">Multiple Architecture Binaries (fat files)</font>
+
+<p><br><br><br>
+
+<p><font face="Times">This file contains release notes for the 3.1 and later releases of NEXTSTEP relating to building executable files for multiple architectures.&nbsp; There are no additions for Release 3.3 or 3.2.</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>The Basics:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The concept of fat files is to allow the same file to contain the executable for more than one architecture.&nbsp; When the file is executed the kernel will pick the one that matches the machine.</font>
+
+<p><font face="Times">The rule of thumb here is that the default action when dealing with a fat file or doing an operation that results in an architecture dependent output is to is to do the action or produce the output for the machine the action was taken on.&nbsp; Thus when a fat file is executed on a machine the part for the architecture that matches the machine is used. When compiling a source file, the default target architecture is the same as the architecture of the machine that performs the compilation.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Cross compiling:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The target architecture to be compiled for is specified by the flag &quot;-arch name&quot;, where name is the name of the target architecture (see arch(3) for supported architectures). More than one &quot;-arch name&quot; flag may be used with the compiler driver cc(1) to build a fat object or executable file.</font>
+
+<p><font face="Times">The compiler tools such as nm(1) and size(1) also accept the &quot;-arch name&quot; flags.&nbsp; For the most part these tools also support the flag &quot;-arch all&quot; when dealing with fat files (however, the compiler driver cc(1) doesn't support this flag).&nbsp; ld(1) itself does not take multiple arch flags.&nbsp; So to run an &quot;ld -r&quot; on a set of objects files for multiple architectures cc(1) can be used as follow:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=90 height=1><font face="Courier" size="-1">cc -nostdlib -r -arch m68k -arch i386 ... a.o b.o ...</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>The format:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The layout of a fat file is a simple wrapper design, which has a simple header with the contents of each component appearing continuously in the fat file.&nbsp; The contents of each component in the fat file is always byte-for-byte the same as it would be if it were not in a fat file.</font>
+
+<p><font face="Times">The two header structures are defined in &lt;mach-o/fat.h&gt;, and the structures always appear in big endian byte order.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>The Warts:</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">There are a number of warts in the integration of building fat files with make(1) and other standard UNIX tools in some areas.&nbsp; However, performing a &quot;make clean&quot; followed by a &quot;make all&quot; should always work.&nbsp; The basic problem is that make(1) does not know about fat files and if different invocations of make(1) are run with differing &quot;-arch name&quot; flags make will not do the &quot;right&quot; thing by itself.&nbsp; Project Builder and the supporting application Makefiles provide a simple user interface for getting the right behavior when building NeXT applications, but make itself doesn't support the general case.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=36></td>
+
+<td><font face="Times"><b>Archive libraries</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">The integration of fat archive libraries with UNIX tools like ar(1) and make(1) has its limitations.&nbsp; The problem is how to define a proper fat archive library.&nbsp; A proper fat archive library is multiple archives containing thin object files not a single archive containing fat object files.&nbsp; When building fat archive library with cc(1) and ar(1) then running ranlib(1) on the result causes the correct form of a fat archive library to be built, by following some well defined steps.&nbsp; First as each source is compiled with multiple -arch flags to the compiler, fat object files are built.&nbsp; Then when the archive is created or added to with ar(1), an archive with fat object files is created.&nbsp; Finally when ranlib(1) is run on the archive to make it into a library, the fat object files are broken out and multiple archives are created in one fat file with multiple tables of contents one for each archive.</font>
+
+<p><font face="Times">Problems come about when attempting to modify a fat archive library with the UNIX tool ar(1), as ar(1) does not know about archives in fat files.&nbsp; ar(1) was not taught about archives in fat files as it would be difficult to define the functionality with respect to fat or thin input files that did not match the existing archive.&nbsp; So NeXT recommends the use of a new tool libtool(1) that correctly builds libraries (fat or thin as needed) from a list of any types of files containing objects.</font>
+
+<p><font face="Times">This problems can also show up with make(1), which does not know about fat archive libraries.&nbsp; An example of such a use would be when make tries to process a rule like:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=100 height=1><font face="Courier" size="-1">libx.a(x.o): x.c</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=72></td>
+
+<td><font face="Times">and libx.a is not an archive file but a fat file containing archives.</font></td></tr>
+
+</table>
+
+
+
+</body>
+</html>

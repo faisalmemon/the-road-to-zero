@@ -1,0 +1,1017 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXPostingList.rtf -->
+<!-- Date: Sun Jun 28 20:05:37 1998 -->
+<head>
+<title>IXPostingList</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXPostingList</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">List : Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IXPostingExchange</font><br>
+<font face="Times">NXTransport</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">indexing/IXPostingList.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">IXPostingList is a subclass of List tailored for use with objects, or <i>records</i>, stored in an archiving object, called the <i>source</i>. (Generally the source is an IXRecordManager, which can use a different form of archiving from the standard <b>read:</b> and <b>write: </b>methods--the processes of archiving and unarchiving are referred to as <i>passivation</i> and <i>activation</i> in this case.)&nbsp; Records are activated on demand, and their persistent identifiers are accessible as postings.&nbsp; IXPostingList can exchange postings with instances the IXPostingCursor and IXPostingSet classes, or any other object that conforms to the IXPostingExchange protocol.</font>
+
+<p><font face="Times">Initially, an IXPostingList stores persistent record identifiers in the form of postings (see &quot;Associative Access&quot; in the chapter introduction).&nbsp; The records themselves reside in a store managed by some other object, called the source.&nbsp; A source is any object that conforms to the IXRecordReading protocol.&nbsp; When the IXPostingList is asked for an object, it has the source activate the object, returns the objects's <b>id</b>, and caches the <b>id</b> in case it's needed again.&nbsp; This cache of <b>id</b>s remains aligned with the postings:&nbsp; if the postings are replaced, or moved around by insertion or deletion, the <b>id</b>s are replaced, or moved around with them.&nbsp; Objects can also be added or replaced directly, as with a List; objects added or replaced without postings are assigned null handles and weights.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">If your code needs to iterate over all of the objects in a large IXPostingList, be sure to start with the last object in the list.&nbsp; An IXPostingList dynamically grows its cache of <b>id</b>s; asking for the last object first will cause space to be immediately allocated for all of the <b>id</b>s.&nbsp; This avoids cache resizing as the objects are requested.</font>
+
+<p><font face="Times">A common use for an IXPostingList is iterating over the records described by a set of postings; the simple function listed below prints out descriptions for records stored in an IXRecordManager.&nbsp; It also shows how an IXPostingList can gets its postings directly from another object, in this case an IXPostingCursor.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int printRecords(IXRecordManager *aSource,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">const char *anAttribute, void *aKey, unsigned aLength)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXPostingList&nbsp;&nbsp; *theList;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">IXPostingCursor *aCursor;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i, count;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">count = 0;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">// get a cursor on the attribute and position it</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">aCursor = [aSource cursorForAttributeNamed:anAttribute];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ([aCursor setKey:aKey andLength:aLength])</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">// load a posting list from the cursor</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (theList = [[IXPostingList alloc]</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">initWithSource:aSource andPostingsIn:aCursor])</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">// get space for all the object ids right away.</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">count = [theList count];</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">[theList objectAt:count - 1];</font>
+
+<p><img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">// print out the description of each activated record.</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">for (i = 0; i &lt; count; i++)</font><br>
+<img src="../../../Images/sp.gif" width=236 height=1><font face="Courier" size="-1">printf(&quot;%s\n&quot;, [[theList objectAt:i] description];</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[aCursor free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">[[theList freeObjects] free];</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return count;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">unsigned int <b>maxPointers</b>;</font>
+
+<p><font face="Times">id &lt;IXRecordReading&gt; <b>recordSource</b>;</font>
+
+<p><font face="Times">struct IXPosting *<b>postingList</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">maxPointers</font></td>
+
+<td><font face="Times">The number of slots allocated for object <b>id</b>s.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">recordSource</font></td>
+
+<td><font face="Times">The object which stores the records kept in the IXPostingList.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">postingList</font></td>
+
+<td><font face="Times">The handle/weight pairs in the IXPostingList.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXPostingExchange</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setCount:andPostings:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getCount:andPostings:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">NXTransport</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeRemotelyFor:freeAfterEncoding:isBycopy:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">encodeUsing:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">decodeUsing:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing an IXPostingList</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithSource:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithSource:andPostingsIn:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Retrieving the source</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">source</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating objects by handle</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addHandle:withWeight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertHandle:withWeight:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">replaceHandleAt:with:weight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating objects by <b>id</b></font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">addObject:withWeight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">insertObject:withWeight:at:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">replaceObjectAt:with:weight:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Manipulating objects by index</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">indexForHandle:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">handleOfObjectAt:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">weightOfObjectAt:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Sorting the contents</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sortByWeightAscending:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sortBySelector:ascending:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addHandle:withWeight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addHandle:</b>(unsigned int)<i>aHandle</i> <b>withWeight:</b>(unsigned int)<i>aWeight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>aHandle</i> with <i>aWeight</i> at the end of the IXPostingList.&nbsp; The object identified in the IXPostingList's source by <i>aHandle </i>can be retrieved by <b>id</b> with <b>objectAt:</b>.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertHandle:at:withWeight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addObject:withWeight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertObject:withWeight:at:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>addObject:withWeight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addObject:</b><i>anObject</i> <b>withWeight:</b>(unsigned int)<i>aWeight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>anObject</i> with <i>aWeight</i> at the end of the IXPostingList, and returns <b>self</b>.&nbsp; <i>anObject</i> is added to the IXPostingList with no handle; <b>addHandle:withWeight:</b> should be used instead of this method whenever possible, in order to store a valid handle for every record.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">This method currently allows <b>nil</b> to be added to the list.&nbsp; This isn't recommended, and may be disallowed in a future release.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertHandle:at:withWeight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getCount:andPostings:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getCount:</b>(unsigned int *)<i>count</i> <b>andPostings:</b>(IXPosting **)<i>thePostings</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the number of postings, and a copy of the postings sorted by handle.&nbsp; The sender of this message is responsible for freeing the postings when they are no longer needed.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">Since objects can be added to an IXPostingList by <b>id</b> instead of by handle, or inserted in any order, an IXPostingList's set of postings may not conform to the requirements imposed by the IXPostingExchange protocol (that is, sorted by handle and containing no null handles).&nbsp; In a future release, IXPostingList may sort its postings by handle and remove null handles when returning the postings with this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCount:andPostings:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>handleOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>handleOfObjectAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the handle of the posting at <i>index</i> if there is a posting there and it has a valid handle.&nbsp; If <i>index</i> is greater than or equal to the number of postings in the list, or if the object was entered into the list by <b>id</b> instead of by handle, this method returns 0.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightOfObjectAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>objectAt:</b> (List),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addHandle:withWeight:,</b></font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addObject:withWeight:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>indexForHandle:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>indexForHandle:</b>(unsigned int)<i>handle</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the position in the IXPostingList of the posting identified by <i>handle</i>, or NX_NOT_IN_LIST if that posting isn't in the IXPostingList.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>indexOf:</b> (List)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initWithSource:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource:</b>(id &lt;IXRecordReading&gt;)<i>aSource</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated IXPostingList, with <i>aSource</i> providing record activation.&nbsp; <i>aSource</i> should be an object that conforms to the IXRecordReading protocol, for example, an IXRecordManager.&nbsp; The IXPostingList initially contains no postings.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource:andPostingsIn:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>source</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initWithSource:andPostingsIn:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource:</b>(id &lt;IXRecordReading&gt;)<i>aSource</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andPostingsIn:</b>(id &lt;IXPostingExchange&gt;)<i>anObject</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the receiver, a newly allocated IXPostingList, with <i>aSource</i> providing record activation, and <i>anObject</i> providing an initial set of postings (this will usually be an IXPostingCursor or IXPostingSet).&nbsp; <i>anObject</i> should have the same source as the IXPostingList of this message.&nbsp; This is the designated initializer for the IXPostingList class.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource</b>:,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>source</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setCount:andPostings:</b>, IXRecordReading protocol</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>insertHandle:withWeight:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertHandle:</b>(unsigned int)<i>aHandle</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withWeight:</b>(unsigned int)<i>aWeight</i></font><br>
+<font face="Times"><b>at:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>aHandle</i> with <i>aWeight</i> at position <i>index</i> in the IXPostingList, moving existing postings down one slot, if necessary.&nbsp; If <i>index</i> is equal to the number of postings in the IXPostingList, <i>aHandle</i> is added at the end.&nbsp; The insertion fails, and this method returns <b>nil</b>, if <i>index</i> is greater than the number of postings in the list or if <i>aHandle</i> is 0.</font>
+
+<p><font face="Times">If the insertion is successful, returns <b>self</b>; if not, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertObject:withWeight:at:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addHandle:withWeight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addObject:withWeight:</b>,</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>, </font><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>insertObject:withWeight:at:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertObject:</b><i>anObject</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>withWeight:</b>(unsigned int)<i>aWeight</i></font><br>
+<font face="Times"><b>at:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Inserts <i>anObject</i> with <i>aWeight</i> at position <i>index</i> in the IXPostingList, moving existing objects down one slot, if necessary.&nbsp; If <i>index</i> is equal to the number of postings in the IXPostingList, <i>anObject</i> is added at the end.&nbsp; The insertion fails, and this method returns <b>nil</b>, if <i>index</i> is greater than the number of postings in the IXPostingList.&nbsp; <i>anObject</i> is inserted into the list with no handle; <b>insertHandle:withWeight:at:</b> should be used instead of this method whenever possible, in order to store a valid handle for every record.</font>
+
+<p><font face="Times">If the insertion is successful, returns <b>self</b>; if not, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>insertObject:withWeight:at:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addHandle:withWeight:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addObject:withWeight:</b>,</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>, </font><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>weightOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>replaceHandleAt:with:weight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replaceHandleAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>with:</b>(unsigned int)<i>aHandle</i></font><br>
+<font face="Times"><b>weight:</b>(unsigned int)<i>aWeight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the posting at <i>index</i> with a posting made from <i>aHandle</i> and <i>aWeight</i>.&nbsp; The replacement fails, and this method returns <b>nil</b>, if <i>index</i> is greater than or equal to the number of postings in the IXPostingList or if <i>aHandle</i> is 0.</font>
+
+<p><font face="Times">If the replacement is successful, returns <b>self</b>; if not, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replaceObjectAt:with:weight:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>replaceObjectAt:with:weight:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replaceObjectAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>with:</b><i>anObject</i></font><br>
+<font face="Times"><b>weight:</b>(unsigned int)<i>aWeight</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Replaces the object and its posting at <i>index</i> with <i>anObject</i> and a posting with a handle of 0 and weight of <i>aWeight</i>.&nbsp; The replacement fails, and this method returns <b>nil</b>, if <i>index</i> is greater than or equal to the number of postings in the IXPostingList, or if <i>anObject</i> is <b>nil</b>.&nbsp; <i>anObject</i> is inserted with no handle; your code should use <b>replaceHandleAt:with:weight:</b> whenever possible, in order to store a valid handle for every posting.</font>
+
+<p><font face="Times">If the replacement is successful, returns <b>self</b>; if not, returns <b>nil</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>replaceHandleAt:with:weight:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sortBySelector:ascending:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sortBySelector:</b>(SEL)<i>aSelector</i> <b>ascending:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sorts the contents of the IXPostingList by constructing a key from the value each record returns when <i>aSelector</i> is sent to it.&nbsp; If <i>flag</i> is YES, the sort is ascending (ABCD...), if <i>flag</i> is NO, the sort is descending (ZXYW...).&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Times">The sort ordering used is determined by the return type of <i>aSelector</i>.&nbsp; The IXPostingList determines which of the standard Indexing Kit comparator functions to use, and applies the appropriate function to the result of each message send.&nbsp; However, unlike the keys of an IXBTree, the data being compared doesn't have to be inline (serialized); the return value of <i>aSelector</i> can be a pointer type, and the IXPostingList will construct a proper key for it.&nbsp; See the IXComparisonSetting protocol specification for more information on legal comparison values.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sortByWeightAscending:</b>, <b>IXCompareBytes()</b> (C Functions)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>sortByWeightAscending:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sortByWeightAscending:</b>(BOOL)<i>flag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Sorts the contents of the IXPostingList based on the weight of each record.&nbsp; If <i>flag</i> is YES, the sort is from low weight to high, if <i>flag</i> is NO, the sort is from high weight to low.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>sortBySelector:ascending:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>source</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(id &lt;IXRecordReading&gt;)<b>source</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the object which provides storage for the records referenced by the IXPostingList.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithSource:andPostings:</b>, IXRecordReading protocol</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>weightOfObjectAt:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>weightOfObjectAt:</b>(unsigned int)<i>index</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the weight of the posting at <i>index</i>, or 0 if <i>index</i> is greater than or equal to the number of postings in the IXPostingList.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>handleOfObjectAt:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>addHandle:withWeight:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

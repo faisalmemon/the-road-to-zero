@@ -1,0 +1,819 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/07_IndexingKit/Classes/IXBTreeCursor.rtf -->
+<!-- Date: Sun Jun 28 20:05:32 1998 -->
+<head>
+<title>IXBTreeCursor</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+2"><b>IXBTreeCursor</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Conforms To:</b></font></td>
+
+<td><font face="Times">IXCursorPositioning</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">btree/IXBTreeCursor.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An IXBTreeCursor provides access to the keys and values stored in an IXBTree.&nbsp; It's essentially a pointer into the IXBTree's key space, and may be positioned by key to perform operations on the value stored at a given location.&nbsp; See the IXCursorPositioning protocol specification for information on cursoring or on manipulating keys and values.</font>
+
+<p><font face="Times">An IXBTreeCursor works with a single IXBTree, but several IXBTreeCursors may access the same IXBTree and be positioned independently without conflict.&nbsp; See the IXBTree class specification for more information on concurrent access with multiple IXBTreeCursors.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Using Hints to Speed Key Search</b></font>
+
+<p><font face="Times">In addition to the basic cursoring methods described in the IXCursorPositioning protocol specification, IXBTreeCursor supports <i>hinting</i>.&nbsp; Hints essentially allow the IXBTreeCursor to find keys by absolute position.&nbsp; This can speed key search dramatically as long as the IXBTree is relatively static.&nbsp; If a lot of insertions and removals are performed, however, the use of hints will probably slow down key search; hints will frequently fail to identify the physical locations of their keys because those keys will have moved, and key search will incur the cost of hint failure in addition to the cost of searching.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">struct BTree *<b>btree</b>;</font>
+
+<p><font face="Times">void *<b>keyBuffer</b>;</font>
+
+<p><font face="Times">unsigned int <b>bufferSize</b>;</font>
+
+<p><font face="Times">unsigned int <b>keyLength</b>;</font>
+
+<p><font face="Times">unsigned int <b>keyLimit</b>;</font>
+
+<p><font face="Times">unsigned int <b>traceHint</b>;</font>
+
+<p><font face="Times">unsigned int <b>cursorVersion</b>;</font>
+
+<p><font face="Times">unsigned int <b>cursorDepth</b>;</font>
+
+<p><font face="Times">NXZone *<b>cursorZone</b>;</font>
+
+<p><font face="Times">struct BTreeTraceRecord *<b>cursorTrace</b>;</font>
+
+<p><font face="Times">struct {...} <b>cursorStatus</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">btree</font></td>
+
+<td><font face="Times">The IXBTree accessed by the IXBTreeCursor.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">keyBuffer</font></td>
+
+<td><font face="Times">The internal key buffer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">bufferSize</font></td>
+
+<td><font face="Times">The size in bytes of the internal key buffer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">keyLength</font></td>
+
+<td><font face="Times">The length of the key in the internal key buffer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">keyLimit</font></td>
+
+<td><font face="Times">The maximum length in bytes of a key.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">traceHint</font></td>
+
+<td><font face="Times">The current hint value.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cursorVersion</font></td>
+
+<td><font face="Times">Used to synchronize the activity of multiple cursors.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cursorDepth</font></td>
+
+<td><font face="Times">The number of levels in the tree.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cursorZone</font></td>
+
+<td><font face="Times">The memory allocation zone in which the cursor resides.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cursorTrace</font></td>
+
+<td><font face="Times">The cache of the trace path followed by last key search.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">cursorStatus</font></td>
+
+<td><font face="Times">For internal use by the IXBTreeCursor.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Adopted Protocols</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">IXCursorPositioning</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setFirst</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setLast</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setNext</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setPrevious</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setKey:andLength:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getKey:andLength:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isMatch</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Initializing an IXBTreeCursor</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">initWithBTree:</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing the IXBTree</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">btree</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Positioning with hints</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">setKey:andLength:withHint:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">getKey:andLength:withHint:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Accessing IXBTree data</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeValue:andLength:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">writeRange:ofLength:atOffset:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">readValue:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">readRange:ofLength:atOffset:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">removeValue</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>btree</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(IXBTree *)<b>btree</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the IXBTree that the IXBTreeCursor accesses.&nbsp; This is useful if your code didn't initialize the IXBTreeCursor, since it allows your code to reconfigure the IXBTree, or empty or free it.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBTree:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>getKey:andLength:withHint:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>getKey:</b>(void **)<i>aKey</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andLength:</b>(unsigned int *)<i>aLength</i></font><br>
+<font face="Times"><b>withHint:</b>(unsigned int *)<i>aHint</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns by reference the key defining the IXBTreeCursor's position in its IXBTree, along with the key's length, and a hint that your code can use to speed up a subsequent key search for the same key using <b>setKey:andLength:withHint:</b>.&nbsp; The hint is guaranteed to remain useful as long as no insertions or removals are performed; however, the more the IXBTree changes, the less useful the hint becomes.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function to convert the byte-order of the retrieved key to that of the machine it's running on.</font>
+
+<p><font face="Times">If the IXBTreeCursor is at a key, this method returns YES.&nbsp; If the IXBTreeCursor is between two keys or before the first one, this method advances it to the next key and returns YES.&nbsp; If the IXBTreeCursor is beyond the last key, this method returns NO, and the contents of <i>aKey</i>, <i>aLength</i>, and <i>aHint</i> are undefined.</font>
+
+<p><font face="Times">The contents of <i>aKey</i> aren't guaranteed to remain valid across subsequent messages to the IXBTreeCursor, since it may relocate its key buffer.&nbsp; Your code should copy its contents if it needs to save them.&nbsp; Your code should <i>not</i> write into the buffer pointed to by <i>aKey;</i> doing so may corrupt your application's memory, causing errors or a crash.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKey:andLength:</b> (IXCursorPositioning protocol),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKey:andLength:withHint:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>initWithBTree:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>initWithBTree:</b>(IXBTree *)<i>aBTree</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Initializes the IXBTreeCursor to work with <i>aBTree</i>.&nbsp; It will use that IXBTree's comparator or comparison format to position itself at keys.&nbsp; This is the designated initializer for IXBTreeCursors.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>btree</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>readRange:ofLength:atOffset:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>readRange:</b>(void **)<i>aRange</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>ofLength:</b>(unsigned int)<i>aLength</i></font><br>
+<font face="Times"><b>atOffset:</b>(unsigned int)<i>anOffset</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Copies a portion of the value in the IXBTree at the IXBTreeCursor's position, and returns the length actually read (which may be less than the length requested).&nbsp; If there is no key/value pair at the IXBTreeCursor's position, the IX_NotFoundError exception is raised.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function to convert the byte-order of retrieved data to that of the machine it's running on.</font>
+
+<p><font face="Times">If *<i>aRange</i> is NULL, then up to <i>aLength</i> bytes will be allocated from the IXBTreeCursor's zone, and the data will be copied into that buffer.&nbsp; Your code is responsible for freeing the memory allocated.&nbsp; If a non-NULL value is provided in *<i>aRange</i>, then it is assumed to be the address of a valid buffer, and up to <i>aLength</i> bytes will be copied into it starting from <i>anOffset</i> within the IXBTree's value.</font>
+
+<p><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">Using the address of an uninitialized pointer variable as <i>aRange</i> is incorrect, and will result in data being copied into a random location in the application's address space.&nbsp; Your code should always allocate memory for the pointer variable or set it to NULL before passing its address to this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeValue:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeRange:ofLength:atOffset:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>openRange:ofLength:atOffset:forWriting:</b>,</font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>readValue:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(unsigned int)<b>readValue:</b>(void **)<i>aValue</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Copies the value in the IXBTree at the IXBTreeCursor's position, and returns the length of the value.&nbsp; If there is no key/value pair at the IXBTreeCursor's position, the IXBTreeCursor moves to the next higher position if possible.&nbsp; If the IXBTreeCursor is at the end of the key space, IX_NotFoundError is raised.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapBig</b><i>Type</i><b>ToHost()</b> function to convert the byte-order of retrieved data to that of the machine it's running on.</font>
+
+<p><font face="Times">If *<i>aValue</i> is NULL, then a buffer will be allocated from the IXBTreeCursor's zone, and the data will be copied into that buffer. Your code is responsible for freeing the memory allocated.&nbsp; If a non-NULL value is provided in *<i>aValue</i>, then it is assumed to be the address of a valid buffer, and the value stored in the IXBTree will be copied into it.&nbsp; Your code is responsible for making sure the buffer is large enough to hold the value.&nbsp; This is useful for fixed-length values, or values with a known maximum length.</font>
+
+<p><font face="Helvetica"><b>Important:</b></font>&nbsp; <font face="Times">Using the address of an uninitialized pointer variable as <i>aValue</i> is incorrect, and will result in data being copied into a random location in the application's address space.&nbsp; Your code should always allocate memory for the pointer variable or set it to NULL before passing its address to this method.</font>
+
+<p><font face="Times">This method may be used to determine the size of the buffer needed: invoke it first with NULL as <i>aValue</i> to get the buffer length without copying the data, then a second time with the length to copy the data.&nbsp; This is an efficient usage pattern, unless multiple cursors are active, in which case, it will be very inefficient if the tree is modified by another cursor between the two invocations.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readRange:ofLength:atOffset:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeRange:ofLength:atOffset:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>removeValue</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeValue</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Removes the key and the associated value at the IXBTreeCursor's position.&nbsp; This method raises IX_NotFoundError if there is no key at the IXBTreeCursor's position.&nbsp; Returns <b>self</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readRange:ofLength:atOffset:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeRange:ofLength:atOffset:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>setKey:andLength:withHint:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>setKey:</b>(void *)<i>aKey</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>andLength:</b>(unsigned int)<i>aLength</i></font><br>
+<font face="Times"><b>withHint:</b>(unsigned int)<i>aHint</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Positions the IXBTreeCursor at <i>aKey</i> if <i>aKey</i> is stored in the IXBTree; otherwise, positions the IXBTreeCursor where <i>aKey </i>would be (which may be between two keys, or off either end of the key space).&nbsp; <i>aLength</i> is the length of <i>aKey</i>.&nbsp; Returns YES if <i>aKey</i> is in the IXBTree (that is, if the IXBTreeCursor finds the key), and NO if it's not.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function before invoking this method, to convert the byte-order of the key to big-endian (the standard byte-order for the Indexing Kit).</font>
+
+<p><font face="Times">This method uses a hint as returned by <b>getKey:andLength:withHint:</b> to find <i>aKey</i> quickly.&nbsp; A hint is like a bookmark; it defines a physical position in the IXBTree, so the IXBTreeCursor can just go there and check if <i>aKey</i> is still there.&nbsp; If the IXBTree has been modified, <i>aKey</i> may no longer reside at the position indicated by <i>aHint;</i> in that case a key search is performed.&nbsp; Using hints can actually slow down key search in highly dynamic IXBTrees; use them for reading static or read-only IXBTrees.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKey:andLength:withHint:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>getKey:andLength:</b> (IXCursorPositioning protocol),</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>setKey:andLength: </b>(IXCursorPositioning protocol)</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>writeRange:ofLength:atOffset:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeRange:</b>(void *)<i>aRange</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>ofLength:</b>(unsigned int)<i>aLength</i></font><br>
+<font face="Times"><b>atOffset:</b>(unsigned int)<i>anOffset</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes <i>aRange</i> over a portion of the value in the IXBTree at the IXBTreeCursor's position.&nbsp; Data starting at <i>anOffset</i> within the IXBTree's value is overwritten for <i>aLength</i> bytes.&nbsp; If the range would extend past the end of the value, the value is enlarged to hold the new amount.&nbsp; Returns <b>self</b><i>.</i></font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function before invoking this method, to convert the byte-order of the data to big-endian (the standard byte-order for the Indexing Kit).</font>
+
+<p><font face="Times">If there is no key/value pair at the IXBTreeCursor's position, this method raises IX_NotFoundError.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readRange:ofLength:atOffset:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeValue:andLength:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeValue</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica"><b>writeValue:andLength:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>writeValue:</b>(void *)<i>aValue</i> <b>andLength:</b>(unsigned int)<i>aLength</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Writes <i>aLength</i> bytes from <i>aValue</i> as the value in the IXBTree at the IXBTreeCursor's position, possibly overwriting a previously stored value.&nbsp; Returns YES if the write resulted in an insertion, and NO if the write overwrote a previously stored value.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">Your application should use the <b>NXSwapHost</b><i>Type</i><b>ToBig()</b> function before invoking this method, to convert the byte-order of the data to big-endian (the standard byte-order for the Indexing Kit).</font>
+
+<p><font face="Times">Overwriting completely replaces a value; the previous value is removed and replaced with a new one.&nbsp; If the IXBTreeCursor is not positioned at a key/value pair, a new pair will be inserted with the key last used to position the IXBTreeCursor (with <b>setKey:andLength:</b> or <b>setKey:andLength:withHint:</b>).&nbsp; For example, inserting a completely new value into the IXBTree involves positioning the IXBTreeCursor, checking that the positioning method returns NO (that is, that it didn't find an existing value), and simply using <b>writeValue:andLength:</b> to insert the new value with the key just set.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readValue:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>removeValue</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>readRange:ofLength:atOffset:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>writeRange:ofLength:atOffset:</b></font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>

@@ -1,0 +1,1967 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/GeneralRef/02_ApplicationKit/Classes/NXPrinter.rtf -->
+<!-- Date: Sun Jun 28 20:01:10 1998 -->
+<head>
+<title>NXPrinter</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_class:NXPrinter"></a><font face="Helvetica" size="+2"><b>NXPrinter</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Inherits From:</b></font></td>
+
+<td><font face="Times">Object</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica"><b>Declared In:</b></font></td>
+
+<td><font face="Times">appkit/NXPrinter.h</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Description</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An NXPrinter describes the printing capabilities of a particular make or type of printer, such as whether the printer can print in color, or whether it provides a particular font.&nbsp; In addition, some NXPrinters represent actual printer devices that are available to the computer for printing.</font>
+
+<p><font face="Times">There are two ways to create an NXPrinter:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">If you want an abstract object that doesn't represent an actual printer but gives the printing attributes of a type of printer, you use the <b>newForType:</b> class method, passing a printer type (a string) as the argument.&nbsp; A list of printer types that are recognized by the computer is available through the <b>printerTypes:custom:</b> class method.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">To find or create an NXPrinter that corresponds to an actual printer device, you use one of the <b>newForName:</b> class methods, passing, at least, the name of a printer.&nbsp; A list of printer names can be retrieved through the <b>prdb_get()</b> function.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Once you've gotten an NXPrinter, there's only one thing you can do with it:&nbsp; Retrieve information regarding the object's type or regarding the actual printer that the object represents (if it represents an actual printer).&nbsp; You can't change the information in an NXPrinter, nor can you use an NXPrinter object to initiate or control a printing job.&nbsp; In addition, NXPrinter instances are owned by the NXPrinter class; you never free them directly.</font>
+
+<p><font face="Times">Printer types are described in files written in the PostScript Printer Description (PPD) format.&nbsp; The printer types that NeXT provides are in localized subdirectories of <b>/NextLibrary/PrinterTypes</b>.&nbsp; When you create an NXPrinter object for a particular type, the object reads the corresponding PPD file, manipulates the information it finds there, and stores the data in named tables. Commonly needed items, such as whether a printer is color or the size of the page on which it prints, are available directly through methods defined by NXPrinter (methods such as <b>isColor</b> and <b>pageSizeForPaper:</b>).&nbsp; Any bit of information in the PPD tables can be retrieved through more general methods such as <b>stringForKey: inTable:</b>, as explained below.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">To understand what the NXPrinter tables contain, you need to be acquainted with the PPD file format.&nbsp; This is described in <i>PostScript Printer Description File Format Specification, version 4.0</i>, available from Adobe Systems Incorporated.&nbsp; The rest of this class description assumes a familiarity with the concepts and terminology presented in the Adobe manual.&nbsp; A brief summary of the PPD format is given below; PPD terms defined in the Adobe manual are shown in italic.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>PPD Format</b></font>
+
+<p><font face="Times">A PPD file statement, or <i>entry</i>, associates a <i>value</i> with a <i>main keyword</i>:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*<i>mainKeyword</i>: <i>value</i></font>
+
+<p><font face="Times">The asterisk is literal; it indicates the beginning of a new entry.</font>
+
+<p><font face="Times">For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*ModelName: &#34;MMimeo Machine&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*3dDevice: False</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">A main keyword can be qualified by an <i>option keyword</i>:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*<i>mainKeyword optionKeyword</i>: <i>value</i></font>
+
+<p><font face="Times">For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*PaperDensity Letter: &#34;0.1&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*PaperDensity Legal: &#34;0.2&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*PaperDensity A4: &#34;0.3&#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*PaperDensity B5: &#34;0.4&#34;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition, any number of entries may have the same main keyword with no option keyword yet give different values:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: ProcessBlack/Process Black</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: CustomColor/Custom Color</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: ProcessCyan/Process Cyan</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: ProcessMagenta/Process Magenta</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: ProcessYellow/Process Yellow</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Option keywords and values can sport <i>translation strings</i>.&nbsp; A translation string is a textual description, appropriate for display in a user interface, of the option or value.&nbsp; An option or value is separated from its translation string by a slash:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*Resolution 300dpi/300 dpi: &#34; <i>...</i> &#34;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*InkName: ProcessBlack/Process Black</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In the first example, the <b>300dpi</b> option would be presented in a user interface as &quot;300 dpi.&quot;&nbsp; The second example assigns the string &quot;Process Black&quot; as the translation string for the <b>ProcessBlack</b> value.</font>
+
+<p><font face="Times">Entries that have an <b>*OrderDependency</b> or <b>*UIConstraints</b> main keyword are treated specially by NXPrinter.&nbsp; Such entries take the following forms (the bracketed elements are optional):</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*OrderDependency: <i>real section mainKeyword</i> [<i>optionKeyword</i>]</font><br>
+<img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*UIConstraint: <i>mainKeyword1</i> [<i>optionKeyword1</i>] <i>mainKeyword2</i> [<i>optionKeyword2</i>]</font>
+
+<p><font face="Times">There may be more than one UIConstraints entry with the same <i>mainKeyword1</i> or <i>mainKeyword1/optionKeyword1</i> value. Below are some examples of *<b>OrderDependency</b> and <b>*UIConstraints</b> entries:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*OrderDependency: 10 AnySetup *Resolution</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*UIConstraint: *Option3 None *PageSize Legal</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">*UIConstraint: *Option3 None *PageRegion Legal</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Explaining these entries is beyond the scope of this documentation; however, it's important to note their forms in order to understand how they're represented in the NXPrinter tables.</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>NXPrinter Tables</b></font>
+
+<p><font face="Times">NXPrinter defines a five key-value tables to store PPD information.&nbsp; The tables are identified by string names, as given below:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>String Name</b></font></td>
+
+<td><font face="Helvetica"><b>Contents</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PPD</font></td>
+
+<td><font face="Times">General information about a printer type.&nbsp; The table contains the values for all entries in a PPD file except those with <b>*OrderDependency</b> and <b>*UIConstraints</b> main keywords.&nbsp; The values in this table don't include the translation strings.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PPDOptionTranslation</font></td>
+
+<td><font face="Times">Option keyword translation strings.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PPDArgumentTranslation</font></td>
+
+<td><font face="Times">Value translation strings.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PPDOrderDependency</font></td>
+
+<td><font face="Times"><b>*OrderDependency</b> values.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">PPDUIConstraint</font></td>
+
+<td><font face="Times"><b>*UIConstraints</b> values.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">There are two principle methods for retrieving data from the NXPrinter tables:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>stringForKey:inTable:</b> returns the value for the first occurence of a given key in the given table.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=9></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><b>stringListForKey:inTable:</b> returns an array of values, one for each occurence of the key.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">For both methods, the first argument is a string that names a key--which part of a PPD file entry the key corresponds to depends on the table (as explained in the following sections).&nbsp; The second argument names the table that you want to look in.&nbsp; The values that are returned by these methods, whether singular or in an array, are always strings, even if the value wasn't a quoted string in the PPD file.</font>
+
+<p><font face="Times">The NXPrinter tables store data as ASCII text, thus the two methods described above are sufficient for retrieving any value from any table.&nbsp; NXPrinter provides a number of other methods, such as <b>booleanForKey:inTable:</b> and <b>intForKey:inTable:</b>, that retrieve single values and coerce them, if possible, into particular data types.&nbsp; The coercion doesn't affect the data that's stored in the table (it remains in ASCII format).</font>
+
+<p><font face="Times">To check the integrity of a table, use the <b>isKey:forTable:</b> and <b>statusForTable:</b> methods.&nbsp; The former returns a boolean that indicates whether the given key is valid for the given table; the latter returns an error code that describes the general state of a table (in particular, whether it actually exists).</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Retrieving Values from the PPD Table</b></font>
+
+<p><font face="Times">Keys for the PPD table are strings that name a main keyword or main keyword/option keyword pairing (formatted as &quot;<i>mainKeyword</i>/<i>optionKeyword</i>&quot;).&nbsp; In both cases, you exclude the main keyword asterisk.&nbsp; The following example creates an NXPrinter and invokes <b>stringForKey:inTable:</b> to retrieve the value for an un-optioned main keyword:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* Create an NXPrinter object for a printer type. */</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NXPrinter *prType = [NXPrinter</font><br>
+<img src="../../../Images/sp.gif" width=271 height=1><font face="Courier" size="-1">newForType:&#34;My_Mimeo_Machine&#34;]</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *sValue = [prType stringForKey:&#34;3dDevice&#34; inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sValue is &#34;False&#34;. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To retrieve the value for a main/option pair, you pass the keywords formatted as &quot;<i>mainKeyword</i>/<i>optionKeyword</i>&quot;:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *sValue = [prType stringForKey:&#34;PaperDensity/A4&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sValue is &#34;0.3&#34;. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You can use&nbsp; <b>stringForKey:inTable:</b> to determine if a main keyword has options.&nbsp; If you pass a main keyword (only) as the first argument to the method, and if that keyword has options in the PPD file, the method returns NULL.&nbsp; If it doesn't have options, it returns the value of the first occurence of the main keyword:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *sValue = [prType stringForKey:&#34;PaperDensity&#34; inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList is NULL */</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *sValue = [prType stringForKey:&#34;InkName&#34; inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList is &#34;ProcessBlack&#34; */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">To retrieve the values for all occurrences of an un-optioned main keyword, use the <b>stringListForKey:inTable:</b> method:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char **sList = [prType stringListForKey:&#34;InkName&#34; inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList[0] is &#34;ProcessBlack&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[1] is &#34;CustomColor&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[2] is &#34;ProcessCyan&#34;, and so on. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In addition, <b>stringListForKey:inTable:</b> can be used to retrieve all the options for a main keyword (given that the main keyword has options):</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char **sList = [prType stringListForKey:&#34;PaperDensity&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPD&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList[0] is &#34;Letter&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[1] is &#34;Legal&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[2] is &#34;A4&#34;, and so on. */</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Retrieving Values from the Option and Argument Translation Tables</b></font>
+
+<p><font face="Times">A key to a translation table is like that to the PPD table:&nbsp; It's a main keyword or main/option keyword pair (again excluding the asterisk).&nbsp; However, the values that are returned from the translation tables are the translation strings for the option or argument (value) portions of the PPD file entry.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char *sValue = [prType stringForKey:&#34;Resolution/300dpi&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPDOptionTranslation&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sValue is &#34;300 dpi&#34;. */</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char **sList = [prType stringListForKey:&#34;InkName&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPDArgumentTranslation&#34;];</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList[0] is &#34;Process Black&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[1] is &#34;Custom Color&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[2] is &#34;Process Cyan&#34;, and so on. */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">As with the PPD table, requesting an array of strings for an un-optioned main keyword returns the keyword's options (if it has any).</font>
+
+<p><br><br>
+
+<p><font face="Helvetica"><b>Retrieving Values from the Order Dependency Table</b></font>
+
+<p><font face="Times">As mentioned earlier, an order dependency entry takes this form:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*orderDependency: <i>real section mainKeyword</i> [<i>optionKeyword</i>]</font>
+
+<p><font face="Times">These entries are stored in the PPDOrderDependency table.&nbsp; To retrieve a value from this table, you always use <b>stringListForKey:inTable:</b>.&nbsp; The value that you pass as the key is, again, a main keyword or main/option pair; however, these values correspond to the <i>mainKeyword</i> and <i>optionKeyword</i> parts of an order dependency entry's value.&nbsp; As with the other tables, the main keyword's asterisk is excluded.&nbsp; The method returns an array of two strings that correspond to the <i>real</i> and <i>section</i> values for the entry.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char **sList = [prType stringListForKey:&#34;Resolution&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPDOrderDependency&#34;]</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList[0] = &#34;10&#34;, sList[1] = &#34;AnySetup&#34; */</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Retrieving Values from the UIConstraints Table</b></font>
+
+<p><font face="Times">Retrieving a value from the PPDUIConstraints table is similar to retrieving a value from the PPDOrderDependency table:&nbsp; You always use <b>stringListForKey:inTable:</b> and the key corresponds to elements in the entry's value.&nbsp; Given the following form (as described earlier), the key corresponds to <i>mainKeyword1</i>/<i>optionKeyword1</i>:</font>
+
+<p><img src="../../../Images/sp.gif" width=18 height=1><font face="Times">*UIConstraint: <i>mainKeyword1</i> [<i>optionKeyword1</i>] <i>mainKeyword2</i> [<i>optionKeyword2</i>]</font>
+
+<p><font face="Times">The array that's returned by <b>stringListForKey:inTable:</b> contains the <i>mainKeyword2</i> and <i>optionKeyword2</i> values (with the keywords stored as separate elements in the array) for every <b>*UIConstraints</b> entry that has the given <i>mainKeyword1</i>/<i>optionKeyword1</i> value.&nbsp; For example:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">char **sList = [prType stringListForKey:&#34;Option3/None&#34;</font><br>
+<img src="../../../Images/sp.gif" width=306 height=1><font face="Courier" size="-1">inTable:&#34;PPDUIConstraints&#34;]</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/* sList[0] = &#34;PageSize&#34;, sList[1] = &#34;Legal&#34;,</font><br>
+<img src="../../../Images/sp.gif" width=145 height=1><font face="Courier" size="-1">sList[2] = &#34;PageRegion&#34;, sList[3] = &#34;Legal&#34; */</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that the main keywords that are returned in the array don't have asterisks.&nbsp; Also, the array that's returned always alternates main and option keywords.&nbsp; If a particular main keyword doesn't have an option associated with it, the string for the option will be empty (but the entry in the array for the option <i>will</i> exist).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Variables</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">const char&nbsp; <b>*printerName</b>;</font>
+
+<p><font face="Times">const char&nbsp; <b>*hostName</b>;</font>
+
+<p><font face="Times">const char&nbsp; <b>*domainName</b>;</font>
+
+<p><font face="Times">const char&nbsp; <b>*printerType</b>;</font></td></tr>
+
+</table>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">printerName</font></td>
+
+<td><font face="Times">The printer's name.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">hostName</font></td>
+
+<td><font face="Times">The name of the printer's host computer.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">domainName</font></td>
+
+<td><font face="Times">The name of the printer's domain.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=7></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">printerType</font></td>
+
+<td><font face="Times">The name of the printer's type.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Method Types</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Finding an NXPrinter</font></td>
+
+<td><img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times">newForName:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times">newForName:host:</font><br>
+<img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times">newForName:host:domain:includeUnavailable:</font><br>
+<img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times">newForType:</font><br>
+<font face="Times">+ printerTypes:custom:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Printer attributes</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">domain</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">host</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">name</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">note</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">type</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isReallyAPrinter</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Retrieving specific information</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">acceptsBinary</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">imageRectForPaper:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">pageSizeForPaper:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isColor</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isFontAvailable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isValid</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">languageLevel</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isOutputStackInReverseOrder</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">Querying the NXPrinter tables</font></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">booleanForKey:inTable:</font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=306></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">dataForKey:inTable:length:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">floatForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">intForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">rectForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">sizeForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">stringForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">stringListForKey:inTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">statusForTable:</font><br>
+<img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">isKey:inTable:</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Class Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-newForName:%5D"></a><font face="Helvetica"><b>newForName:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXPrinter *)<b>newForName:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXPrinter with the given name; returns the value returned by</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[self newForName:name host:NULL domain:NULL includeUnavailable:NO]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:host:domain:includeUnavailable:</b>, + <b>newForType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-newForName:host:%5D"></a><font face="Helvetica"><b>newForName:host:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXPrinter *)<b>newForName:</b>(const char *)<i>name</i> <b>host:</b>(const char *)<i>hostName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the NXPrinter with the given name and host; returns the value returned by</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">[self newForName:name host:hostName domain:NULL&nbsp;&nbsp; includeUnavailable:NO]</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:host:domain:includeUnavailable:</b>, + <b>newForType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-newForName:host:domain:includeUnavailable:%5D"></a><font face="Helvetica"><b>newForName:host:domain:includeUnavailable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXPrinter *)<b>newForName:</b>(const char *)<i>name</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>host:</b>(const char *)<i>hostName</i></font><br>
+<font face="Times"><b>domain:</b>(const char *)<i>domain</i></font><br>
+<font face="Times"><b>includeUnavailable:</b>(BOOL)<i>includeFlag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXPrinter that represents an actual printer with the given name, host, and domain.&nbsp; If <i>hostName</i> or <i>domainName</i> is NULL, the first printer (with the given name) found on any host or domain is used.&nbsp; If <i>hostName</i> is an empty string, the local host is used.&nbsp; If <i>includeFlag</i> is NO, then the matching printer must be available for printing, otherwise <b>nil</b> is returned.&nbsp; If the flag is YES, the availability of the printer is ignored.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForType:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-newForType:%5D"></a><font face="Helvetica"><b>newForType:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">+ (NXPrinter *)<b>newForType:</b>(const char *)<i>type</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXPrinter object that contains information for the given type; the object doesn't correspond to an actual printer.&nbsp; The <i>type</i> argument should be an element in the array returned by <b>printerTypes:custom:</b>.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:host:domain:includeUnavailable:</b>, + <b>printerTypes:custom:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-printerTypes:custom:%5D"></a><font face="Helvetica"><b>printerTypes:custom:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2B.gif" width=8 height=7> <font face="Times">(char **)<b>printerTypes:</b>(BOOL)<i>normalFlag</i> <b>custom:</b>(BOOL)<i>customFlag</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to an array of strings that give the names of the printer types that are recognized by the computer.&nbsp; The flag arguments indicate whether to include normal printer types, custom types, or both.</font>
+
+<p><font face="Times">A printer type is represented by a PPD file (extension &quot;.ppd&quot;).&nbsp; This method searches for normal PPD files directly, or in bundles, in the following directories:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=125></td>
+
+<td><font face="Times">/NextLibrary/PrinterTypes</font><br>
+<font face="Times">~/Library/PrinterTypes</font><br>
+<font face="Times">/HostLibrary/PrinterTypes</font><br>
+<font face="Times">/LocalLibrary/PrinterTypes</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Custom PPD files are searched for in the &quot;CustomPrinters&quot; subdirectory (or bundles therein) in each of the above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForType</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=69></td>
+
+<td><font face="Helvetica" size="+1"><b>Instance Methods</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-acceptsBinary%5D"></a><font face="Helvetica"><b>acceptsBinary</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>acceptsBinary</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXPrinter accepts binary PostScript data.&nbsp; Otherwise returns NO.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-booleanForKey:inTable:%5D"></a><font face="Helvetica"><b>booleanForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>booleanForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a boolean value for the given key in the given table:&nbsp; YES is returned if the value, which is stored as ASCII text, is &quot;YES&quot;, &quot;TRUE&quot;, or names a non-negative integer. Otherwise, this returns NO.&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-dataForKey:inTable:length:%5D"></a><font face="Helvetica"><b>dataForKey:inTable:length:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(void *)<b>dataForKey:</b>(const char *)<i>key</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=163></td>
+
+<td><font face="Times"><b>inTable:</b>(const char *)<i>table</i></font><br>
+<font face="Times"><b>length:</b>(int *)<i>bytes</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to untyped data for the given key in the given table.&nbsp; The length of the data, in bytes, is returned by reference in <i>bytes</i>.&nbsp;&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-domain%5D"></a><font face="Helvetica"><b>domain</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>domain</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the domain in which the NXPrinter's printer entry resides.&nbsp; If the object doesn't represent an actual printer, this returns a pointer to NULL.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:host:domain:includeUnavailable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-floatForKey:inTable:%5D"></a><font face="Helvetica"><b>floatForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(float)<b>floatForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a floating-point value for the given key in the given table; returns 0.0 if the value, which is stored as ASCII text, can't be coerced to <b>float</b>.&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-free%5D"></a><font face="Helvetica"><b>free</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Never invoke this method.&nbsp; NXPrinter objects are owned by the NXPrinter class--you never free them yourself.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-host%5D"></a><font face="Helvetica"><b>host</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>host</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the host to which the printer is connected.&nbsp; If the object doesn't represent an actual printer, this returns a pointer to NULL.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:host:</b>, + <b>newForName:host:domain:includeUnavailable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-imageRectForPaper:%5D"></a><font face="Helvetica"><b>imageRectForPaper:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRect)<b>imageRectForPaper:</b>(const char *)<i>paperType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the printing rectangle--the area of the page that's available for printing--for the named paper type.&nbsp; The selection of paper type names depends on the NXPrinter's type; typical names include &quot;Legal&quot;, &quot;Letter&quot;, &quot;A4&quot;, and &quot;B5&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>pageSizeForPaper:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-init%5D"></a><font face="Helvetica"><b>init</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">You never invoke this method.&nbsp; To create an NXPrinter, use one of the <b>newFor...</b> class methods.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-intForKey:inTable:%5D"></a><font face="Helvetica"><b>intForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>intForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an integer value for the given key in the given table; returns 0 if the value, which is stored as ASCII text, can't be coerced to <b>int</b>.&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isColor%5D"></a><font face="Helvetica"><b>isColor</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isColor</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXPrinter can print in color.&nbsp; Otherwise returns NO.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isFontAvailable:%5D"></a><font face="Helvetica"><b>isFontAvailable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isFontAvailable:</b>(const char *)<i>fontName</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the named font is available to the NXPrinter; otherwise returns NO.&nbsp;&nbsp; Font names are formed as in an invocation of Font's <b>useFont:</b> method; examples include &quot;Helvetica-Bold&quot;, &quot;Times-Roman&quot;, and &quot;Courier-BoldOblique&quot;.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isKey:inTable:%5D"></a><font face="Helvetica"><b>isKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if <i>key</i> is a key to <i>table</i> (which must name one of the NXPrinter tables listed in the class description, above).</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>statusForTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isOutputStackInReverseOrder%5D"></a><font face="Helvetica"><b>isOutputStackInReverseOrder</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isOutputStackInReverseOrder</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the printer outputs pages in reverse page order, otherwise returns NO.&nbsp; By being printed in reverse order, the pages in the resulting output stack will be in the correct (first-to-last) order (assuming that the printer produces pages face-up).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isReallyAPrinter%5D"></a><font face="Helvetica"><b>isReallyAPrinter</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isReallyAPrinter</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXPrinter corresponds to an actual printer device.&nbsp; Otherwise returns NO.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-isValid%5D"></a><font face="Helvetica"><b>isValid</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(BOOL)<b>isValid</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns YES if the NXPrinter is valid--if its internal state matches physical reality.&nbsp; Otherwise returns NO.&nbsp; This is important only for NXPrinters that correspond to actual printers.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>statusForTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-languageLevel%5D"></a><font face="Helvetica"><b>languageLevel</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>languageLevel</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns 1 or 2 as the NXPrinter recognizes the PostScript Language Level I or Level II.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-name%5D"></a><font face="Helvetica"><b>name</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>name</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the name of the NXPrinter.&nbsp; If the object doesn't represent an actual printer, this returns a pointer to NULL.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <font face="Times">+ <b>newForName:</b>, + <b>newForName:host:domain:includeUnavailable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-note%5D"></a><font face="Helvetica"><b>note</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>note</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the comment that's associated with the NXPrinter.&nbsp; If the object doesn't represent an actual printer, this returns a pointer to NULL.&nbsp; The text for the note is set through the PrintManager application.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-pageSizeForPaper:%5D"></a><font face="Helvetica"><b>pageSizeForPaper:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSize)<b>pageSizeForPaper:</b>(const char *)<i>paperType</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns the size of the page for the named paper type.&nbsp; The selection of paper type names depends on the NXPrinter's type; typical names include &quot;Legal&quot;, &quot;Letter&quot;, &quot;A4&quot;, and &quot;B5&quot;.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>imageRectForPaper:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-rectForKey:inTable:%5D"></a><font face="Helvetica"><b>rectForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXRect)<b>rectForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXRect for the given key in the given table.&nbsp; The individual fields are set to 0.0 if the value, which is stored as ASCII text, can't be fit into an NXRect structure.&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-sizeForKey:inTable:%5D"></a><font face="Helvetica"><b>sizeForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(NXSize)<b>sizeForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns an NXSize for the given key in the given table.&nbsp; The individual fields are set to 0.0 if the value, which is stored as ASCII text, can't be fit into an NXSize structure.&nbsp; <i>key</i> should be formed as described in the class description, above.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-statusForTable:%5D"></a><font face="Helvetica"><b>statusForTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(int)<b>statusForTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns one of the following constants to indicate the status of the given table:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Constant</b></font></td>
+
+<td><font face="Helvetica"><b>Meaning</b></font></td></tr>
+
+<tr valign=top>
+
+<td width=124 height=4></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_PRINTERTABLEOK</font></td>
+
+<td><font face="Times">The table is valid.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_PRINTERTABLENOTFOUND</font></td>
+
+<td><font face="Times">The table doesn't exist in this NXPrinter.</font></td></tr>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Times">NX_PRINTERTABLEERROR</font></td>
+
+<td><font face="Times">The table exists but is invalid.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>isValid</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-stringForKey:inTable:%5D"></a><font face="Helvetica"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>stringForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to the ASCII text that corresponds to <i>key</i> in the given table.&nbsp; If the table contains more than one entry with this key, the value of the first entry is returned.&nbsp; A pointer to NULL is returned if the table doesn't contain a key that precisely matches <i>key</i>.&nbsp; See the class description, above, for more information on this method.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringListForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-stringListForKey:inTable:%5D"></a><font face="Helvetica"><b>stringListForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char **)<b>stringListForKey:</b>(const char *)<i>key</i> <b>inTable:</b>(const char *)<i>table</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a pointer to an array of strings; each string gives the ASCII text that corresponds to an entry that has the given key in the given table.&nbsp; If <i>key</i> names a main keyword for which there are (in the table) option keywords, the returned array contains the option keywords.&nbsp; See the class description, above, for more information on this method.</font>
+
+<p><font face="Times">Note that it's the invoker's responsibility to free the array that's returned by this method, but not the contents of the array.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>stringForKey:inTable:</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><a name="NS_DEV_DOCFOR:objc_method:%5BNXPrinter-type%5D"></a><font face="Helvetica"><b>type</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times">(const char *)<b>type</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Returns a string that names the NXPrinter's type.</font>
+
+<p><font face="Helvetica"><b>See also:</b></font>&nbsp; <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>newForType:</b>,</font> <img src="../../../Images/c2D.gif" width=8 height=4> <font face="Times"><b>newForName:</b></font></td></tr>
+
+</table>
+
+
+
+<p><br>
+
+</body>
+</html>

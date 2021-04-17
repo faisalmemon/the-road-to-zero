@@ -1,0 +1,1230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/Concepts/Installer.rtf -->
+<!-- Date: Sun Jun 28 19:36:17 1998 -->
+<head>
+<title>Installer</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Release 3.1&nbsp; Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1993 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br><br><br><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times" size="+3"><i>Preparing an Application for Installation by the Installer</i></font>
+
+<p><br><br><br><br><br>
+
+<p><font face="Times">The preferred way for a user to install a NEXTSTEP software package is to simply copy the package using the Workspace Manager.&nbsp; This is how you should release your software, unless one of the following conditions applies:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The software doesn't normally fit on a single floppy, but can be made to fit by using the Installer's compression feature.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The software, even when compressed, cannot fit on a single floppy.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The software is difficult for a user to install using the Workspace Manager, because files must be placed in several locations.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The software requires the execution of installation programs before or after the software files are installed.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The software is available only on a public FTP server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If your software falls into any of these categories, you may configure and release your software as an <i>Installer package</i>, so that it can be easily installed and deinstalled using the Installer application (located in the <b>/NextAdmin </b>directory).&nbsp; An Installer package is represented as a file package (that is, a UNIX directory) with a &quot;.pkg&quot; extension--for example, <b>MyApp.pkg</b>.</font>
+
+<p><font face="Times">This chapter describes the specification for Installer packages, and explains how to make your application conform to this specification.&nbsp; The procedure for preparing an Installer package is described first.&nbsp; The final two sections describe the contents and characteristics of single-volume Installer packages and multiple-volume Installer packages.&nbsp; You don't need to understand the complete specification in order to create an Installer package, since most of the work is done automatically by the <b>package</b> and <b>chunkPackage</b> utilities.&nbsp; However, the complete specification is provided in case you need it.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Creating an Installer Package</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">To create an Installer package, you use the <b>package</b> utility--a UNIX shell script--located in the Installer file package:</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">/NextAdmin/Installer.app/package</font>
+
+<p><font face="Times">The <b>package</b> utility has the following command-line syntax (bracketed arguments are optional):</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">package [ -B ] [ -f ]&nbsp; <i>root-dir&nbsp; info-file</i> [ <i>tiff-file</i> ] [ -d <i>destination-dir</i> ]</font>
+
+<p><font face="Times">Arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">-B</font></td>
+
+<td><font face="Times">Indicates that the <b>bigtar</b> program should be used to create the package, instead of regular <b>tar</b>.&nbsp; This is necessary only if the package contains files with pathnames greater than 100 characters.&nbsp; (Note that if this option is used, the <b>LongFileNames</b> field in the <i>MyApp</i><b>.info</b> file should have the value YES.&nbsp; See &quot;Installer Package Specification for Single-Volume Packages&quot; for more information.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times">-f</font></td>
+
+<td><font face="Times">Indicates that the <i>root-dir</i> argument is the thing to be packaged (the default behavior is to package everything inside <i>root-dir</i>, but not <i>root-dir</i> itself).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><i>root-dir</i></font></td>
+
+<td><font face="Times">The directory containing the files to be installed.&nbsp; The files should exist within this directory in the same locations as they are to be installed on the customer's machine.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><i>info-file</i></font></td>
+
+<td><font face="Times">Contains information about the installed package and must have the &quot;.info&quot;&quot; extension.&nbsp; The contents of the info file are described below in the section &quot;Installer Package Specification.&quot;&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><i>tiff-file</i></font></td>
+
+<td><font face="Times">Contains the icon for the software contained in this package.&nbsp; The file must have the extension &quot;.tiff&quot;. More information about the TIFF file is also given in the section &quot;Installer Package Specification.&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>destination-dir</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">Specifies where to create the new package.&nbsp; If no destination is specified, the package is created in the current directory.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">For example, if <i>MyApp</i><b>.root</b> in the current directory contains</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">MyApp.root/MyApp.app/MyApp</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">MyApp.root/MyApp.app/HelpFile</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">then the following command will generate an Installer package <b>./Packages/MyApp.pkg</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">package MyApp.root MyApp.info MyApp.tiff -d ./Packages</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">If a package is too large to fit on a single volume (for example, on a single floppy disk), it can be broken up into multiple smaller package folders, each large enough to fit on a volume.&nbsp; The procedure for breaking up an Installer package is described in the following section.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Breaking Up a Large Installer Package</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">When a package folder is too large to fit on a single floppy disk, it can be broken up into <i>n</i> smaller package folders, each of which fits onto a floppy disk.&nbsp; The smaller packages, when they are on the floppy disks, should each have the original package name <i>MyApp</i><b>.pkg</b>.&nbsp; Hence floppy #1 will contain a folder <i>MyApp</i><b>.pkg</b>, as will floppy #2, ..., and floppy #<i>n</i>.&nbsp; The package folders must appear in the top-level directory of the floppies.</font>
+
+<p><font face="Times">The package archive file <i>MyApp</i><b>.tar.Z</b> must be &quot;chunked&quot;&quot; into <i>n</i> pieces--<i>MyApp</i><b>.tar.Z.1</b>, <i>MyApp</i><b>.tar.Z.2</b>, ..., <i>MyApp</i><b>.tar.Z.</b><i>n</i>--that will individually fit onto the floppies (along with the other files in the package folder). The <b>chunkPackage</b> utility (located in the Installer file package) can be used to break up the Installer package that was generated with the <b>package</b> script:</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">/NextAdmin/Installer.app/chunkPackage</font>
+
+<p><font face="Times">The <b>chunkPackage</b> utility has the following command line syntax (the bracketed argument is optional):</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">chunkPackage&nbsp; <i>package&nbsp; volume-size</i> [ -p&nbsp; <i>pad-size</i> ]&nbsp; [ -d <i>destination-dir</i> ]</font>
+
+<p><font face="Times">Arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><i>package</i></font></td>
+
+<td><font face="Times">The Installer package folder generated by the <b>package</b> script.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>volume-size</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The capacity in kilobytes of the volumes on which the smaller packages will be stored (note that the actual capacity of the formatted disk, rather than its nominal capacity, must be specified).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=108></td>
+
+<td nowrap><font face="Times"><i>pad-size</i></font></td>
+
+<td><font face="Times">Specifies an amount of space (in kilobytes) to reserve as &quot;padding&quot; on the first disk.&nbsp; This space could be reserved for a README file, for example.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><i>destination-dir</i></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">Specifies where to create the smaller packages.&nbsp; If no destination is specified, the chunks directory is created in the current directory.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Given a package <i>MyApp</i><b>.pkg</b>, the <b>chunkPackage</b> utility creates the directory <i>MyApp</i><b>.chunks</b> with the subdirectories <i>MyApp</i><b>.1</b>, <i>MyApp</i><b>.2</b>, ..., <i>MyApp</i><b>.</b><i>n</i> and stores a smaller sub-package in each of these subdirectories.&nbsp; For example, the following command breaks up the <i>MyApp</i><b>.pkg</b> into a number of smaller packages that will fit on 2.8-megabyte floppies and places them in <b>./</b><i>MyApp</i><b>.chunks</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">chunkPackage MyApp.pkg 2400 -d ./MyApp.chunks</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The <b>./</b><i>MyApp</i><b>.chunks</b> directory has the following structure after running this script:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./<i>MyApp</i>.chunks</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/<i>MyApp</i>.1/<i>MyApp</i>.pkg</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/<i>MyApp</i>.2/<i>MyApp</i>.pkg</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">...</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/<i>MyApp</i>.n/<i>MyApp</i>.pkg</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">You'll need to copy the <i>MyApp</i><b>.pkg</b> folder in <i>MyApp</i><b>.1</b> onto floppy #1, the <i>MyApp</i><b>.pkg</b> folder in <i>MyApp</i><b>.2</b> onto floppy #2, and so on.&nbsp; Be careful not to copy the&nbsp; <i>MyApp</i><b>.1</b> and <i>MyApp</i><b>.2</b> folders themselves.</font>
+
+<p><font face="Times">Floppy #1 must contain the archive chunk <i>MyApp</i><b>.tar.Z.1</b>, floppy #2 must contain <i>MyApp</i><b>.tar.Z.2</b>, and so on, up to <i>n</i>. The concatenation of the files <i>MyApp</i><b>.tar.Z.1</b>, ..., <i>MyApp</i><b>.tar.Z.</b><i>n</i> should be identical to the original archive <i>MyApp</i><b>.tar.Z</b>.&nbsp; As a test, running the command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">cat MyApp.tar.Z.1&nbsp; ...&nbsp; MyApp.tar.Z.n&nbsp; |&nbsp; sum</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">must provide the same checksum as the command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">sum MyApp.tar.Z</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Each floppy-sized package should contain the &quot;.info&quot;, &quot;.bom&quot;, &quot;.sizes&quot;, and &quot;.tiff&quot; files for the package.</font>
+
+<p><font face="Times">The last floppy-sized package (that is, the <i>MyApp</i><b>.pkg</b> folder on floppy #<i>n</i>) must contain a file <b>.last</b>, that is, <i>MyApp</i><b>.pkg/.last</b>.&nbsp; This file is used as an &quot;endmarker&quot; by the Installer to know when it has seen the last floppy in a multiple-volume package.&nbsp; The <b>.last</b> file can have size zero.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Adding Executable Scripts to an Installer Package</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Installer lets you add up to four programs (typically shell scripts) to an Installer package.&nbsp; Two of these programs, the <b>pre_install</b> and <b>post_install</b> programs, will be executed before and after the Install and Expand operations if the programs exist inside the Installer package.&nbsp; Similarly the <b>pre_delete</b> and <b>post_delete</b> programs, if they exist, will be run before and after Delete and Compress operations.&nbsp; You can write any or all of these four programs in order to accomplish a variety of preprocessing and postprocessing tasks.</font>
+
+<p><font face="Times">For example, assume that you have created an Installer package named <b>MyApp.pkg</b>.&nbsp; To add a program that will be executed before installation, write the program and name it <b>MyApp.pkg/MyApp.pre_install</b>.&nbsp; Similarly, programs to be executed after installation, before deletion, and after deletion would be named <b>MyApp.pkg/MyApp.post_install</b>, <b>MyApp.pkg/MyApp.pre_delete</b>, and <b>MyApp.pkg/MyApp.post_delete</b>, respectively.&nbsp; The programs must be readable and executable--that is, their UNIX modes must include the octal bits 555.</font>
+
+<p><font face="Times">Each of the four programs is invoked by Installer with two arguments:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The first argument is the absolute pathname of the Installer package when the program is invoked--for example, <b>/MyAppDisk#1/MyApp.pkg</b>.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">The second argument is the absolute pathname of the location where the contents of the package will be installed--for example, <b>/LocalApps</b> or <b>/Net/Server/User/Apps</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Installer checks the exit status of a program when it terminates.&nbsp; A program that exits with status 0 is considered to have successfully completed, and the Installer will continue the current operation.&nbsp; If a program exits with non-zero status, Installer aborts the current operation.</font>
+
+<p><font face="Times">Each of these programs should write at least &quot;OK&lt;CR&gt;&quot; to standard output when it successfully completes, or write &quot;FAILED&lt;CR&gt;&quot; (perhaps with an explanation) if it fails to complete.&nbsp; This output will appear in the Installer Log view, as in the following example (where the <b>MyApp.pre_install</b> program succeeds and the <b>MyApp.post_install </b>program fails; their output is shown in bold):</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Installing MyApp.pkg into /LocalApps ...</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Running installation program ... <b>OK.</b></font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Installing /LocalApps/MyApp.app/MyApp ... OK.</font><br>
+<img src="../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">Running installation program ... <b>FAILED (not enough disk space)</b>.</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">... errors.</font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Creating a Remote Installer Package</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Installer supports <i>remote packages</i> whose contents (specifically, the compressed tar archive file) are stored on a public FTP server.&nbsp; A remote package contains the usual files that make up an Installer package (including scripts and localized files) except for the compressed tar archive (the &quot;.tar.Z&quot; file), which is not contained in the remote package--instead, it's stored on an FTP server.&nbsp; Remote packages are small since they don't contain the archive file, and hence can be mailed or posted electronically without major resource consumption.&nbsp; A user who receives a remote package via electronic mail or bulletin board can install the package in the usual way by opening the package icon. When the installation is performed, an anonymous FTP connection is created to the FTP server and the archive file is retrieved and installed on the user's machine.</font>
+
+<p><font face="Times">The file <b>MyApp.pkg/MyApp.info</b> must have an <b>FtpSite</b> field whose value is the FTP location of the archive file.&nbsp; For example, if the archive file for the package is on <b>sonata.cc.purdue.edu</b> in the location <b>/pub/next/2.0-release/binaries/MyApp.tar.Z</b>, then the file <b>MyApp.info</b> must contain the following field:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">FtpSite&nbsp; sonata.cc.purdue.edu:/pub/next/2.0-release/binaries/MyApp.tar.Z</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The host computer name and the filesystem path are separated by a colon.&nbsp; There can be only one <b>FtpSite</b> field per remote package; therefore a given remote package can be used to access only one remote location.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Localizing an Installer Package</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Installer supports localization of Installer packages by letting you put localized &quot;.info&quot; files, &quot;.tiff&quot; files, and installation scripts in language-specific subdirectories within the package.&nbsp; When a user opens such a package, the information that is displayed in the Installer Package window is read from the &quot;.info&quot; file and &quot;.tiff&quot; file that are chosen in the standard way based on the user's language preferences.&nbsp; Also, scripts in localized packages are chosen for execution based on the user's current language settings.</font>
+
+<p><font face="Times">You can localize an Installer package <b>MyApp.pkg</b> to French and German, for example, by adding the files <b>MyApp.pkg/French.lproj/MyApp.info</b> and <b>MyApp.pkg/German.lproj/MyApp.info</b>.&nbsp; Edit these files so that their <b>Title</b>, <b>Version</b>, and <b>Description</b> fields are translated into the appropriate language.&nbsp; Installer uses the NXBundle searching mechanism to find <b>MyApp.info</b> within <b>MyApp.pkg</b>, so if the file is not found in the &quot;.lproj&quot; directory for the user's primary language then the &quot;.lproj&quot; directories for secondary languages are searched in order; finally the <b>MyApp.pkg</b> directory itself is searched.</font>
+
+<p><font face="Times">Similarly, to use localized icons for the package icon, you could localize the file <b>MyApp.tiff</b>.&nbsp; You can also provide localized versions of the <b>pre_install</b>, <b>post_install</b>, <b>pre_delete</b>, and <b>post_delete</b> programs by placing them in the appropriate &quot;.lproj&quot; directory.</font></td></tr>
+
+</table>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=5></td>
+
+<td><font face="Helvetica" size="+2"><b>Installer Package Specification for Single-Volume Packages</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">This section defines the contents of a single-volume Installer package--that is, a package folder that fits on one disk (floppy, optical, CD-ROM) volume.&nbsp; The package folder should have permissions 755 or 555, as described in the <b>chmod</b>(1) UNIX man page.</font>
+
+<p><font face="Times">A single-volume package named <i>MyApp</i><b>.pkg</b> <i>must</i> contain the following files:</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times"><i>MyApp</i><b>.tar.Z</b></font><br>
+<img src="../Images/sp.gif" width=19 height=1><font face="Times"><i>MyApp</i><b>.bom</b></font><br>
+<img src="../Images/sp.gif" width=19 height=1><font face="Times"><i>MyApp</i><b>.info</b></font><br>
+<img src="../Images/sp.gif" width=19 height=1><font face="Times"><i>MyApp</i><b>.sizes</b></font>
+
+<p><font face="Times"><i>MyApp</i><b>.pkg</b> may also contain the following optional file (a 48-by-48 icon that will be displayed in the Info view of the Installer's Package window):</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times"><i>MyApp</i><b>.tiff</b></font>
+
+<p><font face="Times">The contents of these files are specified below.&nbsp; Each file should have permissions 644 (-rw-r--r--) or 444 (-r--r--r--).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b><i>MyApp</i>.tar.Z</b></font>
+
+<p><font face="Times">This file is a compressed tar archive (see the <b>compress</b>(1) and <b>tar</b>(1) UNIX man pages).&nbsp; The contents of the archive are the files that are to be installed on the customer's machine.&nbsp; The archive should be created by using <b>tar</b> and <b>compress</b> on a directory that contains these files.&nbsp; For example, if the files to be installed by the <i>MyApp</i> package are contained on the developer's machine in a directory <i>MyApp</i><b>.root</b>, then the archive can be created in the current directory by the command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(cd <i>MyApp</i>.root; tar cf - . ) | compress -f -c &gt; <i>MyApp</i>.tar.Z</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The contents of the compressed archive can be listed by the following command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">zcat <i>MyApp</i>.tar.Z | tar tf -</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">which prints something like:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./bar</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./baz</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">&lt;etc.&gt;</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">Each of the listed files and directories is prefixed by &quot;./&quot;&quot;, which will allow them to be installed relative to a user-specified directory.&nbsp; If a file must be installed in a particular fixed location, then the files can be explicitly named in the command that creates the archive.&nbsp; For example, suppose that the file <b>MyExecutable</b> must go into <b>/usr/bin</b>.&nbsp; In this case, the archive can be created by a command that explicitly archives <b>/usr/bin/MyExecutable</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">(cd <i>MyApp</i>.root; tar cf - . /usr/bin/MyExecutable) | compress -f -c &gt; <i>MyApp</i>.tar.Z</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">which results in an archive whose contents would be listed as:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./bar</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./baz</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"><i>&lt;etc.&gt;</i></font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">/usr/bin/MyExecutable</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">You should make sure any directories that will be installed as part of the package are owner-writable.&nbsp; Otherwise, attempts to install files into those directories will fail.&nbsp; The recommended protection mode for installed directories is 755 (drwxr-xr-x).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b><i>MyApp</i>.bom</b></font>
+
+<p><font face="Times">This file is the &quot;bill of materials&quot; for the package.&nbsp; The file contains a listing of the contents of the archive, one file per line.&nbsp; Each line has several fields, delimited by whitespace and terminated with a newline.&nbsp; For example, here is the line for the file <b>./bar</b> that would appear in <i>MyApp</i><b>.bom</b>:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">./bar rwxr-xr-x&nbsp; 0/0&nbsp; 65536 Jun 21 22:38 1990</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The first field is the name of the file, exactly as it appears in the contents of the archive when the archive is listed as described above.&nbsp; The second field lists the file's permissions in a form similar to that used by the UNIX command <b>ls</b>(1).&nbsp; The third field gives the file's uid/gid.&nbsp; The fourth field is the size of the file in bytes.&nbsp; The rest of the line is the file's UNIX modified-time.&nbsp; When the package is installed, the file is converted to an uneditable format.</font>
+
+<p><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">The names in the &quot;.bom&quot; file must be names of ordinary files, not names of directories.&nbsp; The output of <b>tar</b>(1) with the <b>-tv</b> option includes directories, so you must be filter out these directories if you use the output of <b>tar</b> to create the &quot;.bom&quot; files (you can easily determine which of the names listed by <b>tar</b> are directories, by looking for those names that end with &quot;/&quot;).&nbsp; We recommend that you use the <b>package</b> utility described earlier to generate the &quot;.bom&quot; file, since <b>package</b> excludes directories automatically.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b><i>MyApp</i>.info</b></font>
+
+<p><font face="Times">This file contains information about the package that is not automatically derived.&nbsp; This file must be manually edited and maintained by the developer.</font>
+
+<p><font face="Times">The &quot;.info&quot; file is a list of (<i>name value</i>) pairs, one pair per line.&nbsp; Blank lines or lines consisting entirely of whitespace are ignored.&nbsp; Lines whose first non-whitespace character is <b>#</b> are treated as comments and ignored.&nbsp; The <i>value</i> part of a line can have a maximum of 1023 characters; subsequent characters are discarded.</font>
+
+<p><font face="Times">The format of each line is:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">[<i>optional-whitespace</i>]&nbsp;&nbsp; <i>name&nbsp;&nbsp; whitespace&nbsp;&nbsp; value</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The <i>name</i> must be a single token, not containing whitespace.&nbsp; The <i>value</i> is the string that begins with the first non-whitespace character after the name and ends with the last character on the line.&nbsp; The terminating newline is not part of the <i>value</i>.</font>
+
+<p><font face="Times">Here is an example <i>MyApp</i><b>.info</b> file:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># The info file for the MyApp package.</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># These are the fields that will be displayed in the Info view.</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The MyApp application</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5.2&nbsp; August 15, 1990</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The MyApp application helps you do everything from brush your teeth to wax your car.</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># These fields determine where the installed package will go.</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DefaultLocation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ~/Apps</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Relocatable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; YES</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># This field is a pattern that matches the floppy disk labels</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DiskName&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MyApp #%d</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># This field states whether the package is a NEXTSTEP application</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">Application&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; YES</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># User is prompted with this field before deleting the package.</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">DeleteWarning&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Deleting this package will cause the MyApp application to stop working.</font>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># end of MyApp.info</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The following fields are required:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>Title</b></font></td>
+
+<td><font face="Times">The value of this field will be displayed at the top of the Info view in the Installer's Package window when the package is opened.&nbsp; It should be short, less than 50 characters.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=10></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>Version</b></font></td>
+
+<td><font face="Times">The value of this field will be displayed in the Version field of the Info view.&nbsp; The value should be something like &quot;23&quot;&quot; or &quot;56.3a&quot;&quot; or &quot;v7.0, Jun 24 1991 14:35&quot;&quot;.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>Description</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field will be displayed in the Description field of the Info view.&nbsp; The description should be a brief message that will tell the user about the contents of the package.&nbsp; The value of this field must be no more than 1023 characters in length.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>DefaultLocation</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field determines where the contents of the package will be installed.&nbsp; The value should be a UNIX pathname, preferably <b>~/Apps</b> (or possibly <b>/LocalApps</b>).&nbsp; If the value of the <b>Relocatable</b> field is NO or is missing (in which case it defaults to NO), then the value of the <b>DefaultLocation</b> field will be used without modification as the root directory relative to which the contents of the package are installed. On the other hand, if the value of the <b>Relocatable</b> field is YES, then the value of the <b>DefaultLocation </b>field is used as the initial directory for the InstallIn panel, from which the user chooses a destination root directory for the installation.</font>
+
+<p><font face="Times"><b>Restriction:</b>&nbsp; The value of the <b>DefaultLocation</b> field must not contain whitespace (such as blanks and tabs) or the following shell metacharacters:</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">!&nbsp; $&nbsp; ^&nbsp; &amp;&nbsp; *&nbsp; (&nbsp; )&nbsp; {&nbsp; }&nbsp; [&nbsp; ]&nbsp; \&nbsp; |&nbsp; ;&nbsp; &lt;&nbsp; &gt;&nbsp; ?&nbsp; '&nbsp; &#34;&nbsp; `</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>DiskName</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The Installer uses the value of this field to compute the disk name when prompting the user to insert a floppy or optical disk.&nbsp; When the entire package fits on a single disk (that is, when it's a single-volume package), the value of this field should be exactly equal to the disk label.&nbsp; For example, if the <i>MyApp </i>package fits onto a single floppy and the floppy disk is mounted with the name &quot;MyApp Software&quot;&quot; when the disk is inserted, then <i>MyApp</i><b>.info</b> must define this field as:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">DiskName&nbsp;&nbsp;&nbsp; MyApp Software</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">Any whitespace that appears at the end of the line is considered part of the disk name, so the developer should be careful to place a newline immediately after the last character in the disk name.</font>
+
+<p><font face="Times">When the package is to be distributed on more than one floppy, the value of this field should contain a single instance of the substring <b>%d</b>.&nbsp; This value will be used as a pattern, with the substring <b>%d </b>successively replaced by the numbers 1, 2, 3, ..., and so on.&nbsp; For example, if the <i>MyApp</i> package is distributed on floppies labeled &quot;<i>MyApp</i> Software #1&quot;, &quot;<i>MyApp</i> Software #2&quot;, ..., <i>&quot;MyApp</i> Software #<i>n</i>&quot;, then <i>MyApp</i><b>.info</b> must define this field as:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">DiskName&nbsp;&nbsp;&nbsp; <i>MyApp</i> Software #%d</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">There should be no other occurrences of the <b>%</b> character in this field.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>Restriction:</b>&nbsp; The value of the <b>DiskName</b> field must not contain the following shell metacharacters:</font>
+
+<p><img src="../Images/sp.gif" width=19 height=1><font face="Times">!&nbsp; $&nbsp; ^&nbsp; &amp;&nbsp; *&nbsp; (&nbsp; )&nbsp; {&nbsp; }&nbsp; [&nbsp; ]&nbsp; \&nbsp; |&nbsp; ;&nbsp; &lt;&nbsp; &gt;&nbsp; ?&nbsp; '&nbsp; &#34;&nbsp; `</font>
+
+<p><font face="Times">The following fields are optional:</font>
+
+<p><font face="Times"><b>Relocatable</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field should be either YES or NO (the default is NO).&nbsp; If the value of this field is YES, then the <b>DefaultLocation</b> field is used as a hint, providing the initial directory for the InstallIn panel.&nbsp; If the value of this field is NO or if it is omitted, then the user will not be prompted with the InstallIn panel and the value of the <b>DefaultLocation</b> field will be used as the root directory relative to which the contents of the package are installed.&nbsp; You should use the value YES if you want to allow the user to choose the destination of the installation.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>Application</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field should be either YES or NO (the default is NO).&nbsp; The value should be set to YES if (and only if) the package contains a NEXTSTEP application.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>DeleteWarning</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field will be displayed as the contents of an AlertPanel that prompts for confirmation when the user attempts to delete the package.&nbsp; The value of the <b>DeleteWarning</b> field should be short, preferably a single sentence.&nbsp; The field should be used when the developer wants to inform the customer of any dangers or side effects of deleting the package.&nbsp; The default value is &quot;This action will remove the entire contents of the <i>package-name</i> package from your system.&quot;&quot;</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>FtpSite</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field will be used as the remote location of the compressed tar archive for a remote package.&nbsp; This field is used only if the package folder does not contain a compressed tar archive.&nbsp; The value of this field should be of the form <i>rhost</i><b>:</b><i>path</i>, where the colon separates the name of the remote FTP server from the pathname of the compressed tar archive on that server.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>UseUserMask</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field should be either YES or NO (the default is NO).&nbsp; If the value is YES, the permissions mode of directories that are created during installation will be determined by the formula (0777 &amp; <i>umask</i>), where <i>umask</i> is the user's umask value (typically 022).&nbsp; If the value of this field is NO, then the permissions mode of directories that are created during installation will be preserved from the compressed tar archive.&nbsp; Setting the value of this field to YES can be used as a workaround when existing compressed tar archives (for example, on an FTP server) contain read-only directories, which cause installation failures when the valueis NO.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>LongFileNames</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field should be either YES or NO (the default is NO).&nbsp; If the files in a package have pathnames that are longer than 100 characters (the normal tar limit) then this field should be set to YES, which increases the pathname limit to 225 characters.&nbsp; The <b>-B</b> switch must be given to the <b>package</b> utility for this to work.&nbsp; See the section &quot;Creating an Installer Package.&quot;</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b><i>MyApp</i>.sizes</b></font>
+
+<p><font face="Times">This file is automatically generated by the <b>package</b> script.&nbsp; It contains various quantities that relate to the size of the package.&nbsp; Like the info file, this file contains a set of (<i>name value</i>) pairs, one pair per line.&nbsp; Blank lines or lines consisting entirely of whitespace are ignored.&nbsp; Lines whose first non-whitespace character is <b>#</b> are treated as comments and ignored.</font>
+
+<p><font face="Times">The <i>value</i> part of each entry in the &quot;.sizes&quot; file should be an integer number.&nbsp; The format of each line is:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">[<i>optional-whitespace</i>]&nbsp; <i>name&nbsp;&nbsp; whitespace&nbsp;&nbsp; numeric-value</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">The <i>name</i> must be a single token, not containing whitespace.&nbsp; The <i>value</i> is the first token following the <i>name</i>, and must consist entirely of digits.</font>
+
+<p><font face="Times">Here is an example <i>MyApp</i><b>.sizes</b> file.</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># The sizes file for the MyApp package</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">NumFiles&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 59</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">InstalledSize&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 69012</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">CompressedSize&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3456</font><br>
+<img src="../Images/sp.gif" width=124 height=1><font face="Courier" size="-1"># end of MyApp.sizes</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times">All three fields are required:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><b>NumFiles</b></font></td>
+
+<td><font face="Times">The value of this field must be an integer that is the number of files in the package archive.&nbsp; This number can be generated by the command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">cat <i>MyApp</i>.bom | wc -l</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>InstalledSize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field must be an integer that is the size, in kilobytes, of the package in its installed form. The <i>MyApp</i> developer can compute this number by running the following command on the <i>MyApp</i><b>.root </b>directory (that is, the directory from which the archive was generated):</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">du -s <i>MyApp</i>.root</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The output of this command is the size, in kilobytes, of the contents of the package.&nbsp; To this number, you should add the sizes of the <i>MyApp</i><b>.info</b>, <i>MyApp</i><b>.sizes</b>, <i>MyApp</i><b>.bom</b>, and <i>MyApp</i><b>.tiff</b> files (round up to the next highest kilobyte).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Times"><b>CompressedSize</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The value of this field must be an integer that is equal to the size, in kilobytes, of the package in its uninstalled form (or nearly equivalently, its installed-and-compressed form).&nbsp; You can compute this field by generating the package with a dummy value for this field, and then running the command:</font></td></tr>
+
+</table>
+
+<p><img src="../Images/sp.gif" width=200 height=1><font face="Courier" size="-1">du -s <i>MyApp</i>.pkg</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=181></td>
+
+<td><font face="Times">The output of this command is the size of <i>MyApp</i><b>.pkg</b> in kilobytes.&nbsp; This number can now replace the dummy value in the <i>MyApp</i><b>.sizes</b> file (round up to the next highest kilobyte).</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td><font face="Helvetica" size="+1"><b><i>MyApp</i>.tiff</b></font>
+
+<p><font face="Times">This optional file can contain an icon for the package that will be displayed in the Info view of the Package window.&nbsp; If the package contains an application, normally this file will contain the application icon.&nbsp; The icon should be a 48-by-48 TIFF image.&nbsp; This file can be in ordinary TIFF format, or it can be compressed using <b>tiffutil</b>(1).</font></td></tr>
+
+</table>
+
+
+
+<p><br><br><br><br><br>
+
+</body>
+</html>

@@ -1,0 +1,1002 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<!-- Created with LatinByrd III -->
+<!-- File: /Apps/NextDev/OperatingSystem/Part2_WritingLKSs/08_Network/Network.rtf -->
+<!-- Date: Sun Jun 28 20:10:18 1998 -->
+<head>
+<title>Network</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" alink="#FF00FF" vlink="#FF0000">
+
+<basefont size=3>
+
+<p><font face="Times" size="-1">Copyright</font> <font size="-1">&copy;</font><font face="Times" size="-1">1995 by NeXT Computer, Inc.&nbsp; All Rights Reserved.</font>
+
+<p><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+3" color="#FF00FF"><b>8</b></font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<p><font face="Times" size="+3"><i>Network Modules</i></font>
+
+<p><br><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Loadable kernel servers that serve as network modules use special functions and interfaces in addition to the ones available to all loadable kernel servers.&nbsp; This chapter discusses how to write network modules.&nbsp; The special functions that network modules can use are described in detail in Chapter 10, &quot;Kernel Support Functions,&quot; under the section &quot;Network Functions.&quot;</font>
+
+<p><font face="Times">The NeXT Mach kernel supports the following types of network modules:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Network device drivers</i>.&nbsp; A network device driver sends and receives packets to and from some network media.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Protocol handlers</i>.&nbsp; On input, a protocol handler receives packets from network device drivers and forwards the data to the interested programs.&nbsp; On output, the protocol handler takes data from programs, puts the data into packets, and sends these packets to the appropriate network device driver.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times"><i>Packet sniffers</i>.&nbsp; A packet sniffer examines input packets for diagnostic purposes.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">If you're familiar with UNIX 4.3BSD networking primitives, you'll find many similarities to what's described in this chapter. The biggest difference is that a common programming interface like the socket mechanism isn't defined.&nbsp; While sockets work well for TCP/IP, they don't generalize well to other protocols.</font>
+
+<p><font face="Times">If you're writing a protocol handler and want to open it up to programmers, you must define your own interface for communication between user programs and your protocol handler.</font>
+
+<p><font face="Times">This chapter first gives an overview of NeXT networking support, and then discusses the objects you'll use in your network module.&nbsp; The next section has details on the routines that you should implement.&nbsp; The chapter ends with notes on implementing specific interfaces.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Overview</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Here's a simplified view of what happens when a network packet is received by a NeXT computer:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">1.</font></td>
+
+<td><font face="Times">The packet is received by the appropriate network device driver, which puts the packet into a data structure called a <i>netbuf </i>(netbufs are discussed in the next section).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">2.</font></td>
+
+<td><font face="Times">The driver calls the dispatcher (by calling <b>if_handle_input()</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">3.</font></td>
+
+<td><font face="Times">The dispatcher polls all registered packet sniffers and protocol handlers until it finds a protocol handler that accepts the packet.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">4.</font></td>
+
+<td><font face="Times">If the protocol handler is an IP (Internet Protocol) handler, it sends the packet up to the kernel by calling <b>inet_queue()</b>.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">When a packet is sent out onto the network, the following events happen:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">1.</font></td>
+
+<td><font face="Times">The output function of the protocol handler is called.&nbsp; One of the arguments is a netbuf containing the packet to be sent.&nbsp; (This netbuf must have been previously allocated by the network device driver; how netbufs are allocated is described later in this chapter.)</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">2.</font></td>
+
+<td><font face="Times">The protocol handler calls the appropriate network device driver's output function, passing it the netbuf containing the packet.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Helvetica">3.</font></td>
+
+<td><font face="Times">The device driver puts the packet out onto the network.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Note that there's one extra step in the case of the input packet:&nbsp; A dispatcher is called.&nbsp; This happens because a network device driver doesn't know what its associated protocol handler is, but the protocol handler knows which driver to call.&nbsp; The dispatcher doesn't query the modules in any particular order, except that it queries all packet sniffers before querying any protocol handlers.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Network Objects</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The NeXT kernel includes two abstractions especially for network modules:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Network buffers, known as <i>netbufs</i></font></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Network interfaces, known as <i>netifs</i></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Each of these abstractions is discussed in the following subsections.&nbsp; The associated C functions are described in detail in Chapter 10.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Network Buffers (Netbufs)</b></font>
+
+<p><font face="Times">The NeXT kernel uses netbufs for dealing with network packet buffers.&nbsp; Netbufs are an interface to an abstract sequence of bytes that can be read and written.&nbsp; The sequence has an original starting point and ending point, but these can be changed.&nbsp; An input network packet typically has its starting point advanced as the various headers are pulled off.&nbsp; Similarly, an output packet has its starting point retreated as headers are inserted.</font>
+
+<p><font face="Times">Operating beyond the range of the original starting and ending points isn't currently detected as an error.&nbsp; This means that an outgoing netbuf should be copied into a larger netbuf if the information being added to its top requires more bytes than are available between the current ending point and the original starting point.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Network Interfaces (Netifs)</b></font>
+
+<p><font face="Times">Netifs are used to handle the installation and usage of network modules.&nbsp; Remember that a network module is one of three things:&nbsp; a network device driver, a protocol handler, or a packet sniffer.</font>
+
+<p><font face="Times">Each network module initializes and installs its netif (thus registering itself) by calling <b>if_attach()</b>.&nbsp; A network device driver should immediately register itself by calling <b>if_attach()</b> at load time.&nbsp; Protocol handlers and packet sniffers, on the other hand, don't have to register themselves until their services are required.&nbsp; They determine whether to register themselves in a callback function that they supply as an argument to the function <b>if_registervirtual()</b>.&nbsp; This callback function is called once for each network device driver; it should call <b>if_attach()</b> if the module isn't already registered and it wants to receive input packets from the specified driver.</font></td></tr>
+
+</table>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Functions Implemented in the Network Module</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">Besides a callback function, your network module needs to supply certain functions so that other modules can call it.&nbsp; When your network module calls <b>if_attach()</b>, you must specify the locations of five functions:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Initialization function--Does any initialization that's required to change the module's state to &quot;on.&quot;</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Input function--Receives packets from lower layers and either consumes them or passes them on to other modules.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Output function--Sends packets from higher layers.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Getbuf function--Provides netbufs for higher layers to use in impending sends.</font></td></tr>
+
+<tr valign=top>
+
+<td width=105 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=105></td>
+
+<td nowrap><font face="Times"><img src="../../../Images/bullet1.gif" width=4 height=8 vspace=3></font></td>
+
+<td><font face="Times">Control function--Provides any necessary operations the above functions don't.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica"><b>Note:</b></font>&nbsp; <font face="Times">You should specify null to <b>if_attach()</b> for any unimplemented function.</font>
+
+<p><font face="Times">These five functions, along with the callback function, are described in more detail in the following subsections.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Callback Function</b></font>
+
+<p><font face="Times">A <i>callback function</i> is required in protocol handlers and packet sniffers, but isn't appropriate in network device drivers.&nbsp; It must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">void <i>callback_func</i>(void *<i>private</i>, netif_t <i>realif</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The purpose of the callback function is to determine whether its network module is interested in a particular device driver and, if necessary, to register its module (using <b>if_attach()</b>).&nbsp; The callback function is called once for each current and future network device driver, so it can keep information about more than one network device driver.</font>
+
+<p><font face="Times">The callback function is specified in the network module's call to <b>if_registervirtual()</b>.&nbsp; The <i>private</i> argument is the data that was specified in the call to <b>if_registervirtual()</b>.&nbsp; The <i>realif</i> argument is a pointer to the network device driver for which this function is being called.&nbsp; The following code is an example of a typical callback function for a protocol handler.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static void myhandler_attach(void *private, netif_t rifp)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">netif_t ifp;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">const char *name;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int unit;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void *ifprivate;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (strcmp(if_type(rifp), IFTYPE_ETHERNET) != 0) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">ifprivate = (void *)kalloc(sizeof(myhandler_private_t));</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">name = MYNAME;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unit = MYUNIT;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">ifp = if_attach(NULL, myhandler_input, myhandler_output,</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">myhandler_getbuf, myhandler_control, name, unit, IFTYPE_IP,</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">MYMTU, IFF_BROADCAST, NETIFCLASS_VIRTUAL, ifprivate);</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">(myhandler_private_t *)if_private(ifp)-&gt;rifp = rifp;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if_control(rifp, IFCONTROL_GETADDR, MYHANDLER_ADDRP(ifp));</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (verbose) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">printf(&#34;IP protocol enabled for interface %s%d, type</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">\&#34;%s\&#34;\n&#34;, name, unit, MYDRIVER_TYPE);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">void myhandler_config(void)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if_registervirtual(myhandler_attach, NULL);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Initialization Function</b></font>
+
+<p><font face="Times">An <i>initialization function</i> is not required but is often found in network device drivers.&nbsp; It must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">int <i>init_func</i>(netif_t <i>netif</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The initialization function takes a pointer to its module's netif structure and performs any necessary initialization.&nbsp; For example, a network device driver should perform any steps necessary to have its hardware ready to run.&nbsp; You can determine what the integer return value (if any) should be.&nbsp; The following is an example of an initialization function.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">int mydriver_init(netif_t netif)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned unit = if_unit(netif);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">register struct mydriver_data_t *is = &amp;mydriver_data[unit];</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (is-&gt;is_flags &amp; HW_RUNNING)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">is-&gt;is_flags |= HW_RUNNING;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Initialize software structures and the hardware. */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* ... */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return;</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Input Function</b></font>
+
+<p><font face="Times">An <i>input function</i> is required in protocol handlers and packet sniffers, but not in network device drivers.&nbsp; It must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">int <i>input_func</i>(netif_t <i>netif</i>, netif_t <i>realnetif</i>, netbuf_t <i>packet</i>, void *<i>extra</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The input function takes a pointer to its module's netif (<i>netif</i>), a pointer to the calling network device driver (<i>realnetif</i>), the input packet, and optional extra data.&nbsp; This function should examine the input packet and decide if it wants the packet.&nbsp; If so, this function should return zero and take responsibility for freeing the packet.&nbsp; Otherwise, this function should return EAFNOSUPPORT to allow other modules to receive the packet.&nbsp; Packet sniffers should always return EAFNOSUPPORT.</font>
+
+<p><font face="Times">For example, an IP handler getting packets from an Ethernet device would check if an Ethernet packet's protocol number is the value for IP.&nbsp; If so, the IP handler should handle the packet and return zero.</font>
+
+<p><font face="Times">Since this function might be called at interrupt priority, it should only queue packets.&nbsp; Another thread should pull the packets off of the queue and process them.</font>
+
+<p><font face="Times">The following code is a typical input function of a protocol handler.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static int venip_input(netif_t ifp, netif_t rifp, netbuf_t nb,</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void *extra)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">short etype;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">short offset;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">short size;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">trailer_data_t trailer_data;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/* Do we want packets from this driver? */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if ((myhandler_private_t *)if_private(ifp)-&gt;rifp != rifp) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Check fields in the packet to see whether they match</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* the protocol we understand.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">nb_read(nb, MYTYPEOFFSET, sizeof(etype), &amp;etype);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">etype = htons(etype);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">* Handle ethernet trailer protocol.</font><br>
+<img src="../../../Images/sp.gif" width=159 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (etype &gt;= ETHERTYPE_TRAIL &amp;&amp;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">etype &lt; ETHERTYPE_TRAIL + ETHERTYPE_NTRAILER) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">offset = (etype - ETHERTYPE_TRAIL) * 512;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (offset == 0 || (ETHERHDRSIZE + offset +</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">sizeof(trailer_data) &gt;=</font><br>
+<img src="../../../Images/sp.gif" width=264 height=1><font face="Courier" size="-1">nb_size(nb))) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">nb_read(nb, ETHERHDRSIZE + offset, sizeof(trailer_data),</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">&amp;trailer_data);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">etype = htons(trailer_data.etype);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (etype != ETHERTYPE_IP &amp;&amp;</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">etype != ETHERTYPE_ARP) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">size = htons(trailer_data.length);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (ETHERHDRSIZE + offset + size &gt; nb_size(nb)) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* trailer_fix() is a private function that converts trailer</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* packet to regular ethernet packet.</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">trailer_fix(nb, offset, size - sizeof(trailer_data));</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">switch (etype) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">case ETHERTYPE_IP:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">nb_shrink_top(nb, ETHERHDRSIZE);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if_ipackets_set(ifp, if_ipackets(ifp) + 1);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">inet_queue(ifp, nb);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* Put other cases here as necessary. */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">default:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* Do not free buf:&nbsp; let others handle it</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return (0);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Output Function</b></font>
+
+<p><font face="Times">All network modules except packet sniffers must have an <i>output function</i>.&nbsp; The syntax of this function must be the following:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">int <i>output_func</i>(netif_t <i>netif</i>, netbuf_t <i>packet</i>, void *<i>address</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The output function takes a pointer to the module's netif, a pointer to a packet, and an address.&nbsp; How this function works depends on whether it's part of a protocol handler or of a network device driver.</font>
+
+<p><font face="Times">If this function is part of a protocol handler, it should assume the packet and address are strictly protocol-level entities, containing no device-dependent information.&nbsp; The function should add network device information to the packet and call the network device driver's output routine.&nbsp; The netbuf that holds the packet should have been returned by this module's getbuf function, as described later in this chapter.</font>
+
+<p><font face="Times">If this function is part of a network device driver, it should assume the packet and address are device-level entities.&nbsp; The function should simply deliver the packet to the given device-level address.&nbsp; Its return value should be zero if no error occurred; otherwise, return an error number from the header file <b>sys/errno.h</b>.</font>
+
+<p><font face="Times">The following example illustrates a typical output function.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static int venip_output(netif_t ifp, netbuf_t nb, void *addr)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct sockaddr *dst = (struct sockaddr *)addr;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct ether_header eh;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct in_addr idst;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int off;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int usetrailers;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">netif_t rifp = VENIP_RIF(ifp);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int error;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">switch (dst-&gt;sa_family) {</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">case AF_UNSPEC:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">bcopy(dst-&gt;sa_data, &amp;eh, sizeof(eh));</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">case AF_INET:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">idst = ((struct sockaddr_in *)dst)-&gt;sin_addr;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* ... */</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* Resolve the en address using arp.&nbsp; Return 0 if the address</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* wasn't resolved.</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* XXX:&nbsp; trailers not supported for output</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">eh.ether_type = htons(ETHERTYPE_IP);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">break;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">default:</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">nb_free(nb);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">nb_grow_top(nb, ETHERHDRSIZE);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">nb_write(nb, ETYPEOFFSET, sizeof(eh.ether_type),</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">(void *)&amp;eh.ether_type);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">error = if_output(rifp, nb, (void *)&amp;eh.ether_dhost);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (error == 0) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if_opackets_set(ifp, if_opackets(ifp) + 1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if_oerrors_set(ifp, if_oerrors(ifp) + 1);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return (error);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Getbuf Function</b></font>
+
+<p><font face="Times">A <i>getbuf function</i> is required in all modules except packet sniffers.&nbsp; It must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">netbuf_t <i>getbuf_func</i>(netif_t <i>netif</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This function returns a netbuf to be used for an impending output call.&nbsp; Only network device drivers should allocate these netbufs.&nbsp; Protocol handlers should instead call the appropriate network device driver's getbuf function to do the allocation.&nbsp; After allocation from the network device driver and before returning the result, the protocol handler should leave enough room at the top of the netbuf for its own output function to later insert a header.</font>
+
+<p><font face="Times">A getbuf function doesn't always have to return a buffer.&nbsp; For example, you might want to limit the number of buffers your module can allocate (say, 200 kilobytes worth) so that it won't use up too much wired-down kernel memory.&nbsp; When a getbuf function fails to return a buffer, it should return null.</font>
+
+<p><font face="Times">In a protocol handler:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static netbuf_t venip_getbuf(netif_t ifp)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">netif_t&nbsp; rifp = VENIP_RIF(ifp);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">netbuf_t nb;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">nb = if_getbuf(rifp);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (nb == NULL) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return(NULL);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">nb_shrink_top(nb, ETHERHDRSIZE);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return(nb);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">In a driver:</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static netbuf_t engetbuf(struct ifnet *ifp)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (numbufs == MAXALLOC)</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return(NULL);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">else {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">numbufs++;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return(nb_alloc(HDR_SIZE + ETHERMTU));</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Helvetica" size="+1"><b>Control Function</b></font>
+
+<p><font face="Times">The <i>control function</i> isn't required, but it's useful in all three kinds of network modules.&nbsp; It must have the following syntax:</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td><font face="Times">int <i>control_func</i>(netif_t <i>netif</i>, const char *<i>command</i>, void *<i>data</i>)</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">The control function performs arbitrary operations; the character string <i>command</i> is used to select between these operations. There are five standard operations that you can choose to implement, although you can also define your own.&nbsp; The command strings corresponding to the standard operations are listed in the following table; constants for the strings (such as IFCONTROL_SET_FLAGS for &quot;setflags&quot;) are declared in the header file <b>net/netif.h</b> (under the <b>bsd</b> directory of <b>/NextDeveloper/Headers</b>).</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=124></td>
+
+<td nowrap><font face="Helvetica"><b>Command</b></font></td>
+
+<td><font face="Helvetica"><b>Operation</b></font></td></tr>
+
+</table>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">&quot;setflags&quot;</font></td>
+
+<td><font face="Times">Request to have interface flags turned on or off.&nbsp; The <i>data</i> argument for this command is of type <b>union ifr_ifru</b> (which is declared in the header file <b>net/if.h</b>).</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">&quot;setaddr&quot;</font></td>
+
+<td><font face="Times">Set the address on the interface.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">&quot;getaddr&quot;</font></td>
+
+<td><font face="Times">Get the address of the interface.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">&quot;autoaddr&quot;</font></td>
+
+<td><font face="Times">Automatically set the address of the interface.</font></td></tr>
+
+<tr valign=top>
+
+<td width=123 height=12></td></tr>
+
+<tr valign=top>
+
+<td width=123></td>
+
+<td nowrap><font face="Times">&quot;unix-ioctl&quot;</font></td>
+
+<td><font face="Times">Perform a UNIX <b>ioctl()</b> command.&nbsp; This is only for compatibility; <b>ioctl()</b> isn't a recommended interface for network drivers.&nbsp; The argument is of type <b>if_ioctl_t *</b>, where the <b>if_ioctl_t</b> structure contains the UNIX ioctl request (for example, SIOCSIFADDR) in the <b>ioctl_command</b> field and the ioctl data in the <b>ioctl_data</b> field.</font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">An example of a control function follows.</font></td></tr>
+
+</table>
+
+<p><img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">static int</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">venip_control(netif_t ifp, const char *command, void *data)</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">{</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">netif_t rifp = VENIP_RIF(ifp);</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">unsigned ioctl_command;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">void *ioctl_data;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">int s;</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">struct sockaddr_in *sin = (struct sockaddr_in *)data;</font>
+
+<p><img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">if (strcmp(command, IFCONTROL_AUTOADDR) == 0) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* Automatically set the address</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (sin-&gt;sin_family != AF_INET) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* ... */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} else if (strcmp(command, IFCONTROL_SETADDR) == 0) {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* Manually set address</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if (sin-&gt;sin_family != AF_INET) {</font><br>
+<img src="../../../Images/sp.gif" width=208 height=1><font face="Courier" size="-1">return (EAFNOSUPPORT);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if_flags_set(ifp, if_flags(ifp) | IFF_UP);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">if_init(rifp);</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">VENIP_PRIVATE(ifp)-&gt;vp_ipaddr = sin-&gt;sin_addr;</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/* ... */</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">} else {</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">/*</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">* Let lower layer handle</font><br>
+<img src="../../../Images/sp.gif" width=187 height=1><font face="Courier" size="-1">*/</font><br>
+<img src="../../../Images/sp.gif" width=180 height=1><font face="Courier" size="-1">return (if_control(rifp, command, data));</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">}</font><br>
+<img src="../../../Images/sp.gif" width=152 height=1><font face="Courier" size="-1">return (0);</font><br>
+<img src="../../../Images/sp.gif" width=124 height=1><font face="Courier" size="-1">}</font>
+
+<p><br><br>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=6></td>
+
+<td><font face="Helvetica" size="+2"><b>Notes for Specific Interfaces</b></font></td></tr>
+
+</table>
+
+<p>
+
+<table cellspacing=0 cellpadding=0>
+
+<tr valign=top>
+
+<td width=106></td>
+
+<td><font face="Times">This section contains notes about implementing Ethernet and TCP/IP interfaces.</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>Ethernet Interfaces</b></font>
+
+<p><font face="Times">Network device drivers that implement the 10-megabit-per-second Ethernet protocol should register their type as IFTYPE_ETHERNET (defined in the header file <b>net/etherdefs.h</b>).&nbsp; One 10-megabit Ethernet network device driver comes standard with the NeXT operating system.&nbsp; The type of the address passed to the Ethernet driver's output function for output should be a 6-byte character array (which is cast to <b>void *</b>).</font>
+
+<p><br><br><br>
+
+<p><font face="Helvetica" size="+1"><b>TCP/IP Interfaces</b></font>
+
+<p><font face="Times">IP protocol handlers can hand over their input packets to the kernel for processing by calling <b>inet_queue()</b>.</font>
+
+<p><font face="Times">IP protocol handlers should specify their type as &quot;Internet Protocol&quot; when they call <b>if_attach()</b>.&nbsp; The NeXT operating system comes with two TCP/IP modules--one for delivery over Ethernet, and one for delivery over loopback.&nbsp; The type of address used by IP protocol handlers should be <b>struct sockaddr_in</b>, which is defined in the header file <b>netinet/in.h</b>.</font></td></tr>
+
+</table>
+
+
+
+<p>
+
+</body>
+</html>
