@@ -13,6 +13,68 @@
     div.column{display: inline-block; vertical-align: top; width: 50%;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="style/gitHubStyle.css" />
@@ -69,6 +131,9 @@
 <li><a href="#mach-programming">Mach Programming</a>
 <ul>
 <li><a href="#motivation">Motivation</a></li>
+<li><a href="#mach-fundamental-abstractions">Mach Fundamental Abstractions</a></li>
+<li><a href="#how-to-learn-mach-programming">How to learn Mach programming</a></li>
+<li><a href="#memory-allocation">Memory Allocation</a></li>
 </ul></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
@@ -311,9 +376,139 @@ iOS 14.4 (18D46)</code></pre>
 <p>Looking at security exploits, we can ask what was the researcher aiming for which resulted in the fruits of the researcher. Research is not effective unless there is a strategic path that is being pursued. We shall explore this aspect of security research and show how this can amplify our efforts.</p>
 <h1 id="mach-programming">Mach Programming</h1>
 <h2 id="motivation">Motivation</h2>
-<p>The reason why we want to do Mach programming is because it is an interface available from user mode (otherwise known as userland) that can reach the internals of kernel mode through the System Call Interface. The operating system, marketed as iOS or macOS, etc., is the really Darwin operating system. Darwin is a UNIX operating system. It offers two personalities to the programmer; its UNIX personality and its Mach personality. The kernel of Darwin is XNU, and XNU natively speaks Mach because Mach Inter-Process Communication is central to the way in which it operates.</p>
+<p>The reason why we want to do Mach programming is because it is an interface available from user mode (otherwise known as userland) that can reach the internals of kernel mode through the System Call Interface (syscall interface). The operating system, marketed as iOS or macOS, etc., is the really the Darwin operating system. Darwin is a UNIX operating system. It offers two personalities to the programmer; its UNIX personality and its Mach personality. The kernel of Darwin is XNU, and XNU natively speaks Mach because Mach Inter-Process Communication is central to the way in which it internally operates.</p>
 <p>It is straightforward to learn the UNIX syscall interface, because it follows the same paradigm as Linux. There are therefore many books and example programs written against the UNIX syscall interface. The details will vary but the approach is the same.</p>
 <p>The Mach programming interface is somewhat esoteric. Apple seem to like to pretend that it does not exist. Even experienced iOS programmers will know little to nothing about it. However, time and again, this interface will be used to build exploits, so it is something we shall learn.</p>
+<p>The original idea with Mach was to extend UNIX with new capabilities to tackle the emergence of multiprocessor systems and distributed computing more naturally. The solution was to add a new set of messaging primitives. (<span class="citation" data-cites="machsyscalls">Walmer and Thompson (1988)</span>)</p>
+<p>When correctly coded, Mach based solutions can be elegant. When incorrectly coded, Mach based code offers an expansive attack surface. We shall study different techniques that abuse the Mach messaging system, such as Type Confusion. Furthermore, Mach based attacks can be Data oriented attacks, which side-step the traditional mitigations in the Operating System (such as stack overflow protection and control flow integrity).</p>
+<h2 id="mach-fundamental-abstractions">Mach Fundamental Abstractions</h2>
+<p>Mach (<span class="citation" data-cites="machconcepts">(“Mach Concepts” 1995)</span>) is built upon the following abstractions:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Entity</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>task</code></td>
+<td>An execution environment.</td>
+</tr>
+<tr class="even">
+<td><code>thread</code></td>
+<td>The basic unit of execution.</td>
+</tr>
+<tr class="odd">
+<td><code>port</code></td>
+<td>A communication channel.</td>
+</tr>
+<tr class="even">
+<td><code>message</code></td>
+<td>A typed collection of data used for communication between threads.</td>
+</tr>
+</tbody>
+</table>
+<p>In the original formulation, tasks could be on the same machine, on different processors in the machine, or on different machines. Such tasks become active entities when they host one or more threads. And threads can communicate with each other using well-defined interfaces that are invariant to whether the recipient is on the same machine or on a different machine.</p>
+<p>In reality, due to the inescapable nature of distributed communication, latency and reliability cannot be ignored. Therefore, the uniform communication abstraction never works out satisfactorily in real systems. However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own. This is where the XNU kernel does its work.</p>
+<h2 id="how-to-learn-mach-programming">How to learn Mach programming</h2>
+<p>Mach is not so easy to learn. There are few modern programs on GitHub to look at. One way into the topic is to study the NeXTstep documentation, <span class="citation" data-cites="machconcepts">(“Mach Concepts” 1995)</span>. Despite its age, it is a well structured explanation of the concepts. Another source of documentation are the header files on macOS.</p>
+<p>We can find the header file directory with:</p>
+<pre><code># find /Applications/Xcode.app -type d -iname mach
+/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.pl
+atform/Developer/SDKs/AppleTVOS.sdk/usr/include/mach
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.pla
+tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
+.
+.
+.</code></pre>
+<p>Rather than duplicate or replace the NeXTstep documentation, we assume the reader will read that documentation, but for the practical work elements, refer to this book. This book then acts as a modernization of the original materials. As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.</p>
+<h2 id="memory-allocation">Memory Allocation</h2>
+<p>Here we follow along the <span class="citation" data-cites="machconcepts">(“Mach Concepts” 1995)</span> documentation but with modernized code examples. These are available at <span class="citation" data-cites="trtzgithub">(“The Road to Zero Book Github Resources” 2021)</span> in the subdirectory <code>source/mach-vm-alloc</code></p>
+<p>Here is code which demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="dt">int</span> vm_example()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>{</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    <span class="kw">union</span> data_area {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>        <span class="dt">char</span>                *indexed;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>        vm_address_t        handle;</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>    } data1, data2;</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>    vm_size_t               i;</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>    vm_size_t               min;</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>    mach_msg_type_number_t  data_cnt;</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>    mach_port_t             self;</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>    <span class="dt">char</span>                    *error = NULL;</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a>    kern_return_t           rtn = KERN_SUCCESS;</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a>    self = mach_task_self();</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true"></a>    printf(<span class="st">&quot;mach_task_self is 0x%x</span><span class="sc">\n</span><span class="st">&quot;</span>, self);</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true"></a>    <span class="cf">if</span> ((rtn = vm_allocate(self,</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true"></a>                           &amp;data1.handle,</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true"></a>                           vm_page_size,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true"></a>                           TRUE)) != KERN_SUCCESS) {</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true"></a>        error = <span class="st">&quot;Could not vm_allocate&quot;</span>;</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true"></a>        <span class="cf">goto</span> vm_example_error_return;</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true"></a>    }</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true"></a>    <span class="cf">for</span> (i = <span class="dv">0</span>; (i &lt; vm_page_size); i++) {</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true"></a>        data1.indexed[i] = i;</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true"></a>    }</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true"></a>    printf(<span class="st">&quot;Filled space allocated with some data.</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true"></a>    printf(<span class="st">&quot;Doing vm_read....</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true"></a>    <span class="cf">if</span> ((rtn = vm_read(self,</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true"></a>                       data1.handle,</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true"></a>                       vm_page_size,</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true"></a>                       &amp;data2.handle,</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true"></a>                       &amp;data_cnt)) != KERN_SUCCESS) {</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true"></a>        error = <span class="st">&quot;Could not vm_read&quot;</span>;</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true"></a>        <span class="cf">goto</span> vm_example_error_return;</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true"></a>    }</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true"></a>    printf(<span class="st">&quot;Successful vm_read.</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true"></a></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true"></a>    <span class="cf">if</span> (vm_page_size != data_cnt) {</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true"></a>        error = <span class="st">&quot;vmread: Number of bytes read not equal to number</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true"></a> available and requested.<span class="st">&quot;;</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true"></a>        <span class="cf">goto</span> vm_example_logic_error_return;</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true"></a>    }</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true"></a>    min = (vm_page_size &lt; data_cnt) ? vm_page_size : data_cnt;</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true"></a>    <span class="cf">for</span> (i = <span class="dv">0</span>; (i &lt; min); i++) {</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true"></a>        <span class="cf">if</span> (data1.indexed[i] != data2.indexed[i]) {</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true"></a>            error = <span class="st">&quot;Data not read correctly&quot;</span>;</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true"></a>            <span class="cf">goto</span> vm_example_logic_error_return;</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true"></a>        }</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true"></a>    }</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true"></a>    printf(<span class="st">&quot;Checked data successfully.</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true"></a>    <span class="cf">if</span> ((rtn = vm_deallocate(self,</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true"></a>                             data1.handle,</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true"></a>                             vm_page_size)) != KERN_SUCCESS) {</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true"></a>        error = <span class="st">&quot;Could not vm_deallocate&quot;</span>;</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true"></a>        <span class="cf">goto</span> vm_example_error_return;</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true"></a>    }</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true"></a></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true"></a>    <span class="cf">if</span> ((rtn = vm_deallocate(self,</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true"></a>                             data2.handle,</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true"></a>                             data_cnt)) != KERN_SUCCESS) {</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true"></a>        error = <span class="st">&quot;Could not vm_deallocate&quot;</span>;</span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true"></a>        <span class="cf">goto</span> vm_example_error_return;</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true"></a>    }</span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true"></a></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true"></a>vm_example_error_return:</span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true"></a>    printf(<span class="st">&quot;%s: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, error, mach_error_string(rtn));</span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true"></a>    <span class="cf">return</span> -<span class="dv">1</span>;</span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true"></a></span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true"></a>vm_example_logic_error_return:</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true"></a>    printf(<span class="st">&quot;%s</span><span class="sc">\n</span><span class="st">&quot;</span>, error);</span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true"></a>    <span class="cf">return</span> -<span class="dv">1</span>;</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true"></a>}</span></code></pre></div>
 <h1 class="unnumbered" id="bibliography">Bibliography</h1>
 <div id="refs" class="references hanging-indent" role="doc-bibliography">
 <div id="ref-offensiveworklovehate">
@@ -325,11 +520,17 @@ iOS 14.4 (18D46)</code></pre>
 <div id="ref-gpz">
 <p>“Google Project Zero.” 2021. <a href="https://googleprojectzero.blogspot.com/p/about-project-zero.html">https://googleprojectzero.blogspot.com/p/about-project-zero.html</a>.</p>
 </div>
+<div id="ref-machconcepts">
+<p>“Mach Concepts.” 1995. NeXT Computer, Inc.</p>
+</div>
 <div id="ref-codecomplete2">
 <p>McConnell, Steve. 2004. <em>Code Complete</em>. Second Edition. 0735619670.</p>
 </div>
 <div id="ref-trtzgithub">
 <p>“The Road to Zero Book Github Resources.” 2021. <a href="https://github.com/faisalmemon/the-road-to-zero">https://github.com/faisalmemon/the-road-to-zero</a>.</p>
+</div>
+<div id="ref-machsyscalls">
+<p>Walmer, Linda R., and Mary R. Thompson. 1988. “A Programmer’s Guide to the Mach System Calls.” Carnegie-Mellon University.</p>
 </div>
 </div>
 </body>
