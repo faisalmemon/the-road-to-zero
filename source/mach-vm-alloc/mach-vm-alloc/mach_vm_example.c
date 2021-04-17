@@ -28,7 +28,7 @@ int vm_example()
     
     self = mach_task_self();
     
-    printf("mach_task_self is %x", self);
+    printf("mach_task_self is 0x%x\n", self);
     
     if ((rtn = vm_allocate(self,
                            &data1.handle,
@@ -61,7 +61,7 @@ int vm_example()
     
     for (i = 0; (i < min); i++) {
         if (data1.indexed[i] != data2.indexed[i]) {
-            error = "Data not read correctly.";
+            error = "Data not read correctly";
             goto vm_example_logic_error_return;
         }
     }
