@@ -25,7 +25,7 @@ int vm_example()
     
     printf("mach_task_self is %x", self);
     
-    if ((rtn = vm_allocate(mach_task_self(),
+    if ((rtn = vm_allocate(self,
                            (vm_address_t *)&data1,
                            vm_page_size,
                            TRUE)) != KERN_SUCCESS) {
@@ -40,7 +40,7 @@ int vm_example()
     }
     printf("Filled space allocated with some data.\n");
     printf("Doing vm_read....\n");
-    if ((rtn = vm_read(mach_task_self(),
+    if ((rtn = vm_read(self,
                        (vm_address_t)data1,
                        vm_page_size,
                        (pointer_t *)&data2,
@@ -66,7 +66,7 @@ int vm_example()
     }
     printf("Checked data successfully.\n");
     
-    if ((rtn = vm_deallocate(mach_task_self(),
+    if ((rtn = vm_deallocate(self,
                              (vm_address_t)data1,
                              vm_page_size)) != KERN_SUCCESS) {
         mach_error("vm_deallocate failed", rtn);
@@ -74,7 +74,7 @@ int vm_example()
         return -1;
     }
     
-    if ((rtn = vm_deallocate(mach_task_self(),
+    if ((rtn = vm_deallocate(self,
                              (vm_address_t)data2,
                              data_cnt)) != KERN_SUCCESS) {
         mach_error("vm_deallocate failed", rtn);
