@@ -29,7 +29,7 @@ In reality, due to the inescapable nature of distributed communication, latency 
 
 ## How to learn Mach programming
 
-Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NeXTstep documentation, @machconcepts.  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.
+Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NEXTSTEP\index{trademark!NEXTSTEP} documentation, @machconcepts.  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.
 
 We can find the header file directory with:
 ```
@@ -43,7 +43,7 @@ tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
 .
 ```
 
-Rather than duplicate or replace the NeXTstep documentation, we assume the reader will read that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.
+Rather than duplicate or replace the NEXTSTEP documentation, we assume the reader will read that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.
 
 ## Memory Allocation
 
