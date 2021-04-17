@@ -68,10 +68,10 @@ scriptPath="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 echo
 
 echo Processing foo.$langName.html
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
+pandoc $filesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
 echo Processing boo.$langName.latex
-echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
-pandoc $latexFilesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
 
 echo Cleaning up csl indent remarks
 sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
@@ -80,17 +80,17 @@ sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
 for pass in 0 1 2
 do
     echo Indexing pass $pass
-    ( cd $outputDir; pdflatex boo.$langName.latex > boo.$langName.pass.$pass.log </dev/null )
+    ( cd $outputDir; bibtex boo.$langName; pdflatex boo.$langName.latex > boo.$langName.pass.$pass.log </dev/null )
 done
 
 echo "Check for errors"
 egrep -n "LaTeX Error:|Error: Unicode character|Fatal error occurred" $outputDir/boo.$langName.pass.*.log
 
 echo Processing foo.$langName.epub
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --toc --css=style/ebook.css -o $outputDir/foo.$langName.epub
+pandoc $filesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --css=style/ebook.css -o $outputDir/foo.$langName.epub
 
 echo Processing foo.$langName.docx
-pandoc $filesToProcess pandocMetaData.yaml -f markdown+smart --standalone --bibliography bibliography.bib --reference-doc=style/referenceWordDocumentTemplate.docx -o $outputDir/foo.$langName.docx
+pandoc $filesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --reference-doc=style/referenceWordDocumentTemplate.docx -o $outputDir/foo.$langName.docx
 
 echo Constructing github pages
 
