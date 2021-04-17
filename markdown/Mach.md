@@ -34,8 +34,10 @@ Mach is not so easy to learn.  There are few modern programs on GitHub to look a
 We can find the header file directory with:
 ```
 # find /Applications/Xcode.app -type d -iname mach
-/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/include/mach
-/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
+/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.pl
+atform/Developer/SDKs/AppleTVOS.sdk/usr/include/mach
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.pla
+tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
 .
 .
 .
@@ -92,7 +94,8 @@ int vm_example()
     printf("Successful vm_read.\n");
 
     if (vm_page_size != data_cnt) {
-        error = "vmread: Number of bytes read not equal to number available and requested.";
+        error = "vmread: Number of bytes read not equal to number
+ available and requested.";
         goto vm_example_logic_error_return;
     }
     min = (vm_page_size < data_cnt) ? vm_page_size : data_cnt;
