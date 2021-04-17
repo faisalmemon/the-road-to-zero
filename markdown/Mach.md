@@ -40,3 +40,92 @@ We can find the header file directory with:
 .
 .
 ```
+
+Rather than duplicate or replace the NeXTstep documentation, we assume the reader will read that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.
+
+## Memory Allocation
+
+Here we follow along the @machconcepts documentation but with modernized code examples.  These are available at @trtzgithub in the subdirectory `source/mach-vm-alloc`
+
+Here is code which demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.
+
+```c
+int vm_example()
+{
+    union data_area {
+        char                *indexed;
+        vm_address_t        handle;
+    } data1, data2;
+
+    vm_size_t               i;
+    vm_size_t               min;
+    mach_msg_type_number_t  data_cnt;
+    mach_port_t             self;
+    char                    *error = NULL;
+    kern_return_t           rtn = KERN_SUCCESS;
+
+    self = mach_task_self();
+
+    printf("mach_task_self is 0x%x\n", self);
+
+    if ((rtn = vm_allocate(self,
+                           &data1.handle,
+                           vm_page_size,
+                           TRUE)) != KERN_SUCCESS) {
+        error = "Could not vm_allocate";
+        goto vm_example_error_return;
+    }
+
+    for (i = 0; (i < vm_page_size); i++) {
+        data1.indexed[i] = i;
+    }
+    printf("Filled space allocated with some data.\n");
+    printf("Doing vm_read....\n");
+    if ((rtn = vm_read(self,
+                       data1.handle,
+                       vm_page_size,
+                       &data2.handle,
+                       &data_cnt)) != KERN_SUCCESS) {
+        error = "Could not vm_read";
+        goto vm_example_error_return;
+    }
+    printf("Successful vm_read.\n");
+
+    if (vm_page_size != data_cnt) {
+        error = "vmread: Number of bytes read not equal to number available and requested.";
+        goto vm_example_logic_error_return;
+    }
+    min = (vm_page_size < data_cnt) ? vm_page_size : data_cnt;
+
+    for (i = 0; (i < min); i++) {
+        if (data1.indexed[i] != data2.indexed[i]) {
+            error = "Data not read correctly";
+            goto vm_example_logic_error_return;
+        }
+    }
+    printf("Checked data successfully.\n");
+
+    if ((rtn = vm_deallocate(self,
+                             data1.handle,
+                             vm_page_size)) != KERN_SUCCESS) {
+        error = "Could not vm_deallocate";
+        goto vm_example_error_return;
+    }
+
+    if ((rtn = vm_deallocate(self,
+                             data2.handle,
+                             data_cnt)) != KERN_SUCCESS) {
+        error = "Could not vm_deallocate";
+        goto vm_example_error_return;
+    }
+    return 0;
+
+vm_example_error_return:
+    printf("%s: %s\n", error, mach_error_string(rtn));
+    return -1;
+
+vm_example_logic_error_return:
+    printf("%s\n", error);
+    return -1;
+}
+```
