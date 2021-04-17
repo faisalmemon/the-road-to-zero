@@ -80,7 +80,7 @@ I used the Brew package manager on MacOS and used the Brew packages:
 Brew Package | Purpose
 --|--
 `pandoc` | Document translator to get from .markdown format to other formats
-`pandoc-citeproc` | Biliography Citation Helper for pandoc
+`pandoc-crossref` | Biliography Citation Helper for pandoc (replaces `pandoc-citeproc`)
 
 #### Latex Support
 
