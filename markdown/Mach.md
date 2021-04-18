@@ -58,20 +58,20 @@ int vm_example()
         char                *indexed;
         vm_address_t        handle;
     } data1, data2;
-    
+
     vm_size_t               i;
     vm_size_t               min;
     mach_msg_type_number_t  data_cnt;
     mach_port_t             self;
     char                    *error = NULL;
     kern_return_t           rv = KERN_SUCCESS;
-    
+
     printf("\nSTART: vm_example()\n");
-    
+
     self = mach_task_self();
-    
+
     printf("mach_task_self is 0x%x\n", self);
-    
+
     rv = vm_allocate(self,
                      &data1.handle,
                      vm_page_size,
@@ -80,7 +80,7 @@ int vm_example()
         error = "Could not vm_allocate";
         goto vm_example_error_return;
     }
-    
+
     for (i = 0; (i < vm_page_size); i++) {
         data1.indexed[i] = i;
     }
@@ -96,13 +96,13 @@ int vm_example()
         goto vm_example_error_return;
     }
     printf("Successful vm_read.\n");
-    
+
     if (vm_page_size != data_cnt) {
         error = "vmread: Number of bytes read not equal to number available and requested.";
         goto vm_example_logic_error_return;
     }
     min = (vm_page_size < data_cnt) ? vm_page_size : data_cnt;
-    
+
     for (i = 0; (i < min); i++) {
         if (data1.indexed[i] != data2.indexed[i]) {
             error = "Data not read correctly";
@@ -110,7 +110,7 @@ int vm_example()
         }
     }
     printf("Checked data successfully.\n");
-    
+
     rv = vm_deallocate(self,
                        data1.handle,
                        vm_page_size);
@@ -118,7 +118,7 @@ int vm_example()
         error = "Could not vm_deallocate";
         goto vm_example_error_return;
     }
-    
+
     rv = vm_deallocate(self,
                        data2.handle,
                        data_cnt);
@@ -126,14 +126,14 @@ int vm_example()
         error = "Could not vm_deallocate";
         goto vm_example_error_return;
     }
-    
+
     printf("END: vm_example()\n");
     return 0;
-    
+
 vm_example_error_return:
     printf("%s: %s\n", error, mach_error_string(rv));
     return -1;
-    
+
 vm_example_logic_error_return:
     printf("%s\n", error);
     return -1;
@@ -168,13 +168,27 @@ The following example shows how Mach will Copy-on-Write pages of memory which ar
 
 ```c
 enum copy_on_write_constants {
-    NO_ONE_WAIT = 0,
-    PARENT_WAIT = 1,
-    CHILD_WAIT = 2,
     COPY_ON_WRITE = 0,
     PARENT_CHANGED = 1,
     CHILD_CHANGED = 2,
-    MAXDATA = 100
+};
+
+enum lock_constants {
+    NO_ONE_WAIT = 0,
+    PARENT_WAIT = 1,
+    CHILD_WAIT = 2
+};
+
+char *lock_status[] = {
+    "NO_ONE_WAIT 0",
+    "PARENT_WAIT 1",
+    "CHILD_WAIT 2"
+};
+
+char *cow_status[] = {
+    "COPY_ON_WRITE 0" ,
+    "PARENT_CHANGED 1",
+    "CHILD_CHANGED 2"
 };
 
 int vm_copy_on_write_example()
@@ -183,101 +197,101 @@ int vm_copy_on_write_example()
         char                *indexed;
         vm_address_t        handle;
     } lock, mem;
-    
+
     mach_port_t             self;
     char                    *error = NULL;
     kern_return_t           rv = KERN_SUCCESS;
     pid_t                   pid;
-    
+    const int               MAXDATA = 100;
+
     printf("\nSTART: vm_copy_on_write_example()\n");
-    
+
     self = mach_task_self();
-    
+
     rv = vm_allocate(self, &lock.handle, sizeof(int), TRUE);
     if (rv != KERN_SUCCESS) {
         error = "Could not vm_allocate";
         goto vm_cow_error_return;
     }
-    
+
     rv = vm_inherit(self, lock.handle, sizeof(int), VM_INHERIT_SHARE);
     if (rv != KERN_SUCCESS) {
         error = "Could not vm_inherit";
         goto vm_cow_error_return;
     }
-    
+
     *lock.indexed = NO_ONE_WAIT;
-    
+
     rv = vm_allocate(self, &mem.handle, sizeof(int) * MAXDATA, TRUE);
     if (rv != KERN_SUCCESS) {
         error = "Could not vm_allocate";
         goto vm_cow_error_return;
     }
-    
+
     mem.indexed[0] = COPY_ON_WRITE;
-    printf("value of lock before fork: %d\n", *lock.indexed);
+    printf("value of lock before fork: %s\n", lock_status[*lock.indexed]);
     pid = fork();
-    
+
     if (pid) {
-        printf("PARENT: copied memory = %d\n", mem.indexed[0]);
-        printf("PARENT: changing to %d\n", PARENT_CHANGED);
+        printf("PARENT: copied memory = %s\n", cow_status[mem.indexed[0]]);
+        printf("PARENT: changing to %s\n", cow_status[PARENT_CHANGED]);
         mem.indexed[0] = PARENT_CHANGED;
         printf("\n");
-        printf("PARENT: lock = %d\n", *lock.indexed);
-        printf("PARENT: changing lock to %d\n", PARENT_WAIT);
+        printf("PARENT: lock = %s\n", lock_status[*lock.indexed]);
+        printf("PARENT: changing lock to %s\n", lock_status[PARENT_WAIT]);
         printf("\n");
         *lock.indexed = PARENT_WAIT;
-        
+
         while (*lock.indexed == PARENT_WAIT) {
             /* wait for child to change the value */
             ;
         }
-        
-        printf("PARENT: copied memory = %d\n", mem.indexed[0]);
-        printf("PARENT: lock = %d\n", *lock.indexed);
+
+        printf("PARENT: copied memory = %s\n", cow_status[mem.indexed[0]]);
+        printf("PARENT: lock = %s\n", lock_status[*lock.indexed]);
         printf("PARENT: Finished.\n");
         *lock.indexed = PARENT_WAIT;
         exit(-1);
     }
-    
+
     while (*lock.indexed != PARENT_WAIT) {
         /* wait for parent to change lock */
         ;
     }
-    
-    printf("CHILD: copied memory = %d\n", mem.indexed[0]);
-    printf("CHILD: changing to %d\n", CHILD_CHANGED);
+
+    printf("CHILD: copied memory = %s\n", cow_status[mem.indexed[0]]);
+    printf("CHILD: changing to %s\n", cow_status[CHILD_CHANGED]);
     mem.indexed[0] = CHILD_CHANGED;
     printf("\n");
-    printf("CHILD: lock = %d\n", *lock.indexed);
-    printf("CHILD: changing lock to %d\n", CHILD_WAIT);
+    printf("CHILD: lock = %s\n", lock_status[*lock.indexed]);
+    printf("CHILD: changing lock to %s\n", lock_status[CHILD_WAIT]);
     printf("\n");
-    
+
     *lock.indexed = CHILD_WAIT;
     while (*lock.indexed == CHILD_WAIT) {
         /* wait for parent to change lock */
         ;
     }
-    
+
     rv = vm_deallocate(mach_task_self(), lock.handle, sizeof(int));
     if (rv != KERN_SUCCESS) {
         error = "vm_deallocate failed";
         goto vm_cow_error_return;
     }
-    
+
     rv = vm_deallocate(mach_task_self(), mem.handle, sizeof(int) * MAXDATA);
     if (rv != KERN_SUCCESS) {
         error = "vm_deallocate failed";
         goto vm_cow_error_return;
     }
-    
+
     printf("CHILD: Finished.\n");
     printf("END: vm_copy_on_write_example()\n");
 
     return 0;
-    
+
 vm_cow_error_return:
     printf("%s: %s\n", error, mach_error_string(rv));
     return -1;
 }
-
 ```
