@@ -163,7 +163,7 @@ In our code we make the following observations:
 
 This `vm_example()` code merely needs to be hooked into our App code when it launches, in the `main()` function to operate.  It does feel heavyweight for what it does.
 
-## Copy-on-write Memory
+## Copy-on-Write Memory
 
 The following example shows how Mach will Copy-on-Write pages of memory which are shared.
 
@@ -344,6 +344,8 @@ PARENT: Finished.
 CHILD: Finished.
 END: vm_copy_on_write_example()
 ```
+
+### Copy-on-Write Discussion
 
 As we can see the `vm_inherit()` routine will provide both the child and parent access to the same memory until it is modified.  After that, the child and parent have separate memory pages representing their own copy of the data values which can now be different.
 
