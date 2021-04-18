@@ -295,3 +295,31 @@ vm_cow_error_return:
     return -1;
 }
 ```
+
+This program produces the following output:
+
+```
+START: vm_copy_on_write_example()
+value of lock before fork: NO_ONE_WAIT 0
+PARENT: copied memory = COPY_ON_WRITE 0
+PARENT: changing to PARENT_CHANGED 1
+
+PARENT: lock = NO_ONE_WAIT 0
+PARENT: changing lock to PARENT_WAIT 1
+
+CHILD: copied memory = COPY_ON_WRITE 0
+CHILD: changing to CHILD_CHANGED 2
+
+CHILD: lock = PARENT_WAIT 1
+CHILD: changing lock to CHILD_WAIT 2
+
+PARENT: copied memory = PARENT_CHANGED 1
+PARENT: lock = CHILD_WAIT 2
+PARENT: Finished.
+CHILD: Finished.
+END: vm_copy_on_write_example()
+```
+
+As we can see the `vm_inherit()` routine will provide both the child and parent access to the same memory until it is modified.  After that, the child and parent have separate memory pages representing their own copy of the data values which can now be different.
+
+This program uses a very primitive form of task coordination: busy while loops.  A realistic example would use the `pthread` library instead for signalling and coordination.
