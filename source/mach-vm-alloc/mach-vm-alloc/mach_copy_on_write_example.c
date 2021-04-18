@@ -28,11 +28,8 @@ int vm_copy_on_write_example()
     union data_area {
         char                *indexed;
         vm_address_t        handle;
-    } data1, data2, lock, mem;
+    } lock, mem;
     
-    vm_size_t               i;
-    vm_size_t               min;
-    mach_msg_type_number_t  data_cnt;
     mach_port_t             self;
     char                    *error = NULL;
     kern_return_t           rv = KERN_SUCCESS;
@@ -105,13 +102,23 @@ int vm_copy_on_write_example()
         ;
     }
     
+    rv = vm_deallocate(mach_task_self(), lock.handle, sizeof(int));
+    if (rv != KERN_SUCCESS) {
+        error = "vm_deallocate failed";
+        goto vm_cow_error_return;
+    }
+    
+    rv = vm_deallocate(mach_task_self(), mem.handle, sizeof(int) * MAXDATA);
+    if (rv != KERN_SUCCESS) {
+        error = "vm_deallocate failed";
+        goto vm_cow_error_return;
+    }
+    
+    printf("CHILD: Finished.\n");
+ 
     return 0;
     
 vm_cow_error_return:
     printf("%s: %s\n", error, mach_error_string(rv));
-    return -1;
-    
-vm_cow_logic_error_return:
-    printf("%s\n", error);
     return -1;
 }
