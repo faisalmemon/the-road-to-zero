@@ -14,13 +14,27 @@
 #import <mach/mach.h>
 
 enum copy_on_write_constants {
-    NO_ONE_WAIT = 0,
-    PARENT_WAIT = 1,
-    CHILD_WAIT = 2,
     COPY_ON_WRITE = 0,
     PARENT_CHANGED = 1,
     CHILD_CHANGED = 2,
-    MAXDATA = 100
+};
+
+enum lock_constants {
+    NO_ONE_WAIT = 0,
+    PARENT_WAIT = 1,
+    CHILD_WAIT = 2
+};
+
+char *lock_status[] = {
+    "NO_ONE_WAIT 0",
+    "PARENT_WAIT 1",
+    "CHILD_WAIT 2"
+};
+
+char *cow_status[] = {
+    "COPY_ON_WRITE 0" ,
+    "PARENT_CHANGED 1",
+    "CHILD_CHANGED 2"
 };
 
 int vm_copy_on_write_example()
@@ -34,6 +48,7 @@ int vm_copy_on_write_example()
     char                    *error = NULL;
     kern_return_t           rv = KERN_SUCCESS;
     pid_t                   pid;
+    const int               MAXDATA = 100;
     
     printf("\nSTART: vm_copy_on_write_example()\n");
     
@@ -60,16 +75,16 @@ int vm_copy_on_write_example()
     }
     
     mem.indexed[0] = COPY_ON_WRITE;
-    printf("value of lock before fork: %d\n", *lock.indexed);
+    printf("value of lock before fork: %s\n", lock_status[*lock.indexed]);
     pid = fork();
     
     if (pid) {
-        printf("PARENT: copied memory = %d\n", mem.indexed[0]);
-        printf("PARENT: changing to %d\n", PARENT_CHANGED);
+        printf("PARENT: copied memory = %s\n", cow_status[mem.indexed[0]]);
+        printf("PARENT: changing to %s\n", cow_status[PARENT_CHANGED]);
         mem.indexed[0] = PARENT_CHANGED;
         printf("\n");
-        printf("PARENT: lock = %d\n", *lock.indexed);
-        printf("PARENT: changing lock to %d\n", PARENT_WAIT);
+        printf("PARENT: lock = %s\n", lock_status[*lock.indexed]);
+        printf("PARENT: changing lock to %s\n", lock_status[PARENT_WAIT]);
         printf("\n");
         *lock.indexed = PARENT_WAIT;
         
@@ -78,8 +93,8 @@ int vm_copy_on_write_example()
             ;
         }
         
-        printf("PARENT: copied memory = %d\n", mem.indexed[0]);
-        printf("PARENT: lock = %d\n", *lock.indexed);
+        printf("PARENT: copied memory = %s\n", cow_status[mem.indexed[0]]);
+        printf("PARENT: lock = %s\n", lock_status[*lock.indexed]);
         printf("PARENT: Finished.\n");
         *lock.indexed = PARENT_WAIT;
         exit(-1);
@@ -90,12 +105,12 @@ int vm_copy_on_write_example()
         ;
     }
     
-    printf("CHILD: copied memory = %d\n", mem.indexed[0]);
-    printf("CHILD: changing to %d\n", CHILD_CHANGED);
+    printf("CHILD: copied memory = %s\n", cow_status[mem.indexed[0]]);
+    printf("CHILD: changing to %s\n", cow_status[CHILD_CHANGED]);
     mem.indexed[0] = CHILD_CHANGED;
     printf("\n");
-    printf("CHILD: lock = %d\n", *lock.indexed);
-    printf("CHILD: changing lock to %d\n", CHILD_WAIT);
+    printf("CHILD: lock = %s\n", lock_status[*lock.indexed]);
+    printf("CHILD: changing lock to %s\n", lock_status[CHILD_WAIT]);
     printf("\n");
     
     *lock.indexed = CHILD_WAIT;
