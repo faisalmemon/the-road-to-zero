@@ -24,16 +24,19 @@ int vm_example()
     mach_msg_type_number_t  data_cnt;
     mach_port_t             self;
     char                    *error = NULL;
-    kern_return_t           rtn = KERN_SUCCESS;
+    kern_return_t           rv = KERN_SUCCESS;
+    
+    printf("\nSTART: vm_example()\n");
     
     self = mach_task_self();
     
     printf("mach_task_self is 0x%x\n", self);
     
-    if ((rtn = vm_allocate(self,
-                           &data1.handle,
-                           vm_page_size,
-                           TRUE)) != KERN_SUCCESS) {
+    rv = vm_allocate(self,
+                     &data1.handle,
+                     vm_page_size,
+                     TRUE);
+    if (rv != KERN_SUCCESS) {
         error = "Could not vm_allocate";
         goto vm_example_error_return;
     }
@@ -43,11 +46,12 @@ int vm_example()
     }
     printf("Filled space allocated with some data.\n");
     printf("Doing vm_read....\n");
-    if ((rtn = vm_read(self,
-                       data1.handle,
-                       vm_page_size,
-                       &data2.handle,
-                       &data_cnt)) != KERN_SUCCESS) {
+    rv = vm_read(self,
+                 data1.handle,
+                 vm_page_size,
+                 &data2.handle,
+                 &data_cnt);
+    if(rv != KERN_SUCCESS) {
         error = "Could not vm_read";
         goto vm_example_error_return;
     }
@@ -67,25 +71,29 @@ int vm_example()
     }
     printf("Checked data successfully.\n");
     
-    if ((rtn = vm_deallocate(self,
-                             data1.handle,
-                             vm_page_size)) != KERN_SUCCESS) {
+    rv = vm_deallocate(self,
+                       data1.handle,
+                       vm_page_size);
+    if (rv != KERN_SUCCESS) {
         error = "Could not vm_deallocate";
         goto vm_example_error_return;
     }
     
-    if ((rtn = vm_deallocate(self,
-                             data2.handle,
-                             data_cnt)) != KERN_SUCCESS) {
+    rv = vm_deallocate(self,
+                       data2.handle,
+                       data_cnt);
+    if (rv != KERN_SUCCESS) {
         error = "Could not vm_deallocate";
         goto vm_example_error_return;
     }
+    
+    printf("END: vm_example()\n");
     return 0;
     
 vm_example_error_return:
-    printf("%s: %s\n", error, mach_error_string(rtn));
+    printf("%s: %s\n", error, mach_error_string(rv));
     return -1;
-
+    
 vm_example_logic_error_return:
     printf("%s\n", error);
     return -1;

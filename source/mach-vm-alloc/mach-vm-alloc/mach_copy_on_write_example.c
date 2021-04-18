@@ -35,6 +35,8 @@ int vm_copy_on_write_example()
     kern_return_t           rv = KERN_SUCCESS;
     pid_t                   pid;
     
+    printf("\nSTART: vm_copy_on_write_example()\n");
+    
     self = mach_task_self();
     
     rv = vm_allocate(self, &lock.handle, sizeof(int), TRUE);
@@ -115,7 +117,8 @@ int vm_copy_on_write_example()
     }
     
     printf("CHILD: Finished.\n");
- 
+    printf("END: vm_copy_on_write_example()\n");
+
     return 0;
     
 vm_cow_error_return:
