@@ -68,7 +68,7 @@ scriptPath="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 echo
 
 echo Processing foo.$langName.html
-pandoc $filesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
+pandoc $filesToProcess pandocMetaData.yaml -s --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
 echo Processing boo.$langName.latex
 echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
 pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex

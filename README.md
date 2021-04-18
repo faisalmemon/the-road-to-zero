@@ -80,9 +80,6 @@ I used the Brew package manager on MacOS and used the Brew packages:
 Brew Package | Purpose
 --|--
 `pandoc` | Document translator to get from .markdown format to other formats
-`pandoc-crossref` | Biliography Citation Helper for pandoc (replaces `pandoc-citeproc`)
-
-We find at the moment, pandoc-crossref is not up-to-date in brew as it is built with an older pandoc.  So the latest one to match the latest 2.13 pandoc is [pre-built-0.3.10.10.a](https://github.com/lierdakil/pandoc-crossref/releases/download/v0.3.10.0a/pandoc-crossref-macOS.tar.xz)
 
 #### Latex Support
 
