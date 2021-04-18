@@ -132,3 +132,25 @@ vm_example_logic_error_return:
     return -1;
 }
 ```
+
+### Memory Allocation discussion
+
+In our code example, there are two stylistic points to note.
+
+1. We use a union to clearly characterise that Mach calls accept a handle, which is a `vm_address_t` but is clearly also just a raw pointer, `char *`, so we create a union comprising these two types depending on whether we are issuing Mach calls or doing normal C-based pointer arithmetic.  The union avoids us having to use type casts.
+
+1. We use a goto idiom to handle errors.  All our goto statements go forwards (so don't generate loops in our code) and just handle the error cases.
+
+In our code we make the following observations:
+
+1. We need to have the port of the task before any of the system calls can be made because any message port the system returns is namespaced to port of the task it relates to. `mach_task_self()` provides us this.  It is not actually a function call, it is a #define which provides us our thread-specific task value.  The value is typically a small integer.
+
+1. `vm_allocate()` allocates memory.  It is logical to ask for a page sized amount of memory because this is the unit of memory upon which virtual protection and management is done.  This will be 16 KiB.
+
+1. `vm_read()` actually also allocates memory as `vm_allocate()` does.  The function names do not have a nomenclature that tells us this, so it is worthwhile checking the function meaning each time until we are familiar with them.
+
+1. `vm_deallocate()` deallocates our memory; we did a `vm_allocate()` and a `vm_read()` allocation so there are two pages of memory to free up.
+
+1. It is a good practice to check return values against `!= KERN_SUCCESS` and let `mach_error_string` handle the different possible error return values, since there are many error values possible.
+
+This `vm_example()` code merely needs to be hooked into our App code when it launches, in the `main()` function to operate.  It does feel heavyweight for what it does.
