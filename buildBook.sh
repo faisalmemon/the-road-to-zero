@@ -70,17 +70,18 @@ echo
 echo Processing foo.$langName.html
 pandoc $filesToProcess pandocMetaData.yaml -s --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
 echo Processing boo.$langName.latex
-echo Performing pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
-pandoc $latexFilesToProcess pandocMetaData.yaml -s -F pandoc-crossref --natbib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+pandoc $latexFilesToProcess pandocMetaData.yaml --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
 
 echo Cleaning up csl indent remarks
 sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
-
+sed -e '/cslhangindent/{N;d;}' -i.bak2 $outputDir/boo.$langName.latex
+sed -e '/cslreferences/{N;d;}' -i.bak3 $outputDir/boo.$langName.latex
+sed -e '/CSLReferences/{N;d;}' -i.bak4 $outputDir/boo.$langName.latex
 
 for pass in 0 1 2
 do
     echo Indexing pass $pass
-    ( cd $outputDir; bibtex boo.$langName; pdflatex boo.$langName.latex > boo.$langName.pass.$pass.log </dev/null )
+    ( cd $outputDir; pdflatex boo.$langName.latex > boo.$langName.pass.$pass.log </dev/null )
 done
 
 echo "Check for errors"
