@@ -135,11 +135,11 @@ vm_example_logic_error_return:
 
 ### Memory Allocation discussion
 
-In our code example, there are two stylistic points to note.
+In our code example, there are two stylistic points to note:
 
 1. We use a union to clearly characterise that Mach calls accept a handle, which is a `vm_address_t` but is clearly also just a raw pointer, `char *`, so we create a union comprising these two types depending on whether we are issuing Mach calls or doing normal C-based pointer arithmetic.  The union avoids us having to use type casts.
 
-1. We use a goto idiom to handle errors.  All our goto statements go forwards (so don't generate loops in our code) and just handle the error cases.
+1. We use a `goto` idiom to handle errors.  All our `goto` statements go forwards (so don't generate loops in our code) and just handle the error cases.  This makes such exception handling clean without too much code repetition.  That is useful because nearly all our function calls can return an error to be checked.
 
 In our code we make the following observations:
 
