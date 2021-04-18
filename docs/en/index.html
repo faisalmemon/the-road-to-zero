@@ -134,7 +134,10 @@
 <li><a href="#motivation">Motivation</a></li>
 <li><a href="#mach-fundamental-abstractions">Mach Fundamental Abstractions</a></li>
 <li><a href="#how-to-learn-mach-programming">How to learn Mach programming</a></li>
-<li><a href="#memory-allocation">Memory Allocation</a></li>
+<li><a href="#memory-allocation">Memory Allocation</a>
+<ul>
+<li><a href="#memory-allocation-discussion">Memory Allocation discussion</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
@@ -506,6 +509,21 @@ tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
 <span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;%s</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> error<span class="op">);</span></span>
 <span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
 <span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="memory-allocation-discussion">Memory Allocation discussion</h3>
+<p>In our code example, there are two stylistic points to note.</p>
+<ol type="1">
+<li><p>We use a union to clearly characterise that Mach calls accept a handle, which is a <code>vm_address_t</code> but is clearly also just a raw pointer, <code>char *</code>, so we create a union comprising these two types depending on whether we are issuing Mach calls or doing normal C-based pointer arithmetic. The union avoids us having to use type casts.</p></li>
+<li><p>We use a goto idiom to handle errors. All our goto statements go forwards (so don’t generate loops in our code) and just handle the error cases.</p></li>
+</ol>
+<p>In our code we make the following observations:</p>
+<ol type="1">
+<li><p>We need to have the port of the task before any of the system calls can be made because any message port the system returns is namespaced to port of the task it relates to. <code>mach_task_self()</code> provides us this. It is not actually a function call, it is a #define which provides us our thread-specific task value. The value is typically a small integer.</p></li>
+<li><p><code>vm_allocate()</code> allocates memory. It is logical to ask for a page sized amount of memory because this is the unit of memory upon which virtual protection and management is done. This will be 16 KiB.</p></li>
+<li><p><code>vm_read()</code> actually also allocates memory as <code>vm_allocate()</code> does. The function names do not have a nomenclature that tells us this, so it is worthwhile checking the function meaning each time until we are familiar with them.</p></li>
+<li><p><code>vm_deallocate()</code> deallocates our memory; we did a <code>vm_allocate()</code> and a <code>vm_read()</code> allocation so there are two pages of memory to free up.</p></li>
+<li><p>It is a good practice to check return values against <code>!= KERN_SUCCESS</code> and let <code>mach_error_string</code> handle the different possible error return values, since there are many error values possible.</p></li>
+</ol>
+<p>This <code>vm_example()</code> code merely needs to be hooked into our App code when it launches, in the <code>main()</code> function to operate. It does feel heavyweight for what it does.</p>
 <h1 id="bibliography">Bibliography</h1>
 </body>
 </html>
