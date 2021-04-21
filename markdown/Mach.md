@@ -33,7 +33,7 @@ Entry|Meaning
 
 In the original formulation, tasks could be on the same machine, on different processors in the machine, or on different machines.  Such tasks become active entities when they host one or more threads.  And threads can communicate with each other using well-defined interfaces that are invariant to whether the recipient is on the same machine or on a different machine.
 
-In reality, due to the inescapable nature of distributed communication, latency and reliability cannot be ignored.  Therefore, the uniform communication abstraction never works out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own.  This is where the XNU kernel does its work.
+In reality, due to the irrepressible properties of distributed communication, latency and reliability cannot be ignored.  Therefore, such a uniform communication abstraction cannot work out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own.  This is where the XNU kernel does its work and shines.
 
 ## How to learn Mach programming
 
@@ -51,7 +51,7 @@ tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
 .
 ```
 
-Rather than duplicate or replace the NEXTSTEP documentation, we assume the reader will read that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.
+Rather than duplicate or replace the NEXTSTEP documentation, we assume the reader will read all of that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.
 
 ## Memory Allocation
 
