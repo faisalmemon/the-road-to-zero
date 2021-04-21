@@ -2,7 +2,15 @@
 
 ## Motivation
 
-The reason why we want to do Mach programming is because it is an interface available from user mode (otherwise known as userland) that can reach the internals of kernel mode through the System Call Interface (syscall interface).  The operating system, marketed as iOS or macOS, etc., is the really the Darwin operating system.  Darwin is a UNIX operating system.  It offers two personalities to the programmer; its UNIX personality and its Mach personality.  The kernel of Darwin is XNU, and XNU natively speaks Mach because Mach Inter-Process Communication is central to the way in which it internally operates.
+The Operating Systems we know as iOS\index{OS!iOS}, macOS\index{OS!macOS}, tvOS\index{OS!tvOS}, etc. are really different flavors of the Darwin\index{OS!Darwin} Operating System.  The same code base but compiled with different macro preprocessor flags.
+
+The kernel of Darwin is XNU.  The fundamental interface to XNU is via the Mach programming interface.  At its core, XNU is based upon Mach messages.
+
+The reason why we want to do Mach programming is because it is an interface available from user mode that can affect, leak or subvert the XNU kernel since they share the same data abstractions and programming methodology.  Furthermore the fundamental abstractions are available as Open Source so can be inspected and understood easily.
+
+One way to think about Mach is to consider it a fundamental building block that can be used to build out an Operating System personality.
+
+Apple have created a UNIX personality for Darwin using Mach as an enabling technology.  That is why there seems to be two competing interfaces in Darwin, the Mach programming interface, and the UNIX syscall interface.
 
 It is straightforward to learn the UNIX syscall interface, because it follows the same paradigm as Linux.  There are therefore many books and example programs written against the UNIX syscall interface.  The details will vary but the approach is the same.
 
