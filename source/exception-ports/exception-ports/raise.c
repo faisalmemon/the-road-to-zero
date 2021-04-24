@@ -16,10 +16,13 @@
 * handling code, since GDB stops the program by generating an
 * EXC_BREAKPOINT exception.)
 */
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <assert.h>
 #import <mach/mach.h>
-#import <mach/exception.h>
-#import <mach/cthreads.h>
-#import <mach/mig_errors.h>
+//#import <mach/exception.h>
+//#import <mach/mig_errors.h>
 
 typedef struct {
 port_t old_exc_port;

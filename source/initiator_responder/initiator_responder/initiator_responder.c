@@ -9,24 +9,28 @@
 
 #include "initiator_responder.h"
 
-/*
- * This program is an example of a initiator thread spawning a number of
- * concurrent responders.  The initiator thread waits until all of the responders have
- * finished to exit.  Once created a responder process doesn’t do much in this
- * simple example except loop.  A n_responders_active variable is used by the initiator and
- * responder processes to keep track of the current number of responders executing.
- * A mutex is associated with this n_responders_active variable, and a condition variable
- * with the mutex.  This program is a simple demonstration of the use of
- * mutex and condition variables.
+/**
+ This program is an example of a initiator thread spawning a number of concurrent
+ responders.  The initiator thread waits until all of the responders have finished to exit.
+ 
+ Once created a responder process doesn’t do much in this  simple example except
+ loop.  A n_responders_active variable is used by the initiator and  responder processes
+ to keep track of the current number of responders executing.  A mutex is associated
+ with this n_responders_active variable, and a condition variable with the mutex.
+ 
+ This program is a simple demonstration of the use of mutex and condition variables.
  */
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <assert.h>
 
-int n_responders_active;    /* number of responders active */
-pthread_mutex_t lock;       /* mutual exclusion for n_responders_active */
-pthread_cond_t done;        /* signalled each time a responder finishes */
+/* number of responders active */
+int n_responders_active;
+/* mutual exclusion for n_responders_active */
+pthread_mutex_t lock;
+/* signalled each time a responder finishes */
+pthread_cond_t done;
 
 void init_initiator()
 {
@@ -38,8 +42,9 @@ void init_initiator()
 }
 
 /*
- * Each responder just n_responders_actives up to its argument, yielding the processor on
- * each iteration.  When it is finished, it decrements the global n_responders_active
+ * Each responder just n_responders_actives up to its argument,
+ * yielding the processor on each iteration.  When it is
+ * finished, it decrements the global n_responders_active
  * and signals that it is done.
  */
 void *_Nullable responder(void *_Nullable param)
@@ -61,8 +66,8 @@ responder_exit:
 }
 
 /*
- * The initiator spawns a given number of responders and then waits for them all to
- * finish.
+ * The initiator spawns a given number of responders and then
+ * waits for them all to finish.
  */
 void initiator(int nresponders)
 {
