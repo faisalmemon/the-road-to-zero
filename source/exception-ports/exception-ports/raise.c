@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #import <mach/mach.h>
-//#import <mach/exception.h>
-//#import <mach/mig_errors.h>
+
+#import "kernel_private_headers.h"
 
 typedef struct {
     mach_port_t old_exc_port;
@@ -37,29 +37,30 @@ int exc_thread(ports_t *port_p)
 {
     kern_return_t   r;
     char           *msg_data[2][64];
-    msg_header_t   *imsg = (msg_header_t *)msg_data[0],
-    *omsg = (msg_header_t *)msg_data[1];
+    mach_msg_header_t   *imsg = (mach_msg_header_t *)msg_data[0],
+    *omsg = (mach_msg_header_t *)msg_data[1];
     
     /* Wait for exceptions. */
     while (1) {
-        imsg->msg_size = 64;
-        imsg->msg_local_port = port_p->exc_port;
-        r = msg_receive(imsg, MSG_OPTION_NONE, 0);
+        imsg->msgh_size = 64;
+        imsg->msgh_local_port = port_p->exc_port;
+        r = mach_msg_receive(imsg);
         
-        if (r==RCV_SUCCESS) {
+        if (r == MACH_MSG_SUCCESS) {
             /* Give the message to the Mach exception server. */
             if (exc_server(imsg, omsg)) {
                 /* Send the reply message that exc_serv gave us. */
-                r = msg_send(omsg, MSG_OPTION_NONE, 0);
-                if (r != SEND_SUCCESS) {
+                r = mach_msg_send(omsg);
+                if (r != MACH_MSG_SUCCESS) {
                     mach_error("exc_thread msg_send", r);
                     return 1;
                 }
             }
             else { /* exc_server refused to handle imsg. */
-                mutex_lock(printing);
+                pthread_mutex_lock(&printing);
                 printf("exc_server didn't like the message\n");
-                mutex_unlock(printing);
+                pthread_mutex_unlock(&printing);
+
                 return 2;
             }
         }
@@ -70,10 +71,12 @@ int exc_thread(ports_t *port_p)
         
         /* Pass the message to old exception handler, if necessary. */
         if (pass_on == TRUE) {
-            imsg->msg_remote_port = port_p->old_exc_port;
-            imsg->msg_local_port = port_p->clear_port;
-            r = msg_send(imsg, MSG_OPTION_NONE, 0);
-            if (r != SEND_SUCCESS) {
+            // FIXME
+            //imsg->msg_remote_port = port_p->old_exc_port;
+            //imsg->msg_local_port = port_p->clear_port;
+            //imsg->msgh_remote_port = port_get_re
+            r = mach_msg_send(imsg);
+            if (r != MACH_MSG_SUCCESS) {
                 mach_error("msg_send to old_exc_port", r);
                 return 4;
             }
