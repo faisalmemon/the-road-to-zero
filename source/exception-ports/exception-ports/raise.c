@@ -29,6 +29,24 @@ typedef struct {
     mach_port_t exc_port;
 } ports_t;
 
+typedef struct reply_holder {
+    /** Number of independent mask/port/behavior/flavor sets
+     * (up to EXC_TYPES_COUNT). */
+    mach_msg_type_number_t count;
+
+    /** Exception masks. */
+    exception_mask_t masks[EXC_TYPES_COUNT];
+
+    /** Exception handlers.*/
+    exception_handler_t handlers[EXC_TYPES_COUNT];
+    
+    /** Exception behaviors. */
+    exception_behavior_t behaviors[EXC_TYPES_COUNT];
+
+    /** Exception thread flavors. */
+    thread_state_flavor_t flavors[EXC_TYPES_COUNT];
+} reply_holder;
+
 volatile boolean_t pass_on = FALSE;
 pthread_mutex_t            printing;
 
@@ -113,19 +131,40 @@ int raise_main()
 {
     int             i;
     kern_return_t   r;
-    ports_t         ports;
+    reply_holder    reply;
+    mach_port_name_t exception_port_right;
     
-    printing = mutex_alloc();
+    reply.count = EXC_TYPES_COUNT;
+    
+    assert(pthread_mutex_init(&printing, NULL));
     
     /* Save the old exception port for this task. */
-    r = task_get_exception_port(task_self(), &(ports.old_exc_port));
+    //kern_return_t task_get_exception_ports(task_t task, exception_mask_t exception_mask, exception_mask_array_t masks, mach_msg_type_number_t *masksCnt, exception_handler_array_t old_handlers, exception_behavior_array_t old_behaviors, exception_flavor_array_t old_flavors);
+
+    exception_mask_t safe_mask =
+        EXC_MASK_ALL & ~(EXC_MASK_GUARD|EXC_MASK_RESOURCE);
+    
+    exception_mask_t mask_array;
+
+    /**
+     https://web.mit.edu/darwin/src/modules/xnu/osfmk/man/task_get_exception_ports.html
+     */
+    r = task_get_exception_ports(mach_thread_self(),
+                                 safe_mask,
+                                 reply.masks,
+                                 &reply.count,  // inout
+                                 reply.handlers,
+                                 reply.behaviors,
+                                 reply.flavors);
     if (r != KERN_SUCCESS) {
         mach_error("task_get_exception_port", r);
         return 1;
     }
     
     /* Create a new exception port for this task. */
-    r = port_allocate(task_self(), &(ports.exc_port));
+    r = mach_port_allocate(mach_task_self(),
+                           MACH_PORT_RIGHT_RECEIVE,
+                           &exception_port_right);
     if (r != KERN_SUCCESS) {
         mach_error("port_allocate 0", r);
         return 1;
