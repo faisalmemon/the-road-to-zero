@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #import <mach/mach.h>
+#include <unistd.h>
 
 #import "kernel_private_headers.h"
 
@@ -51,8 +52,10 @@ volatile boolean_t pass_on = FALSE;
 pthread_mutex_t            printing;
 
 /* Listen on the exception port. */
-int exc_thread(ports_t *port_p)
+//void *_Nullable
+void *_Nullable exc_thread(void *_Nullable argp)
 {
+    ports_t *ports = (ports_t *) argp;
     kern_return_t   r;
     char           *msg_data[2][64];
     mach_msg_header_t   *imsg = (mach_msg_header_t *)msg_data[0],
@@ -61,7 +64,7 @@ int exc_thread(ports_t *port_p)
     /* Wait for exceptions. */
     while (1) {
         imsg->msgh_size = 64;
-        imsg->msgh_local_port = port_p->exc_port;
+        imsg->msgh_local_port = ports->exc_port;
         r = mach_msg_receive(imsg);
         
         if (r == MACH_MSG_SUCCESS) {
@@ -71,7 +74,7 @@ int exc_thread(ports_t *port_p)
                 r = mach_msg_send(omsg);
                 if (r != MACH_MSG_SUCCESS) {
                     mach_error("exc_thread msg_send", r);
-                    return 1;
+                    return (void *_Nullable)1;
                 }
             }
             else { /* exc_server refused to handle imsg. */
@@ -79,12 +82,12 @@ int exc_thread(ports_t *port_p)
                 printf("exc_server didn't like the message\n");
                 pthread_mutex_unlock(&printing);
 
-                return 2;
+                return (void *_Nullable)2;
             }
         }
         else { /* msg_receive() returned an error. */
             mach_error("exc_thread msg_receive", r);
-            return 3;
+            return (void *_Nullable)3;
         }
         
         /* Pass the message to old exception handler, if necessary. */
@@ -96,7 +99,7 @@ int exc_thread(ports_t *port_p)
             r = mach_msg_send(imsg);
             if (r != MACH_MSG_SUCCESS) {
                 mach_error("msg_send to old_exc_port", r);
-                return 4;
+                return (void *_Nullable)4;
             }
         }
     }
@@ -133,6 +136,7 @@ int raise_main()
     kern_return_t   r;
     reply_holder    reply;
     mach_port_name_t exception_port_right;
+    mach_port_type_t port;
     
     reply.count = EXC_TYPES_COUNT;
     
@@ -169,33 +173,41 @@ int raise_main()
         mach_error("port_allocate 0", r);
         return 1;
     }
-    r = task_set_exception_port(task_self(), (ports.exc_port));
+    exception_behavior_t behaviour;
+    thread_state_flavor_t flavor;
+    
+    r = task_set_exception_ports(mach_task_self(),
+                                 safe_mask,
+                                 port,
+                                 behaviour,
+                                 flavor);
+    
     if (r != KERN_SUCCESS) {
         mach_error("task_set_exception_port", r);
         return 1;
     }
     
-    /* Fork the thread that listens to the exception port. */
-    cthread_detach(cthread_fork((cthread_fn_t)exc_thread,
-                                (any_t)&ports));
+    pthread_t thread_details;
+
+    pthread_create(&thread_details,
+                   NULL,
+                   &exc_thread,
+                   &reply.handlers);
+    pthread_detach(thread_details);
+    
     /* Raise the exception. */
     ports.clear_port = thread_reply();
-#ifdef NOT_OUR_EXCEPTION
-    /* By default, EXC_BAD_ACCESS causes a core dump. */
-    r = exception_raise(ports.exc_port, ports.clear_port,
-                        thread_self(), task_self(), EXC_BAD_ACCESS, 0, 0);
-#else
+
     r = exception_raise(ports.exc_port, ports.clear_port,
                         thread_self(), task_self(), EXC_SOFTWARE, 0x20000, 0);
-#endif
     
     if (r != KERN_SUCCESS)
         mach_error("catch_exception_raise didn't handle exception",
                    r);
     else {
-        mutex_lock(printing);
+        pthread_mutex_lock(&printing);
         printf("Successfully called exception_raise\n");
-        mutex_unlock(printing);
+        pthread_mutex_unlock(&printing);
     }
     
     sleep(5);  /* Exiting too soon can disturb other exception
