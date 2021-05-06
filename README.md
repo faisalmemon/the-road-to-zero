@@ -33,8 +33,10 @@ To draw an analogy, Google have shown what fish are out there to be catched, Lev
 
 ## Current Status
 
-As of 24th April 2021, the project status is:
-- explaining fundamentals of Mach programming
+As of 6th May 2021, the project status is:
+- I am going back a step to explain how to kernel debug a macOS target
+- Turns out that explaining Mach programming is hard unless we can see inside the Mach calls
+- Also understanding a POC is better done via kernel debugging
 
 ## Timeline
 
