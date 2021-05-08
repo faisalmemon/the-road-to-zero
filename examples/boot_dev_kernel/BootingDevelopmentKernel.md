@@ -78,7 +78,7 @@ Filesystem     512-blocks     Used Available Capacity iused      ifree %iused  M
 /dev/disk1s5s1 1953595632 59785248 469854808    12%  555854 9767422306    0%   /
 ```
 
-This shows that in our case, we have APFS Container 1, Volume 5, Snapshot 1 representing the hard disk for the root file system.
+This shows that in our case, we have APFS Container 1, Volume 5, Snapshot 1 representing the hard disk for the root file system.  So our disk (ignoring the snapshot) is `disk1s5`.
 
 ### Network information
 
@@ -103,8 +103,9 @@ For ease of explanation, we setup the following environmental variables matching
 
 ```
 TARGET=target-mbp2018
-DISK=disk1s5s1
+DISK=disk1s5
 KERNEL=20E5186d
+KDK=KDK_11.3_20E5186d.kdk
 NETWORK_INTERFACE=en9
 ```
 
@@ -149,3 +150,59 @@ We need to disable authenticated Root Volume Security.  (@rootvolsecurity)
 1. Run `csrutil authenticated-root disable` (Requires FileVault to be already disabled.)
 1. Quit the Terminal.
 1. Restart the computer.
+
+### Configuring the Development Kernel
+
+Having rebooted our target machine, with the lowered security, we can adjust our machine to use the Development Kernel.  This makes use of a kernel debugger easier since we have the kernel symbols for it that our debugger can use.
+
+#### Mount Read Write the Root File System
+
+```
+export TARGET=target-mbp2018 DISK=disk1s5 KERNEL=20E5186d NETWORK_INTERFACE=en9 KDK=KDK_11.3_20E5186d.kdk
+mkdir /tmp/mnt
+sudo mount -o nobrowse -t apfs /dev/$DISK /tmp/mnt
+```
+
+We should now have the root disk mounted Read Only and mounted Read Write
+```
+target-mbp2018 # mount
+/dev/disk1s5s1 on / (apfs, sealed, local, read-only, journaled)
+.
+.
+/dev/disk1s5 on /private/tmp/mnt (apfs, sealed, local, journaled, nobrowse)
+```
+
+#### Install the Development Kernel
+
+We place the development kernel on our system with:
+
+```
+sudo cp /Library/Developer/KDKs/$KDK/System/Library/Kernels/kernel.development /tmp/mnt/System/Library/Kernels
+```
+
+#### Bless the Root File System
+
+We make our modified root file system bootable by the system by using the `bless` command.
+
+```
+sudo bless --folder /tmp/mnt/System/Library/CoreServices --bootefi --create-snapshot
+```
+
+#### Set boot parameters
+
+We need to set the boot parameters to use the development kernel.  We also need to make it:
+
+1.  Use the thunderbolt ethernet adapter (`kdp_match_name=en9`),
+1.  Not go to sleep when debugging (`wdt=-1`),
+1.  Verbose boot for debugging (`-v`)
+1.  Use Power Key for entering the debugger, 
+
+http://newosxbook.com/src.jl?tree=xnu&file=/osfmk/kern/debug.h
+
+ and lastly we need to allow it to enter the debugger when the Power Key is tapped (not pressed and held).
+
+In our lab configuration, this is done with:
+```
+sudo nvram boot-args="debug=0x8146 kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
+
+```
