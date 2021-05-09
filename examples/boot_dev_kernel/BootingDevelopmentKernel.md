@@ -1,4 +1,4 @@
-## Booting a Development Kernel
+## Booting and exploring a Development Kernel
 
 This section is a practical tutorial on how to setup a system for interactive kernel level debugging.
 
@@ -6,7 +6,7 @@ This section is a practical tutorial on how to setup a system for interactive ke
 
 Experimenting with kernels can be like playing with fire.  The target machine must be throwaway; it might end up no longer booting, or be stuck in a boot loop.  The data on its disk might get corrupted or lost.  It is important to set up a discipline of keeping our work machine separate from our lab machine.  Furthermore, it is good to have different login identities and credentials between these two environments.  For example we wouldn't want a quirk in a beta environment causing corruption to an iCloud\index{trademark!iCloud} resource we rely upon in our work environment.
 
-Unfortunately good "data hygiene" is mostly learnt after a painful data loss.  To avoid this, it is best to have in place a good backup strategy before experimenting with lab environments, and potential unsafe configurations and software.  One such strategy is to have all our code in a cloud service provider, such as GitHub\index{trademark!GitHub}, have our documents and photos mirrored to iCloud\index{trademark!iCloud}, and the high value personal documents, license keys, etc. kept also on Write-Only DVD media.
+Unfortunately good "data hygiene" is mostly learnt after a painful data loss.  To avoid this, it is best to have in place a good backup strategy before experimenting with lab environments, and potential unsafe configurations and software.  One such strategy is to have all our code in a cloud service provider, such as GitHub\index{trademark!GitHub}, have our documents and photos mirrored to iCloud\index{trademark!iCloud}, have our desktop systems backed-up to Time Machine\index{trademark!Time Machine} and the high value personal documents, license keys, etc. kept also on Write-Only DVD media.
 
 ### Terminology
 
@@ -96,6 +96,57 @@ en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
 ```
 
 So our network interface is `en9`.
+
+### Kernel Debug Flags
+
+When we setup our target for debugging, to head off potential boot-time issues, we need to establish what custom boot flags we shall use for booting and debugging.  Technically speaking, these settings are tied to the particular kernel version we are debugging.  The settings, however, change only occasionally.
+
+Kernel information is available from the Open Source archives published by Apple. (@appleopensource)  We find that the release of such sources is delayed after the release of a given version of macOS.  iOS kernel source is not published.  However, it is macOS that is the most instructive because all the platforms are based on the same XNU kernel with just compile flag and device support differences.  The convergence of the platforms at a low level allows the macOS platform to give good insights into all Apple platforms.  We note, however, that the user experience is differentiated between the Apple platforms since the user needs to consume and experience the platform differently based upon the form factor of the system.  These differences are mainly manifest in the library software layers on top of the XNU kernel.
+
+At the time of writing, the latest Apple Open Source release for macOS is 11.2 despite our target machine being 20E5186d.  So we download its corresponding XNU kernel, `xnu-7195.81.3`.
+
+The file `osfmk/kern/debug.h` describes the boot parameters that are available.
+
+```
+/* Debug boot-args */
+#define DB_HALT         0x1
+//#define DB_PRT          0x2 -- obsolete
+#define DB_NMI          0x4
+#define DB_KPRT         0x8
+#define DB_KDB          0x10
+#define DB_ARP          0x40
+#define DB_KDP_BP_DIS   0x80
+//#define DB_LOG_PI_SCRN  0x100 -- obsolete
+#define DB_KDP_GETC_ENA 0x200
+
+#define DB_KERN_DUMP_ON_PANIC           0x400 /* Trigger core dump on panic*/
+#define DB_KERN_DUMP_ON_NMI             0x800 /* Trigger core dump on NMI */
+#define DB_DBG_POST_CORE                0x1000 /*Wait in debugger after NMI core */
+#define DB_PANICLOG_DUMP                0x2000 /* Send paniclog on panic,not core*/
+#define DB_REBOOT_POST_CORE             0x4000 /* Attempt to reboot after
+	                                        * post-panic crashdump/paniclog
+	                                        * dump.
+	                                        */
+#define DB_NMI_BTN_ENA          0x8000  /* Enable button to directly trigger NMI */
+/* 0x10000 was DB_PRT_KDEBUG (kprintf kdebug events), feature removed */
+#define DB_DISABLE_LOCAL_CORE   0x20000 /* ignore local kernel core dump support */
+#define DB_DISABLE_GZIP_CORE    0x40000 /* don't gzip kernel core dumps */
+#define DB_DISABLE_CROSS_PANIC  0x80000 /* x86 only - don't trigger cross panics. Only
+	                                 * necessary to enable x86 kernel debugging on
+	                                 * configs with a dev-fused co-processor running
+	                                 * release bridgeOS.
+	                                 */
+#define DB_REBOOT_ALWAYS        0x100000 /* Don't wait for debugger connection */
+#define DB_DISABLE_STACKSHOT_TO_DISK 0x200000 /* Disable writing stackshot to local disk */
+```
+
+We require:
+
+- `DB_NMI`: we want to enter the debugger upon a Non-Maskable Interrupt
+- `DB_ARP`: we want the debugger communication to be over Address Resolution Protocol (in fact UDP packets)
+- `DB_NMI_BTN_ENA`: we want the power button being tapped to generate a Non-Maskable Interrupt
+
+Hence we shall plan on supplying the debug boot argument `debug=0x8044`
 
 ### Assumed Configuration
 
@@ -195,14 +246,10 @@ We need to set the boot parameters to use the development kernel.  We also need 
 1.  Use the thunderbolt ethernet adapter (`kdp_match_name=en9`),
 1.  Not go to sleep when debugging (`wdt=-1`),
 1.  Verbose boot for debugging (`-v`)
-1.  Use Power Key for entering the debugger, 
-
-http://newosxbook.com/src.jl?tree=xnu&file=/osfmk/kern/debug.h
-
- and lastly we need to allow it to enter the debugger when the Power Key is tapped (not pressed and held).
+1.  Use Power Key for entering the debugger over UDP packets (`debug=0x8044`),
 
 In our lab configuration, this is done with:
-```
-sudo nvram boot-args="debug=0x8146 kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
 
+```
+sudo nvram boot-args="debug=0x8044 kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
 ```
