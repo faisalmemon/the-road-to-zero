@@ -73,6 +73,7 @@ You need:
 - Various Brew packages
 - Latex packages
 - Class dump
+- Draw.io.app for diagrams
 
 #### Brew Software
 
@@ -93,6 +94,10 @@ For analysing binaries I used `class-dump`.  Whilst previously this was availabl
 
 [Download class-dump](http://stevenygard.com/projects/class-dump/)
 
+#### Draw.io.app
+
+The diagram drawing app is installable from 
+https://github.com/jgraph/drawio-desktop
 
 ### Recommended Software
 

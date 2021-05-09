@@ -2,6 +2,10 @@
 
 This section is a practical tutorial on how to setup a system for interactive kernel level debugging.
 
+At a high level, this is our workflow:
+
+![](KernelDebugSetup.png)
+
 ### Data Safety
 
 Experimenting with kernels can be like playing with fire.  The target machine must be throwaway; it might end up no longer booting, or be stuck in a boot loop.  The data on its disk might get corrupted or lost.  It is important to set up a discipline of keeping our work machine separate from our lab machine.  Furthermore, it is good to have different login identities and credentials between these two environments.  For example we wouldn't want a quirk in a beta environment causing corruption to an iCloud\index{trademark!iCloud} resource we rely upon in our work environment.

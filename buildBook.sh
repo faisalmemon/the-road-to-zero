@@ -70,7 +70,8 @@ echo
 echo Processing foo.$langName.html
 pandoc $filesToProcess pandocMetaData.yaml -s --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc -c style/gitHubStyle.css -o $outputDir/foo.$langName.html
 echo Processing boo.$langName.latex
-pandoc $latexFilesToProcess pandocMetaData.yaml --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+pandoc $latexFilesToProcess pandocMetaData.yaml --resource-path=$scriptPath:$scriptPath/diagrams:$scriptPath/screenshots --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
+echo used resource paths $scriptPath:$scriptPath/diagrams:$scriptPath/screenshots
 
 echo Cleaning up csl indent remarks
 sed -e '/if(csl-hanging-indent)/{N;d;}' -i.bak $outputDir/boo.$langName.latex
