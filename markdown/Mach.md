@@ -358,3 +358,7 @@ END: vm_copy_on_write_example()
 As we can see the `vm_inherit()` routine will provide both the child and parent access to the same memory until it is modified.  After that, the child and parent have separate memory pages representing their own copy of the data values which can now be different.
 
 This program uses a very primitive form of task coordination: busy while loops.  A realistic example would use the `pthread` library instead for signalling and coordination.
+
+## Further steps
+
+We now leave the Mach programming introduction.  There aren't really any big example programs that use Mach so it is hard to get an appreciation of how to program with it.  The main Mach program is the XNU kernel itself.  So our next steps on our learning journey is to understand how to debug and probe the XNU kernel.  From this we can get live experience with how Mach works.  We shall see how the system interacts with Mach and how security (Mandatory Access Control (MAC)) is woven into the system at this lowest level.
