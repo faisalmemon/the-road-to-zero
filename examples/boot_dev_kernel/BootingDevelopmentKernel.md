@@ -74,8 +74,10 @@ We shall do low level disk operations on our target machine, so first need to re
 
 ```
 target-mbp2018 # df /
-Filesystem     512-blocks     Used Available Capacity iused      ifree %iused  Mounted on
-/dev/disk1s5s1 1953595632 59785248 469854808    12%  555854 9767422306    0%   /
+Filesystem     512-blocks     Used Available Capacity iused     
+ ifree %iused  Mounted on
+/dev/disk1s5s1 1953595632 59785248 469854808    12%  555854
+ 9767422306    0%   /
 ```
 
 This shows that in our case, we have APFS Container 1, Volume 5, Snapshot 1 representing the hard disk for the root file system.  So our disk (ignoring the snapshot) is `disk1s5`.
@@ -86,13 +88,17 @@ We shall be connecting to the target via the Thunderbolt Gigabit Ethernet, so we
 
 ```
 target-mbp2018 # ifconfig | grep -B6 1000baseT
-en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu
+ 1500
 	options=50b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV,CHANNEL_IO>
 	ether 28:ec:95:03:b3:a6 
-	inet6 fe80::18f5:dff5:a92b:d3ff%en9 prefixlen 64 secured scopeid 0x14 
-	inet 169.254.203.131 netmask 0xffff0000 broadcast 169.254.255.255
+	inet6 fe80::18f5:dff5:a92b:d3ff%en9 prefixlen 64 secured
+ scopeid 0x14 
+	inet 169.254.203.131 netmask 0xffff0000 broadcast
+ 169.254.255.255
 	nd6 options=201<PERFORMNUD,DAD>
-	media: autoselect (1000baseT <full-duplex,flow-control,energy-efficient-ethernet>)
+	media: autoselect (1000baseT
+ <full-duplex,flow-control,energy-efficient-ethernet>)
 ```
 
 So our network interface is `en9` and our target machine appears on that interface as IP address `169.254.203.131`.
@@ -119,25 +125,40 @@ The file `osfmk/kern/debug.h` describes the boot parameters that are available.
 //#define DB_LOG_PI_SCRN  0x100 -- obsolete
 #define DB_KDP_GETC_ENA 0x200
 
-#define DB_KERN_DUMP_ON_PANIC           0x400 /* Trigger core dump on panic*/
-#define DB_KERN_DUMP_ON_NMI             0x800 /* Trigger core dump on NMI */
-#define DB_DBG_POST_CORE                0x1000 /*Wait in debugger after NMI core */
-#define DB_PANICLOG_DUMP                0x2000 /* Send paniclog on panic,not core*/
-#define DB_REBOOT_POST_CORE             0x4000 /* Attempt to reboot after
-	                                        * post-panic crashdump/paniclog
+#define DB_KERN_DUMP_ON_PANIC           0x400 /* Trigger core
+ dump on panic*/
+#define DB_KERN_DUMP_ON_NMI             0x800 /* Trigger core
+ dump on NMI */
+#define DB_DBG_POST_CORE                0x1000 /*Wait in debugger
+ after NMI core */
+#define DB_PANICLOG_DUMP                0x2000 /* Send paniclog
+ on panic,not core*/
+#define DB_REBOOT_POST_CORE             0x4000 /* Attempt to
+ reboot after
+	                                        * post-panic
+ crashdump/paniclog
 	                                        * dump.
 	                                        */
-#define DB_NMI_BTN_ENA          0x8000  /* Enable button to directly trigger NMI */
-/* 0x10000 was DB_PRT_KDEBUG (kprintf kdebug events), feature removed */
-#define DB_DISABLE_LOCAL_CORE   0x20000 /* ignore local kernel core dump support */
-#define DB_DISABLE_GZIP_CORE    0x40000 /* don't gzip kernel core dumps */
-#define DB_DISABLE_CROSS_PANIC  0x80000 /* x86 only - don't trigger cross panics. Only
-	                                 * necessary to enable x86 kernel debugging on
-	                                 * configs with a dev-fused co-processor running
+#define DB_NMI_BTN_ENA          0x8000  /* Enable button to
+ directly trigger NMI */
+/* 0x10000 was DB_PRT_KDEBUG (kprintf kdebug events), feature
+ removed */
+#define DB_DISABLE_LOCAL_CORE   0x20000 /* ignore local kernel
+ core dump support */
+#define DB_DISABLE_GZIP_CORE    0x40000 /* don't gzip kernel core
+ dumps */
+#define DB_DISABLE_CROSS_PANIC  0x80000 /* x86 only - don't
+ trigger cross panics. Only
+	                                 * necessary to enable
+ x86 kernel debugging on
+	                                 * configs with a
+ dev-fused co-processor running
 	                                 * release bridgeOS.
 	                                 */
-#define DB_REBOOT_ALWAYS        0x100000 /* Don't wait for debugger connection */
-#define DB_DISABLE_STACKSHOT_TO_DISK 0x200000 /* Disable writing stackshot to local disk */
+#define DB_REBOOT_ALWAYS        0x100000 /* Don't wait for
+ debugger connection */
+#define DB_DISABLE_STACKSHOT_TO_DISK 0x200000 /* Disable writing
+ stackshot to local disk */
 ```
 
 We require:
@@ -209,7 +230,8 @@ Having rebooted our target machine, with the lowered security, we can adjust our
 #### Mount Read Write the Root File System
 
 ```
-export TARGET=target-mbp2018 DISK=disk1s5 KERNEL=20E5186d NETWORK_INTERFACE=en9 KDK=KDK_11.3_20E5186d.kdk
+export TARGET=target-mbp2018 DISK=disk1s5 KERNEL=20E5186d
+ NETWORK_INTERFACE=en9 KDK=KDK_11.3_20E5186d.kdk
 mkdir /tmp/mnt
 sudo mount -o nobrowse -t apfs /dev/$DISK /tmp/mnt
 ```
@@ -220,7 +242,8 @@ target-mbp2018 # mount
 /dev/disk1s5s1 on / (apfs, sealed, local, read-only, journaled)
 .
 .
-/dev/disk1s5 on /private/tmp/mnt (apfs, sealed, local, journaled, nobrowse)
+/dev/disk1s5 on /private/tmp/mnt (apfs, sealed, local, journaled,
+ nobrowse)
 ```
 
 #### Install the Development Kernel
@@ -228,7 +251,9 @@ target-mbp2018 # mount
 We place the development kernel on our system with:
 
 ```
-sudo cp /Library/Developer/KDKs/$KDK/System/Library/Kernels/kernel.development /tmp/mnt/System/Library/Kernels
+sudo cp
+ /Library/Developer/KDKs/$KDK/System/Library/Kernels/kernel.devel
+opment /tmp/mnt/System/Library/Kernels
 ```
 
 #### Bless the Root File System
@@ -236,7 +261,8 @@ sudo cp /Library/Developer/KDKs/$KDK/System/Library/Kernels/kernel.development /
 We make our modified root file system bootable by the system by using the `bless` command.
 
 ```
-sudo bless --folder /tmp/mnt/System/Library/CoreServices --bootefi --create-snapshot
+sudo bless --folder /tmp/mnt/System/Library/CoreServices
+ --bootefi --create-snapshot
 ```
 
 #### Set boot parameters
@@ -252,7 +278,8 @@ In our lab configuration, this is done with:
 
 ```
 export NETWORK_INTERFACE=en9
-sudo nvram boot-args="debug=0x8044 kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
+sudo nvram boot-args="debug=0x8044
+ kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
 ```
 
 #### Target machine reboot
@@ -277,13 +304,17 @@ On the target machine, we need to get the most recent IP address it has allocate
 
 ```
 target-mbp2018 # ifconfig en9
-en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu
+ 1500
 	options=50b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV,CHANNEL_IO>
 	ether 28:ec:95:03:b3:a6 
-	inet6 fe80::14c8:8222:3ad9:82af%en9 prefixlen 64 secured scopeid 0x8 
-	inet 169.254.136.48 netmask 0xffff0000 broadcast 169.254.255.255
+	inet6 fe80::14c8:8222:3ad9:82af%en9 prefixlen 64 secured
+ scopeid 0x8 
+	inet 169.254.136.48 netmask 0xffff0000 broadcast
+ 169.254.255.255
 	nd6 options=201<PERFORMNUD,DAD>
-	media: autoselect (1000baseT <full-duplex,flow-control,energy-efficient-ethernet>)
+	media: autoselect (1000baseT
+ <full-duplex,flow-control,energy-efficient-ethernet>)
 	status: active
 ```
 
@@ -301,30 +332,51 @@ kdp-remote 169.254.136.48
 At this point we will get a large information dump from the target machine, detailing the kernel extensions currently running:
 
 ```
-Version: Darwin Kernel Version 20.4.0: Wed Feb 10 23:06:18 PST 2021; root:xnu-7195.100.326.0.1~76/RELEASE_X86_64; UUID=04A94133-D929-3B0C-AF3D-907AF8BF4102; stext=0xffffff8010010000
+Version: Darwin Kernel Version 20.4.0: Wed Feb 10 23:06:18 PST
+ 2021; root:xnu-7195.100.326.0.1~76/RELEASE_X86_64;
+ UUID=04A94133-D929-3B0C-AF3D-907AF8BF4102;
+ stext=0xffffff8010010000
 Kernel UUID: 04A94133-D929-3B0C-AF3D-907AF8BF4102
 Load Address: 0xffffff8010010000
 Kernel slid 0xfe10000 in memory.
-Loaded kernel file /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel
-warning: 'kernel' contains a debug script. To run this script in this debug session:
+Loaded kernel file
+ /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kd
+k/System/Library/Kernels/kernel
+warning: 'kernel' contains a debug script. To run this script in
+ this debug session:
 
-    command script import "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/kernel.py"
-
-To run all discovered debug scripts in this session:
-
-    settings set target.load-script-from-symbol-file true
-
-Loading 176 kext modules -----.-------.------....-------------.-----.-------------------------.-----.-----------------------------------warning: 'IOGraphicsFamily' contains a debug script. To run this script in this debug session:
-
-    command script import "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Extensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOGraphicsFamily.py"
+    command script import
+ "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.k
+dk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/k
+ernel.py"
 
 To run all discovered debug scripts in this session:
 
     settings set target.load-script-from-symbol-file true
 
-.----.-------------..-------------.------------------------------warning: 'IOGraphicsFamily' contains a debug script. To run this script in this debug session:
+Loading 176 kext modules
+ -----.-------.------....-------------.-----.--------------------
+-----.-----.-----------------------------------warning:
+ 'IOGraphicsFamily' contains a debug script. To run this script
+ in this debug session:
 
-    command script import "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Extensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOGraphicsFamily.py"
+    command script import
+ "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Ex
+tensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOG
+raphicsFamily.py"
+
+To run all discovered debug scripts in this session:
+
+    settings set target.load-script-from-symbol-file true
+
+.----.-------------..-------------.------------------------------
+warning: 'IOGraphicsFamily' contains a debug script. To run this
+ script in this debug session:
+
+    command script import
+ "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Ex
+tensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOG
+raphicsFamily.py"
 
 To run all discovered debug scripts in this session:
 
@@ -332,19 +384,29 @@ To run all discovered debug scripts in this session:
 
  done.
 Failed to load 161 of 176 kexts:
- com.apple.AGDCPluginDisplayMetrics                          1B6E3133-91F9-3C8D-91E0-80843926DDE2
- com.apple.AppleFSCompression.AppleFSCompressionTypeDataless 94BB56D9-8BF2-3088-8B4F-5B57DA797346
+ com.apple.AGDCPluginDisplayMetrics                         
+ 1B6E3133-91F9-3C8D-91E0-80843926DDE2
+ com.apple.AppleFSCompression.AppleFSCompressionTypeDataless
+ 94BB56D9-8BF2-3088-8B4F-5B57DA797346
 .
 .
 .
- com.apple.security.AppleImage4                              2682857E-9FA5-3B36-A12C-104225C5EC80
- com.apple.security.quarantine                               FAADAF70-7DDD-38AC-962B-64776C8FA3CD
- com.apple.security.sandbox                                  1947D7D5-5A3E-3F7D-83C1-641F2BB56D94
- com.apple.vecLib.kext                                       DE60F885-126D-3319-9683-CB4F0B8288A8
-kernel was compiled with optimization - stepping may behave oddly; variables may not be available.
+ com.apple.security.AppleImage4                             
+ 2682857E-9FA5-3B36-A12C-104225C5EC80
+ com.apple.security.quarantine                              
+ FAADAF70-7DDD-38AC-962B-64776C8FA3CD
+ com.apple.security.sandbox                                 
+ 1947D7D5-5A3E-3F7D-83C1-641F2BB56D94
+ com.apple.vecLib.kext                                      
+ DE60F885-126D-3319-9683-CB4F0B8288A8
+kernel was compiled with optimization - stepping may behave
+ oddly; variables may not be available.
 Process 1 stopped
 * thread #1, stop reason = signal SIGSTOP
-    frame #0: 0xffffff801008b363 kernel`DebuggerWithContext(reason=<unavailable>, ctx=<unavailable>, message=<unavailable>, debugger_options_mask=0) at debug.c:0 [opt]
+    frame #0: 0xffffff801008b363
+ kernel`DebuggerWithContext(reason=<unavailable>,
+ ctx=<unavailable>, message=<unavailable>,
+ debugger_options_mask=0) at debug.c:0 [opt]
 Target 0: (kernel) stopped.
 ```
 
@@ -355,15 +417,30 @@ settings set target.load-script-from-symbol-file true
 
 So long as we have already set the Python version to 2 (earlier) we should see the scripts run successfully:
 ```
-Loading kernel debugging from /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/kernel.py
+Loading kernel debugging from
+ /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kd
+k/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/ke
+rnel.py
 LLDB version lldb-1200.0.44.2
-Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
-settings set target.process.python-os-plugin-path "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/lldbmacros/core/operating_system.py"
+Apple Swift version 5.3.2 (swiftlang-1200.0.45
+ clang-1200.0.32.28)
+settings set target.process.python-os-plugin-path
+ "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.k
+dk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/l
+ldbmacros/core/operating_system.py"
 Target arch: x86_64
 Instantiating threads completely from saved state in memory.
-settings set target.trap-handler-names hndl_allintrs hndl_alltraps trap_from_kernel hndl_double_fault hndl_machine_check _fleh_prefabt _ExceptionVectorsBase _ExceptionVectorsTable _fleh_undef _fleh_dataabt _fleh_irq _fleh_decirq _fleh_fiq_generic _fleh_dec
-command script import "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/lldbmacros/xnu.py"
-xnu debug macros loaded successfully. Run showlldbtypesummaries to enable type summaries.
+settings set target.trap-handler-names hndl_allintrs
+ hndl_alltraps trap_from_kernel hndl_double_fault
+ hndl_machine_check _fleh_prefabt _ExceptionVectorsBase
+ _ExceptionVectorsTable _fleh_undef _fleh_dataabt _fleh_irq
+ _fleh_decirq _fleh_fiq_generic _fleh_dec
+command script import
+ "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.k
+dk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/l
+ldbmacros/xnu.py"
+xnu debug macros loaded successfully. Run showlldbtypesummaries
+ to enable type summaries.
 settings set target.process.optimization-warnings false
 ```
 
@@ -374,22 +451,39 @@ To prove to ourselves we have a live debuggable kernel we can run the following 
 First we get the backtrace from where we've interrupted the Operating System:
 ```
 (lldb) bt
-* thread #2, name = '0xffffff86a4828898', queue = '0x0', stop reason = signal SIGSTOP
-  * frame #0: 0xffffff801008b363 kernel`DebuggerWithContext(reason=<unavailable>, ctx=<unavailable>, message=<unavailable>, debugger_options_mask=0) at debug.c:0 [opt]
+* thread #2, name = '0xffffff86a4828898', queue = '0x0', stop
+ reason = signal SIGSTOP
+  * frame #0: 0xffffff801008b363
+ kernel`DebuggerWithContext(reason=<unavailable>,
+ ctx=<unavailable>, message=<unavailable>,
+ debugger_options_mask=0) at debug.c:0 [opt]
     frame #1: 0xffffff80111a68da
-    frame #2: 0xffffff80107eeba1 kernel`IOFilterInterruptEventSource::normalInterruptOccurred(this=0xffffff93712ca880, (null)=<unavailable>, (null)=<unavailable>, (null)=<unavailable>) at IOFilterInterruptEventSource.cpp:236:15 [opt]
+    frame #2: 0xffffff80107eeba1
+ kernel`IOFilterInterruptEventSource::normalInterruptOccurred(thi
+s=0xffffff93712ca880, (null)=<unavailable>, (null)=<unavailable>,
+ (null)=<unavailable>) at IOFilterInterruptEventSource.cpp:236:15
+ [opt]
     frame #3: 0xffffff8011130c51
     frame #4: 0xffffff80111505a7
     frame #5: 0xffffff801115496d
-    frame #6: 0xffffff8010815feb kernel`IOSharedInterruptController::handleInterrupt(this=0xffffff937101f000, (null)=<unavailable>, nub=0xffffff937113ad80, (null)=<unavailable>) at IOInterruptController.cpp:830:5 [opt]
+    frame #6: 0xffffff8010815feb
+ kernel`IOSharedInterruptController::handleInterrupt(this=0xfffff
+f937101f000, (null)=<unavailable>, nub=0xffffff937113ad80,
+ (null)=<unavailable>) at IOInterruptController.cpp:830:5 [opt]
     frame #7: 0xffffff80111bfa77
     frame #8: 0xffffff8011126354
     frame #9: 0xffffff801112f2fd
-    frame #10: 0xffffff80101c0ced kernel`interrupt [inlined] get_preemption_level at cpu_data.h:430:21 [opt]
+    frame #10: 0xffffff80101c0ced kernel`interrupt [inlined]
+ get_preemption_level at cpu_data.h:430:21 [opt]
     frame #11: 0xffffff801002fbdd kernel`hndl_allintrs + 285
-    frame #12: 0xffffff80101c39ba kernel`machine_idle at pmCPU.c:235:1 [opt]
-    frame #13: 0xffffff80100b32c9 kernel`processor_idle(thread=0x0000000000000000, processor=0xffffff8010ea9a40) at sched_prim.c:5346:3 [opt]
-    frame #14: 0xffffff80100b3498 kernel`idle_thread(parameter=<unavailable>, result=<unavailable>) at sched_prim.c:5436:24 [opt]
+    frame #12: 0xffffff80101c39ba kernel`machine_idle at
+ pmCPU.c:235:1 [opt]
+    frame #13: 0xffffff80100b32c9
+ kernel`processor_idle(thread=0x0000000000000000,
+ processor=0xffffff8010ea9a40) at sched_prim.c:5346:3 [opt]
+    frame #14: 0xffffff80100b3498
+ kernel`idle_thread(parameter=<unavailable>,
+ result=<unavailable>) at sched_prim.c:5436:24 [opt]
     frame #15: 0xffffff801002f13e kernel`call_continuation + 46
 ```
 
@@ -413,7 +507,8 @@ General Purpose Registers:
        r13 = 0xffffff8010ea9a00  
        r14 = 0x0000000000000000
        r15 = 0x0000000000000001
-       rip = 0xffffff801008b363  kernel`DebuggerWithContext + 275 at debug.c
+       rip = 0xffffff801008b363  kernel`DebuggerWithContext + 275
+ at debug.c
     rflags = 0x0000000000000046
         cs = 0x0000000000000008
         fs = 0x00000000ffff0000
