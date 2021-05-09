@@ -95,7 +95,7 @@ en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
 	media: autoselect (1000baseT <full-duplex,flow-control,energy-efficient-ethernet>)
 ```
 
-So our network interface is `en9`.
+So our network interface is `en9` and our target machine appears on that interface as IP address `169.254.203.131`.
 
 ### Kernel Debug Flags
 
@@ -251,5 +251,202 @@ We need to set the boot parameters to use the development kernel.  We also need 
 In our lab configuration, this is done with:
 
 ```
+export NETWORK_INTERFACE=en9
 sudo nvram boot-args="debug=0x8044 kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v"
+```
+
+#### Target machine reboot
+
+Now we have everything in place. The target machine can be rebooted.  If we watch it reboot closely, we can see that as it reboots, a lot of debug information will be printed onto the screen as part of the reboot.
+
+### Host machine configuration
+
+At this point we have a host machine with Xcode, and the KDK installed on it.  Only one further change is needed.
+
+The KDK comes with helper scripts to aid kernel debugging.  These are tied to the Python 2 runtime environment, but Xcode LLDB Debugger uses Python 3 as the default.  We need to switch to Python 2 as follows:
+
+```
+defaults write com.apple.dt.lldb DefaultPythonVersion 2
+```
+
+### Interactive debugging
+
+The host machine should be connected to the target machine.  It should have the KDK installed on it.  The Apple Spotlight feature will index it, and thus will be aware of the KDK symbols without it being explicitly told about them.
+
+On the target machine, we need to get the most recent IP address it has allocated for the Gigabit Ethernet interface `en9` (`$NETWORK_INTERFACE`).
+
+```
+target-mbp2018 # ifconfig en9
+en9: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	options=50b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV,CHANNEL_IO>
+	ether 28:ec:95:03:b3:a6 
+	inet6 fe80::14c8:8222:3ad9:82af%en9 prefixlen 64 secured scopeid 0x8 
+	inet 169.254.136.48 netmask 0xffff0000 broadcast 169.254.255.255
+	nd6 options=201<PERFORMNUD,DAD>
+	media: autoselect (1000baseT <full-duplex,flow-control,energy-efficient-ethernet>)
+	status: active
+```
+
+Here we have IP Address `169.254.136.48`.
+
+We now press the Power button on the target.  It must be a normal press, not a tap, nor a long press.  This will trigger the Non-Maskable Interrupt and freeze the machine, and it will then hunt for a kernel debugger connection.
+
+On the host machine, we run the following commands:
+
+```
+lldb
+kdp-remote 169.254.136.48
+```
+
+At this point we will get a large information dump from the target machine, detailing the kernel extensions currently running:
+
+```
+Version: Darwin Kernel Version 20.4.0: Wed Feb 10 23:06:18 PST 2021; root:xnu-7195.100.326.0.1~76/RELEASE_X86_64; UUID=04A94133-D929-3B0C-AF3D-907AF8BF4102; stext=0xffffff8010010000
+Kernel UUID: 04A94133-D929-3B0C-AF3D-907AF8BF4102
+Load Address: 0xffffff8010010000
+Kernel slid 0xfe10000 in memory.
+Loaded kernel file /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel
+warning: 'kernel' contains a debug script. To run this script in this debug session:
+
+    command script import "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/kernel.py"
+
+To run all discovered debug scripts in this session:
+
+    settings set target.load-script-from-symbol-file true
+
+Loading 176 kext modules -----.-------.------....-------------.-----.-------------------------.-----.-----------------------------------warning: 'IOGraphicsFamily' contains a debug script. To run this script in this debug session:
+
+    command script import "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Extensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOGraphicsFamily.py"
+
+To run all discovered debug scripts in this session:
+
+    settings set target.load-script-from-symbol-file true
+
+.----.-------------..-------------.------------------------------warning: 'IOGraphicsFamily' contains a debug script. To run this script in this debug session:
+
+    command script import "/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Extensions/IOGraphicsFamily.kext.dSYM/Contents/Resources/Python/IOGraphicsFamily.py"
+
+To run all discovered debug scripts in this session:
+
+    settings set target.load-script-from-symbol-file true
+
+ done.
+Failed to load 161 of 176 kexts:
+ com.apple.AGDCPluginDisplayMetrics                          1B6E3133-91F9-3C8D-91E0-80843926DDE2
+ com.apple.AppleFSCompression.AppleFSCompressionTypeDataless 94BB56D9-8BF2-3088-8B4F-5B57DA797346
+.
+.
+.
+ com.apple.security.AppleImage4                              2682857E-9FA5-3B36-A12C-104225C5EC80
+ com.apple.security.quarantine                               FAADAF70-7DDD-38AC-962B-64776C8FA3CD
+ com.apple.security.sandbox                                  1947D7D5-5A3E-3F7D-83C1-641F2BB56D94
+ com.apple.vecLib.kext                                       DE60F885-126D-3319-9683-CB4F0B8288A8
+kernel was compiled with optimization - stepping may behave oddly; variables may not be available.
+Process 1 stopped
+* thread #1, stop reason = signal SIGSTOP
+    frame #0: 0xffffff801008b363 kernel`DebuggerWithContext(reason=<unavailable>, ctx=<unavailable>, message=<unavailable>, debugger_options_mask=0) at debug.c:0 [opt]
+Target 0: (kernel) stopped.
+```
+
+As instructed, we should run the debug scripts:
+```
+settings set target.load-script-from-symbol-file true
+```
+
+So long as we have already set the Python version to 2 (earlier) we should see the scripts run successfully:
+```
+Loading kernel debugging from /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/kernel.py
+LLDB version lldb-1200.0.44.2
+Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+settings set target.process.python-os-plugin-path "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/lldbmacros/core/operating_system.py"
+Target arch: x86_64
+Instantiating threads completely from saved state in memory.
+settings set target.trap-handler-names hndl_allintrs hndl_alltraps trap_from_kernel hndl_double_fault hndl_machine_check _fleh_prefabt _ExceptionVectorsBase _ExceptionVectorsTable _fleh_undef _fleh_dataabt _fleh_irq _fleh_decirq _fleh_fiq_generic _fleh_dec
+command script import "/System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kdk/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/lldbmacros/xnu.py"
+xnu debug macros loaded successfully. Run showlldbtypesummaries to enable type summaries.
+settings set target.process.optimization-warnings false
+```
+
+#### Simple register writing test
+
+To prove to ourselves we have a live debuggable kernel we can run the following commands from llvm on the host.
+
+First we get the backtrace from where we've interrupted the Operating System:
+```
+(lldb) bt
+* thread #2, name = '0xffffff86a4828898', queue = '0x0', stop reason = signal SIGSTOP
+  * frame #0: 0xffffff801008b363 kernel`DebuggerWithContext(reason=<unavailable>, ctx=<unavailable>, message=<unavailable>, debugger_options_mask=0) at debug.c:0 [opt]
+    frame #1: 0xffffff80111a68da
+    frame #2: 0xffffff80107eeba1 kernel`IOFilterInterruptEventSource::normalInterruptOccurred(this=0xffffff93712ca880, (null)=<unavailable>, (null)=<unavailable>, (null)=<unavailable>) at IOFilterInterruptEventSource.cpp:236:15 [opt]
+    frame #3: 0xffffff8011130c51
+    frame #4: 0xffffff80111505a7
+    frame #5: 0xffffff801115496d
+    frame #6: 0xffffff8010815feb kernel`IOSharedInterruptController::handleInterrupt(this=0xffffff937101f000, (null)=<unavailable>, nub=0xffffff937113ad80, (null)=<unavailable>) at IOInterruptController.cpp:830:5 [opt]
+    frame #7: 0xffffff80111bfa77
+    frame #8: 0xffffff8011126354
+    frame #9: 0xffffff801112f2fd
+    frame #10: 0xffffff80101c0ced kernel`interrupt [inlined] get_preemption_level at cpu_data.h:430:21 [opt]
+    frame #11: 0xffffff801002fbdd kernel`hndl_allintrs + 285
+    frame #12: 0xffffff80101c39ba kernel`machine_idle at pmCPU.c:235:1 [opt]
+    frame #13: 0xffffff80100b32c9 kernel`processor_idle(thread=0x0000000000000000, processor=0xffffff8010ea9a40) at sched_prim.c:5346:3 [opt]
+    frame #14: 0xffffff80100b3498 kernel`idle_thread(parameter=<unavailable>, result=<unavailable>) at sched_prim.c:5436:24 [opt]
+    frame #15: 0xffffff801002f13e kernel`call_continuation + 46
+```
+
+Next we read the current registers:
+```
+(lldb) register read --all
+General Purpose Registers:
+       rax = 0x0000000000000000
+       rbx = 0x0000000000000000
+       rcx = 0x0000000000000000
+       rdx = 0xffffff80111a6fb5
+       rdi = 0x0000000000000000
+       rsi = 0x0000000000000001
+       rbp = 0xffffffa062996de0
+       rsp = 0xffffffa062996db0
+        r8 = 0x0000000000000000
+        r9 = 0x0000000000000066
+       r10 = 0xffffff8011196720
+       r11 = 0xffffff8011196728
+       r12 = 0x0000000000000046
+       r13 = 0xffffff8010ea9a00  
+       r14 = 0x0000000000000000
+       r15 = 0x0000000000000001
+       rip = 0xffffff801008b363  kernel`DebuggerWithContext + 275 at debug.c
+    rflags = 0x0000000000000046
+        cs = 0x0000000000000008
+        fs = 0x00000000ffff0000
+        gs = 0x0000000062990000
+
+Floating Point Registers:
+       fcw = 0x0000
+       fsw = 0x0000
+.
+.
+.
+```
+
+Next we write AAA.. into a register:
+```
+(lldb) register write R8 0x4141414141414141
+(lldb) register read --all
+General Purpose Registers:
+       rax = 0x0000000000000000
+       rbx = 0x0000000000000000
+       rcx = 0x0000000000000000
+       rdx = 0xffffff80111a6fb5
+       rdi = 0x0000000000000000
+       rsi = 0x0000000000000001
+       rbp = 0xffffffa062996de0
+       rsp = 0xffffffa062996db0
+        r8 = 0x4141414141414141
+        r9 = 0x0000000000000066
+.
+.
+```
+
+Next we store the original values in the R8 register:
+```
+(lldb) register write R8 0x0
 ```
