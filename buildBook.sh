@@ -79,7 +79,7 @@ sed -e '/cslhangindent/{N;d;}' -i.bak2 $outputDir/boo.$langName.latex
 sed -e '/cslreferences/{N;d;}' -i.bak3 $outputDir/boo.$langName.latex
 sed -e '/CSLReferences/{N;d;}' -i.bak4 $outputDir/boo.$langName.latex
 
-cp $scriptPath/diagrams/*.png $outputDir
+cp $scriptPath/diagrams/*.pdf $outputDir
 
 for pass in 0 1 2
 do

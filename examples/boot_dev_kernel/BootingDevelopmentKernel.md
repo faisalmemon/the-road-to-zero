@@ -4,7 +4,7 @@ This section is a practical tutorial on how to setup a system for interactive ke
 
 At a high level, this is our workflow:
 
-![](KernelDebugSetup.png)
+![](KernelDebugSetup.pdf)
 
 ### Data Safety
 
