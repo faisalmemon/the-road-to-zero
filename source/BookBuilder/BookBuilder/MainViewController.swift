@@ -8,20 +8,27 @@
 import Cocoa
 import BuilderLibrary
 
-class MainViewControllerHelper {
-    static func setupBookRootDir(label: NSTextField) {
-        label.stringValue = "Book Root Dir = " + AppDefaults.getBookRootDir()
-    }
-}
+
+
 
 
 class MainViewController: NSViewController {
     
-    @IBOutlet weak var bookRootDirLabelOutlet: NSTextField!
+    @IBOutlet weak var bookRootDirTextField: NSTextField!
+    
+    @IBAction func changeBookRootDirAction(_ sender: Any) {
+        PickBookRootDir.invoke { (path) in
+            MainViewControllerHelper
+                .handleRevisedBookRootDir(
+                    path: path,
+                    userLabel: bookRootDirTextField
+                )
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MainViewControllerHelper.setupBookRootDir(label: bookRootDirLabelOutlet)
+        MainViewControllerHelper.setupBookRootDir(label: bookRootDirTextField)
         
         let config = Configuration.en
         BuilderLibrary.buildWithConfiguration(config)
