@@ -9,7 +9,7 @@ import Cocoa
 import BuilderLibrary
 
 
-class ViewController: NSViewController {
+class MainViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
