@@ -6,12 +6,16 @@
 //
 
 import Cocoa
+import BuilderLibrary
+
 
 class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        let config = Configuration.en
+        BuilderLibrary.buildWithConfiguration(config)
+        
         // Do any additional setup after loading the view.
     }
 
