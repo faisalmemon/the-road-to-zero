@@ -15,4 +15,9 @@ class AppDefaults {
         let appDefaults = [bookRootDirKey: bookRootDirKeyDefault]
         UserDefaults.standard.register(defaults: appDefaults)
     }
+    
+    static func getBookRootDir() -> String {
+        let defaults = UserDefaults.standard
+        return defaults.value(forKey: bookRootDirKey) as? String ?? bookRootDirKeyDefault
+    }
 }

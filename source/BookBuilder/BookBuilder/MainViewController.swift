@@ -8,15 +8,23 @@
 import Cocoa
 import BuilderLibrary
 
+class MainViewControllerHelper {
+    static func setupBookRootDir(label: NSTextField) {
+        label.stringValue = "Book Root Dir = " + AppDefaults.getBookRootDir()
+    }
+}
+
 
 class MainViewController: NSViewController {
-
+    
+    @IBOutlet weak var bookRootDirLabelOutlet: NSTextField!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        MainViewControllerHelper.setupBookRootDir(label: bookRootDirLabelOutlet)
+        
         let config = Configuration.en
         BuilderLibrary.buildWithConfiguration(config)
-        
-        // Do any additional setup after loading the view.
     }
 
     override var representedObject: Any? {
