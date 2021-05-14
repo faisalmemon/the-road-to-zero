@@ -13,21 +13,17 @@ class MainViewController: NSViewController {
     @IBOutlet weak var bookRootDirTextField: NSTextField!
     
     @IBAction func changeBookRootDirAction(_ sender: Any) {
-        PickBookRootDir.invoke { (path) in
-            MainViewControllerHelper
-                .handleRevisedBookRootDir(
-                    path: path,
-                    userLabel: bookRootDirTextField
-                )
-        }
+        MainViewControllerHelper
+            .handleChangeBookRootDir(userLabel: bookRootDirTextField)
+    }
+    
+    @IBAction func findTrademarksAction(_ sender: Any) {
+        MainViewControllerHelper.handleFindTrademarks()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         MainViewControllerHelper.setupBookRootDir(label: bookRootDirTextField)
-        
-        let config = Configuration.en
-        BuilderLibrary.buildWithConfiguration(config)
     }
 
     override var representedObject: Any? {

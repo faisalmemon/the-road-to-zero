@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+public struct Trademarks {
+    public static func findTrademarks(config: Configuration) -> String {
+        return ""
+    }
+}

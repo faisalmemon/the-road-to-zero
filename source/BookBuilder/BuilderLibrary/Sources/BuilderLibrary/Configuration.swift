@@ -7,9 +7,12 @@
 
 import Foundation
 
-public struct Configuration {
-    public static let en = Configuration(language: "en")
-    public static let zh = Configuration(language: "zh")
+public struct Configuration {    
+    public let language: String
+    public let outputDir: String
     
-    let language: String
+    public init(lang: String, output: String) {
+        language = lang
+        outputDir = output
+    }
 }

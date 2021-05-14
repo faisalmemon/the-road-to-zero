@@ -25,4 +25,8 @@ struct AppDefaults {
         let defaults = UserDefaults.standard
         defaults.setValue(root, forKey: bookRootDirKey)
     }
+    
+    static func getOutputDir() -> String {
+        return getBookRootDir() + "/generated"
+    }
 }
