@@ -8,10 +8,6 @@
 import Cocoa
 import BuilderLibrary
 
-
-
-
-
 class MainViewController: NSViewController {
     
     @IBOutlet weak var bookRootDirTextField: NSTextField!

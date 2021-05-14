@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AppDefaults {
+struct AppDefaults {
     static let bookRootDirKey = "bookRootDir"
     static let bookRootDirKeyDefault = "/"
     

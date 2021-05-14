@@ -8,7 +8,7 @@
 import Foundation
 import Cocoa
 
-class MainViewControllerHelper {
+struct MainViewControllerHelper {
     static func setupBookRootDir(label: NSTextField) {
         label.stringValue = AppDefaults.getBookRootDir()
     }

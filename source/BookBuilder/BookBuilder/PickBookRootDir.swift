@@ -8,7 +8,7 @@
 import Foundation
 import Cocoa
 
-class PickBookRootDir {    
+struct PickBookRootDir {
     static func invoke(callback: (String) -> Void) {
         let dialog = NSOpenPanel();
 
