@@ -8,18 +8,23 @@
 import Foundation
 
 public struct Trademarks {
-    public static func findTrademarks(config: Configuration) -> String {
+    public static func findTrademarks(config: Configuration) -> String? {
         let trademarks = TrademarksInternal(configuration: config)
-        let result = trademarks.getIndexEntries()
-        if let gotResult = result?.first {
-            return gotResult
-        } else {
-            return ""
+        if let array = trademarks.getTrademarks() {
+            return array.joined(separator: ", ")
         }
+        return nil
     }
 }
 
 class TrademarksInternal {
+    
+    // Pattern to obtain the capture group that is prefixed with "trademark!"
+    // that does not contain a "}", and postfixed with a "}"
+    static let pattern = #"trademark!([^\}]*)\}"#
+    static let regex = try! NSRegularExpression(pattern: pattern, options: [])
+    
+
     let config: Configuration
     let fileManager: FileManager
     
@@ -41,5 +46,43 @@ class TrademarksInternal {
             print("Error info: \(error)")
             return nil
         }
+    }
+    
+    /// Get trademark from an index entry
+    /// - Parameter entry: latex index entry e.g. "\\indexentry{trademark!NEXTSTEP}{18}"
+    /// - Returns: trademark if present, e.g. NEXTSTEP
+    func getTrademarkFromIndexEntry(entry: String) -> String {
+        let nsrange = NSRange(entry.startIndex..<entry.endIndex,
+                              in: entry)
+        var interestingRange: Range<String.Index>?
+        TrademarksInternal.regex.enumerateMatches(in: entry, options: [], range: nsrange) { (match, _, stop) in
+            guard let match = match else { return }
+            
+            if match.numberOfRanges == 2 {
+                interestingRange = Range(match.range(at: 1), in: entry)
+                stop.pointee = true
+            }
+        }
+        if let gotRange = interestingRange {
+            let result = String(entry[gotRange])
+            return result
+        } else {
+            return ""
+        }
+    }
+    
+    func getTrademarks() -> [String]? {
+        if let listOfTrademarks = getIndexEntries() {
+            var set: Set<String> = Set()
+            for item in listOfTrademarks {
+                let extractedTrademark = getTrademarkFromIndexEntry(entry: item)
+                if extractedTrademark != "" {
+                    set.insert(extractedTrademark)
+                }
+            }
+            let array = Array(set).sorted()
+            return array
+        }
+        return nil
     }
 }
