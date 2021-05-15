@@ -7,17 +7,17 @@
 
 import Foundation
 
-public struct Trademarks {
-    public static func trademarksSentence(config: Configuration) -> String? {
-        let trademarks = TrademarksInternal(configuration: config)
-        if let array = trademarks.getTrademarks() {
-            return array.joined(separator: ", ").appending(".\n")
-        }
-        return nil
-    }
-    
+public enum TrademarkResult {
+    case TrademarkSuccess,
+         TrademarkFileSystemFailure,
+         TrademarkNotYetIndexed
+}
+
+public struct Trademarks {    
     public static func updateTrademarksMarkdown(config: Configuration) -> Bool {
-        if let sentence = trademarksSentence(config: config) {
+        let trademarks = TrademarksInternal(configuration: config)
+
+        if let sentence = trademarks.trademarkSentence() {
             var trademarkMarkdownFileURL = URL(fileURLWithPath: config.rootDir)
             trademarkMarkdownFileURL.appendPathComponent("trademarks.md")
             
@@ -39,6 +39,7 @@ class TrademarksInternal {
     
     /// The file containing the trademark index entries
     static let indexFileFromLatex = "boo.en.idx"
+    static let trademarksMarkdownFile = "trademark.md"
 
     // Pattern to obtain the capture group that is prefixed with "trademark!"
     // that does not contain a "}", and postfixed with a "}"
@@ -104,5 +105,34 @@ class TrademarksInternal {
             return array
         }
         return nil
+    }
+    
+    func trademarkSentence() -> String? {
+        if let array = getTrademarks() {
+            return array.joined(separator: ", ").appending(".\n")
+        }
+        return nil
+    }
+    
+    func pathTrademarkMarkdownFile() -> String {
+        return config.rootDir + "/" + TrademarksInternal.trademarksMarkdownFile
+    }
+    
+    func updateTrademarkMarkdownFile() -> Bool {
+        if let sentence = trademarkSentence() {
+            
+            do {
+                try FileManager.default.removeItem(atPath: pathTrademarkMarkdownFile())
+            } catch {
+                print(pathTrademarkMarkdownFile() + " was not removed")
+            }
+            if let data = sentence.data(using: .utf8) {
+                FileManager.default.createFile(atPath: pathTrademarkMarkdownFile(),
+                                               contents: data,
+                                               attributes: [:])
+                return true
+            }
+        }
+        return false
     }
 }
