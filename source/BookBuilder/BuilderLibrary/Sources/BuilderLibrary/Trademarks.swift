@@ -19,11 +19,13 @@ public struct Trademarks {
 
 class TrademarksInternal {
     
+    /// The file containing the trademark index entries
+    static let indexFileFromLatex = "boo.en.idx"
+
     // Pattern to obtain the capture group that is prefixed with "trademark!"
     // that does not contain a "}", and postfixed with a "}"
     static let pattern = #"trademark!([^\}]*)\}"#
     static let regex = try! NSRegularExpression(pattern: pattern, options: [])
-    
 
     let config: Configuration
     let fileManager: FileManager
@@ -35,7 +37,7 @@ class TrademarksInternal {
     
     func getIndexEntries() -> [String]? {
         var indexFileURL = URL(fileURLWithPath: config.outputDir)
-        indexFileURL.appendPathComponent("boo.en.idx")
+        indexFileURL.appendPathComponent(TrademarksInternal.indexFileFromLatex)
         do {
             let fullStringContents =
                 try String(contentsOf: indexFileURL, encoding: .utf8)

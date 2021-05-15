@@ -34,7 +34,10 @@ struct MainViewControllerHelper {
     
     static func handleFindTrademarks() {
         let config = Configuration(lang: "en", output: AppDefaults.getOutputDir())
-        let result = Trademarks.findTrademarks(config: config)
-        print(result)
+        if let result = Trademarks.findTrademarks(config: config) {
+            print(result)
+        } else {
+            print("Could not get the trademarks")
+        }
     }
 }
