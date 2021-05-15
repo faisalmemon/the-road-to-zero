@@ -33,11 +33,14 @@ struct MainViewControllerHelper {
     }
     
     static func handleFindTrademarks() {
-        let config = Configuration(lang: "en", output: AppDefaults.getOutputDir())
-        if let result = Trademarks.findTrademarks(config: config) {
-            print(result)
+        let config = Configuration(root: AppDefaults.getBookRootDir(),
+                                   lang: "en",
+                                   output: AppDefaults.getOutputDir())
+        if (Trademarks.updateTrademarksMarkdown(config: config)) {
+            print("Updated trademarks.md successfully")
         } else {
-            print("Could not get the trademarks")
+            print("Failed: Could not update trademarks.md")
         }
+        
     }
 }

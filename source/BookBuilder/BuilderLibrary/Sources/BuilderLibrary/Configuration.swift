@@ -10,8 +10,10 @@ import Foundation
 public struct Configuration {    
     public let language: String
     public let outputDir: String
+    public let rootDir: String
     
-    public init(lang: String, output: String) {
+    public init(root: String, lang: String, output: String) {
+        rootDir = root
         language = lang
         outputDir = output
     }

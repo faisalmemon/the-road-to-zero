@@ -8,12 +8,30 @@
 import Foundation
 
 public struct Trademarks {
-    public static func findTrademarks(config: Configuration) -> String? {
+    public static func trademarksSentence(config: Configuration) -> String? {
         let trademarks = TrademarksInternal(configuration: config)
         if let array = trademarks.getTrademarks() {
-            return array.joined(separator: ", ")
+            return array.joined(separator: ", ").appending(".\n")
         }
         return nil
+    }
+    
+    public static func updateTrademarksMarkdown(config: Configuration) -> Bool {
+        if let sentence = trademarksSentence(config: config) {
+            var trademarkMarkdownFileURL = URL(fileURLWithPath: config.rootDir)
+            trademarkMarkdownFileURL.appendPathComponent("trademarks.md")
+            
+            do {
+                try FileManager.default.removeItem(at: trademarkMarkdownFileURL)
+            } catch {
+                print(trademarkMarkdownFileURL.absoluteString + " was not removed")
+            }
+            if let data = sentence.data(using: .utf8) {
+                FileManager.default.createFile(atPath: config.rootDir + "/trademarks.md", contents: data, attributes: [:])
+                return true
+            }
+        }
+        return false
     }
 }
 
