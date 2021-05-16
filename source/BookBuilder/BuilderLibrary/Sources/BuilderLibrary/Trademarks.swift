@@ -36,21 +36,17 @@ enum TrademarksInternalError: Error {
 typealias Rex = RegularExpressionHelper
 
 class TrademarksInternal {
-    // Pattern to obtain the capture group that is prefixed with "trademark!"
-    // that does not contain a "}", and postfixed with a "}"
-    static let pattern = #"trademark!([^\}]*)\}"#
-    static let regex = try! NSRegularExpression(pattern: pattern, options: [])
-
-    let config: Configuration
     let fileManager: FileManager
+    let trademarksFile: String
+    let indexFileURL: URL
     
     init(configuration: Configuration) {
-        config = configuration
+        trademarksFile = configuration.getMarkdownFilePath()
+        indexFileURL = configuration.getLatexIndexFileURL()
         fileManager = FileManager.default
     }
     
     func getLatexIndex() -> LatexIndex {
-        let indexFileURL = config.getLatexIndexFileURL()
         do {
             let fullStringContents =
                 try String(contentsOf: indexFileURL, encoding: .utf8)
@@ -82,12 +78,10 @@ class TrademarksInternal {
         guard let data = sentence.data(using: .utf8) else {
             throw TrademarksInternalError.CannotUTF8EncodeString
         }
-        let manager = FileManager.default
-        let trademarksFile = config.getMarkdownFilePath()
-        if manager.fileExists(atPath: trademarksFile) {
-            try manager.removeItem(atPath: trademarksFile)
+        if fileManager.fileExists(atPath: trademarksFile) {
+            try fileManager.removeItem(atPath: trademarksFile)
         }
-        manager.createFile(atPath: trademarksFile,
+        fileManager.createFile(atPath: trademarksFile,
                            contents: data,
                            attributes: [:])
     }
