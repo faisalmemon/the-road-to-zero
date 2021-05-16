@@ -17,4 +17,14 @@ public struct Configuration {
         language = lang
         outputDir = output
     }
+    
+    public func getLatexIndexFileURL() -> URL {
+        var indexFileURL = URL(fileURLWithPath: outputDir)
+        indexFileURL.appendPathComponent("boo.en.idx")
+        return indexFileURL
+    }
+    
+    public func getMarkdownFilePath() -> String {
+        return rootDir + "/" + "trademarks.md"
+    }
 }
