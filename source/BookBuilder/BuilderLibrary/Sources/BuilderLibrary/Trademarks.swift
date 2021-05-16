@@ -6,21 +6,7 @@
 //
 
 import Foundation
-
-//MARK:- Public Interface
-
-public enum TrademarkResult {
-    case TrademarkFileUpdated,
-         TrademarkFileSystemFailure,
-         TrademarkNotYetIndexed
-}
-
-public struct Trademarks {    
-    public static func updateTrademarkMarkdown(config: Configuration) -> TrademarkResult {
-        let trademarks = TrademarksInternal(configuration: config)
-        return trademarks.updateTrademarkMarkdownFile()
-    }
-}
+import os.log
 
 //MARK:- Internal Interface
 
@@ -39,8 +25,10 @@ class TrademarksInternal {
     let fileManager: FileManager
     let trademarksFile: String
     let indexFileURL: URL
+    let log: OSLog
     
-    init(configuration: Configuration) {
+    init(clientLog: OSLog, configuration: Configuration) {
+        log = clientLog
         trademarksFile = configuration.getMarkdownFilePath()
         indexFileURL = configuration.getLatexIndexFileURL()
         fileManager = FileManager.default

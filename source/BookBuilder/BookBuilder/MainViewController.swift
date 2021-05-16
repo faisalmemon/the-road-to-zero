@@ -8,22 +8,26 @@
 import Cocoa
 import BuilderLibrary
 
+typealias Helper = MainViewControllerHelper
+
 class MainViewController: NSViewController {
     
     @IBOutlet weak var bookRootDirTextField: NSTextField!
     
     @IBAction func changeBookRootDirAction(_ sender: Any) {
-        MainViewControllerHelper
-            .handleChangeBookRootDir(userLabel: bookRootDirTextField)
+        Helper.handleChangeBookRootDir(userLabel: bookRootDirTextField)
     }
     
     @IBAction func findTrademarksAction(_ sender: Any) {
-        MainViewControllerHelper.handleFindTrademarks()
+        Helper.handleFindTrademarks()
     }
+    
+    @IBOutlet weak var consoleScrollView: NSScrollView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MainViewControllerHelper.setupBookRootDir(label: bookRootDirTextField)
+        Helper.setupBookRootDir(label: bookRootDirTextField)
+        Helper.setupConsole(scrollView: consoleScrollView)
     }
 
     override var representedObject: Any? {
