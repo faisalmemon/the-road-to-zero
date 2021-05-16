@@ -7,6 +7,8 @@
 
 import Foundation
 
+//MARK:- Public Interface
+
 public enum TrademarkResult {
     case TrademarkFileUpdated,
          TrademarkFileSystemFailure,
@@ -19,6 +21,8 @@ public struct Trademarks {
         return trademarks.updateTrademarkMarkdownFile()
     }
 }
+
+//MARK:- Internal Interface
 
 enum LatexIndex {
     case Entries([String])
