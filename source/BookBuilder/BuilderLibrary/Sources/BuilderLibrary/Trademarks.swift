@@ -29,6 +29,8 @@ enum TrademarksInternalError: Error {
     case CannotUTF8EncodeString
 }
 
+typealias Rex = RegularExpressionHelper
+
 class TrademarksInternal {
     // Pattern to obtain the capture group that is prefixed with "trademark!"
     // that does not contain a "}", and postfixed with a "}"
@@ -57,34 +59,10 @@ class TrademarksInternal {
         }
     }
     
-    /// Get trademark from an index entry
-    /// - Parameter entry: latex index entry e.g. "\\indexentry{trademark!NEXTSTEP}{18}"
-    /// - Returns: trademark if present, e.g. NEXTSTEP
-    func getTrademarkFromIndexEntry(entry: String) -> String {
-        let nsrange = NSRange(entry.startIndex..<entry.endIndex,
-                              in: entry)
-        var interestingRange: Range<String.Index>?
-        TrademarksInternal.regex.enumerateMatches(in: entry, options: [], range: nsrange) { (match, _, stop) in
-            guard let match = match else { return }
-            
-            if match.numberOfRanges == 2 {
-                interestingRange = Range(match.range(at: 1), in: entry)
-                stop.pointee = true
-            }
-        }
-        if let gotRange = interestingRange {
-            let result = String(entry[gotRange])
-            return result
-        } else {
-            return ""
-        }
-    }
-    
     func getTrademarksFromLatexIndex(_ latexIndex: [String]) -> [String] {
         var set: Set<String> = Set()
         for item in latexIndex {
-            let extractedTrademark = getTrademarkFromIndexEntry(entry: item)
-            if extractedTrademark != "" {
+            if let extractedTrademark = Rex.trademarkFromLatexIndexEntry(item) {
                 set.insert(extractedTrademark)
             }
         }
@@ -108,7 +86,6 @@ class TrademarksInternal {
         manager.createFile(atPath: trademarksFile,
                            contents: data,
                            attributes: [:])
-        
     }
     
     func updateTrademarkMarkdownFile() -> TrademarkResult {
