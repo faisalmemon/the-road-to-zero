@@ -8,31 +8,21 @@
 import Foundation
 
 public enum TrademarkResult {
-    case TrademarkSuccess,
+    case TrademarkFileUpdated,
          TrademarkFileSystemFailure,
          TrademarkNotYetIndexed
 }
 
 public struct Trademarks {    
-    public static func updateTrademarksMarkdown(config: Configuration) -> Bool {
+    public static func updateTrademarkMarkdown(config: Configuration) -> TrademarkResult {
         let trademarks = TrademarksInternal(configuration: config)
-
-        if let sentence = trademarks.trademarkSentence() {
-            var trademarkMarkdownFileURL = URL(fileURLWithPath: config.rootDir)
-            trademarkMarkdownFileURL.appendPathComponent("trademarks.md")
-            
-            do {
-                try FileManager.default.removeItem(at: trademarkMarkdownFileURL)
-            } catch {
-                print(trademarkMarkdownFileURL.absoluteString + " was not removed")
-            }
-            if let data = sentence.data(using: .utf8) {
-                FileManager.default.createFile(atPath: config.rootDir + "/trademarks.md", contents: data, attributes: [:])
-                return true
-            }
-        }
-        return false
+        return trademarks.updateTrademarkMarkdownFile()
     }
+}
+
+enum LatexIndex {
+    case Entries([String])
+    case NotIndexed
 }
 
 class TrademarksInternal {
@@ -54,7 +44,7 @@ class TrademarksInternal {
         fileManager = FileManager.default
     }
     
-    func getIndexEntries() -> [String]? {
+    func getLatexIndex() -> LatexIndex {
         var indexFileURL = URL(fileURLWithPath: config.outputDir)
         indexFileURL.appendPathComponent(TrademarksInternal.indexFileFromLatex)
         do {
@@ -62,10 +52,10 @@ class TrademarksInternal {
                 try String(contentsOf: indexFileURL, encoding: .utf8)
             let stringArray =
                 fullStringContents.components(separatedBy: .newlines)
-            return stringArray
+            return LatexIndex.Entries(stringArray)
         } catch {
-            print("Error info: \(error)")
-            return nil
+            print("Latex entries info: \(error)")
+            return LatexIndex.NotIndexed
         }
     }
     
@@ -92,47 +82,49 @@ class TrademarksInternal {
         }
     }
     
-    func getTrademarks() -> [String]? {
-        if let listOfTrademarks = getIndexEntries() {
-            var set: Set<String> = Set()
-            for item in listOfTrademarks {
-                let extractedTrademark = getTrademarkFromIndexEntry(entry: item)
-                if extractedTrademark != "" {
-                    set.insert(extractedTrademark)
-                }
+    func getTrademarksFromLatexIndex(_ latexIndex: [String]) -> [String] {
+        var set: Set<String> = Set()
+        for item in latexIndex {
+            let extractedTrademark = getTrademarkFromIndexEntry(entry: item)
+            if extractedTrademark != "" {
+                set.insert(extractedTrademark)
             }
-            let array = Array(set).sorted()
-            return array
         }
-        return nil
+        let array = Array(set).sorted()
+        return array
     }
     
-    func trademarkSentence() -> String? {
-        if let array = getTrademarks() {
-            return array.joined(separator: ", ").appending(".\n")
-        }
-        return nil
+    func sentenceFromTrademarks(_ trademarks: [String]) -> String {
+        return trademarks.joined(separator: ", ").appending(".\n")
     }
     
     func pathTrademarkMarkdownFile() -> String {
         return config.rootDir + "/" + TrademarksInternal.trademarksMarkdownFile
     }
     
-    func updateTrademarkMarkdownFile() -> Bool {
-        if let sentence = trademarkSentence() {
-            
-            do {
-                try FileManager.default.removeItem(atPath: pathTrademarkMarkdownFile())
-            } catch {
-                print(pathTrademarkMarkdownFile() + " was not removed")
-            }
-            if let data = sentence.data(using: .utf8) {
-                FileManager.default.createFile(atPath: pathTrademarkMarkdownFile(),
-                                               contents: data,
-                                               attributes: [:])
-                return true
-            }
+    func replaceTrademarksMarkdownFileWith(_ sentence: String) throws {
+        try FileManager.default.removeItem(atPath: pathTrademarkMarkdownFile())
+        if let data = sentence.data(using: .utf8) {
+            FileManager.default.createFile(atPath: pathTrademarkMarkdownFile(),
+                                           contents: data,
+                                           attributes: [:])
         }
-        return false
+    }
+    
+    func updateTrademarkMarkdownFile() -> TrademarkResult {
+        switch getLatexIndex() {
+        case .NotIndexed:
+            return TrademarkResult.TrademarkNotYetIndexed
+        case .Entries(let entries):
+            let trademarks = getTrademarksFromLatexIndex(entries)
+            let sentence = sentenceFromTrademarks(trademarks)
+            do {
+                try replaceTrademarksMarkdownFileWith(sentence)
+            } catch {
+                print("replace trademarks gave " + error.localizedDescription)
+                return TrademarkResult.TrademarkFileSystemFailure
+            }
+            return TrademarkResult.TrademarkFileUpdated
+        }
     }
 }

@@ -36,11 +36,13 @@ struct MainViewControllerHelper {
         let config = Configuration(root: AppDefaults.getBookRootDir(),
                                    lang: "en",
                                    output: AppDefaults.getOutputDir())
-        if (Trademarks.updateTrademarksMarkdown(config: config)) {
-            print("Updated trademarks.md successfully")
-        } else {
-            print("Failed: Could not update trademarks.md")
+        switch Trademarks.updateTrademarkMarkdown(config: config) {
+        case .TrademarkFileUpdated:
+            print("trademark file updated")
+        case .TrademarkFileSystemFailure:
+            print("trademark file update system failure")
+        case .TrademarkNotYetIndexed:
+            print("trademark file cannot be updated because book not indexed")
         }
-        
     }
 }
