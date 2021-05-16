@@ -25,11 +25,15 @@ enum LatexIndex {
     case NotIndexed
 }
 
+enum TrademarksInternalError: Error {
+    case CannotUTF8EncodeString
+}
+
 class TrademarksInternal {
     
     /// The file containing the trademark index entries
     static let indexFileFromLatex = "boo.en.idx"
-    static let trademarksMarkdownFile = "trademark.md"
+    static let trademarksMarkdownFile = "trademarks.md"
 
     // Pattern to obtain the capture group that is prefixed with "trademark!"
     // that does not contain a "}", and postfixed with a "}"
@@ -103,12 +107,18 @@ class TrademarksInternal {
     }
     
     func replaceTrademarksMarkdownFileWith(_ sentence: String) throws {
-        try FileManager.default.removeItem(atPath: pathTrademarkMarkdownFile())
-        if let data = sentence.data(using: .utf8) {
-            FileManager.default.createFile(atPath: pathTrademarkMarkdownFile(),
-                                           contents: data,
-                                           attributes: [:])
+        guard let data = sentence.data(using: .utf8) else {
+            throw TrademarksInternalError.CannotUTF8EncodeString
         }
+        let manager = FileManager.default
+        let trademarkFile = pathTrademarkMarkdownFile()
+        if manager.fileExists(atPath: trademarkFile) {
+            try manager.removeItem(atPath: trademarkFile)
+        }
+        manager.createFile(atPath: trademarkFile,
+                           contents: data,
+                           attributes: [:])
+        
     }
     
     func updateTrademarkMarkdownFile() -> TrademarkResult {
