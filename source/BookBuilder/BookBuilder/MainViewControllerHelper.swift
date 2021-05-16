@@ -57,9 +57,10 @@ struct MainViewControllerHelper {
     static func setupConsole(scrollView: NSScrollView) {
         let task = Process()
 
-        //log stream --debug --predicate 'subsystem == "BuilderLibrary"'
+        //log stream --style compact --debug --predicate 'subsystem == "BuilderLibrary"'
         task.launchPath = "/usr/bin/log"
-        task.arguments = ["stream", "--debug", "--predicate", #"'subsystem == "BuilderLibrary"'"#]
+        task.arguments = ["stream", "--style", "compact", "--debug", "--predicate",
+                          #"subsystem == "BuilderLibrary""#]
 
         let pipe = Pipe()
         task.standardOutput = pipe
@@ -68,7 +69,8 @@ struct MainViewControllerHelper {
         outHandle.readabilityHandler = { pipe in
             if let line = String(data: pipe.availableData, encoding: String.Encoding.utf8) {
                 // Update your view with the new text here
-                print("New ouput: \(line)")
+                print("New output: \(line)")
+                //TODO add text to the scroll view
             } else {
                 print("Error decoding data: \(pipe.availableData)")
             }
