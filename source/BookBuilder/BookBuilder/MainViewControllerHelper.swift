@@ -46,15 +46,14 @@ struct MainViewControllerHelper {
         switch library.updateTrademarkMarkdown() {
         case .TrademarkFileUpdated:
             logger.info("trademark file updated")
-            print("trademark file updated")
         case .TrademarkFileSystemFailure:
-            print("trademark file update system failure")
+            logger.info("trademark file update system failure")
         case .TrademarkNotYetIndexed:
-            print("trademark file cannot be updated because book not indexed")
+            logger.info("trademark file cannot be updated because book not indexed")
         }
     }
     
-    static func setupConsole(scrollView: NSScrollView) {
+    static func setupConsole(textView: NSTextView) {
         let task = Process()
 
         //log stream --style compact --debug --predicate 'subsystem == "BuilderLibrary"'
@@ -69,10 +68,12 @@ struct MainViewControllerHelper {
         outHandle.readabilityHandler = { pipe in
             if let line = String(data: pipe.availableData, encoding: String.Encoding.utf8) {
                 // Update your view with the new text here
-                print("New output: \(line)")
-                //TODO add text to the scroll view
+                DispatchQueue.main.async {
+                    textView.textStorage?.append(NSAttributedString(string: line))
+                    textView.scrollToEndOfDocument(self)
+                }
             } else {
-                print("Error decoding data: \(pipe.availableData)")
+                logger.error("Error decoding data: \(pipe.availableData)")
             }
         }
 

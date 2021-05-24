@@ -26,12 +26,15 @@ class TrademarksInternal {
     let trademarksFile: String
     let indexFileURL: URL
     let log: OSLog
+    let logger: Logger
+
     
     init(clientLog: OSLog, configuration: Configuration) {
         log = clientLog
         trademarksFile = configuration.getMarkdownFilePath()
         indexFileURL = configuration.getLatexIndexFileURL()
         fileManager = FileManager.default
+        logger = Logger(log)
     }
     
     func getLatexIndex() -> LatexIndex {
@@ -42,7 +45,7 @@ class TrademarksInternal {
                 fullStringContents.components(separatedBy: .newlines)
             return LatexIndex.Entries(stringArray)
         } catch {
-            print("Latex entries info: \(error)")
+            logger.error("Latex entries info: \(error.localizedDescription)")
             return LatexIndex.NotIndexed
         }
     }
@@ -84,7 +87,7 @@ class TrademarksInternal {
             do {
                 try replaceTrademarksMarkdownFileWith(sentence)
             } catch {
-                print("replace trademarks gave " + error.localizedDescription)
+                logger.error("replace trademarks gave \(error.localizedDescription)")
                 return TrademarkResult.TrademarkFileSystemFailure
             }
             return TrademarkResult.TrademarkFileUpdated

@@ -24,10 +24,14 @@ class MainViewController: NSViewController {
     
     @IBOutlet weak var consoleScrollView: NSScrollView!
     
+    @IBOutlet var consoleTextView: NSTextView!
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         Helper.setupBookRootDir(label: bookRootDirTextField)
-        Helper.setupConsole(scrollView: consoleScrollView)
+        Helper.setupConsole(textView: consoleTextView)
     }
 
     override var representedObject: Any? {
