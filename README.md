@@ -33,10 +33,12 @@ To draw an analogy, Google have shown what fish are out there to be catched, Lev
 
 ## Current Status
 
-As of 6th May 2021, the project status is:
-- I am going back a step to explain how to kernel debug a macOS target
-- Turns out that explaining Mach programming is hard unless we can see inside the Mach calls
-- Also understanding a POC is better done via kernel debugging
+As of 24th May 2021, the project status is:
+- Writing up how to debug the kernel lead me to diagraming the workflow but this broke the build
+- My build process is too fragile so I am re-writing it as a macOS app with client library
+- Once the build process is updated, the github website and ebook generation can be fixed
+
+So no new book content for a while until build processing is resolved.
 
 ## Timeline
 
