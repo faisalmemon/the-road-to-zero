@@ -18,6 +18,8 @@ class MainViewController: NSViewController {
         Helper.handleChangeBookRootDir(userLabel: bookRootDirTextField)
     }
     
+    
+    
     @IBAction func findTrademarksAction(_ sender: Any) {
         Helper.handleFindTrademarks()
     }
