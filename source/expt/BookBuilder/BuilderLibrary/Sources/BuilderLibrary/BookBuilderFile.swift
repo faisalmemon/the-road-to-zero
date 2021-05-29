@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct BookBuilderFile: Decodable {
-    let description: String
-    let trademarksMarkdownFile: String
-    let intermediateOutputDir: String
-    let fileFormatVersion: Int
+public struct BookBuilderFile: Decodable {
+    public let description: String
+    public let trademarksMarkdownFile: String
+    public let intermediateOutputDir: String
+    public let fileFormatVersion: Int
     
-    static func fromData(_ data: Data) throws -> BookBuilderFile {
+    public static func fromData(_ data: Data) throws -> BookBuilderFile {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let bbf:BookBuilderFile = try decoder.decode(BookBuilderFile.self, from: data)
