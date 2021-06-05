@@ -35,12 +35,12 @@ typealias Rex = RegularExpressionHelper
 
 class TrademarksInternal {
     let fileManager: FileManager
-    let info: TrademarkInfo
     let log: OSLog
     let logger: Logger
+    let info: TrademarkInfo
 
     
-    init(clientLog: OSLog, trademarkInfo: TrademarkInfo) {
+    init(_ clientLog: OSLog, _ trademarkInfo: TrademarkInfo) {
         log = clientLog
         info = trademarkInfo
         fileManager = FileManager.default
@@ -87,6 +87,8 @@ class TrademarksInternal {
                            attributes: [:])
     }
     
+    //MARK:- External Interface
+
     func updateTrademarkMarkdownFile() -> TrademarkResult {
         switch getLatexIndex() {
         case .NotIndexed:
