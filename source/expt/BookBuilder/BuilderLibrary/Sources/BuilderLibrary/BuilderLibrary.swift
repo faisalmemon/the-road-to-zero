@@ -2,23 +2,24 @@ import os.log
 
 import Foundation
 
-public enum TrademarkResult {
-    case TrademarkFileUpdated,
-         TrademarkFileSystemFailure,
-         TrademarkNotYetIndexed
-}
-
 public class BuilderLibrary {
     let log: OSLog
     let config: BookBuilderFile
-   
-    public init(clientLog: OSLog, configuration: BookBuilderFile) {
+    
+    public required init(clientLog: OSLog, configuration: BookBuilderFile) {
         log = clientLog
         config = configuration
     }
 }
 
-extension BuilderLibrary {
+extension BuilderLibrary: BookBuilderService {
+    public static func connectTo(clientLog: OSLog, configuration: BookBuilderFile) -> BookBuilderService {
+        return self.init(clientLog: clientLog, configuration: configuration)
+    }
+    
+    public func disconnect() {
+        // does nothing at the moment
+    }
     
     public func build() {
     }
@@ -26,5 +27,4 @@ extension BuilderLibrary {
     public func updateTrademarkMarkdown() -> TrademarkResult {
         return TrademarksInternal(log, config).updateTrademarkMarkdownFile()
     }
-    
 }

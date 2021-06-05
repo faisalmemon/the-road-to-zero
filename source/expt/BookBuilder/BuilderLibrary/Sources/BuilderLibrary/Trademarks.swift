@@ -33,7 +33,7 @@ class TrademarksInternal {
     let info: TrademarkInfo
 
     
-    init(_ clientLog: OSLog, _ config: BookBuilderFile) {
+    public init(_ clientLog: OSLog, _ config: BookBuilderFile) {
         log = clientLog
         info = config.trademarkInfo()
         fileManager = FileManager.default
@@ -79,10 +79,12 @@ class TrademarksInternal {
                            contents: data,
                            attributes: [:])
     }
-    
-    //MARK:- External Interface
+}
 
-    func updateTrademarkMarkdownFile() -> TrademarkResult {
+//MARK:- External Interface
+
+extension TrademarksInternal {
+    public func updateTrademarkMarkdownFile() -> TrademarkResult {
         switch getLatexIndex() {
         case .NotIndexed:
             return TrademarkResult.TrademarkNotYetIndexed
