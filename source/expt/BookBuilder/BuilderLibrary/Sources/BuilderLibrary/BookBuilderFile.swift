@@ -9,6 +9,7 @@ import Foundation
 
 public struct BookBuilderFile: Decodable {
     public let description: String
+    public let rootDirectory: String
     public let trademarksMarkdownFile: String
     public let intermediateOutputDir: String
     public let fileFormatVersion: Int
@@ -18,5 +19,14 @@ public struct BookBuilderFile: Decodable {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let bbf:BookBuilderFile = try decoder.decode(BookBuilderFile.self, from: data)
         return bbf
+    }
+}
+
+extension BookBuilderFile {
+    public func TrademarkInfo() -> (String, URL) {
+        let trademarksFile = rootDirectory + "/" + trademarksMarkdownFile
+        var url = URL(fileURLWithPath: rootDirectory + "/" + intermediateOutputDir)
+        url.appendPathComponent("boo.en.idx")
+        return (trademarksFile, url)
     }
 }

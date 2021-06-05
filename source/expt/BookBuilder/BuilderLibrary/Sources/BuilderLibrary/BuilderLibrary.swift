@@ -9,9 +9,9 @@ public enum TrademarkResult {
 public class BuilderLibrary {
     
     let log: OSLog
-    let config: Configuration
+    let config: BookBuilderFile
     
-    public init(clientLog: OSLog, configuration: Configuration) {
+    public init(clientLog: OSLog, configuration: BookBuilderFile) {
         log = clientLog
         config = configuration
     }

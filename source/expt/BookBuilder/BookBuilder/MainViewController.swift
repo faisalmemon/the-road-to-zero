@@ -8,6 +8,13 @@
 import Cocoa
 
 class MainViewController: NSViewController {
+    
+    @IBAction func findTrademarksAction(_ sender: Any) {
+        
+    }
+    
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()

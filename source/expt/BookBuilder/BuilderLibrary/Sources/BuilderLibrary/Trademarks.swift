@@ -29,10 +29,12 @@ class TrademarksInternal {
     let logger: Logger
 
     
-    init(clientLog: OSLog, configuration: Configuration) {
+    init(clientLog: OSLog, configuration: BookBuilderFile) {
         log = clientLog
-        trademarksFile = configuration.getMarkdownFilePath()
-        indexFileURL = configuration.getLatexIndexFileURL()
+        trademarksFile = configuration.rootDirectory + "/" + configuration.trademarksMarkdownFile
+        var url = URL(fileURLWithPath: configuration.rootDirectory + "/" + configuration.intermediateOutputDir)
+        url.appendPathComponent("boo.en.idx")
+        indexFileURL = url
         fileManager = FileManager.default
         logger = Logger(log)
     }
