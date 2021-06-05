@@ -10,6 +10,18 @@ import os.log
 
 //MARK:- Internal Interface
 
+struct TrademarkInfo {
+    let trademarksFile: String
+    let indexURL: URL
+    
+    init(withBookBuilderFile config: BookBuilderFile) {
+        trademarksFile = config.rootDirectory + "/" + config.trademarksMarkdownFile
+        var url = URL(fileURLWithPath: config.rootDirectory + "/" + config.intermediateOutputDir)
+        url.appendPathComponent("boo.en.idx")
+        indexURL = url
+    }
+}
+
 enum LatexIndex {
     case Entries([String])
     case NotIndexed
@@ -23,18 +35,14 @@ typealias Rex = RegularExpressionHelper
 
 class TrademarksInternal {
     let fileManager: FileManager
-    let trademarksFile: String
-    let indexFileURL: URL
+    let info: TrademarkInfo
     let log: OSLog
     let logger: Logger
 
     
-    init(clientLog: OSLog, configuration: BookBuilderFile) {
+    init(clientLog: OSLog, trademarkInfo: TrademarkInfo) {
         log = clientLog
-        trademarksFile = configuration.rootDirectory + "/" + configuration.trademarksMarkdownFile
-        var url = URL(fileURLWithPath: configuration.rootDirectory + "/" + configuration.intermediateOutputDir)
-        url.appendPathComponent("boo.en.idx")
-        indexFileURL = url
+        info = trademarkInfo
         fileManager = FileManager.default
         logger = Logger(log)
     }
@@ -42,7 +50,7 @@ class TrademarksInternal {
     func getLatexIndex() -> LatexIndex {
         do {
             let fullStringContents =
-                try String(contentsOf: indexFileURL, encoding: .utf8)
+                try String(contentsOf: info.indexURL, encoding: .utf8)
             let stringArray =
                 fullStringContents.components(separatedBy: .newlines)
             return LatexIndex.Entries(stringArray)
@@ -71,10 +79,10 @@ class TrademarksInternal {
         guard let data = sentence.data(using: .utf8) else {
             throw TrademarksInternalError.CannotUTF8EncodeString
         }
-        if fileManager.fileExists(atPath: trademarksFile) {
-            try fileManager.removeItem(atPath: trademarksFile)
+        if fileManager.fileExists(atPath: info.trademarksFile) {
+            try fileManager.removeItem(atPath: info.trademarksFile)
         }
-        fileManager.createFile(atPath: trademarksFile,
+        fileManager.createFile(atPath: info.trademarksFile,
                            contents: data,
                            attributes: [:])
     }

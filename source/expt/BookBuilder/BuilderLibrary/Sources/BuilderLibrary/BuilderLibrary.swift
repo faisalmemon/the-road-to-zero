@@ -1,5 +1,7 @@
 import os.log
 
+import Foundation
+
 public enum TrademarkResult {
     case TrademarkFileUpdated,
          TrademarkFileSystemFailure,
@@ -20,7 +22,8 @@ public class BuilderLibrary {
     }
     
     public func updateTrademarkMarkdown() -> TrademarkResult {
-        return TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
+        let trademarkInfo = TrademarkInfo(withBookBuilderFile: config)
+        return TrademarksInternal(clientLog: log, trademarkInfo: trademarkInfo).updateTrademarkMarkdownFile()
     }
     
 }
