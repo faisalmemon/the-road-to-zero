@@ -8,19 +8,12 @@
 import Foundation
 import os.log
 
-//MARK:- Internal Interface
-
-struct TrademarkInfo {
+public struct TrademarkInfo {
     let trademarksFile: String
     let indexURL: URL
-    
-    init(withBookBuilderFile config: BookBuilderFile) {
-        trademarksFile = config.rootDirectory + "/" + config.trademarksMarkdownFile
-        var url = URL(fileURLWithPath: config.rootDirectory + "/" + config.intermediateOutputDir)
-        url.appendPathComponent("boo.en.idx")
-        indexURL = url
-    }
 }
+
+//MARK:- Internal Interface
 
 enum LatexIndex {
     case Entries([String])
@@ -40,9 +33,9 @@ class TrademarksInternal {
     let info: TrademarkInfo
 
     
-    init(_ clientLog: OSLog, _ trademarkInfo: TrademarkInfo) {
+    init(_ clientLog: OSLog, _ config: BookBuilderFile) {
         log = clientLog
-        info = trademarkInfo
+        info = config.trademarkInfo()
         fileManager = FileManager.default
         logger = Logger(log)
     }
@@ -106,3 +99,5 @@ class TrademarksInternal {
         }
     }
 }
+
+

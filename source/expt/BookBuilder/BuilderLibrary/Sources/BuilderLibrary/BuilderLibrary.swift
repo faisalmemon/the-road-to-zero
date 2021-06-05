@@ -24,8 +24,7 @@ extension BuilderLibrary {
     }
     
     public func updateTrademarkMarkdown() -> TrademarkResult {
-        let trademarkInfo = TrademarkInfo(withBookBuilderFile: config)
-        return TrademarksInternal(log, trademarkInfo).updateTrademarkMarkdownFile()
+        return TrademarksInternal(log, config).updateTrademarkMarkdownFile()
     }
     
 }

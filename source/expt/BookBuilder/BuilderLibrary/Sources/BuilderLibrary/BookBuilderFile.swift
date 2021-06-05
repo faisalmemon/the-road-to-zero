@@ -22,11 +22,14 @@ public struct BookBuilderFile: Decodable {
     }
 }
 
+//MARK:- Convenience Helpers
+
 extension BookBuilderFile {
-    public func TrademarkInfo() -> (String, URL) {
+    public func trademarkInfo() -> TrademarkInfo {
         let trademarksFile = rootDirectory + "/" + trademarksMarkdownFile
         var url = URL(fileURLWithPath: rootDirectory + "/" + intermediateOutputDir)
         url.appendPathComponent("boo.en.idx")
-        return (trademarksFile, url)
+        return TrademarkInfo(trademarksFile: trademarksFile, indexURL: url)
     }
 }
+
