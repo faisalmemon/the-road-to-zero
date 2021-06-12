@@ -38,40 +38,31 @@ class MainViewController: NSViewController {
         }
     }
     
-    
     @IBAction func buildBookAction(_ sender: Any) {
-        if service == nil {
-            performSegue(withIdentifier: NSStoryboardSegue.Identifier("noContentPanel"), sender: self)
-            if service == nil {
-                self.view.window?.close()
+        switch service.build() {
+        case .BuildSuccess:
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.informativeText = "Trademarks file updated."
+            alert.beginSheetModal(for: self.view.window!) { (response) in
+                //ignore
             }
-        } else {
-            switch service.build() {
-            case .BuildSuccess:
-                let alert = NSAlert()
-                alert.alertStyle = .informational
-                alert.informativeText = "Trademarks file updated."
-                alert.beginSheetModal(for: self.view.window!) { (response) in
-                    //ignore
-                }
-            case .BuildSystemFailure(let error):
-                let alert = NSAlert()
-                alert.alertStyle = .critical
-                alert.informativeText = "Cannot build book \(error.localizedDescription)."
-                alert.beginSheetModal(for: self.view.window!) { (response) in
-                    //ignore
-                }
+        case .BuildSystemFailure(let error):
+            let alert = NSAlert()
+            alert.alertStyle = .critical
+            alert.informativeText = "Cannot build book \(error.localizedDescription)."
+            alert.beginSheetModal(for: self.view.window!) { (response) in
+                //ignore
             }
         }
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
     }
     
     override func viewWillAppear() {
-        
+        assert(service != nil)
     }
 
     override var representedObject: Any? {

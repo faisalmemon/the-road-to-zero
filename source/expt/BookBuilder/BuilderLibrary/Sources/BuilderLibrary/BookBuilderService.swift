@@ -24,4 +24,6 @@ public protocol BookBuilderService {
     init(clientLog: OSLog, configuration: BookBuilderFile)
     func build() -> BuildBookResult
     func updateTrademarkMarkdown() -> TrademarkResult
+    func getBookBuilderFile() -> BookBuilderFile
+    func setBookBuilderFile(file: BookBuilderFile)
 }

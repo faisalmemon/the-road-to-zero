@@ -10,10 +10,9 @@ import BuilderLibrary
 
 class Document: NSDocument {
 
-    var bookBuilderFile: BookBuilderFile
+    var bookBuilderFile = BookBuilderFile()
     
     override init() {
-        bookBuilderFile = BookBuilderFile.fromBlank()
         super.init()
     }
 
@@ -42,7 +41,7 @@ class Document: NSDocument {
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
         do {
-            bookBuilderFile = try BookBuilderFile.fromData(data)
+            bookBuilderFile = try BookBuilderFile(fromData: data)
         } catch {
             throw NSError(domain: Constants.bookBuilderErrorDomain, code: Constants.couldNotReadDataFile, userInfo: [NSLocalizedDescriptionKey: "Could not read the .bookbuilder file format"])
         }

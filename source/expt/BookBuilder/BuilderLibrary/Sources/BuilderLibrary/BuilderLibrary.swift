@@ -4,7 +4,7 @@ import Foundation
 
 public class BuilderLibrary {
     let log: OSLog
-    let config: BookBuilderFile
+    var config: BookBuilderFile
     
     public required init(clientLog: OSLog, configuration: BookBuilderFile) {
         log = clientLog
@@ -21,5 +21,12 @@ extension BuilderLibrary: BookBuilderService {
     
     public func updateTrademarkMarkdown() -> TrademarkResult {
         return TrademarksInternal(log, config).updateTrademarkMarkdownFile()
+    }
+    
+    public func getBookBuilderFile() -> BookBuilderFile {
+        return config
+    }
+    public func setBookBuilderFile(file: BookBuilderFile) {
+        self.config = file
     }
 }

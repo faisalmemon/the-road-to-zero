@@ -14,16 +14,22 @@ public struct BookBuilderFile: Decodable, Encodable {
     public let intermediateOutputDir: String
     public let fileFormatVersion: Int
     
-    public static func fromData(_ data: Data) throws -> BookBuilderFile {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let bbf:BookBuilderFile = try decoder.decode(BookBuilderFile.self, from: data)
-        return bbf
+    public init(description: String, rootDirectory: String, trademarksMarkdownFile: String, intermediateOutputDir: String, fileFormatVersion: Int = 1) {
+        self.description = description
+        self.rootDirectory = rootDirectory
+        self.trademarksMarkdownFile = trademarksMarkdownFile
+        self.intermediateOutputDir = intermediateOutputDir
+        self.fileFormatVersion = fileFormatVersion
     }
     
-    public static func fromBlank() -> BookBuilderFile {
-        let blank = BookBuilderFile(description: "Place description of book here", rootDirectory: "Place full path to parent directory of book here", trademarksMarkdownFile: "trademarks.md", intermediateOutputDir: "generated", fileFormatVersion: 1)
-        return blank
+    public init() {
+        self.init(description: "Place description of book here", rootDirectory: "Place full path to parent directory of book here", trademarksMarkdownFile: "trademarks.md", intermediateOutputDir: "generated", fileFormatVersion: 1)
+    }
+    
+    public init(fromData data: Data) throws {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        self = try decoder.decode(BookBuilderFile.self, from: data)
     }
     
     public func toData() throws -> Data {
