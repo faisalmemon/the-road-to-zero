@@ -10,11 +10,11 @@ import BuilderLibrary
 
 class Document: NSDocument {
 
-    var bookBuilderFile: BookBuilderFile?
+    var bookBuilderFile: BookBuilderFile
     
     override init() {
+        bookBuilderFile = BookBuilderFile.fromBlank()
         super.init()
-        // Add your subclass-specific initialization here.
     }
 
     override class var autosavesInPlace: Bool {
@@ -37,7 +37,7 @@ class Document: NSDocument {
         if (typeName != Constants.bookBuilderDocumentType) {
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
-        throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        return try bookBuilderFile.toData()
     }
 
     override func read(from data: Data, ofType typeName: String) throws {
