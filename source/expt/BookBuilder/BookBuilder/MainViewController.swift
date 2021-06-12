@@ -14,10 +14,10 @@ class MainViewController: NSViewController {
     
     @IBAction func findTrademarksAction(_ sender: Any) {
         switch service.updateTrademarkMarkdown() {
-        case .TrademarkFileSystemFailure:
+        case .TrademarkFileSystemFailure(let error):
             let alert = NSAlert()
             alert.alertStyle = .critical
-            alert.informativeText = "Trademarks file updated."
+            alert.informativeText = "Trademarks file cannot be updated \(error.localizedDescription)."
             alert.beginSheetModal(for: self.view.window!) { (response) in
                 //ignore
             }
@@ -37,6 +37,27 @@ class MainViewController: NSViewController {
             }
         }
     }
+    
+    
+    @IBAction func buildBookAction(_ sender: Any) {
+        switch service.build() {
+        case .BuildSuccess:
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.informativeText = "Trademarks file updated."
+            alert.beginSheetModal(for: self.view.window!) { (response) in
+                //ignore
+            }
+        case .BuildSystemFailure(let error):
+            let alert = NSAlert()
+            alert.alertStyle = .critical
+            alert.informativeText = "Cannot build book \(error.localizedDescription)."
+            alert.beginSheetModal(for: self.view.window!) { (response) in
+                //ignore
+            }
+        }
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()

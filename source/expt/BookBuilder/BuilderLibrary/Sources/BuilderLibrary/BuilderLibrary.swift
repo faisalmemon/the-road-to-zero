@@ -14,7 +14,9 @@ public class BuilderLibrary {
 
 extension BuilderLibrary: BookBuilderService {
     
-    public func build() {
+    public func build() -> BuildBookResult{
+        return .BuildSystemFailure(NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo: nil)
+)
     }
     
     public func updateTrademarkMarkdown() -> TrademarkResult {

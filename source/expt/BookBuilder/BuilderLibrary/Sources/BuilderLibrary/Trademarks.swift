@@ -95,7 +95,7 @@ extension TrademarksInternal {
                 try replaceTrademarksMarkdownFileWith(sentence)
             } catch {
                 logger.error("replace trademarks gave \(error.localizedDescription)")
-                return TrademarkResult.TrademarkFileSystemFailure
+                return TrademarkResult.TrademarkFileSystemFailure(error)
             }
             return TrademarkResult.TrademarkFileUpdated
         }

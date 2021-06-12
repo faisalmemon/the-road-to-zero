@@ -11,12 +11,17 @@ import Foundation
 
 public enum TrademarkResult {
     case TrademarkFileUpdated,
-         TrademarkFileSystemFailure,
+         TrademarkFileSystemFailure(Error),
          TrademarkNotYetIndexed
+}
+
+public enum BuildBookResult {
+    case BuildSuccess
+    case BuildSystemFailure(Error)
 }
 
 public protocol BookBuilderService {
     init(clientLog: OSLog, configuration: BookBuilderFile)
-    func build()
+    func build() -> BuildBookResult
     func updateTrademarkMarkdown() -> TrademarkResult
 }
