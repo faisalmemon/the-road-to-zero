@@ -13,10 +13,6 @@ public class BuilderLibrary {
 }
 
 extension BuilderLibrary: BookBuilderService {
-
-    public func disconnect() {
-        // does nothing at the moment
-    }
     
     public func build() {
     }
