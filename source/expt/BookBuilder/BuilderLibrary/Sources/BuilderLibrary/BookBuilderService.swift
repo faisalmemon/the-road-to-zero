@@ -16,7 +16,7 @@ public enum TrademarkResult {
 }
 
 public protocol BookBuilderService {
-    static func connectTo(clientLog: OSLog, configuration: BookBuilderFile) -> BookBuilderService
+    init(clientLog: OSLog, configuration: BookBuilderFile)
     func disconnect()
     func build()
     func updateTrademarkMarkdown() -> TrademarkResult
