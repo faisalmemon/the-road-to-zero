@@ -43,7 +43,7 @@ class MainViewController: NSViewController {
         case .BuildSuccess:
             let alert = NSAlert()
             alert.alertStyle = .informational
-            alert.informativeText = "Trademarks file updated."
+            alert.informativeText = "Book has built ok."
             alert.beginSheetModal(for: self.view.window!) { (response) in
                 //ignore
             }
