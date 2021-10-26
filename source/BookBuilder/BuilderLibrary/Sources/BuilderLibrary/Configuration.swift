@@ -50,7 +50,7 @@ public struct Configuration {
             return untailoredPath
         }
         let leafName = (untailoredPath as NSString).lastPathComponent
-        let candidatePath = rootDir + "/" + "markdown" + leafName
+        let candidatePath = rootDir + "/" + language + "/" + "markdown" + "/" + leafName
         if manager.fileExists(atPath: candidatePath) {
             return candidatePath
         } else {

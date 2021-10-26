@@ -102,9 +102,9 @@ struct MainViewControllerHelper {
             let library = BuilderLibrary(clientLog: log, configuration: config)
             switch library.buildBook() {
             case .BookBuiltSuccessfully:
-                logger.info("book built successfully")
+                logger.info("\(languageIterator) book built successfully")
             case .BookBuildFailure:
-                logger.error("book build failure")
+                logger.error("\(languageIterator) book build failure")
                 return
             }
         }
