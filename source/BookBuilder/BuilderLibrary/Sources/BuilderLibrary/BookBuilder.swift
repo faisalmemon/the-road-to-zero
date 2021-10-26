@@ -50,12 +50,10 @@ class BookBuilder {
         do {
             try outputDirectoryCreateIfNeeded()
             try temporaryFilesRemoveAll()
-            let trademarkResult = TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
-            if trademarkResult == .TrademarkFileSystemFailure {
-                throw TrademarkError.cannotCreateTrademarkFile
-            } else if trademarkResult == .TrademarkNotYetIndexed {
+            if try secondIterationRequiredHavingProcessedTrademark() {
                 status = .RequireSecondRun
             }
+            try checkGrammar()
         } catch let error {
             logger.error("\(error.localizedDescription)")
             return .failure(error)
@@ -82,6 +80,16 @@ class BookBuilder {
         return
     }
     
+    func secondIterationRequiredHavingProcessedTrademark() throws -> Bool {
+        let trademarkResult = TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
+        if trademarkResult == .TrademarkFileSystemFailure {
+            throw TrademarkError.cannotCreateTrademarkFile
+        } else if trademarkResult == .TrademarkNotYetIndexed {
+            return true
+        }
+        return false
+    }
+    
     func getContentsOfFile(path: String) throws -> [String]  {
         let data = try String(contentsOfFile: path, encoding: .utf8)
         let strings = data.components(separatedBy: .newlines)
@@ -104,5 +112,21 @@ class BookBuilder {
             .flatMap { $0 }
             .map { config.markdownLanguageTailoredPath(rootRelativeUntailoredPath: $0) }
         return items
+    }
+    
+    func shouldGrammarCheckFile(file: String) -> Bool {
+        let ignoreList = ["Introduction", "Preface", "Acknowledgements"]
+        for item in ignoreList {
+            if file.contains(item) {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func checkGrammar() throws {
+        let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
+        let prunedList = fileList.filter { shouldGrammarCheckFile(file: $0) }
+        logger.info("Pruned grammar list \(prunedList)")
     }
 }
