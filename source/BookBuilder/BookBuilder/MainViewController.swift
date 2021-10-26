@@ -18,7 +18,13 @@ class MainViewController: NSViewController {
         Helper.handleChangeBookRootDir(userLabel: bookRootDirTextField)
     }
     
+    @IBAction func buildAllBookVariants(_ sender: Any) {
+        
+    }
     
+    @IBAction func buildBookVariantEn(_ sender: Any) {
+        Helper.buildBookEn()
+    }
     
     @IBAction func findTrademarksAction(_ sender: Any) {
         Helper.handleFindTrademarks()
@@ -27,8 +33,6 @@ class MainViewController: NSViewController {
     @IBOutlet weak var consoleScrollView: NSScrollView!
     
     @IBOutlet var consoleTextView: NSTextView!
-    
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()

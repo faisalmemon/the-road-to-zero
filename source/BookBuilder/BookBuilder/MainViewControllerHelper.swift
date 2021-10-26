@@ -79,4 +79,18 @@ struct MainViewControllerHelper {
 
         task.launch()
     }
+    
+    static func buildBookEn() {
+        let config = Configuration(root: AppDefaults.getBookRootDir(),
+                                   lang: "en",
+                                   output: AppDefaults.getOutputDir())
+        let library = BuilderLibrary(clientLog: log, configuration: config)
+
+        switch library.buildBook() {
+        case .BookBuiltSuccessfully:
+            logger.info("book built successfully")
+        case .BookBuildFailure:
+            logger.error("book build failure")
+        }
+    }
 }

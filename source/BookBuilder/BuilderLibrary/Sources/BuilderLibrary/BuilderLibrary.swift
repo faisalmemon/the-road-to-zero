@@ -5,6 +5,10 @@ public enum TrademarkResult {
          TrademarkFileSystemFailure,
          TrademarkNotYetIndexed
 }
+public enum BuildResult {
+    case BookBuiltSuccessfully,
+         BookBuildFailure
+}
 
 public class BuilderLibrary {
     
@@ -21,6 +25,10 @@ public class BuilderLibrary {
     
     public func updateTrademarkMarkdown() -> TrademarkResult {
         return TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
+    }
+    
+    public func buildBook() -> BuildResult {
+        return .BookBuiltSuccessfully
     }
     
 }
