@@ -12,6 +12,8 @@ public struct Configuration {
     public let outputDir: String
     public let rootDir: String
     
+    let manager = FileManager.default
+    
     public init(root: String, lang: String, output: String) {
         rootDir = root
         language = lang
@@ -33,7 +35,6 @@ public struct Configuration {
         let fooPrefix = "foo." + language + "."
         let booPrefix = "boo." + language + "."
 
-        let manager = FileManager.default
         let dirEnum = manager.enumerator(atPath: outputDir)
 
         while let filename = dirEnum?.nextObject() as? String {
@@ -42,5 +43,18 @@ public struct Configuration {
             }
         }
         return urls
+    }
+    
+    public func markdownLanguageTailoredPath(rootRelativeUntailoredPath untailoredPath: String) -> String {
+        if language == "en" {
+            return untailoredPath
+        }
+        let leafName = (untailoredPath as NSString).lastPathComponent
+        let candidatePath = rootDir + "/" + "markdown" + leafName
+        if manager.fileExists(atPath: candidatePath) {
+            return candidatePath
+        } else {
+            return untailoredPath
+        }
     }
 }

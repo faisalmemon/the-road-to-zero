@@ -19,7 +19,7 @@ class MainViewController: NSViewController {
     }
     
     @IBAction func buildAllBookVariants(_ sender: Any) {
-        
+        Helper.buildBookAllLanguages()
     }
     
     @IBAction func buildBookVariantEn(_ sender: Any) {

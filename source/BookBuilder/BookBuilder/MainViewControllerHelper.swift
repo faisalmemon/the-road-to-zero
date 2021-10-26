@@ -93,4 +93,20 @@ struct MainViewControllerHelper {
             logger.error("book build failure")
         }
     }
+    
+    static func buildBookAllLanguages() {
+        for languageIterator in ["en", "zh"] {
+            let config = Configuration(root: AppDefaults.getBookRootDir(),
+                                       lang: languageIterator,
+                                       output: AppDefaults.getOutputDir())
+            let library = BuilderLibrary(clientLog: log, configuration: config)
+            switch library.buildBook() {
+            case .BookBuiltSuccessfully:
+                logger.info("book built successfully")
+            case .BookBuildFailure:
+                logger.error("book build failure")
+                return
+            }
+        }
+    }
 }
