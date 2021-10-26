@@ -21,6 +21,11 @@ extension TrademarkError: CustomStringConvertible {
     }
 }
 
+enum BookBuildResult {
+    case BuildSuccess,
+    RequireSecondRun
+}
+
 class BookBuilder {
     let fileManager: FileManager
     let logger: Logger
@@ -34,19 +39,23 @@ class BookBuilder {
         fileManager = FileManager.default
     }
     
-    func build() -> Result<Bool, Error> {
+    func build() -> Result<BookBuildResult, Error> {
+        var status = BookBuildResult.BuildSuccess
+        
         do {
             try outputDirectoryCreateIfNeeded()
             try temporaryFilesRemoveAll()
             let trademarkResult = TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
             if trademarkResult == .TrademarkFileSystemFailure {
                 throw TrademarkError.cannotCreateTrademarkFile
+            } else if trademarkResult == .TrademarkNotYetIndexed {
+                status = .RequireSecondRun
             }
         } catch let error {
             logger.error("\(error.localizedDescription)")
             return .failure(error)
         }
-        return .success(true)
+        return .success(status)
     }
     
     func outputDirectoryCreateIfNeeded() throws {

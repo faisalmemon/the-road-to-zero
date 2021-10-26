@@ -25,10 +25,22 @@ public class BuilderLibrary {
     }
     
     public func buildBook() -> BuildResult {
+        return buildBook(isSecondTime: false)
+    }
+    
+    internal func buildBook(isSecondTime: Bool) -> BuildResult {
         let builder = BookBuilder(clientLog: log, configuration: config)
         switch builder.build() {
-        case .success(_):
-            return .BookBuiltSuccessfully
+        case .success(let result):
+            if result == .RequireSecondRun && isSecondTime == false {
+                return buildBook(isSecondTime: true)
+            } else if result == .RequireSecondRun && isSecondTime {
+                return .BookBuildFailure
+            }
+            else {
+                return .BookBuiltSuccessfully
+            }
+
         case .failure(_):
             return .BookBuildFailure
         }
