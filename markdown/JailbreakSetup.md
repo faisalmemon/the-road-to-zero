@@ -10,7 +10,32 @@ Approved organisations can get access to a virtualization as a service platform 
 
 Ordinary customers use production iPhones, "Prod Fused" hardware.  These have the full set of security restrictions of an iPhone. (See @srdhowworks)
 
-The workaround that most zero day researchers use is to take Prod Fused hardware, and keep the software an an old iOS revision, potentially also staying on old hardware.  Over time, Jailbreaks will become published that match your configuration.  Staying on old hardware also means the latest hardware protection schemes do not apply.
+The workaround that most zero day researchers use is to take Prod Fused hardware, and keep the software an an old iOS revision, potentially also staying on old hardware.  Over time, software might be released to circumvent the security restrictions of our iDevice.  Staying on old hardware increases the likelyhood of such software become available since the latest hardware protections schemes might not have a public exploit.
+
+Using software to exploit vulnerabilities to permit elevated access to the iDevice is called Jailbreaking.  Because the software and hardware restrictions keep our software "Jailed" by denying freedom to access system resources.  Jailbreaks break us out from such a Jail.
+
+## Types of Jailbreak
+
+There are different levels by which access restrictions can be disabled on an iDevice.  The key differentiator is what happens to the device when it is booting up, such as during power on or a restart, and whether manual steps are needed following boot up.
+
+In this section, tethering means physically connecting the iDevice to a computer with a cable (the tether) and running special software on the computer.  Tethering is significant because in practice mobile devices are no longer very "mobile" when they need to be hooked up to a computer albeit a laptop.
+
+The different types of jailbreak are:
+- Tethered; must boot using a computer, without a computer it will not boot
+- Semi-tethered; may boot using a computer (to get jailbreak functionality), or boot without a computer (to get normal functionality) 
+- Untethered; can boot without a computer and will get jailbreak functionality
+- Semi-untethered; can boot without a computer to get normal functionality, run an on-device app to apply the jailbreak
+
+This can be summarized in the following table.
+
+| Type | With computer reboot | Without computer reboot | After running utility/app
+| -- | -- | -- |
+| Tethered | Jailbroken | Hangs or Crashes | N/A |
+| Semi-tethered | Jailbroken | Normal Functionality | N/A |
+| Untethered | N/A | Jailbroken  | N/A |
+| Semi-untethered | N/A | Normal Functionality | Jailbroken
+
+For our purposes, any of the above approaches are acceptable because we shall be mostly working on our laytop/desktop computer and remotely connecting to our iDevice, which will typically be physically connected as well.  In practice, the most common form of jailbreak is the Semi-untethered jailbreak.
 
 ## Jailbreak shopping list
 
