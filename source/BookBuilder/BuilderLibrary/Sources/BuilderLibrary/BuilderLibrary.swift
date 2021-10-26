@@ -20,16 +20,13 @@ public class BuilderLibrary {
         config = configuration
     }
     
-    public func build() {
-    }
-    
     public func updateTrademarkMarkdown() -> TrademarkResult {
         return TrademarksInternal(clientLog: log, configuration: config).updateTrademarkMarkdownFile()
     }
     
     public func buildBook() -> BuildResult {
         let builder = BookBuilder(clientLog: log, configuration: config)
-        switch builder.removeTemporaryFiles() {
+        switch builder.build() {
         case .success(_):
             return .BookBuiltSuccessfully
         case .failure(_):
