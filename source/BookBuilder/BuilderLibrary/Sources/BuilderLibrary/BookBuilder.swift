@@ -26,6 +26,11 @@ enum BookBuildResult {
     RequireSecondRun
 }
 
+enum BookType {
+    case LatexBased,
+    MarkdownBased
+}
+
 class BookBuilder {
     let fileManager: FileManager
     let logger: Logger
@@ -75,5 +80,29 @@ class BookBuilder {
             logger.info("Removed temporary file: \(item)")
         }
         return
+    }
+    
+    func getContentsOfFile(path: String) throws -> [String]  {
+        let data = try String(contentsOfFile: path, encoding: .utf8)
+        let strings = data.components(separatedBy: .newlines)
+        return strings
+    }
+    
+    func filesToProcess(bookType: BookType) throws -> [String] {
+        
+        let sourceFileList: [String]
+        
+        if bookType == .MarkdownBased {
+            sourceFileList = ["frontPages.txt", "mainPages.txt"]
+        } else if bookType == .LatexBased {
+            sourceFileList = ["frontPages_latex.txt", "mainPages.txt", "backPages_latex.txt"]
+        } else {
+            sourceFileList = []
+        }
+        let items = try sourceFileList
+            .map { try getContentsOfFile(path: config.rootDir + "/" + $0) }
+            .flatMap { $0 }
+            .map { config.markdownLanguageTailoredPath(rootRelativeUntailoredPath: $0) }
+        return items
     }
 }
