@@ -28,7 +28,13 @@ public class BuilderLibrary {
     }
     
     public func buildBook() -> BuildResult {
-        return .BookBuiltSuccessfully
+        let builder = BookBuilder(clientLog: log, configuration: config)
+        switch builder.removeTemporaryFiles() {
+        case .success(_):
+            return .BookBuiltSuccessfully
+        case .failure(_):
+            return .BookBuildFailure
+        }
     }
     
 }

@@ -27,4 +27,20 @@ public struct Configuration {
     public func getMarkdownFilePath() -> String {
         return rootDir + "/" + "trademarks.md"
     }
+    
+    public func getTempFileURLs() -> [URL] {
+        var urls = [URL]()
+        let fooPrefix = "foo." + language + "."
+        let booPrefix = "boo." + language + "."
+
+        let manager = FileManager.default
+        let dirEnum = manager.enumerator(atPath: outputDir)
+
+        while let filename = dirEnum?.nextObject() as? String {
+            if filename.hasPrefix(fooPrefix) || filename.hasPrefix(booPrefix) {
+                urls.append(URL(fileURLWithPath: outputDir + "/" + filename))
+            }
+        }
+        return urls
+    }
 }
