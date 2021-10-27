@@ -91,7 +91,7 @@ struct MarkdownFold {
         }
     }
     
-    func fileFold() {
+    func fileFold() throws {
         var insideVerboseBlock = false
         var output = [ String]()
         do {
@@ -114,9 +114,11 @@ struct MarkdownFold {
             }
         } catch let error {
             logger.error("fold error: \(error.localizedDescription)")
+            throw error
         }
         for debugLine in output {
             logger.info("len \(debugLine.count): \(debugLine)")
         }
+        try Common.replaceFile(path: fileName, withLines: output)
     }
 }

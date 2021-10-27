@@ -18,4 +18,11 @@ struct Common {
             return strings
         }
     }
+    
+    static func replaceFile(path: String, withLines lines: [String]) throws {
+        try FileManager.default.removeItem(atPath: path)
+        for line in lines {
+            try line.write(toFile: path, atomically: true, encoding: .utf8)
+        }
+    }
 }

@@ -157,7 +157,7 @@ class BookBuilder {
         let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
         for item in fileList {
             let markdownFold = MarkdownFold(clientLog: log, configuration: config, sourceFile: item)
-            markdownFold.fileFold()
+            try markdownFold.fileFold()
         }
     }
 }
