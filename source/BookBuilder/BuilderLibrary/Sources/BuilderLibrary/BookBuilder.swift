@@ -59,6 +59,7 @@ class BookBuilder {
         
         do {
             try outputDirectoryCreateIfNeeded()
+            try trademarkFileCreateIfNeeded()
             try temporaryFilesRemoveAll()
             if try secondIterationRequiredHavingProcessedTrademark() {
                 status = .RequireSecondRun
@@ -79,6 +80,16 @@ class BookBuilder {
         }
         try fileManager.createDirectory(atPath: outputDir, withIntermediateDirectories: true, attributes: [:])
         logger.info("Created output directory: \(outputDir)")
+        return
+    }
+    
+    func trademarkFileCreateIfNeeded() throws {
+        let trademarkFile = config.getMarkdownFilePath()
+        if fileManager.fileExists(atPath: trademarkFile) {
+            return
+        }
+        try fileManager.createDirectory(atPath: trademarkFile, withIntermediateDirectories: true, attributes: [:])
+        logger.info("Created trademark file: \(trademarkFile)")
         return
     }
     
