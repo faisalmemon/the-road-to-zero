@@ -21,6 +21,16 @@ extension TrademarkError: CustomStringConvertible {
     }
 }
 
+enum GrammarError: Error, CustomStringConvertible {
+    case grammarErrorYouReference
+    public var description: String {
+        switch self {
+        case .grammarErrorYouReference:
+            return "File has a 'you' reference; not allowed."
+        }
+    }
+}
+
 enum BookBuildResult {
     case BuildSuccess,
     RequireSecondRun
@@ -124,9 +134,28 @@ class BookBuilder {
         return true
     }
     
+    func grammarCheckForYouReferences(relativeFilePath: String) throws {
+        let lines = try getContentsOfFile(path: config.rootDir + "/" + relativeFilePath).map { $0.lowercased() }
+        for line in lines {
+            if line.contains("you ") || line.contains("your ") {
+                if line.contains(("hammer")) {
+                    // allow special case "can feel like your brain has been hit by a hammer"
+                    // as it is a colloquial expression
+                    continue
+                }
+                logger.error("file \(relativeFilePath) has a 'you' reference: \(line)")
+                throw GrammarError.grammarErrorYouReference
+            }
+        }
+        return
+    }
+    
     func checkGrammar() throws {
         let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
         let prunedList = fileList.filter { shouldGrammarCheckFile(file: $0) }
         logger.info("Pruned grammar list \(prunedList)")
+        for item in prunedList {
+            try grammarCheckForYouReferences(relativeFilePath: item)
+        }
     }
 }

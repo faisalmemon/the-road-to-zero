@@ -4,9 +4,9 @@ In order to explore the iOS attack surface directly we need to explore the iOS s
 
 Apple engineering will be able to diagnose and explore iOS using specially constructed iPhones, so-called "Dev Fused" hardware.  This provides full access to the iPhone.
 
-External engineers on the Security Research Device programme (see @applesrd) will be able to access a similiar phone, called a "SRD Fused" hardware.  This provides ssh access to the iPhone.  You can choose your entitlements and therefore can run any software on the phone.
+External engineers on the Security Research Device programme (see @applesrd) will be able to access a similiar phone, called a "SRD Fused" hardware.  This provides ssh access to the iPhone.  Such engineers can choose any entitlements and therefore can run any software on the phone.
 
-Approved organisations can get access to a virtualization as a service platform from Corellium which provides a diagnostic experience from kernel level to any iOS OS image that you upload to test. (See @corelliumvirtualdevices)
+Approved organisations can get access to a virtualization as a service platform from Corellium which provides a diagnostic experience from kernel level to any iOS OS image that we upload to test. (See @corelliumvirtualdevices)
 
 Ordinary customers use production iPhones, "Prod Fused" hardware.  These have the full set of security restrictions of an iPhone. (See @srdhowworks)
 
@@ -52,7 +52,7 @@ There are many jailbreak software programs, many hardware variants.  The steps t
 
 Whilst the specific details will depend on our software and hardware versions, a typical jailbreak involves steps similar to the following:
 
-1. Confirm our Mac is running with Xcode, and can deploy a trivial app to your phone.
+1. Confirm our Mac is running with Xcode, and can deploy a trivial app to our phone.
 1. Update the Apple ID to have a application specific password.
 1. Download the Unc0ver jailbreak.
 1. Download the Cydia Impactor Tool and install it.
