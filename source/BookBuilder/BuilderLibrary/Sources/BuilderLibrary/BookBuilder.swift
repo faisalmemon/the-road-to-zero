@@ -100,10 +100,15 @@ class BookBuilder {
         return false
     }
     
-    func getContentsOfFile(path: String) throws -> [String]  {
+    func getContentsOfFile(path: String, throwAwayEmptyLines: Bool = true) throws -> [String]  {
         let data = try String(contentsOfFile: path, encoding: .utf8)
         let strings = data.components(separatedBy: .newlines)
-        return strings
+        if throwAwayEmptyLines {
+            let withoutEmptyLines = strings.filter { $0.count > 1 }
+            return withoutEmptyLines
+        } else {
+            return strings
+        }
     }
     
     func filesToProcess(bookType: BookType) throws -> [String] {
@@ -153,7 +158,6 @@ class BookBuilder {
     func checkGrammar() throws {
         let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
         let prunedList = fileList.filter { shouldGrammarCheckFile(file: $0) }
-        logger.info("Pruned grammar list \(prunedList)")
         for item in prunedList {
             try grammarCheckForYouReferences(relativeFilePath: item)
         }
