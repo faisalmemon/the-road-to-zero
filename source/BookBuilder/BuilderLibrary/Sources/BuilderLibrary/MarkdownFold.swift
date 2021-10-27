@@ -97,7 +97,7 @@ struct MarkdownFold {
         do {
             let lines = try Common.getContentsOfFile(path: fileName, throwAwayEmptyLines: false)
             for line in lines {
-                if line == "```" {
+                if line == "```" || line == "```c" {
                     logger.info("Found back ticks")
                     insideVerboseBlock.toggle()
                 }

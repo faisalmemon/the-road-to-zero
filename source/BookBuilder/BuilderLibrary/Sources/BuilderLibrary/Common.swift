@@ -21,8 +21,8 @@ struct Common {
     
     static func replaceFile(path: String, withLines lines: [String]) throws {
         try FileManager.default.removeItem(atPath: path)
-        for line in lines {
-            try line.write(toFile: path, atomically: true, encoding: .utf8)
-        }
+        let totalContents = lines.joined(separator: "\n")
+        try totalContents.write(toFile: path, atomically: true, encoding: .utf8)
+
     }
 }
