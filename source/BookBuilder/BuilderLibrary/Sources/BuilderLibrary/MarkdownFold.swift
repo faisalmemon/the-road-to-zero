@@ -98,7 +98,6 @@ struct MarkdownFold {
             let lines = try Common.getContentsOfFile(path: fileName, throwAwayEmptyLines: false)
             for line in lines {
                 if line == "```" || line == "```c" {
-                    logger.info("Found back ticks")
                     insideVerboseBlock.toggle()
                 }
                 if insideVerboseBlock {
@@ -116,9 +115,7 @@ struct MarkdownFold {
             logger.error("fold error: \(error.localizedDescription)")
             throw error
         }
-        for debugLine in output {
-            logger.info("len \(debugLine.count): \(debugLine)")
-        }
+
         try Common.replaceFile(path: fileName, withLines: output)
     }
 }
