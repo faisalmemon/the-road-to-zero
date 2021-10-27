@@ -64,6 +64,7 @@ class BookBuilder {
                 status = .RequireSecondRun
             }
             try checkGrammar()
+            try gutterClean()
         } catch let error {
             logger.error("\(error.localizedDescription)")
             return .failure(error)
@@ -100,17 +101,6 @@ class BookBuilder {
         return false
     }
     
-    func getContentsOfFile(path: String, throwAwayEmptyLines: Bool = true) throws -> [String]  {
-        let data = try String(contentsOfFile: path, encoding: .utf8)
-        let strings = data.components(separatedBy: .newlines)
-        if throwAwayEmptyLines {
-            let withoutEmptyLines = strings.filter { $0.count > 1 }
-            return withoutEmptyLines
-        } else {
-            return strings
-        }
-    }
-    
     func filesToProcess(bookType: BookType) throws -> [String] {
         
         let sourceFileList: [String]
@@ -123,7 +113,7 @@ class BookBuilder {
             sourceFileList = []
         }
         let items = try sourceFileList
-            .map { try getContentsOfFile(path: config.rootDir + "/" + $0) }
+            .map { try Common.getContentsOfFile(path: config.rootDir + "/" + $0) }
             .flatMap { $0 }
             .map { config.markdownLanguageTailoredPath(rootRelativeUntailoredPath: $0) }
         return items
@@ -140,7 +130,7 @@ class BookBuilder {
     }
     
     func grammarCheckForYouReferences(relativeFilePath: String) throws {
-        let lines = try getContentsOfFile(path: config.rootDir + "/" + relativeFilePath).map { $0.lowercased() }
+        let lines = try Common.getContentsOfFile(path: config.rootDir + "/" + relativeFilePath).map { $0.lowercased() }
         for line in lines {
             if line.contains("you ") || line.contains("your ") {
                 if line.contains(("hammer")) {
@@ -160,6 +150,14 @@ class BookBuilder {
         let prunedList = fileList.filter { shouldGrammarCheckFile(file: $0) }
         for item in prunedList {
             try grammarCheckForYouReferences(relativeFilePath: item)
+        }
+    }
+    
+    func gutterClean() throws {
+        let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
+        for item in fileList {
+            let markdownFold = MarkdownFold(clientLog: log, configuration: config, sourceFile: item)
+            markdownFold.fileFold()
         }
     }
 }
