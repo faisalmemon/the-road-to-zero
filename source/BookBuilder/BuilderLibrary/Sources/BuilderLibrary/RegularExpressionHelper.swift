@@ -63,7 +63,7 @@ struct RegularExpressionHelper {
             }
             let matchResult = regex.matches(in: line, options: [], range: rangeForString(line))
             if matchResult.count > 0 {
-                print("got match")
+                print("got match: \(line)")
                 linesToIgnore = 1
                 continue
             } else {

@@ -81,5 +81,12 @@ struct Typesetter {
         args.append(outputLangLatex)
 
         runProcessWith(args)
+        
+        if false {
+            let lines = try Common.getContentsOfFile(path: outputLangLatex, throwAwayEmptyLines: false)
+            let truncatedLines = RegularExpressionHelper.chopOutMatchAndFollowingLine(contents: lines, pattern: #"if(csl-hanging-indent)|cslhangindent|cslreferences|CSLReferences"#)
+            
+            try Common.replaceFile(path: outputLangLatex, withLines: truncatedLines)
+        }
     }
 }
