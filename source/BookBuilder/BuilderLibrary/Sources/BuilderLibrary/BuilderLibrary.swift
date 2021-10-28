@@ -33,7 +33,8 @@ public class BuilderLibrary {
         switch builder.build() {
         case .success(let result):
             if result == .RequireSecondRun && isSecondTime == false {
-                return buildBook(isSecondTime: true)
+                return .BookBuiltSuccessfully
+                //return buildBook(isSecondTime: true)
             } else if result == .RequireSecondRun && isSecondTime {
                 return .BookBuildFailure
             }

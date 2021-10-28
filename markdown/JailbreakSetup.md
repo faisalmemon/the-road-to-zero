@@ -21,6 +21,7 @@ There are different levels by which access restrictions can be disabled on an iD
 In this section, tethering means physically connecting the iDevice to a computer with a cable (the tether) and running special software on the computer.  Tethering is significant because in practice mobile devices are no longer very "mobile" when they need to be hooked up to a computer albeit a laptop.
 
 The different types of jailbreak are:
+
 - Tethered; must boot using a computer, without a computer it will not boot
 - Semi-tethered; may boot using a computer (to get jailbreak functionality), or boot without a computer (to get normal functionality) 
 - Untethered; can boot without a computer and will get jailbreak functionality
@@ -29,7 +30,7 @@ The different types of jailbreak are:
 This can be summarized in the following table.
 
 | Type | With computer reboot | Without computer reboot | After running utility/app
-| -- | -- | -- |
+| -- | -- | -- | -- |
 | Tethered | Jailbroken | Hangs or Crashes | N/A |
 | Semi-tethered | Jailbroken | Normal Functionality | N/A |
 | Untethered | N/A | Jailbroken  | N/A |

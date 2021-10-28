@@ -44,20 +44,7 @@ struct Typesetter {
         task.arguments = args
         logger.info("PANDOC BUILD COMMAND:")
         logger.info("cd \(task.currentDirectoryPath); /usr/local/bin/pandoc \(args.joined(separator: " "))")
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        let outHandle = pipe.fileHandleForReading
         
-        outHandle.readabilityHandler = { pipe in
-            if let line = String(data: pipe.availableData, encoding: String.Encoding.utf8) {
-                // Update your view with the new text here
-                DispatchQueue.main.async {
-                    logger.log("html \(config.language): \(line)")
-                }
-            } else {
-                logger.error("Error decoding data: \(pipe.availableData)")
-            }
-        }
         task.launch()
         task.waitUntilExit()
         let result = task.terminationStatus
