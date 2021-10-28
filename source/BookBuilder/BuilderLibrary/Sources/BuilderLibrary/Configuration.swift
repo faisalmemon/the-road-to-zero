@@ -50,6 +50,10 @@ public struct Configuration {
     public func getBibliographyBibFilePath() -> String {
         return rootDir + "/" + "bibliography.bib"
     }
+
+    public func styleToCreateIndexFilePath() -> String {
+        return rootDir + "/style/styleToCreateIndex.latex"
+    }
     
     public func getGitHubStyleFilePath() -> String {
         return rootDir + "/style/gitHubStyle.css"

@@ -68,6 +68,7 @@ class BookBuilder {
             try checkGrammar()
             try gutterClean()
             try htmlVariantBuild()
+            try latexVariantBuild()
         } catch let error {
             logger.error("\(error.localizedDescription)")
             return .failure(error)
@@ -162,5 +163,10 @@ class BookBuilder {
     func htmlVariantBuild() throws {
         let typesetter = Typesetter(clientLog: log, configuration: config)
         try typesetter.documentBuildHtml()
+    }
+    
+    func latexVariantBuild() throws {
+        let typesetter = Typesetter(clientLog: log, configuration: config)
+        try typesetter.documentBuildLatex()
     }
 }
