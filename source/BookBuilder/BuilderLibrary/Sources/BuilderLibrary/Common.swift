@@ -19,6 +19,24 @@ struct Common {
         }
     }
     
+    static func filesToProcess(config: Configuration, bookType: BookType) throws -> [String] {
+        
+        let sourceFileList: [String]
+        
+        if bookType == .MarkdownBased {
+            sourceFileList = ["frontPages.txt", "mainPages.txt"]
+        } else if bookType == .LatexBased {
+            sourceFileList = ["frontPages_latex.txt", "mainPages.txt", "backPages_latex.txt"]
+        } else {
+            sourceFileList = []
+        }
+        let items = try sourceFileList
+            .map { try Common.getContentsOfFile(path: config.rootDir + "/" + $0) }
+            .flatMap { $0 }
+            .map { config.markdownLanguageTailoredPath(rootRelativeUntailoredPath: $0) }
+        return items
+    }
+    
     static func replaceFile(path: String, withLines lines: [String]) throws {
         try FileManager.default.removeItem(atPath: path)
         let totalContents = lines.joined(separator: "\n")

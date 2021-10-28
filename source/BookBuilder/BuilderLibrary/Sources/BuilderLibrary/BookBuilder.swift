@@ -64,8 +64,10 @@ class BookBuilder {
             if try secondIterationRequiredHavingProcessedTrademark() {
                 status = .RequireSecondRun
             }
+            
             try checkGrammar()
             try gutterClean()
+            try htmlVariantBuild()
         } catch let error {
             logger.error("\(error.localizedDescription)")
             return .failure(error)
@@ -88,8 +90,11 @@ class BookBuilder {
         if fileManager.fileExists(atPath: trademarkFile) {
             return
         }
-        try fileManager.createDirectory(atPath: trademarkFile, withIntermediateDirectories: true, attributes: [:])
-        logger.info("Created trademark file: \(trademarkFile)")
+        if fileManager.createFile(atPath: trademarkFile, contents: nil, attributes: [:]) {
+            logger.info("Created trademark file: \(trademarkFile)")
+        } else {
+            throw TrademarkError.cannotCreateTrademarkFile
+        }
         return
     }
     
@@ -110,24 +115,6 @@ class BookBuilder {
             return true
         }
         return false
-    }
-    
-    func filesToProcess(bookType: BookType) throws -> [String] {
-        
-        let sourceFileList: [String]
-        
-        if bookType == .MarkdownBased {
-            sourceFileList = ["frontPages.txt", "mainPages.txt"]
-        } else if bookType == .LatexBased {
-            sourceFileList = ["frontPages_latex.txt", "mainPages.txt", "backPages_latex.txt"]
-        } else {
-            sourceFileList = []
-        }
-        let items = try sourceFileList
-            .map { try Common.getContentsOfFile(path: config.rootDir + "/" + $0) }
-            .flatMap { $0 }
-            .map { config.markdownLanguageTailoredPath(rootRelativeUntailoredPath: $0) }
-        return items
     }
     
     func shouldGrammarCheckFile(file: String) -> Bool {
@@ -157,7 +144,7 @@ class BookBuilder {
     }
     
     func checkGrammar() throws {
-        let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
+        let fileList = try Set<String>(Common.filesToProcess(config: config, bookType: .MarkdownBased))
         let prunedList = fileList.filter { shouldGrammarCheckFile(file: $0) }
         for item in prunedList {
             try grammarCheckForYouReferences(relativeFilePath: item)
@@ -165,10 +152,15 @@ class BookBuilder {
     }
     
     func gutterClean() throws {
-        let fileList = try Set<String>(filesToProcess(bookType: .MarkdownBased))
+        let fileList = try Set<String>(Common.filesToProcess(config: config, bookType: .MarkdownBased))
         for item in fileList {
             let markdownFold = MarkdownFold(clientLog: log, configuration: config, sourceFile: item)
             try markdownFold.fileFold()
         }
+    }
+    
+    func htmlVariantBuild() throws {
+        let typesetter = Typesetter(clientLog: log, configuration: config)
+        try typesetter.documentBuildHtml()
     }
 }

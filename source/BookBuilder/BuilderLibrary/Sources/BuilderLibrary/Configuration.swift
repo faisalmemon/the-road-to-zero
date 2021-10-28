@@ -20,10 +20,8 @@ public struct Configuration {
         outputDir = output
     }
     
-    public func getLatexIndexFileURL() -> URL {
-        var indexFileURL = URL(fileURLWithPath: outputDir)
-        indexFileURL.appendPathComponent("boo.en.idx")
-        return indexFileURL
+    public func getLatexIndexFile() -> String {
+        return outputDir + "/" + "boo.en.idx"
     }
     
     public func getMarkdownFilePath() -> String {
@@ -43,6 +41,18 @@ public struct Configuration {
             }
         }
         return urls
+    }
+    
+    public func getPandocMetaDataYamlFilePath() -> String {
+        return rootDir + "/" + "pandocMetaData.yaml"
+    }
+    
+    public func getBibliographyBibFilePath() -> String {
+        return rootDir + "/" + "bibliography.bib"
+    }
+    
+    public func getGitHubStyleFilePath() -> String {
+        return rootDir + "/style/gitHubStyle.css"
     }
     
     public func markdownLanguageTailoredPath(rootRelativeUntailoredPath untailoredPath: String) -> String {
