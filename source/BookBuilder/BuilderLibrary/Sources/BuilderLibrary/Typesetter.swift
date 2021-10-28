@@ -28,7 +28,7 @@ struct Typesetter {
         args.append(config.getPandocMetaDataYamlFilePath())
         args.append("-s")
         args.append("--citeproc")
-        args.append("bibliography=\(config.getBibliographyBibFilePath())")
+        args.append("--bibliography=\(config.getBibliographyBibFilePath())")
         args.append("-f")
         args.append("markdown+smart")
         args.append("--standalone")
@@ -40,7 +40,10 @@ struct Typesetter {
 
         let task = Process()
         task.launchPath = "/usr/local/bin/pandoc"
+        task.currentDirectoryPath = config.rootDir
         task.arguments = args
+        logger.info("PANDOC BUILD COMMAND:")
+        logger.info("cd \(task.currentDirectoryPath); /usr/local/bin/pandoc \(args.joined(separator: " "))")
         let pipe = Pipe()
         task.standardOutput = pipe
         let outHandle = pipe.fileHandleForReading

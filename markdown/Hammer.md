@@ -180,13 +180,13 @@ That's the end of the write-up.  It covers a lot of ground.  In
 
 Now we just need to make sense of it all.
 
-## The road ahead
+## The Road Ahead
 
 Having learnt where we can find Exploits, looking at our first
  exploit, and then seeing what technologies it relies upon, we
  can now chart out the road ahead.
 
-### The knowledge we require
+### The Knowledge We Require
 
 No one book can cover all the required topics in depth.  But with
  the appropriate hacker mindset, a small subset of a large number
