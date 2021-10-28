@@ -29,12 +29,12 @@ The different types of jailbreak are:
 
 This can be summarized in the following table.
 
-| Type | With computer reboot | Without computer reboot | After running utility/app
+| Type | Tethered reboot | Untethered reboot | After JB app |
 | -- | -- | -- | -- |
 | Tethered | Jailbroken | Hangs or Crashes | N/A |
 | Semi-tethered | Jailbroken | Normal Functionality | N/A |
 | Untethered | N/A | Jailbroken  | N/A |
-| Semi-untethered | N/A | Normal Functionality | Jailbroken
+| Semi-untethered | N/A | Normal Functionality | Jailbroken |
 
 For our purposes, any of the above approaches are acceptable because we shall be mostly working on our laytop/desktop computer and remotely connecting to our iDevice, which will typically be physically connected as well.  In practice, the most common form of jailbreak is the Semi-untethered jailbreak.
 

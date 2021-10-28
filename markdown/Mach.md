@@ -24,12 +24,12 @@ When correctly coded, Mach based solutions can be elegant.  When incorrectly cod
 
 Mach [@machconcepts] is built upon the following abstractions:
 
-Entry|Meaning
---|--
-`task` | An execution environment.
-`thread` | The basic unit of execution.
-`port` | A communication channel.
-`message` | A typed collection of data used for communication between threads
+| Entry | Meaning |
+| -- | -- |
+| `task` | An execution environment. |
+| `thread` | The basic unit of execution. |
+| `port` | A communication channel. |
+| `message` | A typed collection of data used for communication between threads. |
 
 In the original formulation, tasks could be on the same machine, on different processors in the machine, or on different machines.  Such tasks become active entities when they host one or more threads.  And threads can communicate with each other using well-defined interfaces that are invariant to whether the recipient is on the same machine or on a different machine.
 
