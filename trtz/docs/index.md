@@ -46,6 +46,7 @@ Every effort has been made to identify trademark terms in this text. If there is
 - tvOS
 - watchOS
 - iPhone
+- iPod
 - iPad
 
 ## Acknowledgements
