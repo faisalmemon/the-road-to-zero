@@ -6,8 +6,7 @@ The content is in the early planning stage.  I welcome criticism and feedback wi
 
 Language | Link
 -- | --
-English | https://faisalmemon.github.io/the-road-to-zero/en
-Chinese | https://faisalmemon.github.io/the-road-to-zero/zh
+English | https://faisalmemon.github.io/the-road-to-zero/
 
 The purpose of this repository is to provide the source code, and other resources, supporting the "The Road to Zero" book.
 
