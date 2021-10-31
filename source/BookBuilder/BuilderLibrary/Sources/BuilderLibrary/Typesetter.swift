@@ -60,10 +60,45 @@ struct Typesetter {
         runProcessWith(args)
     }
     
+    func buildIndex() throws {
+        let passes = 3
+        for pass in 0..<passes {
+            logger.info("Indexing pass \(pass)")
+            let process = Process()
+            process.launchPath = "/Library/TeX/texbin/pdflatex"
+            process.currentDirectoryPath = config.outputDir
+            process.arguments = [latexOutputFile()]
+            let standardOutputPipe = Pipe()
+            process.standardOutput = standardOutputPipe
+            process.standardInput = FileHandle.nullDevice
+            process.terminationHandler = {  process in
+                var value: String? = nil
+                let data = standardOutputPipe.fileHandleForReading.readDataToEndOfFile()
+                value = String(bytes: data, encoding: .utf8)
+                if let gotOutput = value {
+                    logger.info("Latex Index pass \(pass) returned \(gotOutput)")
+                } else {
+                    logger.info("Latex Index pass \(pass) returned no standard output")
+                }
+                if process.terminationStatus != 0 {
+                    logger.error("Latex Index pass \(pass) returned error \(process.terminationStatus)")
+                }
+            }
+            process.launch()
+            process.waitUntilExit()
+        }
+    }
+
+    
+    func latexOutputFile() -> String {
+        let outputLangLatex = config.outputDir + "/boo." + config.language + ".latex"
+        return outputLangLatex
+    }
+    
     func documentBuildLatex() throws {
         //pandoc $latexFilesToProcess pandocMetaData.yaml --resource-path=$scriptPath:$scriptPath/diagrams:$scriptPath/screenshots --citeproc --bibliography=bibliography.bib -f markdown+smart --standalone --toc --template=style/styleToCreateIndex.latex -V documentclass=book -o $outputDir/boo.$langName.latex
         let filesToProcess = try Common.filesToProcess(config: config, bookType: .LatexBased)
-        let outputLangLatex = config.outputDir + "/boo." + config.language + ".latex"
+        let outputLangLatex = latexOutputFile()
         var args = [String]()
         args.append(contentsOf: filesToProcess)
         args.append(config.getPandocMetaDataYamlFilePath())
@@ -88,5 +123,7 @@ struct Typesetter {
             
             try Common.replaceFile(path: outputLangLatex, withLines: truncatedLines)
         }
+        
+        try buildIndex()
     }
 }

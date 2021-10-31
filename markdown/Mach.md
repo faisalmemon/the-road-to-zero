@@ -25,7 +25,7 @@ When correctly coded, Mach based solutions can be elegant.  When incorrectly cod
 Mach [@machconcepts] is built upon the following abstractions:
 
 | Entry | Meaning |
-| -- | -- |
+| ----- | ------- |
 | `task` | An execution environment. |
 | `thread` | The basic unit of execution. |
 | `port` | A communication channel. |
