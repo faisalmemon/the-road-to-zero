@@ -33,10 +33,8 @@ To draw an analogy, Google have shown what fish are out there to be catched, Lev
 
 ## Current Status
 
-As of 24th May 2021, the project status is:
-- Writing up how to debug the kernel lead me to diagraming the workflow but this broke the build
-- My build process is too fragile so I am re-writing it as a macOS app with client library
-- Once the build process is updated, the github website and ebook generation can be fixed
+As of 31st Oct 2021, the project status is:
+- I am converting the book from being pandoc/markdown based to being MkDocs based.
 
 So no new book content for a while until build processing is resolved.
 
@@ -50,10 +48,9 @@ Directory | Purpose
 ----------| -------
 external | Downloaded resources
 topics | Topic specific writing
-source | Parent directory of compilable source code
-markdown | Markdown files for the body text of the book
 examples | Examples
 screenshots | Screenshots
+trtz | Source code of book
 
 ## Branch Policy
 
@@ -71,24 +68,11 @@ See https://github.com/faisalmemon/ios-crash-dump-analysis-book#authoring-method
 ### Essential Software
 
 You need:
-- Brew Package manager
-- Various Brew packages
-- Latex packages
+- MkDocs Software Package
+- Material Design MkDocs plug-in
+- Brew Package Manager
 - Class dump
 - Draw.io.app for diagrams
-
-#### Brew Software
-
-I used the Brew package manager on MacOS and used the Brew packages:
-
-Brew Package | Purpose
---|--
-`pandoc` | Document translator to get from .markdown format to other formats
-
-#### Latex Support
-
-Latex support appears not to be available directly in brew so I used the recommended [MacTex](https://www.tug.org/mactex/) and this was installed via a brew cask install
-`brew cask install mactex`
 
 #### Class Dump
 
@@ -120,24 +104,5 @@ I need to experiment in this area.  Maybe putting my screen in large scale mode 
 
 ## Build System
 
-The book is built for English using `buildBook.sh`.  Use `buildBook.sh -l zh` to build the Chinese edition.
+The book is built using the MkDocs workflow.  It is published via the GitHub pages workflow in MkDocs.
 
-The build outputs are on a per-language basis:
-
-File | Purpose
---|--
-`generated/<LANG>.foo.html` | Intermediate used for GitHub Pages documentation
-`generated/<LANG>.boo.pdf` | For the Hard Copy Paper Edition
-`generated/<LANG>.foo.docx` | For further conversion into EPUB, and internally for spelling and grammar checking
-`generated/<LANG>.foo.epub` | For E-book readers (Apple and Amazon) directly from pandoc
-`docs/<LANG>/*` | Final destination for GitHub Pages documentation
-
-The output are `foo.*` and `boo.*` files locally for ease of inspection.  They are ignored by version control.
-
-For github pages, the GitHub documentation facility, the HTML documentation and supporting resources is copied into the `docs/<language-id>` directory and then they are checked in (the branch is required to be master).
-
-The build system also checks for uses of "you" - they should be "we" in all cases apart from the Introduction.
-
-The build system only picks up new trademarks on a second run of the book building script due to it relying on a built index from the prior run.
-
-The build system has one hardcode; the page number that the Disclaimer chapter starts on is hardcoded because it is based upon the number of pages used up by the automatically generated table of contents.
