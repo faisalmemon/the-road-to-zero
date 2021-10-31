@@ -1,5 +1,4 @@
 # Zero Day
-\pagenumbering{arabic}
 
 ## What is a Zero Day?
 
