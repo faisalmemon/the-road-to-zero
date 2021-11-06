@@ -10,10 +10,10 @@ In this chapter we shall look at an exploit write-up.  Our purpose is not to und
 
 ## Getting Exploits
 
-Exploits can be downloaded from the Exploit Database [@exploitdb].
+Exploits can be downloaded from the [Exploit Database Git Repository](./Bibliography.md#EDG).
 This is a valuable resource and one we shall often refer to.
 The exploit database has a search tool, `searchsploit`.
-If we install `searchsploit` from [@exploitdb] and configure our `~/.searchsploit_rc` file then we can easily look up exploits.
+If we install `searchsploit` from [Exploit Database Git Repository](./Bibliography.md#EDG) and configure our `~/.searchsploit_rc` file then we can easily look up exploits.
 
 This is a search for items matching `ios` and `dos`:
 ```
@@ -79,17 +79,17 @@ iOS 14.4 (18D46)
 
 Here is the verbatim text for the write-up of this leak.  The purpose for including it is to show the "level" at which exploit research is aimed at.  The main aim of this book is to bring ourselves up to the same level so we can appreciate this piece of research, and then move forwards onto exploring and finding our own vulnerabilities.
 
-> Here's a code snippet from sleh.c with the second level exception handler for undefined instruction exceptions:
+> Here's a code snippet from `sleh.c` with the second level exception handler for undefined instruction exceptions:
 
-```
- static void
+``` c
+static void
  handle_uncategorized(arm_saved_state_t *state, boolean_t
  instrLen2)
  {
    exception_type_t       exception = EXC_BAD_INSTRUCTION;
    mach_exception_data_type_t   codes[2] = {EXC_ARM_UNDEFINED};
    mach_msg_type_number_t     numcodes = 2;
-   uint32_t          instr;   <------ (a)
+   uint32_t          instr;   // <------- (a)
 
    if (instrLen2) {
      uint16_t  instr16;
@@ -110,18 +110,17 @@ Here is the verbatim text for the write-up of this leak.  The purpose for includ
  }
 
  exception_triage(exception, codes, numcodes);  <-------- (d)
- ```
-
- > At (a) the uint32_t instr is declared uninitialized on the
+```
+ > At (a) the `uint32_t` instr is declared uninitialized on the
  stack.
  At (b) the code tries to copyin the bytes of the
  exception-causing instruction from userspace
    note that the COPYIN macro doesn't itself check the return
  value of copyin, it just calls it.
- At (c) instr is assigned to codes[1], which at (d) is passed to
- exception_triage.
+ At (c) `instr` is assigned to `codes[1]`, which at (d) is passed to
+ `exception_triage`.
 
- > that codes array will eventually end up being sent in an
+ > That codes array will eventually end up being sent in an
  exception mach message.
 
  > The bug is that we can force copyin to fail by unmapping the
@@ -129,10 +128,10 @@ Here is the verbatim text for the write-up of this leak.  The purpose for includ
  while it's being handled. (I tried to do this with XO memory but
  the kernel seems to be able to copyin that just fine.)
 
- > This PoC has an undefined instruction (0xdeadbeef) on its own
+ > This PoC has an undefined instruction `(0xdeadbeef)` on its own
  page and spins up a thread to keep
- switching the protection of that page between VM_PROT_NONE and
- VM_PROT_READ|VM_PROT_EXECUTE.
+ switching the protection of that page between `VM_PROT_NONE` and
+ `VM_PROT_READ|VM_PROT_EXECUTE`.
 
  > We then keep spinning up threads which try to execute that
  undefined instruction.
@@ -143,11 +142,11 @@ Here is the verbatim text for the write-up of this leak.  The purpose for includ
  message we get has stale stack memory.
 
  > This PoC just demonstrates that we do get values which aren't
- 0xdeadbeef in there for the EXC_ARM_UNDEFINED type.
+ `0xdeadbeef` in there for the `EXC_ARM_UNDEFINED` type.
  We'd have to do a bit more fiddling to work out how to get
  something specific there.
 
- > Note that there are lots of other unchecked COPYIN's in sleh.c
+ > Note that there are lots of other unchecked `COPYIN`'s in `sleh.c`
  (eg when userspace tries to access a system register not allowed
  for EL0) and these seem to have the same issue.
 
