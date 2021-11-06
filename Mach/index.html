@@ -608,8 +608,8 @@
 <p>In reality, due to the irrepressible properties of distributed communication, latency and reliability cannot be ignored.  Therefore, such a uniform communication abstraction cannot work out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own.  This is where the XNU kernel does its work and shines.</p>
 <h2 id="how-to-learn-mach-programming">How to learn Mach programming</h2>
 <p>Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NEXTSTEP\index{trademark!NEXTSTEP} documentation, [@machconcepts].  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.</p>
-<p>We can find the header file directory with:</p>
-<pre><code># find /Applications/Xcode.app -type d -iname mach
+<p>We can find the header file directory with:
+<div class="highlight"><pre><span></span><code># find /Applications/Xcode.app -type d -iname mach
 /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.pl
 atform/Developer/SDKs/AppleTVOS.sdk/usr/include/mach
 /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.pla
@@ -617,99 +617,99 @@ tform/Developer/SDKs/iPhoneOS.sdk/usr/include/mach
 .
 .
 .
-</code></pre>
+</code></pre></div></p>
 <p>Rather than duplicate or replace the NEXTSTEP documentation, we assume the reader will read all of that documentation, but for the practical work elements, refer to this book.  This book then acts as a modernization of the original materials.  As mentioned in the Introduction, this book is largely a tutorial guide to get us along the path to being able to find 0-day vulnerabilities.</p>
 <h2 id="memory-allocation">Memory Allocation</h2>
 <p>Here we follow along the [@machconcepts] documentation but with modernized code examples.  These are available at [@trtzgithub] in the subdirectory <code>source/mach-vm-alloc</code></p>
 <p>Here is code that demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.</p>
-<pre><code class="language-c">int vm_example()
-{
-    union data_area {
-        char                *indexed;
-        vm_address_t        handle;
-    } data1, data2;
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">vm_example</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">union</span> <span class="nc">data_area</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kt">char</span><span class="w">                </span><span class="o">*</span><span class="n">indexed</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">vm_address_t</span><span class="w">        </span><span class="n">handle</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">data1</span><span class="p">,</span><span class="w"> </span><span class="n">data2</span><span class="p">;</span><span class="w"></span>
 
-    vm_size_t               i;
-    vm_size_t               min;
-    mach_msg_type_number_t  data_cnt;
-    mach_port_t             self;
-    char                    *error = NULL;
-    kern_return_t           rv = KERN_SUCCESS;
+<span class="w">    </span><span class="n">vm_size_t</span><span class="w">               </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">vm_size_t</span><span class="w">               </span><span class="n">min</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">mach_msg_type_number_t</span><span class="w">  </span><span class="n">data_cnt</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">mach_port_t</span><span class="w">             </span><span class="n">self</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w">                    </span><span class="o">*</span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">kern_return_t</span><span class="w">           </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">;</span><span class="w"></span>
 
-    printf(&quot;\nSTART: vm_example()\n&quot;);
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">START: vm_example()</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    self = mach_task_self();
+<span class="w">    </span><span class="n">self</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mach_task_self</span><span class="p">();</span><span class="w"></span>
 
-    printf(&quot;mach_task_self is 0x%x\n&quot;, self);
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;mach_task_self is 0x%x</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">);</span><span class="w"></span>
 
-    rv = vm_allocate(self,
-                     &amp;data1.handle,
-                     vm_page_size,
-                     TRUE);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_allocate&quot;;
-        goto vm_example_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_allocate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="o">&amp;</span><span class="n">data1</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="n">vm_page_size</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="n">TRUE</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_allocate&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    for (i = 0; (i &lt; vm_page_size); i++) {
-        data1.indexed[i] = i;
-    }
-    printf(&quot;Filled space allocated with some data.\n&quot;);
-    printf(&quot;Doing vm_read....\n&quot;);
-    rv = vm_read(self,
-                 data1.handle,
-                 vm_page_size,
-                 &amp;data2.handle,
-                 &amp;data_cnt);
-    if(rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_read&quot;;
-        goto vm_example_error_return;
-    }
-    printf(&quot;Successful vm_read.\n&quot;);
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">vm_page_size</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">data1</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Filled space allocated with some data.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Doing vm_read....</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_read</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="n">data1</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="n">vm_page_size</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="o">&amp;</span><span class="n">data2</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                 </span><span class="o">&amp;</span><span class="n">data_cnt</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_read&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Successful vm_read.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    if (vm_page_size != data_cnt) {
-        error = &quot;vmread: Number of bytes read not equal to number
- available and requested.&quot;;
-        goto vm_example_logic_error_return;
-    }
-    min = (vm_page_size &lt; data_cnt) ? vm_page_size : data_cnt;
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vm_page_size</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">data_cnt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;vmread: Number of bytes read not equal to number</span>
+<span class="w"> </span><span class="n">available</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">requested</span><span class="p">.</span><span class="s">&quot;;</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_logic_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">vm_page_size</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">data_cnt</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nl">vm_page_size</span> <span class="p">:</span><span class="w"> </span><span class="n">data_cnt</span><span class="p">;</span><span class="w"></span>
 
-    for (i = 0; (i &lt; min); i++) {
-        if (data1.indexed[i] != data2.indexed[i]) {
-            error = &quot;Data not read correctly&quot;;
-            goto vm_example_logic_error_return;
-        }
-    }
-    printf(&quot;Checked data successfully.\n&quot;);
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">min</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">data1</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">data2</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Data not read correctly&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_logic_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Checked data successfully.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    rv = vm_deallocate(self,
-                       data1.handle,
-                       vm_page_size);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_deallocate&quot;;
-        goto vm_example_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_deallocate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="n">data1</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="n">vm_page_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_deallocate&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    rv = vm_deallocate(self,
-                       data2.handle,
-                       data_cnt);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_deallocate&quot;;
-        goto vm_example_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_deallocate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="n">data2</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="n">data_cnt</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_deallocate&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_example_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    printf(&quot;END: vm_example()\n&quot;);
-    return 0;
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;END: vm_example()</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-vm_example_error_return:
-    printf(&quot;%s: %s\n&quot;, error, mach_error_string(rv));
-    return -1;
+<span class="nl">vm_example_error_return</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">mach_error_string</span><span class="p">(</span><span class="n">rv</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
 
-vm_example_logic_error_return:
-    printf(&quot;%s\n&quot;, error);
-    return -1;
-}
-</code></pre>
+<span class="nl">vm_example_logic_error_return</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
 <h3 id="memory-allocation-discussion">Memory Allocation discussion</h3>
 <p>In our code example, there are two stylistic points to note:</p>
 <ol>
@@ -741,160 +741,160 @@ vm_example_logic_error_return:
 <p>This <code>vm_example()</code> code merely needs to be hooked into our App code when it launches, in the <code>main()</code> function to operate.  It does feel heavyweight for what it does.</p>
 <h2 id="copy-on-write-memory">Copy-on-Write Memory</h2>
 <p>The following example shows how Mach will Copy-on-Write pages of memory which are shared.</p>
-<pre><code class="language-c">enum copy_on_write_constants {
-    COPY_ON_WRITE = 0,
-    PARENT_CHANGED = 1,
-    CHILD_CHANGED = 2,
-};
+<div class="highlight"><pre><span></span><code><span class="k">enum</span><span class="w"> </span><span class="n">copy_on_write_constants</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">COPY_ON_WRITE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARENT_CHANGED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">CHILD_CHANGED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-enum lock_constants {
-    NO_ONE_WAIT = 0,
-    PARENT_WAIT = 1,
-    CHILD_WAIT = 2
-};
+<span class="k">enum</span><span class="w"> </span><span class="n">lock_constants</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">NO_ONE_WAIT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">PARENT_WAIT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">CHILD_WAIT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-char *lock_status[] = {
-    &quot;NO_ONE_WAIT 0&quot;,
-    &quot;PARENT_WAIT 1&quot;,
-    &quot;CHILD_WAIT 2&quot;
-};
+<span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">lock_status</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;NO_ONE_WAIT 0&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;PARENT_WAIT 1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;CHILD_WAIT 2&quot;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-char *cow_status[] = {
-    &quot;COPY_ON_WRITE 0&quot; ,
-    &quot;PARENT_CHANGED 1&quot;,
-    &quot;CHILD_CHANGED 2&quot;
-};
+<span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cow_status</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;COPY_ON_WRITE 0&quot;</span><span class="w"> </span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;PARENT_CHANGED 1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">&quot;CHILD_CHANGED 2&quot;</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-int vm_copy_on_write_example()
-{
-    union data_area {
-        char                *indexed;
-        vm_address_t        handle;
-    } lock, mem;
+<span class="kt">int</span><span class="w"> </span><span class="nf">vm_copy_on_write_example</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">union</span> <span class="nc">data_area</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kt">char</span><span class="w">                </span><span class="o">*</span><span class="n">indexed</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">vm_address_t</span><span class="w">        </span><span class="n">handle</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">mem</span><span class="p">;</span><span class="w"></span>
 
-    mach_port_t             self;
-    char                    *error = NULL;
-    kern_return_t           rv = KERN_SUCCESS;
-    pid_t                   pid;
-    const int               MAXDATA = 100;
+<span class="w">    </span><span class="n">mach_port_t</span><span class="w">             </span><span class="n">self</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w">                    </span><span class="o">*</span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">kern_return_t</span><span class="w">           </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">pid_t</span><span class="w">                   </span><span class="n">pid</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w">               </span><span class="n">MAXDATA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w"></span>
 
-    printf(&quot;\nSTART: vm_copy_on_write_example()\n&quot;);
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">START: vm_copy_on_write_example()</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    self = mach_task_self();
+<span class="w">    </span><span class="n">self</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mach_task_self</span><span class="p">();</span><span class="w"></span>
 
-    rv = vm_allocate(self,
-                     &amp;lock.handle,
-                     sizeof(int),
-                     TRUE);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_allocate&quot;;
-        goto vm_cow_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_allocate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="o">&amp;</span><span class="n">lock</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">),</span><span class="w"></span>
+<span class="w">                     </span><span class="n">TRUE</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_allocate&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_cow_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    rv = vm_inherit(self,
-                    lock.handle,
-                    sizeof(int),
-                    VM_INHERIT_SHARE);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_inherit&quot;;
-        goto vm_cow_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_inherit</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">lock</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">),</span><span class="w"></span>
+<span class="w">                    </span><span class="n">VM_INHERIT_SHARE</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_inherit&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_cow_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    *lock.indexed = NO_ONE_WAIT;
+<span class="w">    </span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_ONE_WAIT</span><span class="p">;</span><span class="w"></span>
 
-    rv = vm_allocate(self,
-                     &amp;mem.handle,
-                     sizeof(int) * MAXDATA,
-                     TRUE);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;Could not vm_allocate&quot;;
-        goto vm_cow_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_allocate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="o">&amp;</span><span class="n">mem</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">MAXDATA</span><span class="p">,</span><span class="w"></span>
+<span class="w">                     </span><span class="n">TRUE</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Could not vm_allocate&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_cow_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    mem.indexed[0] = COPY_ON_WRITE;
-    printf(&quot;value of lock before fork: %s\n&quot;,
-           lock_status[*lock.indexed]);
-    pid = fork();
+<span class="w">    </span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">COPY_ON_WRITE</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;value of lock before fork: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">lock_status</span><span class="p">[</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fork</span><span class="p">();</span><span class="w"></span>
 
-    if (pid) {
-        printf(&quot;PARENT: copied memory = %s\n&quot;,
-               cow_status[mem.indexed[0]]);
-        printf(&quot;PARENT: changing to %s\n&quot;,
-               cow_status[PARENT_CHANGED]);
-        mem.indexed[0] = PARENT_CHANGED;
-        printf(&quot;\n&quot;);
-        printf(&quot;PARENT: lock = %s\n&quot;,
-               lock_status[*lock.indexed]);
-        printf(&quot;PARENT: changing lock to %s\n&quot;,
-               lock_status[PARENT_WAIT]);
-        printf(&quot;\n&quot;);
-        *lock.indexed = PARENT_WAIT;
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pid</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: copied memory = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">cow_status</span><span class="p">[</span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: changing to %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">cow_status</span><span class="p">[</span><span class="n">PARENT_CHANGED</span><span class="p">]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PARENT_CHANGED</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: lock = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">lock_status</span><span class="p">[</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="p">]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: changing lock to %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">lock_status</span><span class="p">[</span><span class="n">PARENT_WAIT</span><span class="p">]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PARENT_WAIT</span><span class="p">;</span><span class="w"></span>
 
-        while (*lock.indexed == PARENT_WAIT) {
-            /* wait for child to change the value */
-            ;
-        }
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">PARENT_WAIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="cm">/* wait for child to change the value */</span><span class="w"></span>
+<span class="w">            </span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
 
-        printf(&quot;PARENT: copied memory = %s\n&quot;,
-               cow_status[mem.indexed[0]]);
-        printf(&quot;PARENT: lock = %s\n&quot;,
-               lock_status[*lock.indexed]);
-        printf(&quot;PARENT: Finished.\n&quot;);
-        *lock.indexed = PARENT_WAIT;
-        exit(-1);
-    }
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: copied memory = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">cow_status</span><span class="p">[</span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: lock = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">               </span><span class="n">lock_status</span><span class="p">[</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="p">]);</span><span class="w"></span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;PARENT: Finished.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PARENT_WAIT</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">exit</span><span class="p">(</span><span class="mi">-1</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    while (*lock.indexed != PARENT_WAIT) {
-        /* wait for parent to change lock */
-        ;
-    }
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PARENT_WAIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* wait for parent to change lock */</span><span class="w"></span>
+<span class="w">        </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    printf(&quot;CHILD: copied memory = %s\n&quot;,
-           cow_status[mem.indexed[0]]);
-    printf(&quot;CHILD: changing to %s\n&quot;,
-           cow_status[CHILD_CHANGED]);
-    mem.indexed[0] = CHILD_CHANGED;
-    printf(&quot;\n&quot;);
-    printf(&quot;CHILD: lock = %s\n&quot;,
-           lock_status[*lock.indexed]);
-    printf(&quot;CHILD: changing lock to %s\n&quot;,
-           lock_status[CHILD_WAIT]);
-    printf(&quot;\n&quot;);
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;CHILD: copied memory = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">cow_status</span><span class="p">[</span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;CHILD: changing to %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">cow_status</span><span class="p">[</span><span class="n">CHILD_CHANGED</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">mem</span><span class="p">.</span><span class="n">indexed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CHILD_CHANGED</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;CHILD: lock = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">lock_status</span><span class="p">[</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;CHILD: changing lock to %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">lock_status</span><span class="p">[</span><span class="n">CHILD_WAIT</span><span class="p">]);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    *lock.indexed = CHILD_WAIT;
-    while (*lock.indexed == CHILD_WAIT) {
-        /* wait for parent to change lock */
-        ;
-    }
+<span class="w">    </span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CHILD_WAIT</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">lock</span><span class="p">.</span><span class="n">indexed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">CHILD_WAIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* wait for parent to change lock */</span><span class="w"></span>
+<span class="w">        </span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    rv = vm_deallocate(mach_task_self(),
-                       lock.handle,
-                       sizeof(int));
-    if (rv != KERN_SUCCESS) {
-        error = &quot;vm_deallocate failed&quot;;
-        goto vm_cow_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_deallocate</span><span class="p">(</span><span class="n">mach_task_self</span><span class="p">(),</span><span class="w"></span>
+<span class="w">                       </span><span class="n">lock</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;vm_deallocate failed&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_cow_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    rv = vm_deallocate(mach_task_self(),
-                       mem.handle,
-                       sizeof(int) * MAXDATA);
-    if (rv != KERN_SUCCESS) {
-        error = &quot;vm_deallocate failed&quot;;
-        goto vm_cow_error_return;
-    }
+<span class="w">    </span><span class="n">rv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vm_deallocate</span><span class="p">(</span><span class="n">mach_task_self</span><span class="p">(),</span><span class="w"></span>
+<span class="w">                       </span><span class="n">mem</span><span class="p">.</span><span class="n">handle</span><span class="p">,</span><span class="w"></span>
+<span class="w">                       </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">MAXDATA</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">KERN_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;vm_deallocate failed&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">vm_cow_error_return</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 
-    printf(&quot;CHILD: Finished.\n&quot;);
-    printf(&quot;END: vm_copy_on_write_example()\n&quot;);
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;CHILD: Finished.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;END: vm_copy_on_write_example()</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
 
-    return 0;
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 
-vm_cow_error_return:
-    printf(&quot;%s: %s\n&quot;, error, mach_error_string(rv));
-    return -1;
-}
-</code></pre>
+<span class="nl">vm_cow_error_return</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="n">mach_error_string</span><span class="p">(</span><span class="n">rv</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
 <p>This program produces the following output:</p>
-<pre><code>START: vm_copy_on_write_example()
+<div class="highlight"><pre><span></span><code>START: vm_copy_on_write_example()
 value of lock before fork: NO_ONE_WAIT 0
 PARENT: copied memory = COPY_ON_WRITE 0
 PARENT: changing to PARENT_CHANGED 1
@@ -913,7 +913,7 @@ PARENT: lock = CHILD_WAIT 2
 PARENT: Finished.
 CHILD: Finished.
 END: vm_copy_on_write_example()
-</code></pre>
+</code></pre></div>
 <h3 id="copy-on-write-discussion">Copy-on-Write Discussion</h3>
 <p>As we can see the <code>vm_inherit()</code> routine will provide both the child and parent access to the same memory until it is modified.  After that, the child and parent have separate memory pages representing their own copy of the data values which can now be different.</p>
 <p>This program uses a very primitive form of task coordination: busy while loops.  A realistic example would use the <code>pthread</code> library instead for signalling and coordination.</p>

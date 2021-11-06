@@ -931,11 +931,11 @@ We connect a Thunderbolt USB-C to Thunderbolt adapter, and then connect a Thunde
 <p>One convenience arising from choosing a laptop as the debug target is that we can map the power key to halt the kernel and drop into the debugger.  Also since the keyboard and trackpad are integrated, it means we have direct connectivity into the system.</p>
 <h3 id="required-software">Required Software</h3>
 <p>In order to do kernel debugging conveniently, we need a kernel with its debug symbols available so we can set symbolic breakpoints.  We get the kernel version from the target machine as follows:</p>
-<pre><code>target-mbp2018 # sw_vers
+<div class="highlight"><pre><span></span><code>target-mbp2018 # sw_vers
 ProductName:    macOS
 ProductVersion: 11.3
 BuildVersion:   20E5186d
-</code></pre>
+</code></pre></div>
 <p>We need to get the matching Kernel Development Kit (KDK) from the Apple developer website @devapplemore
 We search for it using the build version, and it either it matches exactly, such as "Kernel Debug Kit 11.3 build 20E5186d", or it is not found.  When it is not found, we are supposed to raise a developer support ticket to ask for it to be uploaded onto the Apple Website.  An easier alternative is to just update our version of macOS to a version which is also shown on the @devapplemore website.</p>
 <p>The KDK software is needed both on the target (we shall install the development kernel on it), and on the host (we need it available so the debugger can reference it).  An exact same KDK must be used on both target and host.</p>
@@ -949,16 +949,16 @@ We search for it using the build version, and it either it matches exactly, such
 <p>Allow the system to process the decryption in the background.  We must keep our system connected by AC power the whole time to achieve this.</p>
 <h3 id="disk-information">Disk information</h3>
 <p>We shall do low level disk operations on our target machine, so first need to record the hardware device used for the root file system:</p>
-<pre><code>target-mbp2018 # df /
+<div class="highlight"><pre><span></span><code>target-mbp2018 # df /
 Filesystem     512-blocks     Used Available Capacity iused     
  ifree %iused  Mounted on
 /dev/disk1s5s1 1953595632 59785248 469854808    12%  555854
  9767422306    0%   /
-</code></pre>
+</code></pre></div>
 <p>This shows that in our case, we have APFS Container 1, Volume 5, Snapshot 1 representing the hard disk for the root file system.  So our disk (ignoring the snapshot) is <code>disk1s5</code>.</p>
 <h3 id="network-information">Network information</h3>
 <p>We shall be connecting to the target via the Thunderbolt Gigabit Ethernet, so we need to know the Ethernet port name used for it.  First we connect our adapters to the machine, and then assuming there is only one Gigabit Ethernet port, we run the command:</p>
-<pre><code>target-mbp2018 # ifconfig | grep -B6 1000baseT
+<div class="highlight"><pre><span></span><code>target-mbp2018 # ifconfig | grep -B6 1000baseT
 en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
  1500
     options=50b&lt;RXCSUM,TXCSUM,VLAN_HWTAGGING,AV,CHANNEL_IO&gt;
@@ -970,14 +970,14 @@ en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
     nd6 options=201&lt;PERFORMNUD,DAD&gt;
     media: autoselect (1000baseT
  &lt;full-duplex,flow-control,energy-efficient-ethernet&gt;)
-</code></pre>
+</code></pre></div>
 <p>So our network interface is <code>en9</code> and our target machine appears on that interface as IP address <code>169.254.203.131</code>.</p>
 <h3 id="kernel-debug-flags">Kernel Debug Flags</h3>
 <p>When we setup our target for debugging, to head off potential boot-time issues, we need to establish what custom boot flags we shall use for booting and debugging.  Technically speaking, these settings are tied to the particular kernel version we are debugging.  The settings, however, change only occasionally.</p>
 <p>Kernel information is available from the Open Source archives published by Apple. (@appleopensource)  We find that the release of such sources is delayed after the release of a given version of macOS.  iOS kernel source is not published.  However, it is macOS that is the most instructive because all the platforms are based on the same XNU kernel with just compile flag and device support differences.  The convergence of the platforms at a low level allows the macOS platform to give good insights into all Apple platforms.  We note, however, that the user experience is differentiated between the Apple platforms since the user needs to consume and experience the platform differently based upon the form factor of the system.  These differences are mainly manifest in the library software layers on top of the XNU kernel.</p>
 <p>At the time of writing, the latest Apple Open Source release for macOS is 11.2 despite our target machine being 20E5186d.  So we download its corresponding XNU kernel, <code>xnu-7195.81.3</code>.</p>
 <p>The file <code>osfmk/kern/debug.h</code> describes the boot parameters that are available.</p>
-<pre><code>/* Debug boot-args */
+<div class="highlight"><pre><span></span><code>/* Debug boot-args */
 #define DB_HALT         0x1
 //#define DB_PRT          0x2 -- obsolete
 #define DB_NMI          0x4
@@ -1008,9 +1008,9 @@ en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
  removed */
 #define DB_DISABLE_LOCAL_CORE   0x20000 /* ignore local kernel
  core dump support */
-#define DB_DISABLE_GZIP_CORE    0x40000 /* don't gzip kernel core
+#define DB_DISABLE_GZIP_CORE    0x40000 /* don&#39;t gzip kernel core
  dumps */
-#define DB_DISABLE_CROSS_PANIC  0x80000 /* x86 only - don't
+#define DB_DISABLE_CROSS_PANIC  0x80000 /* x86 only - don&#39;t
  trigger cross panics. Only
                                      * necessary to enable
  x86 kernel debugging on
@@ -1018,11 +1018,11 @@ en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
  dev-fused co-processor running
                                      * release bridgeOS.
                                      */
-#define DB_REBOOT_ALWAYS        0x100000 /* Don't wait for
+#define DB_REBOOT_ALWAYS        0x100000 /* Don&#39;t wait for
  debugger connection */
 #define DB_DISABLE_STACKSHOT_TO_DISK 0x200000 /* Disable writing
  stackshot to local disk */
-</code></pre>
+</code></pre></div>
 <p>We require:</p>
 <ul>
 <li><code>DB_NMI</code>: we want to enter the debugger upon a Non-Maskable Interrupt</li>
@@ -1032,12 +1032,12 @@ en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
 <p>Hence we shall plan on supplying the debug boot argument <code>debug=0x8044</code></p>
 <h3 id="assumed-configuration">Assumed Configuration</h3>
 <p>For ease of explanation, we setup the following environmental variables matching our lab setup:</p>
-<pre><code>TARGET=target-mbp2018
+<div class="highlight"><pre><span></span><code>TARGET=target-mbp2018
 DISK=disk1s5
 KERNEL=20E5186d
 KDK=KDK_11.3_20E5186d.kdk
 NETWORK_INTERFACE=en9
-</code></pre>
+</code></pre></div>
 <h3 id="software-installation">Software Installation</h3>
 <p>We need to install our software first because later steps will utilise it from Recovery Mode.</p>
 <h4 id="host-side-software">Host side software</h4>
@@ -1072,30 +1072,30 @@ NETWORK_INTERFACE=en9
 <h3 id="configuring-the-development-kernel">Configuring the Development Kernel</h3>
 <p>Having rebooted our target machine, with the lowered security, we can adjust our machine to use the Development Kernel.  This makes use of a kernel debugger easier since we have the kernel symbols for it that our debugger can use.</p>
 <h4 id="mount-read-write-the-root-file-system">Mount Read Write the Root File System</h4>
-<pre><code>export TARGET=target-mbp2018 DISK=disk1s5 KERNEL=20E5186d
+<div class="highlight"><pre><span></span><code>export TARGET=target-mbp2018 DISK=disk1s5 KERNEL=20E5186d
  NETWORK_INTERFACE=en9 KDK=KDK_11.3_20E5186d.kdk
 mkdir /tmp/mnt
 sudo mount -o nobrowse -t apfs /dev/$DISK /tmp/mnt
-</code></pre>
-<p>We should now have the root disk mounted Read Only and mounted Read Write</p>
-<pre><code>target-mbp2018 # mount
+</code></pre></div>
+<p>We should now have the root disk mounted Read Only and mounted Read Write
+<div class="highlight"><pre><span></span><code>target-mbp2018 # mount
 /dev/disk1s5s1 on / (apfs, sealed, local, read-only, journaled)
 .
 .
 /dev/disk1s5 on /private/tmp/mnt (apfs, sealed, local, journaled,
  nobrowse)
-</code></pre>
+</code></pre></div></p>
 <h4 id="install-the-development-kernel">Install the Development Kernel</h4>
 <p>We place the development kernel on our system with:</p>
-<pre><code>sudo cp
+<div class="highlight"><pre><span></span><code>sudo cp
  /Library/Developer/KDKs/$KDK/System/Library/Kernels/kernel.devel
 opment /tmp/mnt/System/Library/Kernels
-</code></pre>
+</code></pre></div>
 <h4 id="bless-the-root-file-system">Bless the Root File System</h4>
 <p>We make our modified root file system bootable by the system by using the <code>bless</code> command.</p>
-<pre><code>sudo bless --folder /tmp/mnt/System/Library/CoreServices
+<div class="highlight"><pre><span></span><code>sudo bless --folder /tmp/mnt/System/Library/CoreServices
  --bootefi --create-snapshot
-</code></pre>
+</code></pre></div>
 <h4 id="set-boot-parameters">Set boot parameters</h4>
 <p>We need to set the boot parameters to use the development kernel.  We also need to make it:</p>
 <ol>
@@ -1105,21 +1105,21 @@ opment /tmp/mnt/System/Library/Kernels
 <li>Use Power Key for entering the debugger over UDP packets (<code>debug=0x8044</code>),</li>
 </ol>
 <p>In our lab configuration, this is done with:</p>
-<pre><code>export NETWORK_INTERFACE=en9
+<div class="highlight"><pre><span></span><code>export NETWORK_INTERFACE=en9
 sudo nvram boot-args=&quot;debug=0x8044
  kdp_match_name=$NETWORK_INTERFACE wdt=-1 -v&quot;
-</code></pre>
+</code></pre></div>
 <h4 id="target-machine-reboot">Target machine reboot</h4>
 <p>Now we have everything in place. The target machine can be rebooted.  If we watch it reboot closely, we can see that as it reboots, a lot of debug information will be printed onto the screen as part of the reboot.</p>
 <h3 id="host-machine-configuration">Host machine configuration</h3>
 <p>At this point we have a host machine with Xcode, and the KDK installed on it.  Only one further change is needed.</p>
 <p>The KDK comes with helper scripts to aid kernel debugging.  These are tied to the Python 2 runtime environment, but Xcode LLDB Debugger uses Python 3 as the default.  We need to switch to Python 2 as follows:</p>
-<pre><code>defaults write com.apple.dt.lldb DefaultPythonVersion 2
-</code></pre>
+<div class="highlight"><pre><span></span><code>defaults write com.apple.dt.lldb DefaultPythonVersion 2
+</code></pre></div>
 <h3 id="interactive-debugging">Interactive debugging</h3>
 <p>The host machine should be connected to the target machine.  It should have the KDK installed on it.  The Apple Spotlight feature will index it, and thus will be aware of the KDK symbols without it being explicitly told about them.</p>
 <p>On the target machine, we need to get the most recent IP address it has allocated for the Gigabit Ethernet interface <code>en9</code> (<code>$NETWORK_INTERFACE</code>).</p>
-<pre><code>target-mbp2018 # ifconfig en9
+<div class="highlight"><pre><span></span><code>target-mbp2018 # ifconfig en9
 en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
  1500
     options=50b&lt;RXCSUM,TXCSUM,VLAN_HWTAGGING,AV,CHANNEL_IO&gt;
@@ -1132,15 +1132,15 @@ en9: flags=8863&lt;UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST&gt; mtu
     media: autoselect (1000baseT
  &lt;full-duplex,flow-control,energy-efficient-ethernet&gt;)
     status: active
-</code></pre>
+</code></pre></div>
 <p>Here we have IP Address <code>169.254.136.48</code>.</p>
 <p>We now press the Power button on the target.  It must be a normal press, not a tap, nor a long press.  This will trigger the Non-Maskable Interrupt and freeze the machine, and it will then hunt for a kernel debugger connection.</p>
 <p>On the host machine, we run the following commands:</p>
-<pre><code>lldb
+<div class="highlight"><pre><span></span><code>lldb
 kdp-remote 169.254.136.48
-</code></pre>
+</code></pre></div>
 <p>At this point we will get a large information dump from the target machine, detailing the kernel extensions currently running:</p>
-<pre><code>Version: Darwin Kernel Version 20.4.0: Wed Feb 10 23:06:18 PST
+<div class="highlight"><pre><span></span><code>Version: Darwin Kernel Version 20.4.0: Wed Feb 10 23:06:18 PST
  2021; root:xnu-7195.100.326.0.1~76/RELEASE_X86_64;
  UUID=04A94133-D929-3B0C-AF3D-907AF8BF4102;
  stext=0xffffff8010010000
@@ -1150,7 +1150,7 @@ Kernel slid 0xfe10000 in memory.
 Loaded kernel file
  /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kd
 k/System/Library/Kernels/kernel
-warning: 'kernel' contains a debug script. To run this script in
+warning: &#39;kernel&#39; contains a debug script. To run this script in
  this debug session:
 
     command script import
@@ -1165,7 +1165,7 @@ To run all discovered debug scripts in this session:
 Loading 176 kext modules
  -----.-------.------....-------------.-----.--------------------
 -----.-----.-----------------------------------warning:
- 'IOGraphicsFamily' contains a debug script. To run this script
+ &#39;IOGraphicsFamily&#39; contains a debug script. To run this script
  in this debug session:
 
     command script import
@@ -1178,7 +1178,7 @@ To run all discovered debug scripts in this session:
     settings set target.load-script-from-symbol-file true
 
 .----.-------------..-------------.------------------------------
-warning: 'IOGraphicsFamily' contains a debug script. To run this
+warning: &#39;IOGraphicsFamily&#39; contains a debug script. To run this
  script in this debug session:
 
     command script import
@@ -1216,12 +1216,12 @@ Process 1 stopped
  ctx=&lt;unavailable&gt;, message=&lt;unavailable&gt;,
  debugger_options_mask=0) at debug.c:0 [opt]
 Target 0: (kernel) stopped.
-</code></pre>
-<p>As instructed, we should run the debug scripts:</p>
-<pre><code>settings set target.load-script-from-symbol-file true
-</code></pre>
-<p>So long as we have already set the Python version to 2 (earlier) we should see the scripts run successfully:</p>
-<pre><code>Loading kernel debugging from
+</code></pre></div>
+<p>As instructed, we should run the debug scripts:
+<div class="highlight"><pre><span></span><code>settings set target.load-script-from-symbol-file true
+</code></pre></div></p>
+<p>So long as we have already set the Python version to 2 (earlier) we should see the scripts run successfully:
+<div class="highlight"><pre><span></span><code>Loading kernel debugging from
  /System/Volumes/Data/Library/Developer/KDKs/KDK_11.3_20E5186d.kd
 k/System/Library/Kernels/kernel.dSYM/Contents/Resources/Python/ke
 rnel.py
@@ -1246,12 +1246,12 @@ ldbmacros/xnu.py&quot;
 xnu debug macros loaded successfully. Run showlldbtypesummaries
  to enable type summaries.
 settings set target.process.optimization-warnings false
-</code></pre>
+</code></pre></div></p>
 <h4 id="simple-register-writing-test">Simple register writing test</h4>
 <p>To prove to ourselves we have a live debuggable kernel we can run the following commands from llvm on the host.</p>
-<p>First we get the backtrace from where we've interrupted the Operating System:</p>
-<pre><code>(lldb) bt
-* thread #2, name = '0xffffff86a4828898', queue = '0x0', stop
+<p>First we get the backtrace from where we've interrupted the Operating System:
+<div class="highlight"><pre><span></span><code>(lldb) bt
+* thread #2, name = &#39;0xffffff86a4828898&#39;, queue = &#39;0x0&#39;, stop
  reason = signal SIGSTOP
   * frame #0: 0xffffff801008b363
  kernel`DebuggerWithContext(reason=&lt;unavailable&gt;,
@@ -1285,9 +1285,9 @@ f937101f000, (null)=&lt;unavailable&gt;, nub=0xffffff937113ad80,
  kernel`idle_thread(parameter=&lt;unavailable&gt;,
  result=&lt;unavailable&gt;) at sched_prim.c:5436:24 [opt]
     frame #15: 0xffffff801002f13e kernel`call_continuation + 46
-</code></pre>
-<p>Next we read the current registers:</p>
-<pre><code>(lldb) register read --all
+</code></pre></div></p>
+<p>Next we read the current registers:
+<div class="highlight"><pre><span></span><code>(lldb) register read --all
 General Purpose Registers:
        rax = 0x0000000000000000
        rbx = 0x0000000000000000
@@ -1318,9 +1318,9 @@ Floating Point Registers:
 .
 .
 .
-</code></pre>
-<p>Next we write AAA.. into a register:</p>
-<pre><code>(lldb) register write R8 0x4141414141414141
+</code></pre></div></p>
+<p>Next we write AAA.. into a register:
+<div class="highlight"><pre><span></span><code>(lldb) register write R8 0x4141414141414141
 (lldb) register read --all
 General Purpose Registers:
        rax = 0x0000000000000000
@@ -1335,10 +1335,10 @@ General Purpose Registers:
         r9 = 0x0000000000000066
 .
 .
-</code></pre>
-<p>Next we store the original values in the R8 register:</p>
-<pre><code>(lldb) register write R8 0x0
-</code></pre>
+</code></pre></div></p>
+<p>Next we store the original values in the R8 register:
+<div class="highlight"><pre><span></span><code>(lldb) register write R8 0x0
+</code></pre></div></p>
                 
               
               

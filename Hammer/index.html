@@ -601,12 +601,12 @@
 <p>Since iOS and macOS use many niche technologies, or use standard techniques with some Apple ecosystem unique twists, it is not so easy to do our background reading.</p>
 <p>In this chapter we shall look at an exploit write-up.  Our purpose is not to understand the exploit as such, but to survey the techniques and technologies at play.  It will provide us the motivation to explore such items in subsequent chapters knowing that this knowledge will then help us circle back and understand the originally presented exploit.</p>
 <h2 id="getting-exploits">Getting Exploits</h2>
-<p>Exploits can be downloaded from the Exploit Database [@exploitdb].
+<p>Exploits can be downloaded from the <a href="../Bibliography/#EDG">Exploit Database Git Repository</a>.
 This is a valuable resource and one we shall often refer to.
 The exploit database has a search tool, <code>searchsploit</code>.
-If we install <code>searchsploit</code> from [@exploitdb] and configure our <code>~/.searchsploit_rc</code> file then we can easily look up exploits.</p>
-<p>This is a search for items matching <code>ios</code> and <code>dos</code>:</p>
-<pre><code>searchsploit ios dos | less
+If we install <code>searchsploit</code> from <a href="../Bibliography/#EDG">Exploit Database Git Repository</a> and configure our <code>~/.searchsploit_rc</code> file then we can easily look up exploits.</p>
+<p>This is a search for items matching <code>ios</code> and <code>dos</code>:
+<div class="highlight"><pre><span></span><code>searchsploit ios dos | less
 ------------------------------- ---------------------------------
  Exploit Title                 |  Path
 ------------------------------- ---------------------------------
@@ -619,22 +619,22 @@ Apple iOS 5.1.1 Safari Browser | ios/dos/18931.rb
 Apple iOS &lt; 10.3.2 - Notificat | ios/dos/42014.txt
 Apple iOS Kernel - Use-After-F | ios/dos/45652.c
 Apple iOS Mobile Safari - Memo | ios/dos/31057.html
-Apple iOS Safari - 'decodeURI' | hardware/dos/15794.php
-Apple iOS Safari - 'decodeURIC | hardware/dos/15796.php
-Apple iOS Safari - 'JS .' Remo | hardware/dos/15805.php
-Apple iOS Safari - Bad 'VML' R | ios/dos/11890.txt
+Apple iOS Safari - &#39;decodeURI&#39; | hardware/dos/15794.php
+Apple iOS Safari - &#39;decodeURIC | hardware/dos/15796.php
+Apple iOS Safari - &#39;JS .&#39; Remo | hardware/dos/15805.php
+Apple iOS Safari - Bad &#39;VML&#39; R | ios/dos/11890.txt
 Apple iOS Safari - body alink  | hardware/dos/15792.php
 Apple iOS Safari - Remote Deni | ios/dos/11891.txt
 Apple iOS/macOS - Kernel Memor | multiple/dos/45651.c
 Apple iOS/macOS - Sandbox Esca | multiple/dos/45648.txt
 Apple iOS/macOS - Sandbox Esca | multiple/dos/45650.txt
 Apple Mac OSX - IOSCSIPeripher | osx/dos/39376.c
-</code></pre>
+</code></pre></div></p>
 <p>Exploits can be searched for, downloaded, and then explored.  Each exploit has a number associated with it, known as the <code>EDB-ID</code>.</p>
 <h2 id="copyin_leak-exploit-45649"><code>copyin_leak</code> Exploit 45649</h2>
 <p>This program allows a user program to get the kernel to expose memory values it should not be able to see.  In that sense it is an information disclosure "leak".  The kernel routine used to do this is <code>copyin</code> hence it has been called a <code>copyin_leak</code>.</p>
 <p>The following command places a local copy of the exploit write-up in our local directory, known as the mirror <code>(-m)</code> command.</p>
-<pre><code># searchsploit -m 45649
+<div class="highlight"><pre><span></span><code># searchsploit -m 45649
   Exploit: Apple iOS - Kernel Stack Memory Disclosure due to
  Failure to Check copyin Return Value
       URL: https://www.exploit-db.com/exploits/45649
@@ -643,66 +643,69 @@ Apple Mac OSX - IOSCSIPeripher | osx/dos/39376.c
 File Type: ASCII text, with CRLF line terminators
 
 Copied to: /Users/faisalm/dev/scratch/45649.txt
-</code></pre>
+</code></pre></div>
 <p>From looking at the text file, we find we can download the actual Proof of Concept (POC) from a Git Hub web address.  This provides us an app to run on simulator or on an iDevice.</p>
-<p>This POC has been tested on</p>
-<pre><code>iPod touch (7th generation)
+<p>This POC has been tested on
+<div class="highlight"><pre><span></span><code>iPod touch (7th generation)
 iOS 13.5 (17F75)
-</code></pre>
-<p>and</p>
-<pre><code>iPod touch (7th generation) simulator
+</code></pre></div>
+and
+<div class="highlight"><pre><span></span><code>iPod touch (7th generation) simulator
 iOS 14.4 (18D46)
-</code></pre>
+</code></pre></div></p>
 <h2 id="copyin_leak-write-up"><code>copyin_leak</code> write-up</h2>
 <p>Here is the verbatim text for the write-up of this leak.  The purpose for including it is to show the "level" at which exploit research is aimed at.  The main aim of this book is to bring ourselves up to the same level so we can appreciate this piece of research, and then move forwards onto exploring and finding our own vulnerabilities.</p>
 <blockquote>
-<p>Here's a code snippet from sleh.c with the second level exception handler for undefined instruction exceptions:</p>
+<p>Here's a code snippet from <code>sleh.c</code> with the second level exception handler for undefined instruction exceptions:</p>
 </blockquote>
-<p>```
- static void
- handle_uncategorized(arm_saved_state_t *state, boolean_t
- instrLen2)
- {
-   exception_type_t       exception = EXC_BAD_INSTRUCTION;
-   mach_exception_data_type_t   codes[2] = {EXC_ARM_UNDEFINED};
-   mach_msg_type_number_t     numcodes = 2;
-   uint32_t          instr;   &lt;------ (a)</p>
-<p>if (instrLen2) {
-     uint16_t  instr16;
-     COPYIN(get_saved_state_pc(state), (char *)&amp;instr16,
- sizeof(instr16));</p>
-<pre><code> instr = instr16;
-</code></pre>
-<p>} else {
-     COPYIN(get_saved_state_pc(state), (char *)&amp;instr,
- sizeof(instr));  &lt;------- (b)
-   }</p>
-<p>....</p>
-<p>else {
-   codes[1] = instr;   &lt;------ (c)
-  }
- }</p>
-<p>exception_triage(exception, codes, numcodes);  &lt;-------- (d)
- ```</p>
+<div class="highlight"><pre><span></span><code><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"></span>
+<span class="w"> </span><span class="nf">handle_uncategorized</span><span class="p">(</span><span class="n">arm_saved_state_t</span><span class="w"> </span><span class="o">*</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">boolean_t</span><span class="w"></span>
+<span class="w"> </span><span class="n">instrLen2</span><span class="p">)</span><span class="w"></span>
+<span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">exception_type_t</span><span class="w">       </span><span class="n">exception</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EXC_BAD_INSTRUCTION</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="n">mach_exception_data_type_t</span><span class="w">   </span><span class="n">codes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">EXC_ARM_UNDEFINED</span><span class="p">};</span><span class="w"></span>
+<span class="w">   </span><span class="n">mach_msg_type_number_t</span><span class="w">     </span><span class="n">numcodes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="kt">uint32_t</span><span class="w">          </span><span class="n">instr</span><span class="p">;</span><span class="w">   </span><span class="c1">// &lt;------- (a)</span>
+
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instrLen2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">     </span><span class="kt">uint16_t</span><span class="w">  </span><span class="n">instr16</span><span class="p">;</span><span class="w"></span>
+<span class="w">     </span><span class="n">COPYIN</span><span class="p">(</span><span class="n">get_saved_state_pc</span><span class="p">(</span><span class="n">state</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">instr16</span><span class="p">,</span><span class="w"></span>
+<span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">instr16</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">     </span><span class="n">instr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">instr16</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">     </span><span class="n">COPYIN</span><span class="p">(</span><span class="n">get_saved_state_pc</span><span class="p">(</span><span class="n">state</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">instr</span><span class="p">,</span><span class="w"></span>
+<span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">instr</span><span class="p">));</span><span class="w">  </span><span class="o">&lt;-------</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="p">}</span><span class="w"></span>
+
+<span class="w"> </span><span class="p">....</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">codes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">instr</span><span class="p">;</span><span class="w">   </span><span class="o">&lt;------</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="w"> </span><span class="p">}</span><span class="w"></span>
+
+<span class="w"> </span><span class="n">exception_triage</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span><span class="w"> </span><span class="n">codes</span><span class="p">,</span><span class="w"> </span><span class="n">numcodes</span><span class="p">);</span><span class="w">  </span><span class="o">&lt;--------</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
 <blockquote>
-<p>At (a) the uint32_t instr is declared uninitialized on the
+<p>At (a) the <code>uint32_t</code> instr is declared uninitialized on the
  stack.
  At (b) the code tries to copyin the bytes of the
  exception-causing instruction from userspace
    note that the COPYIN macro doesn't itself check the return
  value of copyin, it just calls it.
- At (c) instr is assigned to codes[1], which at (d) is passed to
- exception_triage.</p>
-<p>that codes array will eventually end up being sent in an
+ At (c) <code>instr</code> is assigned to <code>codes[1]</code>, which at (d) is passed to
+ <code>exception_triage</code>.</p>
+<p>That codes array will eventually end up being sent in an
  exception mach message.</p>
 <p>The bug is that we can force copyin to fail by unmapping the
  page containing the undefined instruction
  while it's being handled. (I tried to do this with XO memory but
  the kernel seems to be able to copyin that just fine.)</p>
-<p>This PoC has an undefined instruction (0xdeadbeef) on its own
+<p>This PoC has an undefined instruction <code>(0xdeadbeef)</code> on its own
  page and spins up a thread to keep
- switching the protection of that page between VM_PROT_NONE and
- VM_PROT_READ|VM_PROT_EXECUTE.</p>
+ switching the protection of that page between <code>VM_PROT_NONE</code> and
+ <code>VM_PROT_READ|VM_PROT_EXECUTE</code>.</p>
 <p>We then keep spinning up threads which try to execute that
  undefined instruction.</p>
 <p>If the race windows align the thread executes the undefined
@@ -710,10 +713,10 @@ iOS 14.4 (18D46)
  the page is unmapped, the copying fails and the exception
  message we get has stale stack memory.</p>
 <p>This PoC just demonstrates that we do get values which aren't
- 0xdeadbeef in there for the EXC_ARM_UNDEFINED type.
+ <code>0xdeadbeef</code> in there for the <code>EXC_ARM_UNDEFINED</code> type.
  We'd have to do a bit more fiddling to work out how to get
  something specific there.</p>
-<p>Note that there are lots of other unchecked COPYIN's in sleh.c
+<p>Note that there are lots of other unchecked <code>COPYIN</code>'s in <code>sleh.c</code>
  (eg when userspace tries to access a system register not allowed
  for EL0) and these seem to have the same issue.</p>
 <p>tested on iPod Touch 6g running 11.3.1, but looking at the
