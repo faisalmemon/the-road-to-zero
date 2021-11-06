@@ -9,3 +9,4 @@
 |Exploit Database Git Repository <a name="EDG"></a> | [https://github.com/offensive-security/exploitdb](https://github.com/offensive-security/exploitdb) |
 |A Programmer's Guide to the Mach System Calls <a name=MSC></a> | A Programmer's Guide to the Mach System Calls by Linda R. Walmer and Mary R. Thompson, Carnegie-Mellon University, 1988. |
 |Mach <a name="machconcepts"></a> | Mach Concepts by NeXT Computer, Inc. 1995. [Mirror Website](https://www.nextop.de/NeXTstep_3.3_Developer_Documentation/OperatingSystem/Part1_Mach/01_Concepts/Concepts.htmld/) |
+| \*OS Internals <a name="SOI"></a> | [\*OS Internals](http://newosxbook.com/index.php) by Jonathan Levin |
