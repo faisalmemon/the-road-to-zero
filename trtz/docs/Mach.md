@@ -2,7 +2,7 @@
 
 ## Motivation
 
-The Operating Systems we know as iOS\index{OS!iOS}, macOS\index{OS!macOS}, tvOS\index{OS!tvOS}, etc. are really different flavors of the Darwin\index{OS!Darwin} Operating System.  The same code base but compiled with different macro preprocessor flags.
+The Operating Systems we know as iOS, macOS, tvOS, etc. are really different flavors of the Darwin Operating System.  The same code base but compiled with different macro preprocessor flags.
 
 The kernel of Darwin is XNU.  The fundamental interface to XNU is via the Mach programming interface.  At its core, XNU is based upon Mach messages.
 
@@ -16,13 +16,13 @@ It is straightforward to learn the UNIX syscall interface, because it follows th
 
 The Mach programming interface is somewhat esoteric.  Apple seem to like to pretend that it does not exist.  Even experienced iOS programmers will know  little to nothing about it.  However, time and again, this interface will be used to build exploits, so it is something we shall learn.
 
-The original idea with Mach was to extend UNIX with new capabilities to tackle the emergence of multiprocessor systems and distributed computing more naturally.  The solution was to add a new set of messaging primitives.  [@machsyscalls]
+The original idea with Mach was to extend UNIX with new capabilities to tackle the emergence of multiprocessor systems and distributed computing more naturally.  The solution was to add a new set of messaging primitives; see [A Programmer's Guide to the Mach System Calls](./Bibliography.md#MSC)
 
 When correctly coded, Mach based solutions can be elegant.  When incorrectly coded, Mach based code offers an expansive attack surface.  We shall study different techniques that abuse the Mach messaging system, such as Type Confusion.  Furthermore, Mach based attacks can be Data oriented attacks, which side-step the traditional mitigations in the Operating System (such as stack overflow protection and control flow integrity).
 
 ## Mach Fundamental Abstractions
 
-Mach [@machconcepts] is built upon the following abstractions:
+[Mach](./Bibliography.md#machconcepts) is built upon the following abstractions:
 
 | Entry | Meaning |
 | ----- | ------- |
@@ -33,11 +33,11 @@ Mach [@machconcepts] is built upon the following abstractions:
 
 In the original formulation, tasks could be on the same machine, on different processors in the machine, or on different machines.  Such tasks become active entities when they host one or more threads.  And threads can communicate with each other using well-defined interfaces that are invariant to whether the recipient is on the same machine or on a different machine.
 
-In reality, due to the irrepressible properties of distributed communication, latency and reliability cannot be ignored.  Therefore, such a uniform communication abstraction cannot work out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well design message passing abstraction comes into its own.  This is where the XNU kernel does its work and shines.
+In reality, due to the irrepressible properties of distributed communication, latency and reliability cannot be ignored.  Therefore, such a uniform communication abstraction cannot work out satisfactorily in real systems.  However, within a CPU with threads from the same task, or tasks in a parent-child relationship, the inherently well designed message passing abstraction comes into its own.  This is where the XNU kernel does its work and shines.
 
 ## How to learn Mach programming
 
-Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NEXTSTEP\index{trademark!NEXTSTEP} documentation, [@machconcepts].  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.
+Mach is not so easy to learn.  There are few modern programs on GitHub to look at.  One way into the topic is to study the NEXTSTEP [Mach](./Bibliography.md#machconcepts) documentation.  Despite its age, it is a well structured explanation of the concepts.  Another source of documentation are the header files on macOS.
 
 We can find the header file directory with:
 ```
@@ -55,7 +55,7 @@ Rather than duplicate or replace the NEXTSTEP documentation, we assume the reade
 
 ## Memory Allocation
 
-Here we follow along the [@machconcepts] documentation but with modernized code examples.  These are available at [@trtzgithub] in the subdirectory `source/mach-vm-alloc`
+Here we follow along the [Mach](./Bibliography.md#machconcepts) documentation but with modernized code examples.  These are available at [The Road to Zero GitHub](./Bibliography.md#TRTZ) in the subdirectory `source/mach-vm-alloc`
 
 Here is code that demonstrates how to allocate memory with Mach, how to duplicate memory, and then how to free memory.
 
