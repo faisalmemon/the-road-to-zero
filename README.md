@@ -67,9 +67,9 @@ See https://github.com/faisalmemon/ios-crash-dump-analysis-book#authoring-method
 ### Essential Software
 
 You need:
-- MkDocs Software Package
-- Material Design MkDocs plug-in
 - Brew Package Manager
+- [MkDocs Software Package](https://www.mkdocs.org/getting-started/)
+- [Material Design MkDocs plug-in](https://squidfunk.github.io/mkdocs-material/getting-started/)
 - Class dump
 - Draw.io.app for diagrams
 
