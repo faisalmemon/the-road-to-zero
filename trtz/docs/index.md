@@ -22,6 +22,14 @@ If I am successful, I hope this book will become the handbook of vulnerability c
 
 One thing in particular that attracts me to iOS is that its one of the hardest platforms to circumvent.  It may turn out I don't reach the high bar needed to make progress on this platform.  But if it was going to be easy, what would be the point in trying?
 
+## Acknowledgements
+
+I'd like to acknowledge the help and support of my colleagues for writing this book.
+
+Putting together this work was only possible because it was built upon generously provided open source tools which made writing the text of the book a pleasure.
+
+Lastly, I'd like to thank my supportive family whilst I was locked in my study, and largely absent. Thank you Junghyun, and Christopher.
+
 ## Disclaimer
 
 Copyright Faisal Memon 2021. All Rights Reserved.
@@ -38,7 +46,10 @@ Positions held by the author, as an employee or contractor, at past or future co
 
 Every effort has been made to identify trademark terms in this text. If there is an error or omission, please contact the author. We have thus far recognized the following trademarks:
 
-- iOS
+### Cisco
+- iOS (but licensed to Apple)
+
+### Apple
 - Darwin
 - UNIX
 - NeXT
@@ -48,11 +59,12 @@ Every effort has been made to identify trademark terms in this text. If there is
 - iPhone
 - iPod
 - iPad
+- iCloud
+- MacBook Pro
 
-## Acknowledgements
+### USB Implementers Forum
+- USB-C
 
-I'd like to acknowledge the help and support of my colleagues for writing this book.
+### Intel
+- Thunderbolt
 
-Putting together this work was only possible because it was built upon generously provided open source tools which made writing the text of the book a pleasure.
-
-Lastly, I'd like to thank my supportive family whilst I was locked in my study, and largely absent. Thank you Junghyun, and Christopher.

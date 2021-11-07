@@ -1,6 +1,6 @@
 # Kernel Debugging
 
-There is a good textbook on the Darwin family of Operating Systems; see [*OS Internals](./Bibliography.md#SOI).  In this chapter however, we aim for a practical hands-on approach, and defer theory until later on our journey.
+There is a good textbook on the Darwin family of Operating Systems; see [\*OS Internals](./Bibliography.md#SOI).  In this chapter however, we aim for a practical hands-on approach, and defer theory until later on our journey.
 
 Discovering 0-days is mostly a practical exercise, accompanied by a knowledge of strategy, a bedrock of theory, and a toolchain of reverse engineering tools.
 
@@ -16,9 +16,9 @@ At a high level, this is our workflow:
 
 ### Data Safety
 
-Experimenting with kernels can be like playing with fire.  The target machine must be throwaway; it might end up no longer booting, or be stuck in a boot loop.  The data on its disk might get corrupted or lost.  It is important to set up a discipline of keeping our work machine separate from our lab machine.  Furthermore, it is good to have different login identities and credentials between these two environments.  For example we wouldn't want a quirk in a beta environment causing corruption to an iCloud\index{trademark!iCloud} resource we rely upon in our work environment.
+Experimenting with kernels can be like playing with fire.  The target machine must be throwaway; it might end up no longer booting, or be stuck in a boot loop.  The data on its disk might get corrupted or lost.  It is important to set up a discipline of keeping our work machine separate from our lab machine.  Furthermore, it is good to have different login identities and credentials between these two environments.  For example we wouldn't want a quirk in a beta environment causing corruption to an iCloud resource we rely upon in our work environment.
 
-Unfortunately good "data hygiene" is mostly learnt after a painful data loss.  To avoid this, it is best to have in place a good backup strategy before experimenting with lab environments, and potential unsafe configurations and software.  One such strategy is to have all our code in a cloud service provider, such as GitHub\index{trademark!GitHub}, have our documents and photos mirrored to iCloud\index{trademark!iCloud}, have our desktop systems backed-up to Time Machine\index{trademark!Time Machine} and the high value personal documents, license keys, etc. kept also on Write-Only DVD media.
+Unfortunately good "data hygiene" is mostly learnt after a painful data loss.  To avoid this, it is best to have in place a good backup strategy before experimenting with lab environments, and potential unsafe configurations and software.  One such strategy is to have all our code in a cloud service provider, such as GitHub, have our documents and photos mirrored to iCloud, have our desktop systems backed-up to Time Machine and the high value personal documents, license keys, etc. kept also on Write-Only DVD media.
 
 ### Terminology
 
@@ -33,7 +33,7 @@ host debugger | This system is driving the probing and analysis
 
 It is surprisingly helpful to collect a random collection of old computers, peripherals, and connectors.  Sometimes an interesting vulnerability is seen only on old hardware, or a technique is only useable on old hardware. Variety is the key so that different types of lab setups are possible.
 
-In this tutorial we use a MacBook\index{trademark!MacBook Pro} Pro target which has native USB-C interfaces.
+In this tutorial we use a MacBook Pro target which has native USB-C interfaces.
 We connect a Thunderbolt USB-C to Thunderbolt adapter, and then connect a Thunderbolt Gigabit Ethernet Adapter to the Thunderbolt interface.  Then we connect the ethernet cable to the host computer.  The host computer is a Mac Mini based upon Apple Silicon.
 
 This choice of hardware comes from particular requirements.
