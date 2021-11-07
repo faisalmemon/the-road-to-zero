@@ -377,8 +377,75 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#taking-a-quick-tour" class="md-nav__link">
-    Taking a quick tour
+  <a href="#static-analysis" class="md-nav__link">
+    Static Analysis
+  </a>
+  
+    <nav class="md-nav" aria-label="Static Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entitlements" class="md-nav__link">
+    Entitlements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hidden-functionality" class="md-nav__link">
+    Hidden functionality
+  </a>
+  
+    <nav class="md-nav" aria-label="Hidden functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobilesafari-url-handlers" class="md-nav__link">
+    MobileSafari URL Handlers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-x-web-search" class="md-nav__link">
+    Handling x-web-search
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-analysis" class="md-nav__link">
+    Dynamic Analysis
+  </a>
+  
+    <nav class="md-nav" aria-label="Dynamic Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#process-explorer" class="md-nav__link">
+    Process Explorer
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documenting-the-journey" class="md-nav__link">
+    Documenting the Journey
   </a>
   
 </li>
@@ -448,8 +515,75 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#taking-a-quick-tour" class="md-nav__link">
-    Taking a quick tour
+  <a href="#static-analysis" class="md-nav__link">
+    Static Analysis
+  </a>
+  
+    <nav class="md-nav" aria-label="Static Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entitlements" class="md-nav__link">
+    Entitlements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hidden-functionality" class="md-nav__link">
+    Hidden functionality
+  </a>
+  
+    <nav class="md-nav" aria-label="Hidden functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobilesafari-url-handlers" class="md-nav__link">
+    MobileSafari URL Handlers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-x-web-search" class="md-nav__link">
+    Handling x-web-search
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-analysis" class="md-nav__link">
+    Dynamic Analysis
+  </a>
+  
+    <nav class="md-nav" aria-label="Dynamic Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#process-explorer" class="md-nav__link">
+    Process Explorer
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documenting-the-journey" class="md-nav__link">
+    Documenting the Journey
   </a>
   
 </li>
@@ -492,7 +626,9 @@
 <div class="highlight"><pre><span></span><code>arch -x86_64 brew install ldid
 </code></pre></div>
 <p>The command prefix <code>arch -x86_64</code> ensures the command works from an Apple Silicon Mac.</p>
-<h2 id="taking-a-quick-tour">Taking a quick tour</h2>
+<h2 id="static-analysis">Static Analysis</h2>
+<p>Let us first start by doing a static analysis of <code>MobileSafari</code>.  That is, analysing it without running it.</p>
+<h3 id="entitlements">Entitlements</h3>
 <p>It is worthwhile spending some time looking carefully at the entitlements of MobileSafari.  Every entitlement is a privilege, and therefore an opportunity to gain privilege if a vulnerability is found.</p>
 <div class="highlight"><pre><span></span><code>cd /tmp/MobileSafari.app
 ldid -e MobileSafari
@@ -521,6 +657,173 @@ ldid -e MobileSafari
         &lt;string&gt;com.apple.Safari.SandboxBroker&lt;/string&gt;
 </code></pre></div></p>
 <p>The same information can be obtained from the <a href="../Bibliography/#ED">Entitlements Cross-Reference</a> website.  It has a searchable index of entitlements for many versions of iOS and macOS.</p>
+<p>So we now are able to start building a mental model of what Mobile Safari it, and what its attack surface is.  We see the processes, threads, memory, and Mach ports that are used.  We also see all the files that have been opened by <code>MobileSafari</code>.</p>
+<h3 id="hidden-functionality">Hidden functionality</h3>
+<p>The most fruitful way to look at a piece of technology is from the angle of triggering lesser-used functionality, or undocumented functionality.  In practice a software project will grow over time, and new engineers are added to the project and often the original engineers move to other projects or roles.  This means some of the earlier functionality can be less well understood.  Particularly in the beginning of a project, a lot of functionality is offered, but only a subset of functionality becomes popular.  So less used features are often left in the product and later changes to the product can expose bugs, faults and exploitable conditions via the older less used functionality of the software.  The reason why older functionality is not pruned out is because sometimes it is not clear who is still relying on the older functionality.  So it is "safer" just to keep it in.  But this attitude allows us opportunities to find bugs and potential exploits.</p>
+<h4 id="mobilesafari-url-handlers"><code>MobileSafari</code> URL Handlers</h4>
+<p>We can explore the URL handler features of MobileSafari by looking at its <code>Info.plist</code> file.</p>
+<div class="highlight"><pre><span></span><code>plutil -p /tmp/MobileSafari.app/Info.plist
+</code></pre></div>
+<p>Amongst the output we see:
+<div class="highlight"><pre><span></span><code>&quot;CFBundleURLTypes&quot; =&gt; [
+    0 =&gt; {
+      &quot;CFBundleURLIsPrivate&quot; =&gt; 1
+      &quot;CFBundleURLName&quot; =&gt; &quot;Web App URL&quot;
+      &quot;CFBundleURLSchemes&quot; =&gt; [
+        0 =&gt; &quot;webclip&quot;
+      ]
+    }
+    1 =&gt; {
+      &quot;CFBundleURLName&quot; =&gt; &quot;Web site URL&quot;
+      &quot;CFBundleURLSchemes&quot; =&gt; [
+        0 =&gt; &quot;http&quot;
+        1 =&gt; &quot;https&quot;
+      ]
+    }
+    2 =&gt; {
+      &quot;CFBundleURLName&quot; =&gt; &quot;FTP URL&quot;
+      &quot;CFBundleURLSchemes&quot; =&gt; [
+        0 =&gt; &quot;ftp&quot;
+      ]
+    }
+    3 =&gt; {
+      &quot;CFBundleURLName&quot; =&gt; &quot;Web Search URL&quot;
+      &quot;CFBundleURLSchemes&quot; =&gt; [
+        0 =&gt; &quot;x-web-search&quot;
+      ]
+    }
+    4 =&gt; {
+      &quot;CFBundleURLIsPrivate&quot; =&gt; 1
+      &quot;CFBundleURLName&quot; =&gt; &quot;MobileSafari Tab URL&quot;
+      &quot;CFBundleURLSchemes&quot; =&gt; [
+        0 =&gt; &quot;com-apple-mobilesafari-tab&quot;
+      ]
+    }
+  ]
+</code></pre></div></p>
+<h4 id="handling-x-web-search">Handling <code>x-web-search</code></h4>
+<p>We saw earlier that <code>MobileSafari</code> has a URL handler <code>x-web-search</code></p>
+<p>From some research on Google and <a href="https://stackoverflow.com/a/50044505">Stack Overflow</a> we can come up with some code to trigger such functionality.</p>
+<p>It turns out that the best technology stack to do experimentation and exploit development is to use Objective-C because this gives us the fewest number of abstraction layers between our code and the system.  Objective-C is also more amenable to hacking because it is less type-safe than Swift.  We can craft malicious message calls and call private APIs easily.</p>
+<p>In our case, we just make a standard API call as follows:
+<div class="highlight"><pre><span></span><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@&quot;x-web-search://?toast&quot;]
+                                       options:@{}  completionHandler:^(BOOL success) {
+        NSLog(@&quot;status %ld&quot;, (long)success);
+    }];
+}
+</code></pre></div></p>
+<p>This indeed will launch the browser and perform a search for "toast" using the default search engine.</p>
+<h2 id="dynamic-analysis">Dynamic Analysis</h2>
+<p>We now switch to doing a dynamic analysis of <code>MobileSafari</code>.</p>
+<h3 id="process-explorer">Process Explorer</h3>
+<p>There is a useful tool which allows us to explore a given process on the iDevice and this exposes a lot of low level detail.  It is called <code>procexp</code> by Jonathan Levin.</p>
+<p>We install the tool by installing it onto our Mac:
+<div class="highlight"><pre><span></span><code>arch -x86_64 brew install procexp
+</code></pre></div></p>
+<p>and then we transfer it onto our iDevice:
+<div class="highlight"><pre><span></span><code>scp /usr/local/bin/procexp ipodtouch13_5:/tmp
+</code></pre></div></p>
+<p>We then manually launch Safari on the iDevice.  Once it has launched we can send commands to the device and locally store the results on our Mac.</p>
+<div class="highlight"><pre><span></span><code>ssh ipodtouch13_5 ps -ef | grep MobileSafari
+  501 99988     1   0  4:06PM ??         0:03.45 /Applications/MobileSafari.appMobileSafari
+</code></pre></div>
+<p>Note that the <code>| grep MobileSafari</code> portion runs on our Mac, and the <code>ps -ef</code> portion runs on the iDevice.</p>
+<p>Now from the output of <code>ps</code> we know that the second number is the process identifier (PID).  We can run procexp against this:</p>
+<div class="highlight"><pre><span></span><code>ssh ipodtouch13_5 /tmp/procexp 99988 all &gt; mobile_safari.procexp.txt
+</code></pre></div>
+<p>The full output file, <a href="../mobile_safari.procexp.txt">mobile_safari.procexp.txt</a>, is kept on our Mac.</p>
+<p>The output file is quite large, so we'll show a truncated excerpt below:</p>
+<div class="highlight"><pre><span></span><code>-----------------
+Process: 99988  Name: MobileSafari      Parent:     1   Status: runnable
+Container: /private/var/mobile/Containers/Data/Application/FDFCAC6B-8E4F-4381-B354-C0DEAB28D32B
+Flags:   64-bit,called exec,session leader,App
+
+Extmods: Task shows no signs of external modification or tampering
+Code signing: valid,get-task-allow,installer,require enforcement,require library validation
+
+UID:      501   RUID:   501     SVUID:   501
+GID:      501   RGID:   501     SVGID:   501
+
+Virtual size:           4312M (4522409984)      Resident size:          31M (33226752)
+Time:     00.08   =    00.08 (User)    +    00.00 (System)
+Syscalls:       38961   Mach Traps:   34832
+Disk I/O:      55852K Read            25532K Written
+No Network I/O detected for this process
+
+#Threads:   6     Workqueues:3 threads (3 running, 0 blocked) State: 0
+Thread Info:
+
+(0)                    0x75d0c88f 0000000100180000-0000000100380000 [   2M]r-x/r-x COW /Applications/MobileSafari.app/MobileSafari
+(0)                    0x75d0c88f 0000000100380000-0000000100394000 [  80K]r--/rw- PRV /Applications/MobileSafari.app/MobileSafari
+.
+.
+Shared PMAP            0x00000000 0000000270000000-0000000280000000 [ 256M]r--/r-- NUL
+
+Process Hierarchy:
+ 99988 MobileSafari  has no children
+
+46 File descriptors: MobileSafari     99988 FD  0r  /dev/null @0x0
+MobileSafari     99988 FD  1u  /dev/null @0x0
+MobileSafari     99988 FD  2u  /dev/null @0x317
+MobileSafari     99988 FD  3u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
+.
+.
+MobileSafari     99988 FD 45u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
+Jetsam Level: 0
+Thread policy version
+        PID : 99988 (399071), comm: MobileSafari Flags: PID Suspended, Frozen, DarwinBG, Live Donor, WQ Flags avail
+        Size: 18M Max Res: 75M
+        IOStats: Disk Reads: 1688 reads (57192448 bytes), 54 writes (26144768 bytes)
+
+                TID: 3721957 State: Waiting  PRI: 4/4 Flags: DarwinBG, Suspended 
+                Continuation: 0xfffffff007118af8 (no kernel stack)
+                CPU Times: User: 0.612410 secs, System: 0.000000 secs
+                Backtrace:
+                Frame 0: 0x1b08b3198
+                Frame 1: 0x1b08b260c
+                Frame 2: 0x1b0a5d468
+                Frame 3: 0x1b0a5849c
+                Frame 4: 0x1b0a57ce8
+                Frame 5: 0x1baba238c
+                Frame 6: 0x1b4b86444
+                Frame 7: 0x100186770
+                Frame 8: 0x1b08df8f0
+                Frame 9: 0x0
+
+                IOStats: Disk Reads: 592 reads (19787776 bytes), 2 writes (8192 bytes)
+.
+.
+MobileSafari:99988:0x103        task, kernel 0x79c64c07
+MobileSafari:99988:0x203
+MobileSafari:99988:0x303        (thread) 0x79d853e7
+MobileSafari:99988:0x403
+MobileSafari:99988:0x507
+MobileSafari:99988:0x603
+MobileSafari:99988:0x707        (HSP: Coalition)-&gt;launchd:1:0x1103
+MobileSafari:99988:0x803        (clock) 0x72b03a4f
+MobileSafari:99988:0x903        (semaphore) 0x7a8ec76f
+MobileSafari:99988:0xa03
+MobileSafari:99988:0xb03        (voucher) 0x73ec9147
+MobileSafari:99988:0xc03
+MobileSafari:99988:0xd07        &lt;-notifyd:58084:0xcf0b
+MobileSafari:99988:0xe03        &lt;-logd:58032:0x2bb0b
+MobileSafari:99988:0xf03        -&gt;logd:58032:0x52713
+MobileSafari:99988:0x1003       &lt;-cfprefsd:58085:0x27773
+MobileSafari:99988:0x1103       -&gt;logd:58032:0x1b803
+.
+.
+MobileSafari:99988:0x15123      -&gt;ContextService:58199:0x2f13
+MobileSafari:99988:0x15217      &quot;com.apple.cloudd&quot;      -&gt;cloudd:58141:0x2603
+MobileSafari:99988:0x1530f
+</code></pre></div>
+<h2 id="documenting-the-journey">Documenting the Journey</h2>
+<p>We have just scratched the surface of <code>MobileSafari</code>.  We have not found a zero-day but we have started to dismantle the browser and begun to view it from different perspectives.  By looking at things in a novel way we can develop novel ideas.  And these ideas are less likely to have already been tried by others.  Lesser used functionality will be more buggy that well tested user journeys.  So our odds of finding something helpful on our way to exploiting the system improve.</p>
+<p>When we explore a system, it is worthwhile documenting our journey as we go.  We have seen that merely by running commands in a fashion that send back the output to our Mac allows us to retain a record of what we found.  It is not much effort to wrap such analysis into a Markdown file with simple notes, and links to web resources.  These files naturally can be placed under version control.</p>
+<p>Hacking is all about the details.  Sometimes our experiments are fruitless.  But if we have a good record of what we have done, then at a later point in time when we get another idea, we can work back through our notes and possible recommence a failed approach but with a new angle of attack.</p>
+<p>When we are successful in creating a zero-day, often there is a write-up done after the event (for example when the bug has been fixed and customers have updated to using the fix).  Documenting the journey means we will have a valuable resource for writing a blog post, for example.</p>
                 
               
               
