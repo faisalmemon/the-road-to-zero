@@ -36,7 +36,11 @@ arch -x86_64 brew install ldid
 
 The command prefix `arch -x86_64` ensures the command works from an Apple Silicon Mac.
 
-## Taking a quick tour
+## Static Analysis
+
+Let us first start by doing a static analysis of `MobileSafari`.  That is, analysing it without running it.
+
+### Entitlements
 
 It is worthwhile spending some time looking carefully at the entitlements of MobileSafari.  Every entitlement is a privilege, and therefore an opportunity to gain privilege if a vulnerability is found.
 
@@ -75,7 +79,86 @@ which yields
 
 The same information can be obtained from the [Entitlements Cross-Reference](Bibliography.md#ED) website.  It has a searchable index of entitlements for many versions of iOS and macOS.
 
-## Live Inspection
+So we now are able to start building a mental model of what Mobile Safari it, and what its attack surface is.  We see the processes, threads, memory, and Mach ports that are used.  We also see all the files that have been opened by `MobileSafari`.
+
+### Hidden functionality
+
+The most fruitful way to look at a piece of technology is from the angle of triggering lesser-used functionality, or undocumented functionality.  In practice a software project will grow over time, and new engineers are added to the project and often the original engineers move to other projects or roles.  This means some of the earlier functionality can be less well understood.  Particularly in the beginning of a project, a lot of functionality is offered, but only a subset of functionality becomes popular.  So less used features are often left in the product and later changes to the product can expose bugs, faults and exploitable conditions via the older less used functionality of the software.  The reason why older functionality is not pruned out is because sometimes it is not clear who is still relying on the older functionality.  So it is "safer" just to keep it in.  But this attitude allows us opportunities to find bugs and potential exploits.
+
+#### `MobileSafari` URL Handlers
+
+We can explore the URL handler features of MobileSafari by looking at its `Info.plist` file.
+
+```
+plutil -p /tmp/MobileSafari.app/Info.plist
+```
+
+Amongst the output we see:
+```
+"CFBundleURLTypes" => [
+    0 => {
+      "CFBundleURLIsPrivate" => 1
+      "CFBundleURLName" => "Web App URL"
+      "CFBundleURLSchemes" => [
+        0 => "webclip"
+      ]
+    }
+    1 => {
+      "CFBundleURLName" => "Web site URL"
+      "CFBundleURLSchemes" => [
+        0 => "http"
+        1 => "https"
+      ]
+    }
+    2 => {
+      "CFBundleURLName" => "FTP URL"
+      "CFBundleURLSchemes" => [
+        0 => "ftp"
+      ]
+    }
+    3 => {
+      "CFBundleURLName" => "Web Search URL"
+      "CFBundleURLSchemes" => [
+        0 => "x-web-search"
+      ]
+    }
+    4 => {
+      "CFBundleURLIsPrivate" => 1
+      "CFBundleURLName" => "MobileSafari Tab URL"
+      "CFBundleURLSchemes" => [
+        0 => "com-apple-mobilesafari-tab"
+      ]
+    }
+  ]
+```
+
+#### Handling `x-web-search`
+
+We saw earlier that `MobileSafari` has a URL handler `x-web-search`
+
+From some research on Google and [Stack Overflow](https://stackoverflow.com/a/50044505) we can come up with some code to trigger such functionality.
+
+It turns out that the best technology stack to do experimentation and exploit development is to use Objective-C because this gives us the fewest number of abstraction layers between our code and the system.  Objective-C is also more amenable to hacking because it is less type-safe than Swift.  We can craft malicious message calls and call private APIs easily.
+
+In our case, we just make a standard API call as follows:
+```
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"x-web-search://?toast"]
+                                       options:@{}  completionHandler:^(BOOL success) {
+        NSLog(@"status %ld", (long)success);
+    }];
+}
+```
+
+This indeed will launch the browser and perform a search for "toast" using the default search engine.
+
+## Dynamic Analysis
+
+We now switch to doing a dynamic analysis of `MobileSafari`.
+
+### Process Explorer
 
 There is a useful tool which allows us to explore a given process on the iDevice and this exposes a lot of low level detail.  It is called `procexp` by Jonathan Levin.
 
@@ -104,6 +187,101 @@ Now from the output of `ps` we know that the second number is the process identi
 ssh ipodtouch13_5 /tmp/procexp 99988 all > mobile_safari.procexp.txt
 ```
 
-Again note that the output file, [mobile_safari.procexp.txt](./mobile_safari.procexp.txt), is kept on our Mac.
+The full output file, [mobile_safari.procexp.txt](./mobile_safari.procexp.txt), is kept on our Mac.
 
+The output file is quite large, so we'll show a truncated excerpt below:
 
+```
+-----------------
+Process: 99988  Name: MobileSafari      Parent:     1   Status: runnable
+Container: /private/var/mobile/Containers/Data/Application/FDFCAC6B-8E4F-4381-B354-C0DEAB28D32B
+Flags:   64-bit,called exec,session leader,App
+
+Extmods: Task shows no signs of external modification or tampering
+Code signing: valid,get-task-allow,installer,require enforcement,require library validation
+
+UID:      501   RUID:   501     SVUID:   501
+GID:      501   RGID:   501     SVGID:   501
+
+Virtual size:           4312M (4522409984)      Resident size:          31M (33226752)
+Time:     00.08   =    00.08 (User)    +    00.00 (System)
+Syscalls:       38961   Mach Traps:   34832
+Disk I/O:      55852K Read            25532K Written
+No Network I/O detected for this process
+
+#Threads:   6     Workqueues:3 threads (3 running, 0 blocked) State: 0
+Thread Info:
+
+(0)                    0x75d0c88f 0000000100180000-0000000100380000 [   2M]r-x/r-x COW /Applications/MobileSafari.app/MobileSafari
+(0)                    0x75d0c88f 0000000100380000-0000000100394000 [  80K]r--/rw- PRV /Applications/MobileSafari.app/MobileSafari
+.
+.
+Shared PMAP            0x00000000 0000000270000000-0000000280000000 [ 256M]r--/r-- NUL
+
+Process Hierarchy:
+ 99988 MobileSafari  has no children
+
+46 File descriptors: MobileSafari     99988 FD  0r  /dev/null @0x0
+MobileSafari     99988 FD  1u  /dev/null @0x0
+MobileSafari     99988 FD  2u  /dev/null @0x317
+MobileSafari     99988 FD  3u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
+.
+.
+MobileSafari     99988 FD 45u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
+Jetsam Level: 0
+Thread policy version
+        PID : 99988 (399071), comm: MobileSafari Flags: PID Suspended, Frozen, DarwinBG, Live Donor, WQ Flags avail
+        Size: 18M Max Res: 75M
+        IOStats: Disk Reads: 1688 reads (57192448 bytes), 54 writes (26144768 bytes)
+
+                TID: 3721957 State: Waiting  PRI: 4/4 Flags: DarwinBG, Suspended 
+                Continuation: 0xfffffff007118af8 (no kernel stack)
+                CPU Times: User: 0.612410 secs, System: 0.000000 secs
+                Backtrace:
+                Frame 0: 0x1b08b3198
+                Frame 1: 0x1b08b260c
+                Frame 2: 0x1b0a5d468
+                Frame 3: 0x1b0a5849c
+                Frame 4: 0x1b0a57ce8
+                Frame 5: 0x1baba238c
+                Frame 6: 0x1b4b86444
+                Frame 7: 0x100186770
+                Frame 8: 0x1b08df8f0
+                Frame 9: 0x0
+
+                IOStats: Disk Reads: 592 reads (19787776 bytes), 2 writes (8192 bytes)
+.
+.
+MobileSafari:99988:0x103        task, kernel 0x79c64c07
+MobileSafari:99988:0x203
+MobileSafari:99988:0x303        (thread) 0x79d853e7
+MobileSafari:99988:0x403
+MobileSafari:99988:0x507
+MobileSafari:99988:0x603
+MobileSafari:99988:0x707        (HSP: Coalition)->launchd:1:0x1103
+MobileSafari:99988:0x803        (clock) 0x72b03a4f
+MobileSafari:99988:0x903        (semaphore) 0x7a8ec76f
+MobileSafari:99988:0xa03
+MobileSafari:99988:0xb03        (voucher) 0x73ec9147
+MobileSafari:99988:0xc03
+MobileSafari:99988:0xd07        <-notifyd:58084:0xcf0b
+MobileSafari:99988:0xe03        <-logd:58032:0x2bb0b
+MobileSafari:99988:0xf03        ->logd:58032:0x52713
+MobileSafari:99988:0x1003       <-cfprefsd:58085:0x27773
+MobileSafari:99988:0x1103       ->logd:58032:0x1b803
+.
+.
+MobileSafari:99988:0x15123      ->ContextService:58199:0x2f13
+MobileSafari:99988:0x15217      "com.apple.cloudd"      ->cloudd:58141:0x2603
+MobileSafari:99988:0x1530f
+```
+
+## Documenting the Journey
+
+We have just scratched the surface of `MobileSafari`.  We have not found a zero-day but we have started to dismantle the browser and begun to view it from different perspectives.  By looking at things in a novel way we can develop novel ideas.  And these ideas are less likely to have already been tried by others.  Lesser used functionality will be more buggy that well tested user journeys.  So our odds of finding something helpful on our way to exploiting the system improve.
+
+When we explore a system, it is worthwhile documenting our journey as we go.  We have seen that merely by running commands in a fashion that send back the output to our Mac allows us to retain a record of what we found.  It is not much effort to wrap such analysis into a Markdown file with simple notes, and links to web resources.  These files naturally can be placed under version control.
+
+Hacking is all about the details.  Sometimes our experiments are fruitless.  But if we have a good record of what we have done, then at a later point in time when we get another idea, we can work back through our notes and possible recommence a failed approach but with a new angle of attack.
+
+When we are successful in creating a zero-day, often there is a write-up done after the event (for example when the bug has been fixed and customers have updated to using the fix).  Documenting the journey means we will have a valuable resource for writing a blog post, for example.
