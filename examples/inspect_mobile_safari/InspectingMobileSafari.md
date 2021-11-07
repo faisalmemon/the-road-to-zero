@@ -48,7 +48,7 @@ ldid -e MobileSafari
 This will produce a lot of output!  One interesting thing to explore is anything Sandbox related.  We can tune our command with a regular expression match as follows:
 
 ```
-ldid -e MobileSafari | grep -i  -B 17 sandbox
+ldid -e MobileSafari | grep -i -B 17 sandbox
 ```
 
 which yields
