@@ -72,3 +72,5 @@ which yields
 		<string>com.apple.watchlistd.xpc</string>
 		<string>com.apple.Safari.SandboxBroker</string>
 ```
+
+The same information can be obtained from the [NewOSXBook](http://newosxbook.com/ent.jl?osVer=iOS11&exec=MobileSafari) website.  It has a searchable index of entitlements for many versions of iOS and macOS.
