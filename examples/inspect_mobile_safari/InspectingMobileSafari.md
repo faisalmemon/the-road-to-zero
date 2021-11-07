@@ -74,3 +74,36 @@ which yields
 ```
 
 The same information can be obtained from the [Entitlements Cross-Reference](Bibliography.md#ED) website.  It has a searchable index of entitlements for many versions of iOS and macOS.
+
+## Live Inspection
+
+There is a useful tool which allows us to explore a given process on the iDevice and this exposes a lot of low level detail.  It is called `procexp` by Jonathan Levin.
+
+We install the tool by installing it onto our Mac:
+```
+arch -x86_64 brew install procexp
+```
+
+and then we transfer it onto our iDevice:
+```
+scp /usr/local/bin/procexp ipodtouch13_5:/tmp
+```
+
+We then manually launch Safari on the iDevice.  Once it has launched we can send commands to the device and locally store the results on our Mac.
+
+```
+ssh ipodtouch13_5 ps -ef | grep MobileSafari
+  501 99988     1   0  4:06PM ??         0:03.45 /Applications/MobileSafari.appMobileSafari
+```
+
+Note that the `| grep MobileSafari` portion runs on our Mac, and the `ps -ef` portion runs on the iDevice.
+
+Now from the output of `ps` we know that the second number is the process identifier (PID).  We can run procexp against this:
+
+```
+ssh ipodtouch13_5 /tmp/procexp 99988 all > mobile_safari.procexp.txt
+```
+
+Again note that the output file, [mobile_safari.procexp.txt](./mobile_safari.procexp.txt), is kept on our Mac.
+
+
