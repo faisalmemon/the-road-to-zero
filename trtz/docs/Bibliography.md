@@ -11,3 +11,4 @@
 |Mach <a name="machconcepts"></a> | Mach Concepts by NeXT Computer, Inc. 1995. [Mirror Website](https://www.nextop.de/NeXTstep_3.3_Developer_Documentation/OperatingSystem/Part1_Mach/01_Concepts/Concepts.htmld/) |
 | \*OS Internals <a name="SOI"></a> | [\*OS Internals](http://newosxbook.com/index.php) by Jonathan Levin |
 | Entitlements Cross-Reference <a name="ED"></a> | [Entitlements Cross-Reference](http://newosxbook.com/ent.jl) by Jonathan Levin |
+| `MobileSafari` Share Vulnerability <a name="MSSV"> </a> | [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html) |

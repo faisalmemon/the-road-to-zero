@@ -227,6 +227,11 @@ MobileSafari     99988 FD  2u  /dev/null @0x317
 MobileSafari     99988 FD  3u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
 .
 .
+MobileSafari     99988 FD 29u  /private/var/mobile/Library/Safari/History.db @0x0
+MobileSafari     99988 FD 30u  /private/var/mobile/Library/Safari/History.db-wal @0x0
+MobileSafari     99988 FD 31u  /private/var/mobile/Library/Safari/History.db-shm @0x0
+.
+.
 MobileSafari     99988 FD 45u  /private/var/mobile/Library/Safari/Bookmarks.db @0x0
 Jetsam Level: 0
 Thread policy version
@@ -276,9 +281,35 @@ MobileSafari:99988:0x15217      "com.apple.cloudd"      ->cloudd:58141:0x2603
 MobileSafari:99988:0x1530f
 ```
 
+### History Exploit
+
+There is a vulnerability which can be exploited from the output of the process explorer.  We notice that the `MobileSafari` app uses predictable paths for sensitive resources, such as the browsing history.
+
+In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported but this means a malicious share URL can leak sensitive information.
+
+To demonstrate the vulnerability with a free standing app, see `examples/history` from the [The Road to Zero GitHub](./Bibliography.md#TRTZ) website.  This app merely loads a malicious web page, which has a link to file:///private/var/mobile/Library/Safari/History.db, and upon loading, will also automatically click the share button, so all the user has to do is to pick the sharing target, such as Messages.
+
+Once shared, the recipient and view the website browsing history of the victim using a simple SQL Lite command.  We see output similar to the below:
+
+```
+# sqlite3 ~/Downloads/History.db
+SQLite version 3.36.0 2021-06-18 18:58:49
+Enter ".help" for usage hints.
+sqlite> .dump
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE history_items (id INTEGER PRIMARY KEY AUTOINCREMENT,url TEXT NOT NULL UNIQUE,domain_expansion TEXT NULL,visit_count INTEGER NOT NULL,daily_visit_counts BLOB NOT NULL,weekly_visit_counts BLOB NULL,autocomplete_triggers BLOB NULL,should_recompute_derived_visit_counts INTEGER NOT NULL,visit_count_score INTEGER NOT NULL);
+INSERT INTO history_items VALUES(1206,'https://www.theiphonewiki.com/w/index.php?search=Cydia%20Impactor&title=Special%3ASearch','theiphonewiki',1,X'14000000',NULL,NULL,0,20);
+INSERT INTO history_items VALUES(1207,'https://onedrive.live.com/?cid=STUFFYOUSHOULDNOTSEE&authkey=SOMETHINGELSESENSITIVE','onedrive.live',1,X'14000000',NULL,NULL,0,20);
+INSERT INTO history_items VALUES(1209,'http://www.cydiaimpactor.com/','cydiaimpactor',3,X'34000000',NULL,NULL,0,52);
+.
+.
+```
 ## Documenting the Journey
 
-We have just scratched the surface of `MobileSafari`.  We have not found a zero-day but we have started to dismantle the browser and begun to view it from different perspectives.  By looking at things in a novel way we can develop novel ideas.  And these ideas are less likely to have already been tried by others.  Lesser used functionality will be more buggy that well tested user journeys.  So our odds of finding something helpful on our way to exploiting the system improve.
+We have just scratched the surface of `MobileSafari`.  
+In a way we have half-cheated.  We did not find a zero day from our own efforts but we did find interesting information.  When correlated to an actual exploit we can see what we have done would have taken us a step closer to the exploit.
+The item we found was that the `MobileSafari` had opened a sensitive file path which we discovered.  A separate vulnerability is that it allowed sharing of items with the `file://` URL schema; it is not something we figured out.  But if we had, then we would have had a reasonable stab at a hack because we would know what URL path to supply to the `file://` URL.
 
 When we explore a system, it is worthwhile documenting our journey as we go.  We have seen that merely by running commands in a fashion that send back the output to our Mac allows us to retain a record of what we found.  It is not much effort to wrap such analysis into a Markdown file with simple notes, and links to web resources.  These files naturally can be placed under version control.
 
