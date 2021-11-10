@@ -281,7 +281,7 @@ MobileSafari:99988:0x15217      "com.apple.cloudd"      ->cloudd:58141:0x2603
 MobileSafari:99988:0x1530f
 ```
 
-### History Exploit
+### `MobileSafari` History Exploit
 
 There is a vulnerability which can be exploited from the output of the process explorer.  We notice that the `MobileSafari` app uses predictable paths for sensitive resources, such as the browsing history.
 
@@ -295,7 +295,7 @@ we see it opens the file (with a predictable path)
 /private/var/mobile/Library/Safari/History.db
 ```
 
-In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported but this means a malicious share URL can leak sensitive information.
+In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography.md#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported but this means a malicious share URL can leak sensitive information.
 
 To demonstrate the vulnerability with a free standing app, see `examples/history` from the [The Road to Zero GitHub](./Bibliography.md#TRTZ) website.  This app merely loads a malicious web page, which has a link to file:///private/var/mobile/Library/Safari/History.db, and upon loading, will also automatically click the share button, so all the user has to do is to pick the sharing target, such as Messages.
 
@@ -317,8 +317,7 @@ INSERT INTO history_items VALUES(1209,'http://www.cydiaimpactor.com/','cydiaimpa
 ```
 ## Documenting the Journey
 
-We have just scratched the surface of `MobileSafari`.  
-In a way we have half-cheated.  We did not find a zero day from our own efforts but we did find interesting information.  When correlated to an actual exploit we can see what we have done would have taken us a step closer to the exploit.
+We have just scratched the surface of `MobileSafari`.  In a way we have half-cheated.  We did not find a zero day from our own efforts but we did find interesting information.  When correlated to an actual exploit we can see what we have done would have taken us a step closer to the exploit.
 The item we found was that the `MobileSafari` had opened a sensitive file path which we discovered.  A separate vulnerability is that it allowed sharing of items with the `file://` URL schema; it is not something we figured out.  But if we had, then we would have had a reasonable stab at a hack because we would know what URL path to supply to the `file://` URL.
 
 When we explore a system, it is worthwhile documenting our journey as we go.  We have seen that merely by running commands in a fashion that send back the output to our Mac allows us to retain a record of what we found.  It is not much effort to wrap such analysis into a Markdown file with simple notes, and links to web resources.  These files naturally can be placed under version control.
