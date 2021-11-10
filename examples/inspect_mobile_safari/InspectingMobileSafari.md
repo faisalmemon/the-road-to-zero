@@ -285,6 +285,16 @@ MobileSafari:99988:0x1530f
 
 There is a vulnerability which can be exploited from the output of the process explorer.  We notice that the `MobileSafari` app uses predictable paths for sensitive resources, such as the browsing history.
 
+From
+```
+MobileSafari     99988 FD 29u  /private/var/mobile/Library/Safari/History.db @0x0
+```
+
+we see it opens the file (with a predictable path)
+```
+/private/var/mobile/Library/Safari/History.db
+```
+
 In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported but this means a malicious share URL can leak sensitive information.
 
 To demonstrate the vulnerability with a free standing app, see `examples/history` from the [The Road to Zero GitHub](./Bibliography.md#TRTZ) website.  This app merely loads a malicious web page, which has a link to file:///private/var/mobile/Library/Safari/History.db, and upon loading, will also automatically click the share button, so all the user has to do is to pick the sharing target, such as Messages.
