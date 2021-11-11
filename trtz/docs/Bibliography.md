@@ -12,3 +12,6 @@
 | \*OS Internals <a name="SOI"></a> | [\*OS Internals](http://newosxbook.com/index.php) by Jonathan Levin |
 | Entitlements Cross-Reference <a name="ED"></a> | [Entitlements Cross-Reference](http://newosxbook.com/ent.jl) by Jonathan Levin |
 | `MobileSafari` Share Vulnerability <a name="MSSV"> </a> | [https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html](https://blog.redteam.pl/2020/08/stealing-local-files-using-safari-web.html) |
+| iOS Version History <a name="IVH"></a> | [iOS Version History](https://en.wikipedia.org/wiki/IOS_version_history) |
+| Security Content of iOS 13.6 <a name="S136"></a> | [HT211288 About the security content of iOS 13.6 and iPadOS 13.6](https://support.apple.com/en-us/HT211288) |
+| Common Weakness Enumeration (CWE) <a name="CWE"></a> | [Common Weakness Enumeration](https://cwe.mitre.org/data/definitions/699.html) |
