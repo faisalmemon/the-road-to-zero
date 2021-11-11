@@ -91,7 +91,68 @@ The attacker merely went straight for the `tccd` daemon.  This is the logical fi
 
 If this vulnerability is part of a cluster of bugs, we can find other potentially vulnerable daemons via a look up against the [Entitlements Cross-Reference](./Bibliography.md#ED).  The specific query would be [http://newosxbook.com/ent.jl?ent=com.apple.private.tcc.manager&osVer=OSX](http://newosxbook.com/ent.jl?ent=com.apple.private.tcc.manager&osVer=OSX).
 
-The full search results are [here](./tcc_manager_daemons.txt).
+The full search results are [tcc_manager_daemons.txt](./tcc_manager_daemons.txt).
 
+We can search to occurences of "HOME" using:
+```
+for item in $(cat tcc_manager_daemons.txt)
+do
+    strings $item 2>/dev/null | grep -l HOME --label $item 
+done
+```
 
+to yield:
+```
+/System/Library/PrivateFrameworks/CloudDocsDaemon.framework/XPCServices/ContainerMetadataExtractor.xpc/Contents/MacOS/ContainerMetadataExtractor
+/System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd
+/System/Library/PrivateFrameworks/SyncedDefaults.framework/Support/syncdefaultsd
+/System/Library/PrivateFrameworks/TCC.framework/Versions/A/Resources/tccd
+/usr/bin/brctl
+/usr/libexec/fmfd
+/usr/libexec/pkd
+```
 
+All of these programs and daemons look interesting.  They are all privileged.  Some are obscure and lesser used functionality.  For example `brctl` appears to be a low level manipulation and diagnostics tool for iCloud.
+
+When exploring data-sensitive commands, it is best we establish a safe lab environment.  This is because we don't want to delete or damage our own production data.
+
+### Digression: Lab machine setup
+
+When we do static analysis we should use an "orange" environment.  This is a separate environment where we run tools against software to inspect them.
+
+When we do dynamic analysis we should use a "red" environment.  This is a separate environment where code is executed.
+
+A typical way to do things is to use an Intel-based Mac.  Install it with a special Apple ID used only for security research.  Potentially this could be a paid for Apple developer account that can be used to code sign binaries.
+
+Then create a Virtual Machine on the Mac and install it with a different Apple ID which is not connected with a paid developer account.  This whole machine should be snapshot-ed so experiments can be done and then the configuration reverted.
+
+### Studying `brctl`
+
+In a red environment we can play around with the `brctl` command.
+If we create a file and directory structure:
+```
+ParentFolder/sampleText.txt
+```
+and this lives under the iCloud Drive of user `redtestsecure` we have
+```
+/Users/redtestsecure/Library/Mobile Documents/com~apple~CloudDocs/
+```
+as the root directory of `ParentFolder`.
+
+To throw away the local file `sampleText.txt` so as to tell iCloud that it would need to re-download the file (in contrast to propagating the deletion of the file to the cloud also) we would run the command
+```
+brctl evict ./sampleText.txt
+```
+Immediately the cloud download icon would appear on the Finder GUI for this file.
+
+At this point we are ready to do some hacking.  We know there is at least some chance of a vulnerability through the HOME environmental variable since there was a prior bug using this approach.  We also know that this program is privileged so would definately produce valuable results if there was an exploit.  Access to sensitive data is called out for bug bounties on the Apple Bug bounty program.
+
+The next steps would be to learn more about the utility, and then study the program's internals via reverse engineering.
+
+Whilst we have not turned up an actual exploit so far.  We have shared some insights for how a hacker would think about attacking, in this case, macOS.  Once we had it then might be possible to cross-leverage our knowledge to attack iOS.  Both systems use TCC.
+
+Going back to a theme raised at the beginning of our book, we should profitable have two projects on-going.  One project is hacking the system.  The other project is writing some application or software.  That is something constructive.
+
+So at this point, a good idea would be to develop an iCloud drive management program alongside our hacking research.  Apple don't provide any user interface to force synchronization of our files.  It happens "by magic" without any user side control knobs.
+
+This means that even if `brctl` does not turn up any good hacks, we might end up with a tool we could share or sell as part of the effort.  It is easy to see that this dual-approach would help keep us motivated along this journey.
