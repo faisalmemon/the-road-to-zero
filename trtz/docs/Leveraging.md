@@ -139,7 +139,7 @@ and this lives under the iCloud Drive of user `redtestsecure` we have
 ```
 as the root directory of `ParentFolder`.
 
-To throw away the local file `sampleText.txt` so as to tell iCloud that it would need to re-download the file (in contrast to propagating the deletion of the file to the cloud also) we would run the command
+To throw away the local file `sampleText.txt` so as to tell iCloud that it would need to re-download the file (in contrast to propagating the deletion of the file to the cloud) we would run the command
 ```
 brctl evict ./sampleText.txt
 ```
@@ -149,10 +149,10 @@ At this point we are ready to do some hacking.  We know there is at least some c
 
 The next steps would be to learn more about the utility, and then study the program's internals via reverse engineering.
 
-Whilst we have not turned up an actual exploit so far.  We have shared some insights for how a hacker would think about attacking, in this case, macOS.  Once we had it then might be possible to cross-leverage our knowledge to attack iOS.  Both systems use TCC.
+Whilst we have not turned up an actual exploit so far, we have shared some insights for how a hacker would think about attacking, in this case, macOS.  Once we had an exploit then it might be possible to cross-leverage our knowledge to attack iOS.  Both systems use TCC.
 
-Going back to a theme raised at the beginning of our book, we should profitable have two projects on-going.  One project is hacking the system.  The other project is writing some application or software.  That is something constructive.
+Going back to a theme raised at the beginning of our book, we could profit by having two projects on-going.  One project is hacking the system.  That is something destructive.  The other project is writing some application or software.  That is something constructive.
 
 So at this point, a good idea would be to develop an iCloud drive management program alongside our hacking research.  Apple don't provide any user interface to force synchronization of our files.  It happens "by magic" without any user side control knobs.
 
-This means that even if `brctl` does not turn up any good hacks, we might end up with a tool we could share or sell as part of the effort.  It is easy to see that this dual-approach would help keep us motivated along this journey.
+This means that even if `brctl` does not turn up any good hacks, we might end up with a tool we could share or sell as part of the effort.  It is easy to see that this dual-approach would help keep us motivated along this journey.  We could switch between software engineering and hacking to maintain our interest.
