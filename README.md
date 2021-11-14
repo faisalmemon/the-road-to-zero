@@ -32,8 +32,8 @@ To draw an analogy, Google have shown what fish are out there to be catched, Lev
 
 ## Current Status
 
-As of 31st Oct 2021, the project status is:
-- I am converting the book from being pandoc/markdown based to being MkDocs based.
+As of 14th Nov 2021, the project status is:
+- I am going through the history of mitigations in iOS.  Done up to 4.x.  Need to carry on from 5.x
 
 So no new book content for a while until build processing is resolved.
 
