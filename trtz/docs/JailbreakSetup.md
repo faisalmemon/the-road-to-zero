@@ -12,7 +12,7 @@ Ordinary customers use production iPhones, "Prod Fused" hardware.  These have th
 
 The workaround that most zero day researchers use is to take Prod Fused hardware, and keep the software an an old iOS revision, potentially also staying on old hardware.  Over time, software might be released to circumvent the security restrictions of our iDevice.  Staying on old hardware increases the likelyhood of such software become available since the latest hardware protections schemes might not have a public exploit.
 
-Using software to exploit vulnerabilities to permit elevated access to the iDevice is called Jailbreaking.  Because the software and hardware restrictions keep our software "Jailed" by denying freedom to access system resources.  Jailbreaks break us out from such a Jail.
+Using software to exploit vulnerabilities to permit elevated access to the iDevice is called Jailbreaking.  Because the software and hardware restrictions keep our software "Jailed" by denying freedom to access arbitrary system resources.  Jailbreaks break us out from such a Jail.  Note, the word "Jail" can be traced back to the original concept [Jails: Confining the omnipotent root.](./Bibliography.md#JR) in FreeBSD.
 
 ## Types of Jailbreak
 

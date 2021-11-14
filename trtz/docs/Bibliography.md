@@ -15,3 +15,5 @@
 | iOS Version History <a name="IVH"></a> | [iOS Version History](https://en.wikipedia.org/wiki/IOS_version_history) |
 | Security Content of iOS 13.6 <a name="S136"></a> | [HT211288 About the security content of iOS 13.6 and iPadOS 13.6](https://support.apple.com/en-us/HT211288) |
 | Common Weakness Enumeration (CWE) <a name="CWE"></a> | [Common Weakness Enumeration](https://cwe.mitre.org/data/definitions/699.html) |
+| History of iOS Mitigation Techniques <a name="MT"></a> | [A Look at Modern iOS Exploit Mitigation Techniques.pdf by Luca Todesco @qwertyoruiopz](https://papers.put.as/papers/ios/2017/A_Look_at_Modern_iOS_Exploit_Mitigation_Techniques.pdf) |
+| Jails: Confining the omnipotent root <a name="JR"></a> | [Jails: Confining the omnipotent root.](https://docs.freebsd.org/44doc/papers/jail/jail.html) |
