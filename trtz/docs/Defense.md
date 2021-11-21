@@ -160,7 +160,7 @@ From studying the security disclosures of each version of iOS, the following bre
 - Siri
     - Email
 
-## Interesting Attackers
+## Types of Attackers
 
 From looking at the security disclosures of iOS a stark pattern arises.  There are three classes of attackers:
 - Accidental Finders
@@ -176,9 +176,12 @@ In this group, the author is normally in a team with a remit to find vulnerabili
 ### Motivated Attackers
 In this group the author, or team, is actually trying to get into the iDevice for a further goal.  It could be to further exploit the phone, or to fashion a Jailbreak.  These are the best bugs because they tend to be more powerful bugs.  They reveal more about the attack techniques that can be used against the system and how to understand how to handle OS mitigations.
 
-The way to note these is by looking for the name of the attacker.  They would be a famous hacker, such as `pod2g` or Charlie Miller, etc.  These are the interesting attackers.  From these bugs we can learn the hacking methodology.
+### Interesting People
+
+The most capable attackers are sometimes working on their own, working as part of a company to improve security, or are working as part of a hacking team.  They either are a Motivated Attacker, or simulate being a Motivated Attacker.
 
 Here is a partial list of these interesting attackers:
+
 - pod2g
 - evad3rs
 - iOS Jailbreak Dream Team
