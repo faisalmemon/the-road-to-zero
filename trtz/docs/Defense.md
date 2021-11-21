@@ -85,6 +85,10 @@ From studying the security disclosures of each version of iOS, the following bre
     - DNS
     - ICMP
     - PIM
+    - SSLv3/TLS 1.0
+    - TCP
+    - WiFi Credentials
+    - VPN
 
 - Graphics
     - CoreGraphics
@@ -93,6 +97,7 @@ From studying the security disclosures of each version of iOS, the following bre
 	- TIFF
 	- GIF
     - IOSurface
+    - CoreMedia
 
 - Application Sandbox
 
@@ -110,9 +115,12 @@ From studying the security disclosures of each version of iOS, the following bre
 
 - Libraries
     - libxml
+    - libresolv
 
 - Mail
     - HTML
+    - Exchange
+	- Cookies
 
 - Video
     - MPEG-4
@@ -126,3 +134,19 @@ From studying the security disclosures of each version of iOS, the following bre
 - Messaging
     - SMS
 
+- Calendar
+    - CalDAV
+
+- Settings
+    - Parental Restrictions
+
+- Alerts
+
+- Kernel
+    - Codesigning
+
+- File System
+    - HFS
+
+- Siri
+    - Email
