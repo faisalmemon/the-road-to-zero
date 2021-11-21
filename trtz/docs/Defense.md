@@ -17,11 +17,19 @@ The iOS system has become more sophisticated over time as the usage pattern and 
 
 ### Increasing variety of attacks
 
-The attacks have been cummulative across OS releases.  For example, iOS 1.x (strictly known as iPhoneOS) was vulnerable to WebKit based attacks.  Each version onwards has had a WebKit based attack also.  However, the method of attack has changed due to the mitigations employed by Apple.  Each new release sees a new type of attack, partly as a result of new functionality and technology being added to the device.  So whilst it seems that newer releases have more vulnerabilities than earlier releases, it is better to think of attacks as a cottage industry.  In this we mean that once someone has expertise in Wireless attacks, that expertise expands over time as Wireless mitigations improve, creating a cat-and-mouse game.  The same being true for WebKit, SMS, Networking, etc. we thus see a cottage industry of attacks, where each person (or "cottage") is working on their own technology area as their attack vector.
+The attacks have been cummulative across OS releases.  For example, iOS 1.x (strictly known as iPhoneOS) was vulnerable to WebKit based attacks.  Each version onwards has had a WebKit based attack also.  However, the method of attack has changed due to the mitigations employed by Apple.  Each new release sees a new type of attack, partly as a result of new functionality and technology being added to the device.
+
+Whilst it seems that newer releases have more vulnerabilities than earlier releases, it is better to think of attacks as a cottage industry.  In this we mean that once someone has expertise in Wireless attacks, that expertise expands over time as Wireless mitigations improve, creating a cat-and-mouse game.  The same being true for WebKit, SMS, Networking, etc. we thus see a cottage industry of attacks, where each person (or "cottage") is working on their own technology area as their attack vector.
+
+What is means for an attacker is that it is sufficient to stay within a specific technology domain and master the skills to attack that area.  The secret is depth of skills, not breadth of knowledge.  The reason for this is that attacks are possible in many areas because the distribution of zero-days is widespread.
+
+The most fortified area of iOS is the SMS and other autonomous aspects of functionality.  These yield the most valuable attacks, so-called "0-click" attacks.
+
+The web side of things is also fortified.  But the web is so complex and there is a need to stay on top of evolving standards to compete with other devices that provide a web experience.  Therefore the attack surface via the web continues to be significant and promising to an attacker.  Overall, the center of gravity has landed on web-based attacks.  These offer "1-click" attacks, the next best thing to "0-click" attacks.
 
 ### Web is the most fruitful area for attack
 
-From studying the security disclosure notices from Apple, the pattern is clear.  Attacks are dominated by WebKit and Web-technologies.  This is because an attack mounted from inside an app can be ejected from the App Store to stop the malware being spread.  Furthermore, Apple can reach out to devices that have already installed an App and remotely delete it.  This facility is little-advertised because it demostrates the reach and power of Apple of the device ecosystem.  Such software would be considered "malware".
+From studying the security disclosure notices from Apple, the pattern is clear.  Attacks are dominated by WebKit and Web-technologies.  This is because an attack mounted from inside an app can be ejected from the App Store to stop the malware being spread.  Furthermore, Apple can reach out to devices that have already installed an App and remotely delete it.  This facility is little-advertised because it demostrates the reach and power of Apple over the device ecosystem.  Such software would be considered "malware".
 
 ### App Review kills the malware vector
 
