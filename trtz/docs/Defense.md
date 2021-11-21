@@ -55,7 +55,7 @@ Jailbreak software is special because it exploits the system to remove security 
 
 For non-developers, various tools are available that automate the signing of the app via the Free developer account method Apple setup to facilitate learning and deployment of Apps in an Educational setting.  That is, spreading and popularizing the understanding of App development.  The Free access is now broken for such automated tooling due to it being abused for Jailbreak signing.
 
-## Technology under attack
+## Attack Surface
 
 The most important technology attack surface is the Web.
 All areas of web technology have been used to create exploits.
@@ -89,6 +89,7 @@ From studying the security disclosures of each version of iOS, the following bre
     - TCP
     - WiFi Credentials
     - VPN
+    - BPF
 
 - Graphics
     - CoreGraphics
@@ -98,10 +99,14 @@ From studying the security disclosures of each version of iOS, the following bre
 	- GIF
     - IOSurface
     - CoreMedia
+    - GLSL
 
 - Application Sandbox
+    - System Logs
 
 - Passcode
+
+- Passbook
 
 - File format processing
     - MS Office files
@@ -121,6 +126,7 @@ From studying the security disclosures of each version of iOS, the following bre
     - HTML
     - Exchange
 	- Cookies
+    - S/MIME
 
 - Video
     - MPEG-4
@@ -144,9 +150,41 @@ From studying the security disclosures of each version of iOS, the following bre
 
 - Kernel
     - Codesigning
+    - Kernel address leak 
+
+- dyld
 
 - File System
     - HFS
 
 - Siri
     - Email
+
+## Interesting Attackers
+
+From looking at the security disclosures of iOS a stark pattern arises.  There are three classes of attackers:
+- Accidental Finders
+- Systematic Finders
+- Motivated Attackers
+
+### Accidental Finders
+In this group, the author was tangentially involved with security and reported a vulnerability, usually an information disclosure, as a on-off report.  
+
+### Systematic Finders
+In this group, the author is normally in a team with a remit to find vulnerabilities and they often use systematic techniques.  For example, a fuzz testing tool, or an address sanitizer.  Often they have a focus on one particular area, for which they find multiple bugs.  These are often in the same OS release.
+
+### Motivated Attackers
+In this group the author, or team, is actually trying to get into the iDevice for a further goal.  It could be to further exploit the phone, or to fashion a Jailbreak.  These are the best bugs because they tend to be more powerful bugs.  They reveal more about the attack techniques that can be used against the system and how to understand how to handle OS mitigations.
+
+The way to note these is by looking for the name of the attacker.  They would be a famous hacker, such as `pod2g` or Charlie Miller, etc.  These are the interesting attackers.  From these bugs we can learn the hacking methodology.
+
+Here is a partial list of these interesting attackers:
+- pod2g
+- evad3rs
+- iOS Jailbreak Dream Team
+- Dan Rosenberg
+- comex
+- Mark Dowd
+- Abhishek Arya
+- Adam Barth
+- Charlie Miller
