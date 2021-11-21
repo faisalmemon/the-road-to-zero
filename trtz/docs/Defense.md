@@ -163,6 +163,7 @@ From studying the security disclosures of each version of iOS, the following bre
 ## Types of Attackers
 
 From looking at the security disclosures of iOS a stark pattern arises.  There are three classes of attackers:
+
 - Accidental Finders
 - Systematic Finders
 - Motivated Attackers
