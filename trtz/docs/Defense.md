@@ -90,6 +90,7 @@ From studying the security disclosures of each version of iOS, the following bre
     - WiFi Credentials
     - VPN
     - BPF
+    - Personal Hotspot
 
 - Graphics
     - CoreGraphics
@@ -97,12 +98,15 @@ From studying the security disclosures of each version of iOS, the following bre
 	- PNG
 	- TIFF
 	- GIF
+	- PDF
+	- XBM
     - IOSurface
     - CoreMedia
     - GLSL
 
 - Application Sandbox
     - System Logs
+    - Scripts
 
 - Passcode
 
@@ -151,11 +155,18 @@ From studying the security disclosures of each version of iOS, the following bre
 - Kernel
     - Codesigning
     - Kernel address leak 
+    - IOKit, IOKitUser, IOSerialFamily
+
+- USB Host
 
 - dyld
 
+- launchd
+
 - File System
     - HFS
+    - AppleDouble
+    - Restore from Backup
 
 - Siri
     - Email
@@ -192,3 +203,7 @@ Here is a partial list of these interesting attackers:
 - Abhishek Arya
 - Adam Barth
 - Charlie Miller
+- Stefan Esser
+- dent1zt
+- Andy Davis
+- Ian Beer
