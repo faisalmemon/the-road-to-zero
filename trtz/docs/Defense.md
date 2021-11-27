@@ -195,7 +195,7 @@ The most capable attackers are sometimes working on their own, working as part o
 Here is a partial list of these interesting attackers:
 
 - pod2g
-- evad3rs
+- evad3rs (pod2g, MuscleNerd, planetbeing, pimskeks)
 - iOS Jailbreak Dream Team
 - Dan Rosenberg
 - comex
