@@ -91,6 +91,7 @@ From studying the security disclosures of each version of iOS, the following bre
     - VPN
     - BPF
     - Personal Hotspot
+    - LEAP
 
 - Graphics
     - CoreGraphics
@@ -125,6 +126,12 @@ From studying the security disclosures of each version of iOS, the following bre
 - Libraries
     - libxml
     - libresolv
+    - libc
+    - libinfo
+    - libpthread
+    - libxpc
+    - libxml2
+    - libgssapi
 
 - Mail
     - HTML
@@ -155,7 +162,7 @@ From studying the security disclosures of each version of iOS, the following bre
 - Kernel
     - Codesigning
     - Kernel address leak 
-    - IOKit, IOKitUser, IOSerialFamily
+    - IOKit, IOKitUser, IOSerialFamily, IOHIDFamily, IOAcceleratorFamily, IOMobileFrameBuffer
 
 - USB Host
 
@@ -167,9 +174,19 @@ From studying the security disclosures of each version of iOS, the following bre
     - HFS
     - AppleDouble
     - Restore from Backup
+    - AppleFileConduit
+    - AirTraffic
 
 - Siri
     - Email
+
+- Keyboards
+    - QuickType
+
+- syslog
+
+-Telephony
+    - SIM/UIM
 
 ## Types of Attackers
 
@@ -207,3 +224,8 @@ Here is a partial list of these interesting attackers:
 - dent1zt
 - Andy Davis
 - Ian Beer
+- PanguTeam
+- Jonathan Zdziarski 
+- Kevin DeLong
+- TaiG Jailbreak Team
+- Michal Zalewski
