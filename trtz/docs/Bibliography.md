@@ -17,3 +17,6 @@
 | Common Weakness Enumeration (CWE) <a name="CWE"></a> | [Common Weakness Enumeration](https://cwe.mitre.org/data/definitions/699.html) |
 | History of iOS Mitigation Techniques <a name="MT"></a> | [A Look at Modern iOS Exploit Mitigation Techniques.pdf by Luca Todesco @qwertyoruiopz](https://papers.put.as/papers/ios/2017/A_Look_at_Modern_iOS_Exploit_Mitigation_Techniques.pdf) |
 | Jails: Confining the omnipotent root <a name="JR"></a> | [Jails: Confining the omnipotent root.](https://docs.freebsd.org/44doc/papers/jail/jail.html) |
+| Evolution of iOS Mitigations <a name="HW"></a> | [Evolution of iOS Mitigations](https://raw.githubusercontent.com/ssd-secure-disclosure/typhooncon2019/master/Siguza%20-%20Mitigations.pdf) |
+| AArch64TargetParser.def <a name="AA"></a> | [LLVM AArch64TargetParser.def](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Support/AArch64TargetParser.def) |
+| Memory Tagging Extension (MTE) <a name="MTE"></a> | [Memory Tagging](https://gdifiore.github.io/blog/Memory_Tagging.html) |
