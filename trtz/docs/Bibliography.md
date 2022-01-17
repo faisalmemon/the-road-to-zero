@@ -20,3 +20,5 @@
 | Evolution of iOS Mitigations <a name="HW"></a> | [Evolution of iOS Mitigations](https://raw.githubusercontent.com/ssd-secure-disclosure/typhooncon2019/master/Siguza%20-%20Mitigations.pdf) |
 | AArch64TargetParser.def <a name="AA"></a> | [LLVM AArch64TargetParser.def](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Support/AArch64TargetParser.def) |
 | Memory Tagging Extension (MTE) <a name="MTE"></a> | [Memory Tagging](https://gdifiore.github.io/blog/Memory_Tagging.html) |
+| KPP Tick-Tock <a name="TT"></a> | [KPP Tick-Tock](https://xerub.github.io/ios/kpp/2017/04/13/tick-tock.html) |
+| KTRR <a name="KTRR"></a> | [KTRR Kernel Text Read-Only Region](https://blog.siguza.net/KTRR) |
