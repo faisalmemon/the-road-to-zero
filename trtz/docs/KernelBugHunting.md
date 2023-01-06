@@ -29,11 +29,8 @@ Before we get into the details of what we are setting up, let's jump into what w
 [CodeQLVisualizationEmptyBlocks](./codeQLExample.png)
 
 The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:
-ln -s ../../screenshots/matchInSourceCode.png .
-(base) ➜  docs git:(master) ✗ ln -s ../../screenshots/pickingASnippet.png .  
-(base) ➜  docs git:(master) ✗ ln -s ../../screenshots/rightClickRunQuery.png .
 
-[PickASnippet](./.pickingASnippet.png)
+[PickASnippet](./pickingASnippet.png)
 
 Then we right-click to get the context menu and select the "Run Query" option.
 
