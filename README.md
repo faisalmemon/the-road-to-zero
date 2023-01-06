@@ -105,3 +105,7 @@ I need to experiment in this area.  Maybe putting my screen in large scale mode 
 
 The book is built using the MkDocs workflow.  It is published via the GitHub pages workflow in MkDocs.
 
+```sh
+cd trtz
+mkdocs gh-deploy --config-file ./mkdocs.yml
+```
