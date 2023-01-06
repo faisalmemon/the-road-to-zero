@@ -26,7 +26,7 @@ We assume our bug hunting is done with:
 
 Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
 
-[CodeQLVisualizationEmptyBlocks](./codeQLExample.png)
+[OverallExample](./overallExample.png)
 
 The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:
 
