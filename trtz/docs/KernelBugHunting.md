@@ -90,9 +90,9 @@ The top level steps are:
 1. Install the Kernel Debug Kit.
 1. Obtain download and compilation scripts.
 1. Setup and install Visual Studio Code, and the QL plug-in.
-1. Install CodeQL helper snippets.
+1. Load the Starter Workspace for CodeQL.
+1. Install CodeQL engine
 1. Generate XNU CodeQL database.
-1. Import snippets into Visual Studio
 1. Import XNU CodeQL database.
 1. Run CodeQL queries to find weaknesses and vulnerabilities. 
 
@@ -108,10 +108,22 @@ We need the following software:
 | Visual Studio Code | Editor/Viewer | [Microsoft VS Code](https://code.visualstudio.com) |
 | CodeQL plug-in | Integration for CodeQL into VS Code | From `Extensions` in VS Code; search for `CodeQL` |
 | CodeQL snippets | Pre-made queries to run | [Starter Workspace](https://github.com/github/vscode-codeql-starter/) |
+| CodeQL CLI | CodeQL engine binaries | [Releases](https://github.com/github/codeql-cli-binaries/releases) |
 
 ## Install the Apple Proprietary base software
 
 We assume that as standard, you have installed Xcode on your Apple Silicon Mac.
+
+Here we use Xcode 14.1.
+
+In order for the CodeQL engine to run, we also need Command Line Tools for Xcode and Rosetta 2.
+
+Install Command Line Tools from [Apple Download Site](https://developer.apple.com/download/all/) by searching for "Command Line Tools".  Install the edition that matches our installed Xcode version, 14.1.
+
+Rosetta 2 is installed upon demand the first time a tool (such as CodeQL) requires it.  But it is possible to put it in place beforehand with the command
+```sh
+/usr/sbin/softwareupdate --install-rosetta --agree-to-license
+```
 
 Then resources needed in order to compile the XNU kernel are provided by the Kernel Debug Kit.  The kernel evolves rapidly over time, and particularly after a new product release, a bulk update can often been seen in the XNU sources.  There is a tight coupling between the version of the KDK and the XNU kernel that is compiled using it.  Expect to have to do hacks and tweaks if this document is being read sometime after the versions we specify here.
 
@@ -146,7 +158,7 @@ It is worthwhile trying to exactly match the software being used here to see it 
 
 In our case, our case, out compile never completely succeeds.  But it is not really a problem because the above configuration gets us what we require - a set of intermediate binary objects that then can be explored and inspected with CodeQL later along.
 
-Our output files can be cross-compared from [The Road to Zero GitHub](./Bibliography.md#TRTZ) of this book, in directory `examples/compile_xnu`.
+Our output files can be cross-compared from [The Road to Zero GitHub](./Bibliography.md#TRTZ), in directory `examples/compile_xnu`.
 
 ## Setup Visual Studio Code
 
@@ -154,12 +166,59 @@ We assume you have setup Visual Studio Code, [Microsoft VS Code](https://code.vi
 When running this tool, with the "Activity Bar" on the left visible, or Shift+Command+X, the extensions panel can be raised.
 Search for extension "CodeQL" (the author is GitHub and should be the first match).  Then install it.
 
-CodeQL needs two more items to be effective.  Firstly it needs rules that it can execute to find code weaknesses and bugs.  Secondly, it needs a database file that indexes the code base it should search within.
+At this point we have a CodeQL extension installed, but no actual CodeQL engine (called the CodeQL CLI) that it can call.
+
+Furthermore, CodeQL needs two more items to be effective.  Firstly it needs rules (a ruleset) that it can execute to find code weaknesses and bugs.  Secondly, it needs a database file that indexes the code base it should search within.
 
 In order to get the ruleset, clone the repository [Starter Workspace](https://github.com/github/vscode-codeql-starter/)
 Identify the location of the checked out file, `vscode-codeql-starter.code-workspace` from the above repository.
 In Visual Studio Code, choose File -> Open Workspace From File... and select the above workspace file.
 
-## Install CodeQL
+## Install CodeQL CLI
 
-The engine that runs CodeQL is called the CodeQL CLI.  These are offered as binaries.  In order for our configuration to work we require Xcode command-line developer tools and Rosetta 2 are installed.
+The engine that runs CodeQL is called the CodeQL CLI.  These are offered as binaries.  In order for our configuration to work we require Xcode command-line developer tools and Rosetta 2 are installed.  These were installed earlier.
+
+Download the CodeQL CLI via the release binaries.  Here we are using [codeql-osx64.zip version 2.11.6](https://github.com/github/codeql-cli-binaries/releases/download/v2.11.6/codeql-osx64.zip).  The latest version is at [CodeQL Releases](https://github.com/github/codeql-cli-binaries/releases)
+
+Place the downloaded codeql into a place which is reachable by your shell PATH variable.  E.g. for `zsh` users it would be:
+```sh
+mkdir -p ~/tools
+mv ~/Downloads/codeql ~/tools
+echo "PATH=$PATH:~/tools" >> ~/.zprofile
+. ~/.zprofile
+```
+
+and check the installed command:
+```sh
+~ codeql --version
+CodeQL command-line toolchain release 2.11.6.
+Copyright (C) 2019-2022 GitHub, Inc.
+Unpacked in: /Users/faisalm/tools/codeql
+   Analysis results depend critically on separately distributed query and
+   extractor modules. To list modules that are visible to the toolchain,
+   use 'codeql resolve qlpacks' and 'codeql resolve languages'.
+```
+
+## Create the XNU CodeQL Database
+
+At this point we can go back to our `xnu-build` repository and run its second shell script.
+```sh
+. ~/.zprofile # Just in case we have not picked up codeql in the PATH yet
+./ql.py > ql-py-output.txt 2> ql-py-err.txt 
+```
+
+Our output files can be cross-compared from [The Road to Zero GitHub](./Bibliography.md#TRTZ), in directory `examples/codeql_database_generation`.
+Make a note of the newly created directory, `xnu-codeql` because this is referenced in a later step.
+
+## Import the XNU CodeQL Database
+
+From the Left Hand panel of Visual Studio Code, click the Dots menu and select CodeQL to show it.
+
+![VSCodeCodeQL](vscodeCodeQL.png)
+
+From here we can "Add a CodeQL Database from a folder".  We pick the `xnu-codeql` folder we generated in the previous section. (It will be a subdirectory of `xnu-build`.)
+
+When this is done we see that the CPP (C++) database `xnu-codeql` is seen with a tick mark in the Left Panel section marked "DATABASES".
+![ImportedDatabase](importedDatabase.png)
+
+We now need to switch our view from the CodeQL plug-in view to the normal folders view.
