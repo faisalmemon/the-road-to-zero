@@ -105,7 +105,17 @@ I need to experiment in this area.  Maybe putting my screen in large scale mode 
 
 The book is built using the MkDocs workflow.  It is published via the GitHub pages workflow in MkDocs.
 
+We install the tooling as follows:
+```sh
+brew install pyenv
+pyenv install 3.8
+pyenv local 3.8
+pip install --upgrade pip
+pip install mkdocs
+pip install mkdocs-material
+```
+
 ```sh
 cd trtz
-mkdocs gh-deploy --config-file ./mkdocs.yml
+python -m mkdocs gh-deploy --config-file ./mkdocs.yml
 ```
