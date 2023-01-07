@@ -426,8 +426,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#outline-of-approach" class="md-nav__link">
-    Outline of Approach
+  <a href="#basic-concepts" class="md-nav__link">
+    Basic Concepts
   </a>
   
 </li>
@@ -435,6 +435,33 @@
         <li class="md-nav__item">
   <a href="#sample-visualization" class="md-nav__link">
     Sample Visualization
+  </a>
+  
+    <nav class="md-nav" aria-label="Sample Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specific-rule-approach" class="md-nav__link">
+    Specific rule approach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-queries" class="md-nav__link">
+    Batch Queries
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outline-of-approach" class="md-nav__link">
+    Outline of Approach
   </a>
   
 </li>
@@ -496,8 +523,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#outline-of-approach" class="md-nav__link">
-    Outline of Approach
+  <a href="#basic-concepts" class="md-nav__link">
+    Basic Concepts
   </a>
   
 </li>
@@ -505,6 +532,33 @@
         <li class="md-nav__item">
   <a href="#sample-visualization" class="md-nav__link">
     Sample Visualization
+  </a>
+  
+    <nav class="md-nav" aria-label="Sample Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specific-rule-approach" class="md-nav__link">
+    Specific rule approach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-queries" class="md-nav__link">
+    Batch Queries
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outline-of-approach" class="md-nav__link">
+    Outline of Approach
   </a>
   
 </li>
@@ -538,14 +592,63 @@
 <h1 id="kernel-bug-hunting">Kernel Bug Hunting</h1>
 <p>It is generally the case that the barriers to finding and exploiting are getting higher.  But there is good news also.
 In this chapter we describe how to use an automated approach to finding vulnerabilities in the XNU kernel.</p>
+<h2 id="basic-concepts">Basic Concepts</h2>
+<p>The GitHub site provides a service which statically analyses code for known coding errors and bad practices, security being
+a subset of such analysis rules.  The underlying tool chain, called CodeQL, provides the mechanism where a structured rule
+can be used to parse the syntax tree of a compiled program.</p>
+<p>In this chapter we show how the XNU kernel and be compiled, and from this a database can be constructed.  Then CodeQL queries
+can be run against it to automatically find bad practices and security sensitive issues.</p>
+<h2 id="sample-visualization">Sample Visualization</h2>
+<p>Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
+We will go into the details of setup and configuration in a later section, but it makes more sense to first understand
+the approach and benefits we shall gain from using CodeQL.</p>
+<p>We can either run a specific rule, to find code references that match the rule, or we can run a batch of queries
+given a set of rules.</p>
+<h3 id="specific-rule-approach">Specific rule approach</h3>
+<p>We start with checking for code which has an if-clause but then has an empty block of C++ code that is invoked when
+the condition matches.  For example:
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ERROR_NOT_ALLOWED</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="c1">// No code in here.  e.g. missing error handling code?</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>When looking for such data, our overall Visual Studio Code setup will look like:</p>
+<p><img alt="OverallExample" src="../overallExample.png" /></p>
+<p>The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:</p>
+<p><img alt="PickASnippet" src="../pickingASnippet.png" /></p>
+<p>Then we right-click to get the context menu and select the "Run Query" option:</p>
+<p><img alt="RightClickRunQuery" src="../rightClickRunQuery.png" /></p>
+<p>Lastly, we inspect the matched source code files:</p>
+<p><img alt="InspectSourceFile" src="../matchInSourceCode.png" /></p>
+<h3 id="batch-queries">Batch Queries</h3>
+<p>If we update the workspace file <code>vscode-codeql-starter.code-workspace</code> to first have increased querying capability:
+<div class="highlight"><pre><span></span><code> &quot;settings&quot;: {
+    &quot;omnisharp.autoStart&quot;: false,
+    &quot;codeQL.runningQueries.maxQueries&quot;: 128
+  }
+</code></pre></div></p>
+<p>then we can Right Click on a directory level to run all the <code>.ql</code> files underneath.  We can for example select the
+<code>vscode-codeql-starter/ql/cpp/ql/src/Security/CWE</code> file and then run all the Security-related queries.  This takes
+a long time on a powerful Mac.  But it is still quicker than a manual inspection! </p>
+<p>Unfortunately, as of <code>xnu-8792.61.2</code> there are no matches for any of the 64 rules underneath <code>Security/CWE</code>.</p>
+<p>This is probably because internal to Apple, or perhaps a third-party collaborator, has been running CodeQL as part
+of a Continuous Integration pipeline.</p>
+<p>Nevertheless, as we have shown, an empty block in the code might allude to a missing error handling case.  So the
+less interesting rules might turn up security vulnerabilities or give us ideas for how to write a new rule.  These
+private rules would not be part of the CI test set that Apple run.  So there is a real opportunity to find new
+weaknesses or helpful bugs.</p>
 <h2 id="outline-of-approach">Outline of Approach</h2>
 <p>We need a number of things setup before we can proceed.  Here we've made some assumptions and choices on configuration and setup which we hope can be adapted for your requirements and preferences.</p>
-<p>We assume our bug hunting is done with:
-- Apple Silicon ARM architecture
-- Visual Studio is our editor for querying for, and viewing results
-- XNU Kernel <code>xnu-8792.61.2</code> is being studied</p>
-<ol>
-<li>Setup for Xcode on Mac on Apple Silicon.</li>
+<p>We assume our bug hunting is done with:</p>
+<ul>
+<li>Apple Silicon ARM architecture</li>
+<li>Visual Studio is our editor for querying for, and viewing results</li>
+<li>
+<p>XNU Kernel <code>xnu-8792.61.2</code> is being studied</p>
+</li>
+<li>
+<p>Setup for Xcode on Mac on Apple Silicon.</p>
+</li>
 <li>Install the Kernel Development Kit.</li>
 <li>Download and compile the XNU kernel source.</li>
 <li>Setup and install Visual Studio Code, and the QL plug-in.</li>
@@ -554,16 +657,7 @@ In this chapter we describe how to use an automated approach to finding vulnerab
 <li>Import snippets into Visual Studio</li>
 <li>Import XNU CodeQL database.</li>
 <li>Run CodeQL queries to find weaknesses and vulnerabilities. </li>
-</ol>
-<h2 id="sample-visualization">Sample Visualization</h2>
-<p>Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.</p>
-<p><img alt="OverallExample" src="../overallExample.png" /></p>
-<p>The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:</p>
-<p><img alt="PickASnippet" src="../pickingASnippet.png" /></p>
-<p>Then we right-click to get the context menu and select the "Run Query" option.</p>
-<p><img alt="RightClickRunQuery" src="../rightClickRunQuery.png" /></p>
-<p>Lastly, we inspect the matched source code files.</p>
-<p><img alt="InspectSourceFile" src="../matchInSourceCode.png" /></p>
+</ul>
 <h2 id="collect-needed-software">Collect needed software</h2>
 <p>We need the following software:</p>
 <table>
