@@ -59,12 +59,12 @@ If we update the workspace file `vscode-codeql-starter.code-workspace` to first 
 ```
 
 then we can Right Click on a directory level to run all the `.ql` files underneath.  We can for example select the
-`vscode-codeql-starter/ql/cpp/ql/src/Security/CWE` file and then run all the Security-related queries.  This takes
-a long time on a powerful Mac.  But it is still quicker than a manual inspection! 
+`vscode-codeql-starter/ql/cpp/ql/src/Security/CWE` directory and then run all the Security-related queries.  This takes
+a few minutes on a powerful Mac.  But it is still quicker than a manual inspection! 
 
 Unfortunately, as of `xnu-8792.61.2` there are no matches for any of the 64 rules underneath `Security/CWE`.
 
-This is probably because internal to Apple, or perhaps a third-party collaborator, has been running CodeQL as part
+This is probably because Apple, or perhaps a third-party collaborator, has been running CodeQL as part
 of a Continuous Integration pipeline.
 
 Nevertheless, as we have shown, an empty block in the code might allude to a missing error handling case.  So the
@@ -82,6 +82,8 @@ We assume our bug hunting is done with:
 - Visual Studio is our editor for querying for, and viewing results
 - XNU Kernel `xnu-8792.61.2` is being studied
 
+The top level steps are:
+
 1. Setup for Xcode on Mac on Apple Silicon.
 1. Install the Kernel Development Kit.
 1. Download and compile the XNU kernel source.
@@ -92,7 +94,7 @@ We assume our bug hunting is done with:
 1. Import XNU CodeQL database.
 1. Run CodeQL queries to find weaknesses and vulnerabilities. 
 
-## Collect needed software
+## Software Requirements
 
 We need the following software:
 
@@ -102,7 +104,7 @@ We need the following software:
 | Kernel Development Kit (13.1 22C65) | XNU Dependency for compilation | [Apple Download Site](https://developer.apple.com/download/all/) |
 | `xnu-build` | Build Scripts for XNU | [pwn0rz/xnu-build](https://github.com/pwn0rz/xnu-build) |
 | Visual Studio Code | Editor/Viewer | [Microsoft VS Code](https://code.visualstudio.com) |
-| CodeQL plug-in | Integration for CodeQL into VS Code | `Extensions` in VS Code; `CodeQL` |
+| CodeQL plug-in | Integration for CodeQL into VS Code | From `Extensions` in VS Code; search for `CodeQL` |
 | CodeQL snippets | Pre-made queries to run | [Starter Workspace](https://github.com/github/vscode-codeql-starter/) |
 
 
