@@ -26,19 +26,19 @@ We assume our bug hunting is done with:
 
 Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
 
-![OverallExample](./overallExample.png)
+![OverallExample](overallExample.png)
 
 The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:
 
-![PickASnippet](./pickingASnippet.png)
+![PickASnippet](pickingASnippet.png)
 
 Then we right-click to get the context menu and select the "Run Query" option.
 
-![RightClickRunQuery](./rightClickRunQuery.png)
+![RightClickRunQuery](rightClickRunQuery.png)
 
 Lastly, we inspect the matched source code files.
 
-![InspectSourceFile](./matchInSourceCode.png)
+![InspectSourceFile](matchInSourceCode.png)
 
 ## Collect needed software
 
