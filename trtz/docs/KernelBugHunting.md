@@ -144,9 +144,9 @@ It is worthwhile, whilst we are here, to look inside the KDK subdirectories beca
 
 ## Build XNU kernel
 
-Installing all the prerequisite software modules that the XNU kernel requires, as well as patching up small differences needed due to our compilation being done outside of Apple (and thus not using their internal SDK) is non-trivial.  Fortunately the heavy-lifting has already been done by `pwn0rz` with repository [](https://github.com/pwn0rz/xnu-build).  In this tutorial we are using it at commit `6b5c72cfb5a9a9ad8b5e9e245dbd00f331d37259`.
+Installing all the prerequisite software modules that the XNU kernel requires, as well as patching up small differences needed due to our compilation being done outside of Apple (and thus not using their internal SDK) is non-trivial.  Fortunately the heavy-lifting has already been done by `pwn0rz` with repository [pwn0rz/xnu-build](https://github.com/pwn0rz/xnu-build).  In this tutorial we are using it at commit `6b5c72cfb5a9a9ad8b5e9e245dbd00f331d37259`.
 
-1.  Clone the repository [](https://github.com/pwn0rz/xnu-build)
+1.  Clone the repository [pwn0rz/xnu-build](https://github.com/pwn0rz/xnu-build).
 1.  Ensure a modern Python is present on your system, e.g. Python 3.10.8
 1.  Run the script that fetches and compiles the source code
 ```sh
@@ -176,7 +176,7 @@ git clone --recursive https://github.com/github/vscode-codeql-starter
 ```
 
 Identify the location of the checked out file, `vscode-codeql-starter.code-workspace` from the above repository.
-In Visual Studio Code, choose File -> Open Workspace From File... and select the above workspace file.
+In Visual Studio Code, choose "File -> Open Workspace From File..." and select the above workspace file.
 
 ## Install CodeQL CLI
 
@@ -255,4 +255,8 @@ We need to update the workspace file `vscode-codeql-starter.code-workspace` to s
 
 We have shown a powerful tool that can be used to inspect the XNU kernel source, and shown how we can get the source code and compile it.
 
-What remains is to explore the CodeQL query language, and make novel queries.  We could draw inspiration from past bug fixes to see if other instances are present by crafting a query that would match the past bug fix.  Alternatively we could run some of the "noise" queries, such as the empty block query we presented earlier in this chapter.  This can lead to insights and further refinement to get a good query that could find a flaw.
+What remains is to explore the CodeQL query language, and make novel queries.
+
+We could draw inspiration from past bug fixes to see if other instances are present by crafting a query that would match the past bug fix.
+
+Alternatively we could run some of the "noise" queries, such as the empty block query we presented earlier in this chapter.  This can lead to insights and further refinement to get a good query that could find a flaw.
