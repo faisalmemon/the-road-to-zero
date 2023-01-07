@@ -3,11 +3,41 @@
 It is generally the case that the barriers to finding and exploiting are getting higher.  But there is good news also.
 In this chapter we describe how to use an automated approach to finding vulnerabilities in the XNU kernel.
 
+## Basic Concepts
+
+The GitHub site provides a service which statically analyses code for known coding errors and bad practices, security being
+a subset of such analysis rules.  The underlying tool chain, called CodeQL, provides the mechanism where a structured rule
+can be used to parse the syntax tree of a compiled program.
+
+In this chapter we show how the XNU kernel and be compiled, and from this a database can be constructed.  Then CodeQL queries
+can be run against it to automatically find bad practices and security sensitive issues.
+
+## Sample Visualization
+
+Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
+
+We shall end up with a debug and analysis setup which looks like:
+
+![OverallExample](overallExample.png)
+
+The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:
+
+![PickASnippet](pickingASnippet.png)
+
+Then we right-click to get the context menu and select the "Run Query" option:
+
+![RightClickRunQuery](rightClickRunQuery.png)
+
+Lastly, we inspect the matched source code files:
+
+![InspectSourceFile](matchInSourceCode.png)
+
 ## Outline of Approach
 
 We need a number of things setup before we can proceed.  Here we've made some assumptions and choices on configuration and setup which we hope can be adapted for your requirements and preferences.
 
 We assume our bug hunting is done with:
+
 - Apple Silicon ARM architecture
 - Visual Studio is our editor for querying for, and viewing results
 - XNU Kernel `xnu-8792.61.2` is being studied
@@ -21,24 +51,6 @@ We assume our bug hunting is done with:
 1. Import snippets into Visual Studio
 1. Import XNU CodeQL database.
 1. Run CodeQL queries to find weaknesses and vulnerabilities. 
-
-## Sample Visualization
-
-Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
-
-![OverallExample](overallExample.png)
-
-The workflow is to select a snippet to query for.  Here we picked one that looks for empty blocks:
-
-![PickASnippet](pickingASnippet.png)
-
-Then we right-click to get the context menu and select the "Run Query" option.
-
-![RightClickRunQuery](rightClickRunQuery.png)
-
-Lastly, we inspect the matched source code files.
-
-![InspectSourceFile](matchInSourceCode.png)
 
 ## Collect needed software
 
