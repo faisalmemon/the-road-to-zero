@@ -55,7 +55,7 @@ All areas of web technology have been used to create exploits.
 
 In iOS, WebKit is used to serve web-based technologies.  It is open source.
 
-From studying the security disclosures of each version of iOS, the following breeakdown can be seen of areas used to create exploits.
+From studying the security disclosures of each version of iOS, the following breakdown can be seen of areas used to create exploits.
 
 - WebKit
     - Certificates
