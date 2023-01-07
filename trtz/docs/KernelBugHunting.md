@@ -15,8 +15,24 @@ can be run against it to automatically find bad practices and security sensitive
 ## Sample Visualization
 
 Before we get into the details of what we are setting up, let's jump into what we can expect to end up with.
+We will go into the details of setup and configuration in a later section, but it makes more sense to first understand
+the approach and benefits we shall gain from using CodeQL.
 
-We shall end up with a debug and analysis setup which looks like:
+We can either run a specific rule, to find code references that match the rule, or we can run a batch of queries
+given a set of rules.
+
+### Specific rule approach
+
+We start with checking for code which has an if-clause but then has an empty block of C++ code that is invoked when
+the condition matches.  For example:
+```c
+if (ret == ERROR_NOT_ALLOWED)
+{
+// No code in here.  e.g. missing error handling code?
+}
+```
+
+When looking for such data, our overall Visual Studio Code setup will look like:
 
 ![OverallExample](overallExample.png)
 
@@ -31,6 +47,30 @@ Then we right-click to get the context menu and select the "Run Query" option:
 Lastly, we inspect the matched source code files:
 
 ![InspectSourceFile](matchInSourceCode.png)
+
+### Batch Queries
+
+If we update the workspace file `vscode-codeql-starter.code-workspace` to first have increased querying capability:
+```
+ "settings": {
+    "omnisharp.autoStart": false,
+    "codeQL.runningQueries.maxQueries": 128
+  }
+```
+
+then we can Right Click on a directory level to run all the `.ql` files underneath.  We can for example select the
+`vscode-codeql-starter/ql/cpp/ql/src/Security/CWE` file and then run all the Security-related queries.  This takes
+a long time on a powerful Mac.  But it is still quicker than a manual inspection! 
+
+Unfortunately, as of `xnu-8792.61.2` there are no matches for any of the 64 rules underneath `Security/CWE`.
+
+This is probably because internal to Apple, or perhaps a third-party collaborator, has been running CodeQL as part
+of a Continuous Integration pipeline.
+
+Nevertheless, as we have shown, an empty block in the code might allude to a missing error handling case.  So the
+less interesting rules might turn up security vulnerabilities or give us ideas for how to write a new rule.  These
+private rules would not be part of the CI test set that Apple run.  So there is a real opportunity to find new
+weaknesses or helpful bugs.
 
 ## Outline of Approach
 
