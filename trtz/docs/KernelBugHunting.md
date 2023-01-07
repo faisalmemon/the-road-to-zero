@@ -170,7 +170,11 @@ At this point we have a CodeQL extension installed, but no actual CodeQL engine 
 
 Furthermore, CodeQL needs two more items to be effective.  Firstly it needs rules (a ruleset) that it can execute to find code weaknesses and bugs.  Secondly, it needs a database file that indexes the code base it should search within.
 
-In order to get the ruleset, clone the repository [Starter Workspace](https://github.com/github/vscode-codeql-starter/)
+In order to get the ruleset, recursively clone the repository [Starter Workspace](https://github.com/github/vscode-codeql-starter/)
+```sh
+git clone --recursive https://github.com/github/vscode-codeql-starter
+```
+
 Identify the location of the checked out file, `vscode-codeql-starter.code-workspace` from the above repository.
 In Visual Studio Code, choose File -> Open Workspace From File... and select the above workspace file.
 
@@ -221,4 +225,34 @@ From here we can "Add a CodeQL Database from a folder".  We pick the `xnu-codeql
 When this is done we see that the CPP (C++) database `xnu-codeql` is seen with a tick mark in the Left Panel section marked "DATABASES".
 ![ImportedDatabase](importedDatabase.png)
 
+## Run a Query
+
 We now need to switch our view from the CodeQL plug-in view to the normal folders view.
+
+![QLFilesInStarterProject](qlFilesInStarterProject.png)
+
+As a consequence of the recursive clone made for the starter project earlier, we should have a folder called `ql` as seen in the above screenshot.
+
+We need to drill down into `ql/cpp/ql/src/Security/CWE/CWE-014` to find a directory showing some sample code, and a `.ql` file for finding such examples.  Right Clicking on `MemsetMayBeDeleted.ql` and selecting "Run Query" will execute the query against our database, which is the XNU kernel.
+
+Unfortunately it will not result in any matches because the code does not have such a flaw.
+
+## Run a Batch of Queries
+
+We can select at a folder level and choose to run a batch of queries.  The CodeQL tool will find all `.ql` files in the file hierarchy and run each in turn.  For example Right Clicking on `ql/cpp/ql/src/Likely Bugs/Memory Management` will run memory management checks.  Unfortunately again, there are no matched returned results because the source base does not have such flaws.
+
+As we mentioned in our earlier section, there can be query limits we reach.  These limits can be extended.
+
+We need to update the workspace file `vscode-codeql-starter.code-workspace` to support for example 128 queries (instead of the default 64):
+```
+ "settings": {
+    "omnisharp.autoStart": false,
+    "codeQL.runningQueries.maxQueries": 128
+  }
+```
+
+## Next Steps
+
+We have shown a powerful tool that can be used to inspect the XNU kernel source, and shown how we can get the source code and compile it.
+
+What remains is to explore the CodeQL query language, and make novel queries.  We could draw inspiration from past bug fixes to see if other instances are present by crafting a query that would match the past bug fix.  Alternatively we could run some of the "noise" queries, such as the empty block query we presented earlier in this chapter.  This can lead to insights and further refinement to get a good query that could find a flaw.
