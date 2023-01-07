@@ -74,19 +74,21 @@ weaknesses or helpful bugs.
 
 ## Outline of Approach
 
-We need a number of things setup before we can proceed.  Here we've made some assumptions and choices on configuration and setup which we hope can be adapted for your requirements and preferences.
+In this section we give a high level overview of how our toolchain is setup.
+
+Here we've made some assumptions and choices on configuration and setup which we hope can be adapted for your requirements and preferences.
 
 We assume our bug hunting is done with:
 
 - Apple Silicon ARM architecture
-- Visual Studio is our editor for querying for, and viewing results
+- Visual Studio is our editor for querying for, and viewing, results
 - XNU Kernel `xnu-8792.61.2` is being studied
 
 The top level steps are:
 
 1. Setup for Xcode on Mac on Apple Silicon.
-1. Install the Kernel Development Kit.
-1. Download and compile the XNU kernel source.
+1. Install the Kernel Debug Kit.
+1. Obtain download and compilation scripts.
 1. Setup and install Visual Studio Code, and the QL plug-in.
 1. Install CodeQL helper snippets.
 1. Generate XNU CodeQL database.
@@ -101,10 +103,45 @@ We need the following software:
 | Name | Purpose | Location |
 | -- | -- | -- |
 | Xcode | Compiler | Mac App Store |
-| Kernel Development Kit (13.1 22C65) | XNU Dependency for compilation | [Apple Download Site](https://developer.apple.com/download/all/) |
+| Kernel Debug Kit (13.1 22C65) | XNU Dependency for compilation | [Apple Download Site](https://developer.apple.com/download/all/) |
 | `xnu-build` | Build Scripts for XNU | [pwn0rz/xnu-build](https://github.com/pwn0rz/xnu-build) |
 | Visual Studio Code | Editor/Viewer | [Microsoft VS Code](https://code.visualstudio.com) |
 | CodeQL plug-in | Integration for CodeQL into VS Code | From `Extensions` in VS Code; search for `CodeQL` |
 | CodeQL snippets | Pre-made queries to run | [Starter Workspace](https://github.com/github/vscode-codeql-starter/) |
 
+## Install the Apple Proprietary base software
 
+We assume that as standard, you have installed Xcode on your Apple Silicon Mac.
+
+Then resources needed in order to compile the XNU kernel are provided by the Kernel Debug Kit.  The kernel evolves rapidly over time, and particularly after a new product release, a bulk update can often been seen in the XNU sources.  There is a tight coupling between the version of the KDK and the XNU kernel that is compiled using it.  Expect to have to do hacks and tweaks if this document is being read sometime after the versions we specify here.
+
+To get the currently most recent KDK, visit the [Apple Download Site](https://developer.apple.com/download/all/) and search for "Kernel Debug Kit".
+Specifically we use [13.1 build 22C65](https://download.developer.apple.com/macOS/Kernel_Debug_Kit_13.1_build_22C65/Kernel_Debug_Kit_13.1_build_22C65.dmg) in this tutorial.
+
+Once the KDK is downloaded and installed, it will be present on your machine, and can be confirmed using:
+```sh
+mdfind .kdk
+/Library/Apple/System/Library/Receipts/com.apple.pkg.KDK.22C65.bom
+/Library/Apple/System/Library/Receipts/com.apple.pkg.KDK.22C65.plist
+/Library/Developer/KDKs/KDK_13.1_22C65.kdk
+```
+
+Note that in an earlier chapter, we used the KDK because we wanted to actually do Kernel Debugging.  Here, we use KDK only to facilitate XNU kernel compilation.
+
+It is worthwhile, whilst we are here, to look inside the KDK subdirectories because it is like Polyfilla (TM).  It has many binary components that fill gaps in the open source XNU in order to make a complete system.  This would either be to hide details of Apple-custom hardware, or avoid third party intellectual property issues preventing Apple from releasing the source code.
+
+## Obtain the install and build scripts
+
+Installing all the prerequisite software modules that the XNU kernel requires, as well as patching up small differences needed due to our compilation being done outside of Apple (and thus not using their internal SDK) is non-trivial.  Fortunately the heavy-lifting has already been done by `pwn0rz` with repository [](https://github.com/pwn0rz/xnu-build).  In this tutorial we are using it at commit `6b5c72cfb5a9a9ad8b5e9e245dbd00f331d37259`.
+
+1.  Clone the repository [](https://github.com/pwn0rz/xnu-build)
+1.  Ensure a modern Python is present on your system, e.g. Python 3.10.8
+1.  Run the script that fetches and compiles the source code
+```sh
+cd xnu-build
+./x.py > x-py-output.txt 2>x-py-err.txt
+```
+
+It is worthwhile trying to exactly match the software being used here to see it working in at least one configuration.  Then on later versions of the XNU kernel, some idea of what "normal" looks like is already in mind, and iterative debugging can be done to get the kernel to compile.  There is no single long term solution here since the XNU source code is kind of "thrown over the wall" to the community.  It is not a project which comes associated with a governance and community leadership aspect from Apple.  To be fair, we should be grateful that it even exists.
+
+In our case, our case, out compile never completely succeeds.  But it is not really a problem because the above configuration gets us what we require - a set of intermediate binary objects that then can be explored and inspected with CodeQL later along.
