@@ -130,7 +130,7 @@ Note that in an earlier chapter, we used the KDK because we wanted to actually d
 
 It is worthwhile, whilst we are here, to look inside the KDK subdirectories because it is like Polyfilla (TM).  It has many binary components that fill gaps in the open source XNU in order to make a complete system.  This would either be to hide details of Apple-custom hardware, or avoid third party intellectual property issues preventing Apple from releasing the source code.
 
-## Obtain the install and build scripts
+## Build XNU kernel
 
 Installing all the prerequisite software modules that the XNU kernel requires, as well as patching up small differences needed due to our compilation being done outside of Apple (and thus not using their internal SDK) is non-trivial.  Fortunately the heavy-lifting has already been done by `pwn0rz` with repository [](https://github.com/pwn0rz/xnu-build).  In this tutorial we are using it at commit `6b5c72cfb5a9a9ad8b5e9e245dbd00f331d37259`.
 
@@ -145,3 +145,21 @@ cd xnu-build
 It is worthwhile trying to exactly match the software being used here to see it working in at least one configuration.  Then on later versions of the XNU kernel, some idea of what "normal" looks like is already in mind, and iterative debugging can be done to get the kernel to compile.  There is no single long term solution here since the XNU source code is kind of "thrown over the wall" to the community.  It is not a project which comes associated with a governance and community leadership aspect from Apple.  To be fair, we should be grateful that it even exists.
 
 In our case, our case, out compile never completely succeeds.  But it is not really a problem because the above configuration gets us what we require - a set of intermediate binary objects that then can be explored and inspected with CodeQL later along.
+
+Our output files can be cross-compared from [The Road to Zero GitHub](./Bibliography.md#TRTZ) of this book, in directory `examples/compile_xnu`.
+
+## Setup Visual Studio Code
+
+We assume you have setup Visual Studio Code, [Microsoft VS Code](https://code.visualstudio.com) 
+When running this tool, with the "Activity Bar" on the left visible, or Shift+Command+X, the extensions panel can be raised.
+Search for extension "CodeQL" (the author is GitHub and should be the first match).  Then install it.
+
+CodeQL needs two more items to be effective.  Firstly it needs rules that it can execute to find code weaknesses and bugs.  Secondly, it needs a database file that indexes the code base it should search within.
+
+In order to get the ruleset, clone the repository [Starter Workspace](https://github.com/github/vscode-codeql-starter/)
+Identify the location of the checked out file, `vscode-codeql-starter.code-workspace` from the above repository.
+In Visual Studio Code, choose File -> Open Workspace From File... and select the above workspace file.
+
+## Install CodeQL
+
+The engine that runs CodeQL is called the CodeQL CLI.  These are offered as binaries.  In order for our configuration to work we require Xcode command-line developer tools and Rosetta 2 are installed.
